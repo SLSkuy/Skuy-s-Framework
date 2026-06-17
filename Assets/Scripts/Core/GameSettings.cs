@@ -5,6 +5,11 @@
     /// </summary>
     public class GameSettings
     {
-        
+        #region 画面设置
+
+        public int ScreenWidth;
+        public int ScreenHeight;
+
+        #endregion
     }
 }

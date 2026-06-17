@@ -62,17 +62,13 @@ namespace Core
         /// </summary>
         private void InitDataProxy()
         {
-
+            // TODO: 初始化全局数据代理
         }
 
         private void InitUI()
         {
-
+            // TODO: 初始化全局UI
         }
-        
-        #endregion
-        
-        #region 游戏状态管理
 
         /// <summary>
         /// 退出游戏

@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 namespace Framework
 {
+    /// <summary>
+    /// 场景加载器，场景加载完毕/失败会触发 SceneLoadEvent.Completed/Failed 全局事件
+    /// </summary>
     public class SceneLoader : SubSystemBase
     {
         public override SubSystemPriority Priority => SubSystemPriority.SceneLoader;
@@ -34,18 +37,6 @@ namespace Framework
 
         private bool _isLoading;
         private bool _isActivating;
-
-        public override void Init()
-        {
-            EventBus.Get<SceneLoadEvent.Completed>().AddListener(OnSceneLoadCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().AddListener(OnSceneLoadFailed);
-        }
-
-        public override void Destroy()
-        {
-            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(OnSceneLoadCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().RemoveListener(OnSceneLoadFailed);
-        }
 
         public void LoadScene(string sceneName)
         {
@@ -130,16 +121,6 @@ namespace Framework
                 SceneName = _loadingSceneName,
                 ErrorMessage = errorMessage
             });
-        }
-
-        private void OnSceneLoadCompleted(SceneLoadEvent.CompletedData data)
-        {
-            Debug.Log($"[SceneLoader] 场景 '{data.SceneName}' 加载完成");
-        }
-
-        private void OnSceneLoadFailed(SceneLoadEvent.FailedData data)
-        {
-            Debug.LogError($"[SceneLoader] 场景 '{data.SceneName}' 加载失败: {data.ErrorMessage}");
         }
     }
 }

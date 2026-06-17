@@ -10,9 +10,6 @@ namespace Framework
         DataProxyManager = -100,
         SceneLoader = -50,
         GameStateManager = 0,
-        LevelManager = 50,
-        SpawnManager = 60,
-        CameraManager = 1000,
         UIManager = 5000,
     }
 }

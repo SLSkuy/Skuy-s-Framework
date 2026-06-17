@@ -13,7 +13,7 @@ namespace Utils
         /// <param name="v">原始向量</param>
         /// <param name="degrees">旋转角度（度）</param>
         /// <returns>旋转后的向量</returns>
-        public static Vector2 RotateVector2(Vector2 v, float degrees)
+        public static Vector2 RotateVector2_Y(Vector2 v, float degrees)
         {
             float radians = degrees * Mathf.Deg2Rad;
             float cos = Mathf.Cos(radians);

@@ -2,7 +2,10 @@ using EventProcess;
 
 namespace Framework
 {
-    public class SceneLoadEvent
+    /// <summary>
+    /// 场景加载全局事件
+    /// </summary>
+    public abstract class SceneLoadEvent
     {
         public class Completed : AEvent<CompletedData> { }
         public struct CompletedData

@@ -102,6 +102,8 @@ InitTestScene*.unity*
 # They also could contain extremely sensitive data
 /[Pp]rofilerCaptures/
 
+SceneDependencyCache/
+
 .cursor
 .vscode
 .idea
