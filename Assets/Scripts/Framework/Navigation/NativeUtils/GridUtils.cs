@@ -54,6 +54,26 @@ namespace Framework
 
             return cells[index];
         }
+        
+        public static ASCell WorldPosToCell(float3 worldPos, ASGrid grid,
+            LocalTransform gridTransform, NativeArray<ASCell> cells)
+        {
+            float gridWidth = grid.XCount * grid.CellSize;
+            float gridHeight = grid.YCount * grid.CellSize;
+
+            float localX = worldPos.x - gridTransform.Position.x + gridWidth * 0.5f;
+            float localY = worldPos.z - gridTransform.Position.z + gridHeight * 0.5f;
+
+            int x = math.clamp((int)math.floor(localX / grid.CellSize),
+                0, grid.XCount - 1);
+
+            int y = math.clamp((int)math.floor(localY / grid.CellSize),
+                0, grid.YCount - 1);
+
+            int index = x + y * grid.XCount;
+
+            return cells[index];
+        }
 
         /// <summary>
         /// 获取节点的F代价

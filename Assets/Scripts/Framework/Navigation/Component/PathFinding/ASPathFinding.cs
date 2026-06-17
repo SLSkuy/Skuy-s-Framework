@@ -15,7 +15,7 @@ namespace Framework
     }
 
     /// <summary>
-    /// A*寻路请求组件，拥有该组件才能发起寻路计算请求（动态添加）
+    /// A*寻路请求组件，需要重新计算路径时动态添加
     /// </summary>
     public struct ASRequester : IComponentData
     {
@@ -23,16 +23,6 @@ namespace Framework
         /// 寻路目的地
         /// </summary>
         public float3 Destination;
-        
-        /// <summary>
-        /// 寻路实体标识
-        /// </summary>
-        public Entity RequestEntity;
-        
-        /// <summary>
-        /// 当前是否有寻路请求
-        /// </summary>
-        public bool RequestGiven;
     }
 
     /// <summary>
@@ -46,7 +36,7 @@ namespace Framework
     }
 
     /// <summary>
-    /// 寻路操作命令实例
+    /// 寻路操作命令实例，由请求系统临时创建，寻路完成后移除
     /// </summary>
     public struct ASOperation : IComponentData
     {
@@ -55,7 +45,7 @@ namespace Framework
     }
 
     /// <summary>
-    /// 寻路结果
+    /// 寻路结果，记录最近一次寻路计算状态
     /// </summary>
     public struct ASResult : IComponentData
     {

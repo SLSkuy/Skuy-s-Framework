@@ -43,31 +43,17 @@ namespace Framework
                     DestinationReached = false,
                 };
 
-                ASRequester requester = new ASRequester
-                {
-                    Destination = new float3(authoring.initDestination),
-                    RequestEntity = entity,
-                    RequestGiven = !authoring.hasInitDestination,
-                };
-
-                ASResult result = new ASResult
-                {
-                    PathFounded = false,
-                    FinishedSearch = false,
-                };
-
-                ASOperation op = new ASOperation
-                {
-                    StartPoint = float3.zero,
-                    TargetPoint = float3.zero,
-                };
-
                 AddComponent(entity, agent);
                 AddComponent(entity, follower);
-                AddComponent(entity, requester);
-                AddComponent(entity, result);
-                AddComponent(entity, op);
-                AddBuffer<ASPathBuffer>(entity);
+
+                // 判断是否有初始目标点，添加请求实例
+                if (authoring.hasInitDestination)
+                {
+                    AddComponent(entity, new ASRequester
+                    {
+                        Destination = new float3(authoring.initDestination),
+                    });
+                }
             }
         }
     }
