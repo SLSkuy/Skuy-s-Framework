@@ -5,6 +5,7 @@ using Unity.Transforms;
 
 namespace Framework
 {
+    [UpdateAfter(typeof(PFRequestSystem))]
     public partial struct PathFindingSystem : ISystem
     {
         private ComponentLookup<ASOperation> _operationLookup;
@@ -31,14 +32,12 @@ namespace Framework
             _followerLookup.Update(ref state);
             _pathBufferLookup.Update(ref state);
             
-            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
-            
+            // 查找网格数据
             bool hasGrid = false;
             ASGrid grid = default;
             LocalTransform gridTransform = default;
             NativeArray<ASCell> cells = default;
             int maxPerFrame = 10;
-
             foreach (var (gridValue, transform, cellsBuf, config) in SystemAPI.Query<RefRO<ASGrid>, 
                          RefRO<LocalTransform>, DynamicBuffer<ASCell>, RefRO<ASPathFindingConfig>>())
             {
@@ -58,23 +57,22 @@ namespace Framework
 
             if (!hasGrid || cells.Length == 0)
             {
-                if (cells.IsCreated)
-                    cells.Dispose();
-                ecb.Dispose();
+                if (cells.IsCreated) cells.Dispose();
                 return;
             }
             
+            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
+            
             // ---------- 对每个正在寻路的 Agent 执行 A* ----------
-            int count = 0;
-            // 注意：这里用 foreach 线性遍历。
             // 仅处理拥有 ASOperation 的 Agent（即 PFRequestSystem 新派发的请求）
+            int count = 0;
             foreach (var (resultRW, entity) in SystemAPI.Query<RefRW<ASResult>>()
                          .WithAll<ASOperation, ASRequester, ASAgent>().WithEntityAccess())
             {
                 if (count >= maxPerFrame) break;
                 if (resultRW.ValueRO.FinishedSearch) continue; // 已完成的跳过
-                if (!_operationLookup.HasComponent(entity)) continue;
-                if (!_pathBufferLookup.HasBuffer(entity)) continue;
+                if (!_operationLookup.HasComponent(entity)) continue;   // 没有操作组件，跳过
+                if (!_pathBufferLookup.HasBuffer(entity)) continue; // 没有节点缓存，跳过
 
                 // 执行 A* 搜索（直接在主线程执行，以保证可在 Unity Editor 中稳定运行）
                 ASParallelSearch search = new ASParallelSearch
@@ -108,10 +106,10 @@ namespace Framework
 
                 count++;
             }
-
-            cells.Dispose();
+            
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
+            cells.Dispose();
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Framework
     /// <summary>
     /// 寻路请求系统
     /// </summary>
+    [UpdateAfter(typeof(IslandCheckSystem))]
     public partial struct PFRequestSystem : ISystem
     {
         private ComponentLookup<ASResult> _resultLookup;
@@ -36,14 +37,11 @@ namespace Framework
             _pathBufferLookup.Update(ref state);
             _followerLookup.Update(ref state);
             
-            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
-
+            // 查找网格数据
             bool hasGrid = false;
             ASGrid grid = default;
             DynamicBuffer<ASCell> cells = default;
             LocalTransform gridTransform = default;
-
-            // 初始化网格数据
             foreach (var (gridValue, transform, cellsValue) 
                      in SystemAPI.Query<RefRO<ASGrid>, RefRO<LocalTransform>, DynamicBuffer<ASCell>>())
             {
@@ -57,14 +55,14 @@ namespace Framework
             // 等待其他System创建好相应数据
             if (!hasGrid || !cells.IsCreated || !grid.IslandCreated)
             {
-                ecb.Dispose();
                 return;
             }
 
+            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
+            
             // 处理寻路请求，将请求组件转换为临时寻路操作组件
             foreach (var (requester, transform, entity) in SystemAPI
-                         .Query<RefRO<ASRequester>, RefRO<LocalTransform>>()
-                         .WithAll<ASAgent>().WithEntityAccess())
+                         .Query<RefRO<ASRequester>, RefRO<LocalTransform>>().WithAll<ASAgent>().WithEntityAccess())
             {
                 float3 startPos = transform.ValueRO.Position;
                 float3 endPos = requester.ValueRO.Destination;
@@ -89,17 +87,21 @@ namespace Framework
                         PathFounded = false,
                     };
 
+                    // 更新寻路结果
                     if (_resultLookup.HasComponent(entity))
                         ecb.SetComponent(entity, failedResult);
                     else
                         ecb.AddComponent(entity, failedResult);
 
+                    // 移除寻路请求
                     if (_operationLookup.HasComponent(entity))
                         ecb.RemoveComponent<ASOperation>(entity);
 
+                    // 移除前段寻路路径点数据
                     if (_pathBufferLookup.HasBuffer(entity))
                         _pathBufferLookup[entity].Clear();
 
+                    // 更新寻路组件
                     if (_followerLookup.HasComponent(entity))
                     {
                         ASFollower follower = _followerLookup[entity];
@@ -109,6 +111,7 @@ namespace Framework
                         ecb.SetComponent(entity, follower);
                     }
 
+                    // 移除寻路请求
                     ecb.RemoveComponent<ASRequester>(entity);
                     continue;
                 }
@@ -118,23 +121,23 @@ namespace Framework
                 else
                     ecb.AddBuffer<ASPathBuffer>(entity);
 
+                // 添加寻路缓存结果组件
                 ASResult pendingResult = new ASResult
                 {
                     FinishedSearch = false,
                     PathFounded = false,
                 };
-
                 if (_resultLookup.HasComponent(entity))
                     ecb.SetComponent(entity, pendingResult);
                 else
                     ecb.AddComponent(entity, pendingResult);
 
+                // 添加寻路操作组件
                 ASOperation operation = new ASOperation
                 {
                     StartPoint = startPos,
                     TargetPoint = endPos,
                 };
-
                 if (_operationLookup.HasComponent(entity))
                     ecb.SetComponent(entity, operation);
                 else

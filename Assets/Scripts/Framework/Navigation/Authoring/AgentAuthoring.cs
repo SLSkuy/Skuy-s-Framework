@@ -43,6 +43,7 @@ namespace Framework
                     DestinationReached = false,
                 };
 
+                // 添加初始组件，请求相关组件由System动态添加
                 AddComponent(entity, agent);
                 AddComponent(entity, follower);
 

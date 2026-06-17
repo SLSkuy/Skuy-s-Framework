@@ -4,6 +4,7 @@ using Unity.Entities;
 
 namespace Framework
 {
+    [UpdateAfter(typeof(ObstacleCheckSystem))]
     public partial struct IslandCheckSystem : ISystem
     {
         private bool _hasCheckIsland;
