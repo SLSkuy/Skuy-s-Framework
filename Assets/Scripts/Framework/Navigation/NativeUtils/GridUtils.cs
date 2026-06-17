@@ -82,6 +82,14 @@ namespace Framework
         {
             return cell.HCost + cell.GCost;
         }
+
+        /// <summary>
+        /// 获取节点在网格中的索引
+        /// </summary>
+        public static int CellIndex(ASGrid grid, ASCell cell)
+        {
+            return cell.X + cell.Y * grid.XCount;
+        }
         
         /// <summary>
         /// 获取两节点之间的距离

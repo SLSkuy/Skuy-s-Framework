@@ -41,7 +41,6 @@ namespace Framework
                     int yCount = grid.ValueRO.YCount;
                     
                     NativeArray<bool> visited = new NativeArray<bool>(xCount * yCount, Allocator.Temp);
-
                     for (int y = 0; y < yCount; y++)
                     {
                         for (int x = 0; x < xCount; x++)

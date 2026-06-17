@@ -84,7 +84,6 @@ namespace Framework
                     Grid = grid,
                     GridTransform = gridTransform,
                     Cells = cells,
-                    NewCells = default,
                 };
                 search.Execute();
 

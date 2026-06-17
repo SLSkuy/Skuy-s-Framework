@@ -71,8 +71,8 @@ namespace Framework
                 ASCell startCell = GridUtils.WorldPosToCell(startPos, grid, gridTransform, cells);
                 ASCell endCell = GridUtils.WorldPosToCell(endPos, grid, gridTransform, cells);
 
-                int startIndex = startCell.X + startCell.Y * grid.XCount;
-                int endIndex = endCell.X + endCell.Y * grid.XCount;
+                int startIndex = GridUtils.CellIndex(grid, startCell);
+                int endIndex = GridUtils.CellIndex(grid, endCell);
 
                 startIndex = math.clamp(startIndex, 0, cells.Length - 1);
                 endIndex = math.clamp(endIndex, 0, cells.Length - 1);

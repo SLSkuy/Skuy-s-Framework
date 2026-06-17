@@ -10,217 +10,228 @@ namespace Framework
     /// </summary>
     public struct ASParallelSearch
     {
+        /// <summary>本次寻路请求所属实体</summary>
         public Entity OperationEntity;
-        
+
+        /// <summary>寻路输入：起点和终点</summary>
         public ComponentLookup<ASOperation> Operations;
+
+        /// <summary>寻路输出：是否完成、是否找到路径</summary>
         public ComponentLookup<ASResult> Results;
+
+        /// <summary>寻路输出：路径点缓存</summary>
         public BufferLookup<ASPathBuffer> PathPoints;
-        
-        public NativeHashSet<ASCell> ClosedCells;
-        public NativeMinHeap<ASCell> OpenCells;
 
         public ASGrid Grid;
         public LocalTransform GridTransform;
-        
-        // A*缓存数组，A*搜索过程会更改G/H/PreviousNodexIndex值
+
+        /// <summary>只读网格快照。Execute 内部会复制一份工作数组，避免污染网格原始数据。</summary>
         public NativeArray<ASCell> Cells;
-        public NativeArray<ASCell> NewCells;
 
         public void Execute()
         {
-            NewCells = new NativeArray<ASCell>(Cells.Length, Allocator.Temp);
-            NativeArray<ASCell>.Copy(Cells, NewCells);
-
             ASOperation operation = Operations[OperationEntity];
-            ASResult operationResult = Results[OperationEntity];
             DynamicBuffer<ASPathBuffer> pathBuffer = PathPoints[OperationEntity];
+            NativeArray<ASCell> searchCells = new NativeArray<ASCell>(Cells.Length, Allocator.Temp);
+            NativeArray<ASCell>.Copy(Cells, searchCells);
 
-            operationResult.PathFounded = false;
-            operationResult.FinishedSearch = false;
-
-            // 将起点/终点世界坐标转换为网格节点
-            ASCell startCell = GridUtils.WorldPosToCell(operation.StartPoint, Grid, GridTransform, NewCells);
-            ASCell targetCell = GridUtils.WorldPosToCell(operation.TargetPoint, Grid, GridTransform, NewCells);
-
-            ASCell closestCell = new ASCell();
-            int closetCellDistFromGoal = int.MaxValue;
-            bool targetFound = false;
-
-            // 终点不可通行时，寻找最近可通行节点
-            if (!targetCell.IsAccessible)
+            ASCell startCell = GridUtils.WorldPosToCell(operation.StartPoint, Grid, GridTransform, searchCells);
+            ASCell targetCell = GridUtils.WorldPosToCell(operation.TargetPoint, Grid, GridTransform, searchCells);
+            if (!TryResolveTargetCell(ref targetCell, startCell, searchCells))
             {
-                ASCell newTargetCell = new ASCell();
-                if (ExpandInaccessibleBFS(ref newTargetCell, targetCell, startCell, Grid, NewCells))
-                {
-                    targetCell = newTargetCell;
-                }
-                else
-                {
-                    operationResult.PathFounded = false;
-                    operationResult.FinishedSearch = true;
-                    Results[OperationEntity] = operationResult;
-                    NewCells.Dispose();
-                    return;
-                }
+                WriteResult(false);
+                pathBuffer.Clear();
+                searchCells.Dispose();
+                return;
             }
 
-            OpenCells = new NativeMinHeap<ASCell>(Grid.XCount * Grid.YCount, Allocator.Temp);
-            ClosedCells = new NativeHashSet<ASCell>(0, Allocator.Temp);
-            OpenCells.Add(startCell);
-
-            // 已访问集合（用于 O(1) 判断节点是否在 ClosedSet）
+            NativeMinHeap<ASCell> openList = new NativeMinHeap<ASCell>(Grid.XCount * Grid.YCount, Allocator.Temp);
             NativeHashSet<int> closedIndexSet = new NativeHashSet<int>(0, Allocator.Temp);
-
-            // 记录节点是否已在 OpenSet 中（用于 O(1) 判断）
-            NativeHashMap<int, int> openIndexHeapPos = new NativeHashMap<int, int>(0, Allocator.Temp);
+            NativeHashSet<int> openIndexSet = new NativeHashSet<int>(0, Allocator.Temp);
+            NativeArray<int2> neighbourOffsets = GridUtils.CellNeighbours(Allocator.Temp);
+            
             int startIndex = startCell.X + startCell.Y * Grid.XCount;
-            openIndexHeapPos.TryAdd(startIndex, 0);
+            openList.Add(startCell);
+            openIndexSet.Add(startIndex);
 
-            while (OpenCells.Length > 0)
+            ASCell closestCell = startCell;
+            int closestCellDistFromGoal = int.MaxValue;
+            bool pathFounded = false;
+
+            while (openList.Length > 0)
             {
-                ASCell current = OpenCells.PopFirstItem();
-                int currentIndex = current.X + current.Y * Grid.XCount;
-                closedIndexSet.Add(currentIndex);
-                ClosedCells.Add(current);
-                openIndexHeapPos.Remove(currentIndex);
+                // 取出F代价最小节点，其为当前最优选择
+                ASCell current = openList.PopFirstItem();
+                int currentIndex = GridUtils.CellIndex(Grid, current);
 
-                // 到达终点：回溯路径并返回
+                closedIndexSet.Add(currentIndex);
+                openIndexSet.Remove(currentIndex);
+
+                // 命中目标后立刻回溯路径；路径点缓存只在这里或兜底路径中写入。
                 if (current.Equals(targetCell))
                 {
-                    operationResult.PathFounded = true;
-                    operationResult.FinishedSearch = true;
-                    RetracePath(startCell, current, Grid, GridTransform, NewCells, pathBuffer, OperationEntity);
-                    targetFound = true;
+                    RetracePath(startCell, current, searchCells, pathBuffer, operation.TargetPoint);
+                    pathFounded = true;
                     break;
                 }
 
-                // 记录距目标最近的节点（用于无法直达时的备选路径）
                 int currentToGoal = GridUtils.CellDistance(current, targetCell);
-                if (currentToGoal < closetCellDistFromGoal)
+                if (currentToGoal < closestCellDistFromGoal)
                 {
-                    closetCellDistFromGoal = currentToGoal;
+                    closestCellDistFromGoal = currentToGoal;
                     closestCell = current;
                 }
 
-                NativeArray<int2> neighbours = GridUtils.CellNeighbours(Allocator.Temp);
-                foreach (int2 neighbourOffset in neighbours)
-                {
-                    int nx = current.X + neighbourOffset.x;
-                    int ny = current.Y + neighbourOffset.y;
-
-                    // 边界检查
-                    if (nx < 0 || nx >= Grid.XCount || ny < 0 || ny >= Grid.YCount) continue;
-
-                    int neighbourIndex = nx + ny * Grid.XCount;
-
-                    // 注意：从 NewCells（工作副本）读取，以便获得最新的 GCost/PreviousNodeIndex 等状态
-                    ASCell neighbourCell = NewCells[neighbourIndex];
-
-                    // 不可通行：跳过
-                    if (!neighbourCell.IsAccessible) continue;
-
-                    // 已在 Closed 中：跳过
-                    if (closedIndexSet.Contains(neighbourIndex)) continue;
-
-                    int movementCost = current.GCost + GridUtils.CellDistance(current, neighbourCell) + (int)neighbourCell.Penalty;
-
-                    bool inOpen = openIndexHeapPos.ContainsKey(neighbourIndex);
-
-                    // 如果新代价更优，或节点尚未加入 Open Set
-                    if (!inOpen || movementCost < neighbourCell.GCost || neighbourCell.GCost == 0)
-                    {
-                        neighbourCell.GCost = movementCost;
-                        neighbourCell.HCost = GridUtils.CellDistance(neighbourCell, targetCell);
-                        neighbourCell.PreviousNodeIndex = currentIndex;
-
-                        // 写回工作数组
-                        NewCells[neighbourIndex] = neighbourCell;
-
-                        if (inOpen)
-                        {
-                            // 找到在堆中的位置并更新
-                            for (int i = 0; i < OpenCells.Length; i++)
-                            {
-                                if (OpenCells.Items[i].X == neighbourCell.X && OpenCells.Items[i].Y == neighbourCell.Y)
-                                {
-                                    neighbourCell.HeapIndex = i;
-                                    OpenCells.SetItemAt(neighbourCell, i);
-                                    OpenCells.UpdateItem(neighbourCell);
-                                    openIndexHeapPos[neighbourIndex] = neighbourCell.HeapIndex;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            OpenCells.Add(neighbourCell);
-                            openIndexHeapPos.TryAdd(neighbourIndex, neighbourCell.HeapIndex);
-                        }
-                    }
-                }
-
-                neighbours.Dispose();
+                EvaluateNeighbours(current, targetCell, currentIndex,
+                    searchCells, neighbourOffsets, closedIndexSet, 
+                    openIndexSet, ref openList);
             }
 
-            // 未找到完整路径：返回距离目标最近的节点的路径
-            if (!targetFound)
+            // 搜索失败时仍返回一条尽量靠近目标的路径，调用方可继续按 PathFounded=true 移动到最近点。
+            if (!pathFounded && closestCellDistFromGoal < int.MaxValue)
             {
-                operationResult.PathFounded = true;
-                operationResult.FinishedSearch = true;
-                RetracePath(startCell, closestCell, Grid, GridTransform, NewCells, pathBuffer, OperationEntity);
+                RetracePath(startCell, closestCell, searchCells, pathBuffer, operation.TargetPoint);
+                pathFounded = true;
             }
 
-            Results[OperationEntity] = operationResult;
+            // 写回结果
+            WriteResult(pathFounded);
 
-            // 释放所有 Native 容器
-            NewCells.Dispose();
-            OpenCells.Dispose();
-            ClosedCells.Dispose();
+            neighbourOffsets.Dispose();
+            openList.Dispose();
             closedIndexSet.Dispose();
-            openIndexHeapPos.Dispose();
+            openIndexSet.Dispose();
+            searchCells.Dispose();
         }
-        
-        private void RetracePath(ASCell _startNode, ASCell _targetNode, ASGrid _grid, LocalTransform _gridLocalTransform,
-            NativeArray<ASCell> _nodes, DynamicBuffer<ASPathBuffer> _pathPoints, Entity _agentEntity)
-        {
-            _pathPoints.Clear();
 
-            ASCell pathCursor = _targetNode;
+        /// <summary>
+        /// 当目标节点不可走时，在目标附近找一个可落脚节点，避免请求直接失败。
+        /// </summary>
+        private bool TryResolveTargetCell(ref ASCell targetCell, ASCell startCell, NativeArray<ASCell> searchCells)
+        {
+            if (targetCell.IsAccessible) return true;
+
+            ASCell closestAccessibleCell = new ASCell();
+            if (!ExpandInaccessibleBFS(ref closestAccessibleCell, targetCell, startCell, searchCells))
+            {
+                return false;
+            }
+
+            targetCell = closestAccessibleCell;
+            return true;
+        }
+
+        /// <summary>
+        /// 评估当前节点周围的 8 个邻居，并维护 Open/Closed 集合。
+        /// </summary>
+        private void EvaluateNeighbours(ASCell current, ASCell targetCell, int currentIndex,
+            NativeArray<ASCell> searchCells, NativeArray<int2> neighbourOffsets,
+            NativeHashSet<int> closedIndexSet, NativeHashSet<int> openIndexSet,
+            ref NativeMinHeap<ASCell> openSet)
+        {
+            foreach (int2 neighbourOffset in neighbourOffsets)
+            {
+                int nx = current.X + neighbourOffset.x;
+                int ny = current.Y + neighbourOffset.y;
+                if (nx < 0 || nx >= Grid.XCount || ny < 0 || ny >= Grid.YCount) continue;
+
+                // 已经被选中处理，并拓展过邻居，跳过节点
+                int neighbourIndex = nx + ny * Grid.XCount;
+                if (closedIndexSet.Contains(neighbourIndex)) continue;
+
+                // 节点无法通行，跳过节点
+                ASCell neighbourCell = searchCells[neighbourIndex];
+                if (!neighbourCell.IsAccessible) continue;
+
+                // 计算G代价，若计算的新的G代价大于通过其他节点计算的得到的G代价，则不更新对应节点的G代价，跳过节点
+                int movementCost = current.GCost + GridUtils.CellDistance(current, neighbourCell) + (int)neighbourCell.Penalty;
+                bool alreadyInOpen = openIndexSet.Contains(neighbourIndex);
+                if (alreadyInOpen && movementCost >= neighbourCell.GCost && neighbourCell.GCost != 0) continue;
+
+                // 更新节点G、F代价，设置前驱节点并加入openList以供选择
+                neighbourCell.GCost = movementCost;
+                neighbourCell.HCost = GridUtils.CellDistance(neighbourCell, targetCell);
+                neighbourCell.PreviousNodeIndex = currentIndex;
+                searchCells[neighbourIndex] = neighbourCell;    // 更新节点数据
+
+                if (alreadyInOpen)
+                {
+                    // 已经加入openList，更新数据
+                    UpdateOpenSetItem(neighbourCell, ref openSet);
+                }
+                else
+                {
+                    // 加入openList
+                    openSet.Add(neighbourCell);
+                    openIndexSet.Add(neighbourIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// NativeMinHeap 只能通过 HeapIndex 更新元素；节点被交换后索引可能变化，因此这里按坐标定位一次。
+        /// </summary>
+        private void UpdateOpenSetItem(ASCell cell, ref NativeMinHeap<ASCell> openSet)
+        {
+            for (int i = 0; i < openSet.Length; i++)
+            {
+                if (openSet.Items[i].X != cell.X || openSet.Items[i].Y != cell.Y) continue;
+
+                cell.HeapIndex = i;
+                openSet.SetItemAt(cell, i);
+                openSet.UpdateItem(cell);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 从目标节点沿 PreviousNodeIndex 回到起点，再反向写入世界坐标路径点。
+        /// </summary>
+        private void RetracePath(ASCell startNode, ASCell targetNode, NativeArray<ASCell> searchCells,
+            DynamicBuffer<ASPathBuffer> pathPoints, float3 exactTargetPoint)
+        {
+            pathPoints.Clear();
+
+            ASCell pathCursor = targetNode;
             NativeList<ASCell> pathNodes = new NativeList<ASCell>(Allocator.Temp);
 
-            // 从终点向起点回溯（通过父节点链），防止 PreviousNodeIndex 越界导致死循环
+            // 防御性限制最大回溯次数，避免异常 PreviousNodeIndex 造成死循环。
             int safetyCount = 0;
-            int maxSteps = _nodes.Length;
-            while (!(pathCursor.X == _startNode.X && pathCursor.Y == _startNode.Y) && safetyCount < maxSteps)
+            int maxSteps = searchCells.Length;
+            while (!pathCursor.Equals(startNode) && safetyCount < maxSteps)
             {
                 pathNodes.Add(pathCursor);
                 int prevIdx = pathCursor.PreviousNodeIndex;
-                if (prevIdx < 0 || prevIdx >= _nodes.Length) break;
-                pathCursor = _nodes[prevIdx];
+                if (prevIdx < 0 || prevIdx >= searchCells.Length) break;
+
+                pathCursor = searchCells[prevIdx];
                 safetyCount++;
             }
 
-            // 反转路径（从起点到终点的正向顺序），转换为世界坐标
+            // 反向放回路径缓存数组，寻路时就是正向结果
             for (int i = pathNodes.Length - 1; i >= 0; i--)
             {
-                _pathPoints.Add(new ASPathBuffer()
+                pathPoints.Add(new ASPathBuffer
                 {
-                    Point = GridUtils.GridCoordsToWorld(pathNodes[i].X, pathNodes[i].Y, _grid, _gridLocalTransform)
+                    Point = GridUtils.GridCoordsToWorld(pathNodes[i].X, pathNodes[i].Y, Grid, GridTransform)
                 });
             }
 
-            // 最后追加精确的目标世界坐标（替代最近节点中心，减少最终误差）
-            _pathPoints.Add(new ASPathBuffer() { Point = Operations[_agentEntity].TargetPoint });
+            // 最后一段使用请求中的精确目标点，减少停在格子中心带来的误差。
+            pathPoints.Add(new ASPathBuffer { Point = exactTargetPoint });
 
             pathNodes.Dispose();
         }
-        
-        bool ExpandInaccessibleBFS(ref ASCell _closestNode, ASCell _targetNode, ASCell _startingNode,
-            ASGrid _grid, NativeArray<ASCell> _nodes)
+
+        /// <summary>
+        /// 目标格不可通行时，从目标格向外扩展，找离起点最近的可通行格。
+        /// </summary>
+        private bool ExpandInaccessibleBFS(ref ASCell closestNode, ASCell targetNode,
+            ASCell startingNode, NativeArray<ASCell> searchCells)
         {
-            NativeArray<bool> visited = new NativeArray<bool>(_grid.XCount * _grid.YCount, Allocator.Temp);
+            NativeArray<bool> visited = new NativeArray<bool>(Grid.XCount * Grid.YCount, Allocator.Temp);
             NativeQueue<(int, int)> nodeQueue = new NativeQueue<(int, int)>(Allocator.Temp);
-            nodeQueue.Enqueue((_targetNode.X, _targetNode.Y));
+            nodeQueue.Enqueue((targetNode.X, targetNode.Y));
 
             bool foundClosestTarget = false;
             int closestDistance = int.MaxValue;
@@ -229,35 +240,30 @@ namespace Framework
             {
                 (int, int) currCoords = nodeQueue.Dequeue();
 
-                // 边界检查
-                if (currCoords.Item1 < 0 || currCoords.Item1 >= _grid.XCount ||
-                    currCoords.Item2 < 0 || currCoords.Item2 >= _grid.YCount) continue;
+                if (currCoords.Item1 < 0 || currCoords.Item1 >= Grid.XCount ||
+                    currCoords.Item2 < 0 || currCoords.Item2 >= Grid.YCount) continue;
 
-                // 索引方式必须与 GridAuthoring / WorldPosToCell 保持一致：index = x + y * CellXCount
-                int currIndex = currCoords.Item1 + currCoords.Item2 * _grid.XCount;
-
-                // 搜索范围限制
-                ASCell currentCell = _nodes[currIndex];
-                if (GridUtils.CellDistance(_targetNode, currentCell) > _grid.TargetInaccessibleSearchTolerance * 10) continue;
+                int currIndex = currCoords.Item1 + currCoords.Item2 * Grid.XCount;
+                ASCell currentCell = searchCells[currIndex];
+                if (GridUtils.CellDistance(targetNode, currentCell) > Grid.TargetInaccessibleSearchTolerance * 10) continue;
 
                 if (visited[currIndex]) continue;
 
-                // 找到可通行节点：记录距起点最近的一个
                 if (currentCell.IsAccessible)
                 {
                     foundClosestTarget = true;
-                    int dist = GridUtils.CellDistance(_startingNode, currentCell);
+                    int dist = GridUtils.CellDistance(startingNode, currentCell);
                     if (dist < closestDistance)
                     {
-                        _closestNode = currentCell;
+                        closestNode = currentCell;
                         closestDistance = dist;
                     }
-                    continue; // 不继续扩展（可通行节点是终点）
+                    continue;
                 }
 
                 visited[currIndex] = true;
 
-                // 向4方向扩展（只扩展不可通行节点内部，寻找边界上的可通行节点）
+                // 只用 4 方向扩展不可通行区域，找到边界上的可通行节点即可。
                 nodeQueue.Enqueue((currCoords.Item1 + 1, currCoords.Item2));
                 nodeQueue.Enqueue((currCoords.Item1, currCoords.Item2 + 1));
                 nodeQueue.Enqueue((currCoords.Item1 - 1, currCoords.Item2));
@@ -267,6 +273,15 @@ namespace Framework
             visited.Dispose();
             nodeQueue.Dispose();
             return foundClosestTarget;
+        }
+
+        private void WriteResult(bool pathFounded)
+        {
+            Results[OperationEntity] = new ASResult
+            {
+                PathFounded = pathFounded,
+                FinishedSearch = true,
+            };
         }
     }
 }
