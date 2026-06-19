@@ -15,6 +15,11 @@ namespace Framework
     
     /// <summary>
     /// KD-Tree树节点定义
+    /// Node 记录：
+    /// 1. 我管 permutation 的哪一段
+    /// 2. 我的空间范围 Bound 是什么
+    /// 3. 如果我被分割了，分割轴和分割坐标是什么
+    /// 4. 我的左右子节点是谁
     /// </summary>
     public struct KDTreeNode
     {
@@ -46,7 +51,7 @@ namespace Framework
         }
         
         /// <summary>
-        /// 当前节点的划分区间（记录每个点的索引），左闭又开 [Start, End)
+        /// 当前节点的划分区间点索引值，左闭又开 [Start, End)
         /// </summary>
         public int2 Boundary;
 
