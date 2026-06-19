@@ -24,9 +24,29 @@ namespace Framework
         /// 当前节点的划分轴及区间
         /// </summary>
         public KDTreePartitionAxis PartitionAxis;
+
+        /// <summary>
+        /// 计算当前节点应该使用的分割坐标轴
+        /// </summary>
+        public KDTreePartitionAxis GetPartitionAxis()
+        {
+            float3 size = Bound.Size;
+            KDTreePartitionAxis partitionAxis = KDTreePartitionAxis.X;
+            float axisSize = size.x;
+            if (axisSize < size.y)
+            {
+                partitionAxis = KDTreePartitionAxis.Y;
+                axisSize = size.y;
+            }
+            if (axisSize < size.z)
+            {
+                partitionAxis = KDTreePartitionAxis.Z;
+            }
+            return partitionAxis;
+        }
         
         /// <summary>
-        /// 当前节点的划分区间，左闭又开 [Start, End)
+        /// 当前节点的划分区间（记录每个点的索引），左闭又开 [Start, End)
         /// </summary>
         public int2 Boundary;
 
