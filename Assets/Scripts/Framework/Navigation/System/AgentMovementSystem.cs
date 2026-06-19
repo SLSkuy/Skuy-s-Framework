@@ -80,6 +80,7 @@ namespace Framework
                 }
 
                 // 计算期望速度与朝向
+                // 归一化获取方向
                 float3 desiredDir = distanceToPoint > math.EPSILON ? toTarget / distanceToPoint : float3.zero;
                 float3 desiredVelocity = desiredDir * agent.MaxSpeed;
 
