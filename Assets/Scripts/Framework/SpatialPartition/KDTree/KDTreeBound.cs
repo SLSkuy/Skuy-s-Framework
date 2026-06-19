@@ -24,10 +24,7 @@ namespace Framework
 
         /// <summary>
         /// 获取包围盒离point最近的点的位置
-        /// 若为0则说明point在包围盒内部，需要进入子树节点查找
         /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
         public float3 ClosestPoint(float3 point)
         {
             return math.clamp(point, Min, Max);
