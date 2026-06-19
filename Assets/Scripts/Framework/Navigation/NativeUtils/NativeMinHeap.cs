@@ -15,32 +15,31 @@ namespace Framework
     public struct NativeMinHeap<T> : IDisposable where T : unmanaged, INativeHeapItem<T>, IEquatable<T>
     {
         // 内部存储数组，预分配最大容量（网格节点总数）
-        NativeArray<T> mItems;
+        private NativeArray<T> _items;
 
         // 当前元素数量（有效区域：[0, mItemCount)）
-        int mItemCount;
 
         /// <summary>当前堆中的元素数量</summary>
-        public int Length => mItemCount;
+        public int Length { get; private set; }
 
         /// <summary>访问内部数组（用于遍历查找元素更新代价）</summary>
-        public NativeArray<T> Items { get => mItems; }
+        public NativeArray<T> Items => _items;
 
         /// <summary>
         /// 构造函数，预分配指定容量的内存
         /// </summary>
-        /// <param name="_maxHeapSize">最大容量（通常为网格节点总数）</param>
-        /// <param name="_allocator">内存分配器（Job 中使用 Allocator.Temp）</param>
-        public NativeMinHeap(int _maxHeapSize, Allocator _allocator)
+        /// <param name="maxHeapSize">最大容量（通常为网格节点总数）</param>
+        /// <param name="allocator">内存分配器（Job 中使用 Allocator.Temp）</param>
+        public NativeMinHeap(int maxHeapSize, Allocator allocator)
         {
-            mItems = new NativeArray<T>(_maxHeapSize, _allocator);
-            mItemCount = 0;
+            _items = new NativeArray<T>(maxHeapSize, allocator);
+            Length = 0;
         }
 
         /// <summary>直接在指定索引写入元素（用于更新 Open Set 中节点的代价）</summary>
-        public void SetItemAt(T _item, int _index)
+        public void SetItemAt(T item, int index)
         {
-            mItems[_index] = _item;
+            _items[index] = item;
         }
 
         /// <summary>
@@ -48,14 +47,14 @@ namespace Framework
         /// 1. 将元素追加到末尾
         /// 2. 向上冒泡（BubbleUp）维持堆性质
         /// </summary>
-        public void Add(T _item)
+        public void Add(T item)
         {
-            _item.HeapIndex = mItemCount;
-            mItems[mItemCount] = _item;
+            item.HeapIndex = Length;
+            _items[Length] = item;
 
-            BubbleUp(_item.HeapIndex); // 新元素可能优先级更高，向上调整
+            BubbleUp(item.HeapIndex); // 新元素可能优先级更高，向上调整
 
-            mItemCount++;
+            Length++;
         }
 
         /// <summary>
@@ -72,19 +71,19 @@ namespace Framework
         /// 向上冒泡：将索引处的元素与父节点比较，若优先级更高则交换，直到满足堆性质
         /// 父节点索引 = (i - 1) / 2
         /// </summary>
-        private void BubbleUp(int _itemIndex)
+        private void BubbleUp(int itemIndex)
         {
-            while (_itemIndex > 0)
+            while (itemIndex > 0)
             {
-                T item = mItems[_itemIndex];
-                int parentIndex = (_itemIndex - 1) / 2;
+                T item = _items[itemIndex];
+                int parentIndex = (itemIndex - 1) / 2;
 
-                T parentItem = mItems[parentIndex];
+                T parentItem = _items[parentIndex];
 
                 if (item.CompareTo(parentItem) > 0) // item 优先级高于 parent
                 {
                     SwapItems(item, parentItem);
-                    _itemIndex = parentIndex; // 继续向上检查
+                    itemIndex = parentIndex; // 继续向上检查
                 }
                 else break; // 已满足堆性质
             }
@@ -94,60 +93,73 @@ namespace Framework
         /// 检查堆中是否存在指定元素（O(1)）：
         /// 通过 HeapIndex 直接访问元素并比较（HeapIndex 由堆自动维护）
         /// </summary>
-        public bool Contains(T _item)
+        public bool Contains(T item)
         {
-            return mItems[_item.HeapIndex].Equals(_item);
+            return _items[item.HeapIndex].Equals(item);
+        }
+
+        /// <summary>
+        /// 查看堆顶元素但不弹出。
+        /// </summary>
+        public T PeekFirstItem()
+        {
+            if (Length == 0)
+            {
+                throw new InvalidOperationException("Heap is empty.");
+            }
+
+            return _items[0];
         }
 
         /// <summary>
         /// 向下沉淀：将索引处的元素与子节点比较，若优先级低于子节点则与最高优先级子节点交换
         /// 左子节点索引 = i*2+1，右子节点索引 = i*2+2
         /// </summary>
-        private void BubbleDown(int _itemIndex)
+        private void BubbleDown(int itemIndex)
         {
             while (true)
             {
-                int childIndexLeft = _itemIndex * 2 + 1;
-                int childIndexRight = _itemIndex * 2 + 2;
-                int swapIndex = _itemIndex; // 先假设当前节点最大
+                int childIndexLeft = itemIndex * 2 + 1;
+                int childIndexRight = itemIndex * 2 + 2;
+                int swapIndex = itemIndex; // 先假设当前节点最大
 
                 // 找到优先级最高的子节点
-                if (childIndexLeft < mItemCount &&
-                    mItems[childIndexLeft].CompareTo(mItems[swapIndex]) > 0)
+                if (childIndexLeft < Length &&
+                    _items[childIndexLeft].CompareTo(_items[swapIndex]) > 0)
                 {
                     swapIndex = childIndexLeft;
                 }
 
-                if (childIndexRight < mItemCount &&
-                    mItems[childIndexRight].CompareTo(mItems[swapIndex]) > 0)
+                if (childIndexRight < Length &&
+                    _items[childIndexRight].CompareTo(_items[swapIndex]) > 0)
                 {
                     swapIndex = childIndexRight;
                 }
 
-                if (swapIndex == _itemIndex)
+                if (swapIndex == itemIndex)
                 {
                     break; // 没有子节点优先级更高，堆性质已满足
                 }
 
-                SwapItems(mItems[_itemIndex], mItems[swapIndex]);
-                _itemIndex = swapIndex;
+                SwapItems(_items[itemIndex], _items[swapIndex]);
+                itemIndex = swapIndex;
             }
         }
 
         /// <summary>
         /// 交换两个元素在堆数组中的位置，同时更新各自的 HeapIndex
         /// </summary>
-        private void SwapItems(T _item1, T _item2)
+        private void SwapItems(T item1, T item2)
         {
-            T newItem1 = mItems[_item1.HeapIndex];
-            T newItem2 = mItems[_item2.HeapIndex];
+            T newItem1 = _items[item1.HeapIndex];
+            T newItem2 = _items[item2.HeapIndex];
 
             // 交换 HeapIndex
             (newItem1.HeapIndex, newItem2.HeapIndex) = (newItem2.HeapIndex, newItem1.HeapIndex);
 
             // 写回交换后的元素
-            mItems[newItem1.HeapIndex] = newItem1;
-            mItems[newItem2.HeapIndex] = newItem2;
+            _items[newItem1.HeapIndex] = newItem1;
+            _items[newItem2.HeapIndex] = newItem2;
         }
 
         /// <summary>
@@ -158,25 +170,25 @@ namespace Framework
         /// </summary>
         public T PopFirstItem()
         {
-            T firstItem = mItems[0]; // 堆顶 = 最高优先级（F 最小）
-            mItemCount--;
+            T firstItem = _items[0]; // 堆顶 = 最高优先级（F 最小）
+            Length--;
 
             // 将末尾元素移到堆顶替代被弹出的元素
-            T item = mItems[mItemCount];
+            T item = _items[Length];
             item.HeapIndex = 0;
-            mItems[0] = item;
+            _items[0] = item;
 
             BubbleDown(0); // 新堆顶可能优先级低，向下调整
             return firstItem;
         }
 
         /// <summary>调试用：返回堆内容字符串</summary>
-        public string ToString(string _par)
+        public string ToString(string par)
         {
-            string s = _par;
-            for (int i = 0; i < mItemCount; i++)
+            string s = par;
+            for (int i = 0; i < Length; i++)
             {
-                s += mItems[i].ToString() + " | ";
+                s += _items[i].ToString() + " | ";
             }
 
             return s;
@@ -185,7 +197,7 @@ namespace Framework
         /// <summary>释放内部 NativeArray 内存（必须在使用完毕后调用）</summary>
         public void Dispose()
         {
-            mItems.Dispose();
+            _items.Dispose();
         }
     }
 

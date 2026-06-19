@@ -37,10 +37,13 @@ namespace Framework
 
         public KDTree(NativeArray<float3> points, Allocator allocator, bool buildNow = true)
         {
-            if(points.Length == 0) throw new ArgumentNullException(nameof(points));
-            
+            if (points.Length == 0)
+            {
+                throw new ArgumentException("KDTree requires at least one point.", nameof(points));
+            }
+
             int nodeCount = 4 * (int)math.ceil(points.Length / (float)MAX_POINTS_PER_LEAF_NODE + 1) + 1;
-            
+
             _points = new NativeArray<float3>(points.Length, allocator);
             _nodes = new NativeList<KDTreeNode>(nodeCount, allocator);
             _permutation = new NativeArray<int>(points.Length, allocator);
@@ -65,70 +68,78 @@ namespace Framework
 
         private KDTreeNode RootNode => _nodes[ROOT_NODE_INDEX];
 
-        private struct QueryNode
+        /// <summary>
+        /// 待访问树节点，记录查询点到节点包围盒的最近点和平方距离。
+        /// </summary>
+        private struct QueryNode : INativeHeapItem<QueryNode>, IEquatable<QueryNode>
         {
             public int NodeIndex;
             public float3 ClosestPoint;
             public float DistanceSq;
+            public int HeapIndex { get; set; }
+
+            public int CompareTo(QueryNode other)
+            {
+                return other.DistanceSq.CompareTo(DistanceSq);
+            }
+
+            public bool Equals(QueryNode other)
+            {
+                return NodeIndex == other.NodeIndex;
+            }
         }
 
         /// <summary>
-        /// 查询操作，用于缓存节点
+        /// KNN 候选点。CompareTo 让距离更大的候选排在堆顶，便于替换当前最远候选。
         /// </summary>
-        private struct QueryOperation : IDisposable
+        private struct CandidateNode : INativeHeapItem<CandidateNode>, IEquatable<CandidateNode>
         {
-            /// <summary>
-            /// 查询结果
-            /// </summary>
-            public NativeMaxPriorityHeap<int> Candidates;
-            
-            /// <summary>
-            /// 查询缓存，根据优先级排列
-            /// </summary>
-            public NativeMinPriorityHeap<QueryNode> PendingNodes;
+            public int PointIndex;
+            public float DistanceSq;
+            public int HeapIndex { get; set; }
 
-            public QueryOperation(int candidateCapacity, Allocator allocator)
+            public int CompareTo(CandidateNode other)
             {
-                Candidates = new NativeMaxPriorityHeap<int>(candidateCapacity, allocator);
-                PendingNodes = new NativeMinPriorityHeap<QueryNode>(64, allocator);
+                return DistanceSq.CompareTo(other.DistanceSq);
             }
 
-            public void PushNode(int index, float3 closestPoint, float3 queryPosition)
+            public bool Equals(CandidateNode other)
             {
-                float distance = math.lengthsq(closestPoint - queryPosition);
-                PendingNodes.Push(new QueryNode
-                {
-                    NodeIndex = index,
-                    ClosestPoint = closestPoint,
-                    DistanceSq = distance
-                }, distance);
-            }
-
-            public void Dispose()
-            {
-                Candidates.Dispose();
-                PendingNodes.Dispose();
+                return PointIndex == other.PointIndex;
             }
         }
 
         public NativeArray<int> QueryKNearest(float3 queryPosition, int k)
         {
+            ValidateQueryState();
+
             if (k < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(k));
             }
-            
-            QueryOperation operation = new QueryOperation(k, Allocator.Temp);
+
+            if (k == 0)
+            {
+                return new NativeArray<int>(0, Allocator.Temp);
+            }
+
+            int candidateCapacity = math.min(k, _points.Length);
+
+            // candidates 维护当前 K 个最近候选，堆顶是候选中距离最远的点。
+            NativeMinHeap<CandidateNode> candidates = new NativeMinHeap<CandidateNode>(candidateCapacity, Allocator.Temp);
+
+            // pendingNodes 按节点包围盒到查询点的最近距离优先遍历。
+            NativeMinHeap<QueryNode> pendingNodes = new NativeMinHeap<QueryNode>(_nodes.Length, Allocator.Temp);
 
             try
             {
                 float bestSqrRadius = float.PositiveInfinity;
-                operation.PushNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition);
+                PushQueryNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition, ref pendingNodes);
 
-                // 优先访问距离查询点更近的包围盒，超过当前最远候选距离的节点可剪枝。
-                while (operation.PendingNodes.Count > 0)
+                // 先访问最近可能距离更小的包围盒，超过当前最远候选距离的节点可剪枝。
+                while (pendingNodes.Length > 0)
                 {
-                    QueryNode queryNode = operation.PendingNodes.Pop();
+                    QueryNode queryNode = pendingNodes.PopFirstItem();
                     if (queryNode.DistanceSq > bestSqrRadius)
                     {
                         continue;
@@ -137,48 +148,53 @@ namespace Framework
                     KDTreeNode node = _nodes[queryNode.NodeIndex];
                     if (node.IsLeaf)
                     {
-                        SearchKNearestLeaf(node, queryPosition, k, ref bestSqrRadius, ref operation);
+                        SearchKNearestLeaf(node, queryPosition, candidateCapacity, ref bestSqrRadius, ref candidates);
                     }
                     else
                     {
-                        PushChildNodes(node, queryNode, queryPosition, ref operation);
+                        PushChildNodes(node, queryNode, queryPosition, ref pendingNodes);
                     }
                 }
-                
-                int count = math.min(k, operation.Candidates.Count);
-                NativeArray<int> result = new NativeArray<int>(count, Allocator.Temp);
-                for (int i = 0; i < count; i++)
+
+                NativeArray<int> result = new NativeArray<int>(candidates.Length, Allocator.Temp);
+                for (int i = 0; i < result.Length; i++)
                 {
-                    result[i] = operation.Candidates.Pop();
+                    // 这里弹出顺序是由远到近；调用方只依赖集合时无需额外排序。
+                    result[i] = candidates.PopFirstItem().PointIndex;
                 }
-                
+
                 return result;
             }
             finally
             {
-                operation.Dispose();
+                candidates.Dispose();
+                pendingNodes.Dispose();
             }
         }
 
         public NativeList<int> QueryRange(float3 queryPosition, float radius)
         {
+            ValidateQueryState();
+
             if (radius < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(radius));
             }
-            
+
             NativeList<int> result = new NativeList<int>(Allocator.Temp);
-            QueryOperation operation = new QueryOperation(32, Allocator.Temp);
+
+            // Range 查询只需要待访问节点堆，命中的点直接写入 result。
+            NativeMinHeap<QueryNode> pendingNodes = new NativeMinHeap<QueryNode>(_nodes.Length, Allocator.Temp);
             float sqrRadius = radius * radius;
 
             try
             {
-                operation.PushNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition);
+                PushQueryNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition, ref pendingNodes);
 
-                // Range 查询使用固定半径剪枝，叶子节点内再做精确距离判断。
-                while (operation.PendingNodes.Count > 0)
+                // Range 查询用固定半径剪枝，叶子节点内再做精确距离判断。
+                while (pendingNodes.Length > 0)
                 {
-                    QueryNode queryNode = operation.PendingNodes.Pop();
+                    QueryNode queryNode = pendingNodes.PopFirstItem();
                     if (queryNode.DistanceSq > sqrRadius)
                     {
                         continue;
@@ -187,44 +203,63 @@ namespace Framework
                     KDTreeNode node = _nodes[queryNode.NodeIndex];
                     if (node.IsLeaf)
                     {
-                        SearchRangeLeaf(node, queryPosition, sqrRadius, ref operation);
+                        SearchRangeLeaf(node, queryPosition, sqrRadius, result);
                     }
                     else
                     {
-                        PushChildNodes(node, queryNode, queryPosition, ref operation);
+                        PushChildNodes(node, queryNode, queryPosition, ref pendingNodes);
                     }
                 }
 
-                while (operation.Candidates.Count > 0)
-                {
-                    result.Add(operation.Candidates.Pop());
-                }
                 return result;
             }
             finally
             {
-                operation.Dispose();
+                pendingNodes.Dispose();
             }
         }
 
-        private void PushChildNodes(KDTreeNode node, QueryNode queryNode, float3 queryPosition, ref QueryOperation operation)
+        private void ValidateQueryState()
+        {
+            if (_nodes.Length == 0)
+            {
+                throw new InvalidOperationException("KDTree must be rebuilt before querying.");
+            }
+        }
+
+        private void PushQueryNode(int nodeIndex, float3 closestPoint, float3 queryPosition, ref NativeMinHeap<QueryNode> pendingNodes)
+        {
+            float distanceSq = math.lengthsq(closestPoint - queryPosition);
+            pendingNodes.Add(new QueryNode
+            {
+                NodeIndex = nodeIndex,
+                ClosestPoint = closestPoint,
+                DistanceSq = distanceSq
+            });
+        }
+
+        private void PushChildNodes(KDTreeNode node, QueryNode queryNode, float3 queryPosition, ref NativeMinHeap<QueryNode> pendingNodes)
         {
             int partitionAxis = (int)node.PartitionAxis;
             float partitionCoordinate = node.PartitionCoordinate;
             float3 closestPoint = queryNode.ClosestPoint;
 
-            // 先访问查询点所在侧，另一侧用分割面修正后的最近点参与排序
+            // 先访问查询点所在侧，另一侧用分割面修正后的最近点参与排序。
             bool isNegativeSide = queryPosition[partitionAxis] < partitionCoordinate;
             int firstChildIndex = isNegativeSide ? node.NegativeChildIndex : node.PositiveChildIndex;
             int secondChildIndex = isNegativeSide ? node.PositiveChildIndex : node.NegativeChildIndex;
 
-            // 因为是根据分割轴划分，因此只需修改一个坐标即可，即查询点在包围盒上的投影
-            operation.PushNode(firstChildIndex, closestPoint, queryPosition);
+            PushQueryNode(firstChildIndex, closestPoint, queryPosition, ref pendingNodes);
+
+            // KD-Tree 子节点按单轴划分，因此另一侧包围盒最近点只需修正分割轴坐标。
             closestPoint[partitionAxis] = partitionCoordinate;
-            operation.PushNode(secondChildIndex, closestPoint, queryPosition);
+            PushQueryNode(secondChildIndex, closestPoint, queryPosition, ref pendingNodes);
         }
 
-        private void SearchKNearestLeaf(KDTreeNode node, float3 queryPosition, int k, ref float bestSqrRadius, ref QueryOperation operation)
+        /// <summary>
+        /// 扫描叶子节点，维护最多 K 个最近候选。
+        /// </summary>
+        private void SearchKNearestLeaf(KDTreeNode node, float3 queryPosition, int k, ref float bestSqrRadius, ref NativeMinHeap<CandidateNode> candidates)
         {
             for (int i = node.Boundary.x; i < node.Boundary.y; i++)
             {
@@ -235,26 +270,37 @@ namespace Framework
                     continue;
                 }
 
-                operation.Candidates.TryPushSmallest(index, sqrDistance);
-                if (operation.Candidates.Count == k)
+                if (candidates.Length < k)
                 {
-                    bestSqrRadius = operation.Candidates.PeekValue;
+                    candidates.Add(new CandidateNode { PointIndex = index, DistanceSq = sqrDistance });
+                }
+                else if (sqrDistance < candidates.PeekFirstItem().DistanceSq)
+                {
+                    candidates.PopFirstItem();
+                    candidates.Add(new CandidateNode { PointIndex = index, DistanceSq = sqrDistance });
+                }
+
+                if (candidates.Length == k)
+                {
+                    // 候选堆顶是当前最远候选，可作为后续节点和点的剪枝半径。
+                    bestSqrRadius = candidates.PeekFirstItem().DistanceSq;
                 }
             }
         }
 
-        private void SearchRangeLeaf(KDTreeNode node, float3 queryPosition, float sqrRadius, ref QueryOperation operation)
+        /// <summary>
+        /// 扫描叶子节点，收集半径内的所有候选。
+        /// </summary>
+        private void SearchRangeLeaf(KDTreeNode node, float3 queryPosition, float sqrRadius, NativeList<int> result)
         {
             for (int i = node.Boundary.x; i < node.Boundary.y; i++)
             {
                 int index = _permutation[i];
                 float sqrDistance = math.lengthsq(_points[index] - queryPosition);
-                if (sqrDistance > sqrRadius)
+                if (sqrDistance <= sqrRadius)
                 {
-                    continue;
+                    result.Add(index);
                 }
-
-                operation.Candidates.Push(index, sqrDistance);
             }
         }
 
@@ -270,6 +316,7 @@ namespace Framework
             _nodes.Clear();
             _buildQueue.Clear();
 
+            // 初始化排列数组：逻辑顺序等于原始索引，后续划分只重排索引。
             for (int i = 0; i < _permutation.Length; i++)
             {
                 _permutation[i] = i;
@@ -352,6 +399,7 @@ namespace Framework
             negIndex = GetTreeNodeIndex(split.NegativeBound, parent.Boundary.x, split.PartitionIndex);
             posIndex = GetTreeNodeIndex(split.PositiveBound, split.PartitionIndex, parent.Boundary.y);
 
+            // 更新父节点的分割信息。
             parent.PartitionAxis = split.Axis;
             parent.PartitionCoordinate = split.Coordinate;
             parent.NegativeChildIndex = negIndex;
