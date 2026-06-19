@@ -57,8 +57,7 @@ namespace Framework
 
         /// <summary>
         /// 分割平面在PartitionAxis上的坐标值
-        /// 坐标小于PartitionCoordinate 的点归入负子节点
-        /// 坐标大于等于PartitionCoordinate 的点归入正子节点
+        /// 构建时按划分轴排序，并选择中间点作为分割点
         /// </summary>
         public float PartitionCoordinate;
 

@@ -101,7 +101,7 @@ namespace Framework
         /// <summary>
         /// 查看堆顶元素但不弹出。
         /// </summary>
-        public T PeekFirstItem()
+        public T Peek()
         {
             if (Length == 0)
             {
@@ -168,7 +168,7 @@ namespace Framework
         /// 2. 将末尾元素移到堆顶
         /// 3. 向下沉淀（BubbleDown）维持堆性质
         /// </summary>
-        public T PopFirstItem()
+        public T Pop()
         {
             T firstItem = _items[0]; // 堆顶 = 最高优先级（F 最小）
             Length--;

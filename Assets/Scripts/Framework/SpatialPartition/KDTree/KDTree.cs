@@ -5,7 +5,7 @@ using Unity.Mathematics;
 namespace Framework
 {
     /// <summary>
-    /// KD-Tree 定义。
+    /// KD-Tree定义
     /// </summary>
     public struct KDTree : IDisposable
     {
@@ -109,6 +109,9 @@ namespace Framework
             }
         }
 
+        /// <summary>
+        /// 查询最近的K个点
+        /// </summary>
         public NativeArray<int> QueryKNearest(float3 queryPosition, int k)
         {
             ValidateQueryState();
@@ -139,7 +142,7 @@ namespace Framework
                 // 先访问最近可能距离更小的包围盒，超过当前最远候选距离的节点可剪枝。
                 while (pendingNodes.Length > 0)
                 {
-                    QueryNode queryNode = pendingNodes.PopFirstItem();
+                    QueryNode queryNode = pendingNodes.Pop();
                     if (queryNode.DistanceSq > bestSqrRadius)
                     {
                         continue;
@@ -160,7 +163,7 @@ namespace Framework
                 for (int i = 0; i < result.Length; i++)
                 {
                     // 这里弹出顺序是由远到近；调用方只依赖集合时无需额外排序。
-                    result[i] = candidates.PopFirstItem().PointIndex;
+                    result[i] = candidates.Pop().PointIndex;
                 }
 
                 return result;
@@ -172,6 +175,9 @@ namespace Framework
             }
         }
 
+        /// <summary>
+        /// 查询一定范围内的点
+        /// </summary>
         public NativeList<int> QueryRange(float3 queryPosition, float radius)
         {
             ValidateQueryState();
@@ -194,7 +200,7 @@ namespace Framework
                 // Range 查询用固定半径剪枝，叶子节点内再做精确距离判断。
                 while (pendingNodes.Length > 0)
                 {
-                    QueryNode queryNode = pendingNodes.PopFirstItem();
+                    QueryNode queryNode = pendingNodes.Pop();
                     if (queryNode.DistanceSq > sqrRadius)
                     {
                         continue;
@@ -274,16 +280,16 @@ namespace Framework
                 {
                     candidates.Add(new CandidateNode { PointIndex = index, DistanceSq = sqrDistance });
                 }
-                else if (sqrDistance < candidates.PeekFirstItem().DistanceSq)
+                else if (sqrDistance < candidates.Peek().DistanceSq)
                 {
-                    candidates.PopFirstItem();
+                    candidates.Pop();
                     candidates.Add(new CandidateNode { PointIndex = index, DistanceSq = sqrDistance });
                 }
 
                 if (candidates.Length == k)
                 {
                     // 候选堆顶是当前最远候选，可作为后续节点和点的剪枝半径。
-                    bestSqrRadius = candidates.PeekFirstItem().DistanceSq;
+                    bestSqrRadius = candidates.Peek().DistanceSq;
                 }
             }
         }
@@ -415,8 +421,8 @@ namespace Framework
         private SplitPlan CreateSplitPlan(KDTreeNode parent)
         {
             KDTreePartitionAxis axis = parent.GetPartitionAxis();
-            float splitCoordinate = SelectSplitCoordinate(parent.Boundary.x, parent.Boundary.y, parent.Bound, axis);
-            int partitionIndex = PartitionByCoordinate(parent.Boundary.x, parent.Boundary.y, splitCoordinate, axis);
+            int partitionIndex = SelectMedianPartitionIndex(parent.Boundary.x, parent.Boundary.y, axis);
+            float splitCoordinate = GetPointCoordinate(partitionIndex, axis);
 
             KDTreeBound negativeBound = parent.Bound;
             float3 negativeMax = negativeBound.Max;
@@ -439,46 +445,55 @@ namespace Framework
         }
 
         /// <summary>
-        /// 优先使用包围盒中点；如果所有点都挤在一侧，则改用点集范围中点。
+        /// 按划分轴排序后选择中间点作为分割点。
         /// </summary>
-        private float SelectSplitCoordinate(int startIndex, int endIndex, KDTreeBound bound, KDTreePartitionAxis axis)
+        private int SelectMedianPartitionIndex(int start, int end, KDTreePartitionAxis axis)
         {
-            float boundMid = (bound.Min[(int)axis] + bound.Max[(int)axis]) * 0.5f;
-            float pointMin = float.MaxValue;
-            float pointMax = float.MinValue;
-
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                float coordinate = GetPointCoordinate(i, axis);
-                pointMin = math.min(pointMin, coordinate);
-                pointMax = math.max(pointMax, coordinate);
-            }
-
-            if (pointMin < boundMid && pointMax >= boundMid)
-            {
-                return boundMid;
-            }
-
-            return (pointMin + pointMax) * 0.5f;
+            int median = start + (end - start) / 2;
+            QuickSelect(start, end - 1, median, axis);
+            return median;
         }
 
-        /// <summary>
-        /// 将 [start, end) 重排为负子节点区间和正子节点区间。
-        /// </summary>
-        private int PartitionByCoordinate(int start, int end, float splitCoordinate, KDTreePartitionAxis axis)
+        private void QuickSelect(int left, int right, int k, KDTreePartitionAxis axis)
         {
-            int partitionIndex = start;
-
-            for (int i = start; i < end; i++)
+            while (left < right)
             {
-                if (GetPointCoordinate(i, axis) < splitCoordinate)
+                int pivotIndex = Partition(left, right, axis);
+
+                if (k == pivotIndex)
+                    return;
+
+                if (k < pivotIndex)
+                    right = pivotIndex - 1;
+                else
+                    left = pivotIndex + 1;
+            }
+        }
+        
+        private int Partition(int left, int right, KDTreePartitionAxis axis)
+        {
+            int pivotIndex = left + (right - left) / 2;
+            float pivotValue = GetPointCoordinate(pivotIndex, axis);
+
+            Swap(left, pivotIndex);
+
+            int store = left;
+
+            for (int i = left + 1; i <= right; i++)
+            {
+                if (GetPointCoordinate(i, axis) < pivotValue)
                 {
-                    (_permutation[partitionIndex], _permutation[i]) = (_permutation[i], _permutation[partitionIndex]);
-                    partitionIndex++;
+                    Swap(++store, i);
                 }
             }
 
-            return partitionIndex;
+            Swap(left, store);
+            return store;
+        }
+        
+        private void Swap(int a, int b)
+        {
+            (_permutation[a], _permutation[b]) = (_permutation[b], _permutation[a]);
         }
 
         private float GetPointCoordinate(int permutationIndex, KDTreePartitionAxis axis)

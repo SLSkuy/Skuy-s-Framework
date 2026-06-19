@@ -61,7 +61,7 @@ namespace Framework
             while (openList.Length > 0)
             {
                 // 取出F代价最小节点，其为当前最优选择
-                ASCell current = openList.PopFirstItem();
+                ASCell current = openList.Pop();
                 int currentIndex = GridUtils.CellIndex(Grid, current);
 
                 closedIndexSet.Add(currentIndex);
