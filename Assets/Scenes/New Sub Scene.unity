@@ -379,7 +379,7 @@ MonoBehaviour:
   turnSpeed: 20
   radius: 0.5
   height: 2
-  stoppingDistance: 2.5
+  stoppingDistance: 0.5
   hasInitDestination: 1
   initDestination: {x: 15, y: 0, z: -15}
 --- !u!136 &811565928
@@ -791,7 +791,7 @@ MonoBehaviour:
   turnSpeed: 20
   radius: 0.5
   height: 2
-  stoppingDistance: 2.5
+  stoppingDistance: 0.5
   hasInitDestination: 1
   initDestination: {x: 15, y: 0, z: -15}
 --- !u!1 &1140510683
@@ -1180,7 +1180,7 @@ MonoBehaviour:
   turnSpeed: 20
   radius: 0.5
   height: 2
-  stoppingDistance: 2.5
+  stoppingDistance: 0.5
   hasInitDestination: 1
   initDestination: {x: 15, y: 0, z: -15}
 --- !u!136 &1334750294
@@ -1441,7 +1441,7 @@ MonoBehaviour:
   turnSpeed: 20
   radius: 0.5
   height: 2
-  stoppingDistance: 2.5
+  stoppingDistance: 0.5
   hasInitDestination: 1
   initDestination: {x: 15, y: 0, z: -15}
 --- !u!136 &1507235739
@@ -1940,7 +1940,7 @@ MonoBehaviour:
   turnSpeed: 20
   radius: 0.5
   height: 2
-  stoppingDistance: 2.5
+  stoppingDistance: 0.5
   hasInitDestination: 1
   initDestination: {x: 15, y: 0, z: -15}
 --- !u!136 &1654851675

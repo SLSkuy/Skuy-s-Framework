@@ -10,28 +10,28 @@ namespace Framework
     public struct KDTree : IDisposable
     {
         /// <summary>
-        /// 每个叶子节点最多包含的点数量，经验值为 64。
+        /// 每个叶子节点最多包含的点数量，经验值为 64
         /// </summary>
         private const int MAX_POINTS_PER_LEAF_NODE = 64;
         private const int ROOT_NODE_INDEX = 0;
 
         /// <summary>
-        /// 原始点数据。
+        /// 原始点数据
         /// </summary>
         private NativeArray<float3> _points;
 
         /// <summary>
-        /// 节点缓存。
+        /// 节点缓存
         /// </summary>
         private NativeList<KDTreeNode> _nodes;
 
         /// <summary>
-        /// 点索引排列数组。节点只记录区间，划分时重排索引而不移动点数据。
+        /// 点索引排列数组，节点只记录区间，划分时重排索引而不移动点数据
         /// </summary>
         private NativeArray<int> _permutation;
 
         /// <summary>
-        /// 构建队列。
+        /// 构建队列
         /// </summary>
         private NativeQueue<int> _buildQueue;
 
@@ -50,10 +50,7 @@ namespace Framework
             _buildQueue = new NativeQueue<int>(allocator);
             NativeArray<float3>.Copy(points, _points);
 
-            if (buildNow)
-            {
-                Rebuild();
-            }
+            if (buildNow) Rebuild();
         }
 
         public void Dispose()
@@ -69,7 +66,7 @@ namespace Framework
         private KDTreeNode RootNode => _nodes[ROOT_NODE_INDEX];
 
         /// <summary>
-        /// 待访问树节点，记录查询点到节点包围盒的最近点和平方距离。
+        /// 待访问树节点，记录查询点到节点包围盒的最近点和平方距离
         /// </summary>
         private struct QueryNode : INativeHeapItem<QueryNode>, IEquatable<QueryNode>
         {
@@ -90,7 +87,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// KNN 候选点。CompareTo 让距离更大的候选排在堆顶，便于替换当前最远候选。
+        /// KNN 候选点，CompareTo 让距离更大的候选排在堆顶，便于替换当前最远候选
         /// </summary>
         private struct CandidateNode : INativeHeapItem<CandidateNode>, IEquatable<CandidateNode>
         {
@@ -128,10 +125,10 @@ namespace Framework
 
             int candidateCapacity = math.min(k, _points.Length);
 
-            // candidates 维护当前 K 个最近候选，堆顶是候选中距离最远的点。
+            // candidates 维护当前 K 个最近候选，堆顶是候选中距离最远的点
             NativeMinHeap<CandidateNode> candidates = new NativeMinHeap<CandidateNode>(candidateCapacity, Allocator.Temp);
 
-            // pendingNodes 按节点包围盒到查询点的最近距离优先遍历。
+            // pendingNodes 按节点包围盒到查询点的最近距离优先遍历
             NativeMinHeap<QueryNode> pendingNodes = new NativeMinHeap<QueryNode>(_nodes.Length, Allocator.Temp);
 
             try
@@ -139,7 +136,7 @@ namespace Framework
                 float bestSqrRadius = float.PositiveInfinity;
                 PushQueryNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition, ref pendingNodes);
 
-                // 先访问最近可能距离更小的包围盒，超过当前最远候选距离的节点可剪枝。
+                // 先访问最近可能距离更小的包围盒，超过当前最远候选距离的节点可剪枝
                 while (pendingNodes.Length > 0)
                 {
                     QueryNode queryNode = pendingNodes.Pop();
@@ -162,7 +159,7 @@ namespace Framework
                 NativeArray<int> result = new NativeArray<int>(candidates.Length, Allocator.Temp);
                 for (int i = 0; i < result.Length; i++)
                 {
-                    // 这里弹出顺序是由远到近；调用方只依赖集合时无需额外排序。
+                    // 这里弹出顺序是由远到近；调用方只依赖集合时无需额外排序
                     result[i] = candidates.Pop().PointIndex;
                 }
 
@@ -189,7 +186,7 @@ namespace Framework
 
             NativeList<int> result = new NativeList<int>(Allocator.Temp);
 
-            // Range 查询只需要待访问节点堆，命中的点直接写入 result。
+            // Range 查询只需要待访问节点堆，命中的点直接写入 result
             NativeMinHeap<QueryNode> pendingNodes = new NativeMinHeap<QueryNode>(_nodes.Length, Allocator.Temp);
             float sqrRadius = radius * radius;
 
@@ -197,7 +194,7 @@ namespace Framework
             {
                 PushQueryNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition, ref pendingNodes);
 
-                // Range 查询用固定半径剪枝，叶子节点内再做精确距离判断。
+                // Range 查询用固定半径剪枝，叶子节点内再做精确距离判断
                 while (pendingNodes.Length > 0)
                 {
                     QueryNode queryNode = pendingNodes.Pop();
@@ -424,11 +421,13 @@ namespace Framework
             int partitionIndex = SelectMedianPartitionIndex(parent.Boundary.x, parent.Boundary.y, axis);
             float splitCoordinate = GetPointCoordinate(partitionIndex, axis);
 
+            // 负子节点
             KDTreeBound negativeBound = parent.Bound;
             float3 negativeMax = negativeBound.Max;
             negativeMax[(int)axis] = splitCoordinate;
             negativeBound.Max = negativeMax;
 
+            // 正子节点
             KDTreeBound positiveBound = parent.Bound;
             float3 positiveMin = positiveBound.Min;
             positiveMin[(int)axis] = splitCoordinate;

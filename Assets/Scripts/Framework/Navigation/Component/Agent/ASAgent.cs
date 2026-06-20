@@ -8,12 +8,19 @@ namespace Framework
     /// </summary>
     public struct ASAgent : IComponentData
     {
+        // ========== Agent移动属性 ==========
         public float MaxSpeed;
         public float TurnSpeed;
+        public float StoppingDistance;
+        
+        // ========== Agent物体属性 ==========
         public float Radius;
         public float Height;
-        public float StoppingDistance;
 
+        // ========== ORCA避障参数 ==========
+        /// <summary>预测时间</summary>
+        public float TimeHorizon;
+        public float3 PreferVelocity;
         public float3 CurrentVelocity;
     }
 

@@ -38,7 +38,7 @@ namespace Framework
             foreach (var (grid, transform, entity) in SystemAPI.Query<RefRW<ASGrid>, LocalTransform>().WithEntityAccess())
             {
                 // 当前不需要刷新网格，直接返回
-                if (!grid.ValueRO.NeedRefreshGrid)
+                if (grid.ValueRO.NeedRefreshGrid)
                 {
                     grid.ValueRW.NeedRefreshGrid = false;
                     _hasCheckObstacle = false;

@@ -256,6 +256,7 @@ GameObject:
   m_Component:
   - component: {fileID: 426890753}
   - component: {fileID: 426890754}
+  - component: {fileID: 426890755}
   m_Layer: 0
   m_Name: GridDebuger
   m_TagString: Untagged
@@ -295,8 +296,23 @@ MonoBehaviour:
   obstaclesColor: {r: 1, g: 0, b: 0, a: 1}
   showGrid: 1
   showPenalties: 1
-  showIslands: 0
+  showIslands: 1
   maxPenalty: 20
+--- !u!114 &426890755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426890751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe28d6b8c6f5dde4e8fc5f371d6b240d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentClickBridge
+  targetCamera: {fileID: 1099105764}
+  targetPlane: {fileID: 963384709}
+  debugDrawRay: 0
 --- !u!1 &607230437
 GameObject:
   m_ObjectHideFlags: 0
