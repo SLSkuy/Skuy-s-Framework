@@ -74,7 +74,7 @@ namespace Framework
             {
                 for (int x = 0; x < gridRO.XCount; x++)
                 {
-                    int index = x + y * gridRO.YCount;
+                    int index = x + y * gridRO.XCount;
                     
                     // 重置节点数据
                     var cell = cells[index];
@@ -114,7 +114,7 @@ namespace Framework
                         }
 
                         // 更新节点惩罚区域叠加数值
-                        if (!_hasCheckObstacle && _penaltyAreas.HasComponent(result[i].Entity))
+                        if (!_hasCheckPenaltyArea && _penaltyAreas.HasComponent(result[i].Entity))
                         {
                             ASPenaltyArea penalty = _penaltyAreas[result[i].Entity];
                             var asCell = cells[index];

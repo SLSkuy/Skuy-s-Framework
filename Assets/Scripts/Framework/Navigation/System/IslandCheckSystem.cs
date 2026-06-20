@@ -41,6 +41,8 @@ namespace Framework
                     int yCount = grid.ValueRO.YCount;
                     
                     NativeArray<bool> visited = new NativeArray<bool>(xCount * yCount, Allocator.Temp);
+                    ResetIslandIds(cells);
+
                     for (int y = 0; y < yCount; y++)
                     {
                         for (int x = 0; x < xCount; x++)
@@ -58,6 +60,20 @@ namespace Framework
                     _hasCheckIsland = true;
                     visited.Dispose();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 清理刷新留下的岛屿ID，保证所有不可通行节点固定为 -1
+        /// </summary>
+        [BurstCompile]
+        private void ResetIslandIds(DynamicBuffer<ASCell> cells)
+        {
+            for (int i = 0; i < cells.Length; i++)
+            {
+                var cell = cells[i];
+                cell.IslandID = -1;
+                cells[i] = cell;
             }
         }
 
@@ -90,14 +106,8 @@ namespace Framework
                 int index = x + y * xCount;
                 if(visited[index]) continue;
 
-                // 障碍物不可通行，标记为-1
-                if (!cells[index].IsAccessible)
-                {
-                    var obstacleTmp = cells[index];
-                    obstacleTmp.IslandID = -1;
-                    cells[index] = obstacleTmp;
-                    continue;
-                }
+                // 障碍物不可通行，保留原有-1标识
+                if (!cells[index].IsAccessible) continue;
                 
                 // 标记该节点已访问，设置节点所属的岛屿ID
                 visited[index] = true;
