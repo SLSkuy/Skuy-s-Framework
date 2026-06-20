@@ -17,14 +17,11 @@ namespace Framework
         [Tooltip("场景中的 Plane 游戏对象，射线将与其求交")]
         public Transform targetPlane;
 
-        [Header("调试")]
-        [SerializeField] private bool debugDrawRay;
-
         private EntityManager _entityManager;
 
         private void Start()
         {
-            if (targetCamera == null) targetCamera = Camera.main;
+            if (!targetCamera) targetCamera = Camera.main;
 
             _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         }
@@ -43,13 +40,6 @@ namespace Framework
             if (!plane.Raycast(ray, out float enter)) return;
 
             float3 targetPoint = ray.GetPoint(enter);
-
-#if UNITY_EDITOR
-            if (debugDrawRay)
-            {
-                Debug.DrawRay(ray.origin, ray.direction * enter, Color.green, 2f);
-            }
-#endif
 
             SetDestinationForAll(targetPoint);
         }

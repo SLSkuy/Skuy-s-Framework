@@ -10,7 +10,7 @@ namespace Framework
     /// 寻路请求系统
     /// </summary>
     [UpdateAfter(typeof(IslandCheckSystem))]
-    public partial struct PFRequestSystem : ISystem
+    public partial struct RequestSystem : ISystem
     {
         private ComponentLookup<ASResult> _resultLookup;
         private ComponentLookup<ASOperation> _operationLookup;

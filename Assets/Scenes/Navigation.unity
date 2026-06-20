@@ -312,7 +312,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentClickBridge
   targetCamera: {fileID: 1099105764}
   targetPlane: {fileID: 963384709}
-  debugDrawRay: 0
 --- !u!1 &607230437
 GameObject:
   m_ObjectHideFlags: 0

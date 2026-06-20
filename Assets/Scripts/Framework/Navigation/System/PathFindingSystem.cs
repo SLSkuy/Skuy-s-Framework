@@ -5,7 +5,7 @@ using Unity.Transforms;
 
 namespace Framework
 {
-    [UpdateAfter(typeof(PFRequestSystem))]
+    [UpdateAfter(typeof(RequestSystem))]
     public partial struct PathFindingSystem : ISystem
     {
         private ComponentLookup<ASOperation> _operationLookup;
