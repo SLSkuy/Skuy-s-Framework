@@ -376,7 +376,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentAuthoring
   maxSpeed: 5
-  turnSpeed: 20
+  turnSpeed: 15
   radius: 0.5
   height: 2
   stoppingDistance: 0.5
@@ -788,7 +788,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentAuthoring
   maxSpeed: 5
-  turnSpeed: 20
+  turnSpeed: 15
   radius: 0.5
   height: 2
   stoppingDistance: 0.5
@@ -1177,7 +1177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentAuthoring
   maxSpeed: 5
-  turnSpeed: 20
+  turnSpeed: 15
   radius: 0.5
   height: 2
   stoppingDistance: 0.5
@@ -1438,7 +1438,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentAuthoring
   maxSpeed: 5
-  turnSpeed: 20
+  turnSpeed: 15
   radius: 0.5
   height: 2
   stoppingDistance: 0.5
@@ -1937,7 +1937,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentAuthoring
   maxSpeed: 5
-  turnSpeed: 20
+  turnSpeed: 15
   radius: 0.5
   height: 2
   stoppingDistance: 0.5
