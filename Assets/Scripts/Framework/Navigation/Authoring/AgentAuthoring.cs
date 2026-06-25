@@ -17,6 +17,8 @@ namespace Framework
         
         [Header("Agent寻路设置")]
         public float stoppingDistance;
+        [Tooltip("ORCA预测时间，数值越大越早开始避让；<= 0 时使用系统默认值")]
+        public float timeHorizon = 2f;
         [Tooltip("是否有初始寻路目的地")]
         public bool hasInitDestination;
         public Vector3 initDestination;
@@ -34,6 +36,7 @@ namespace Framework
                     Radius = authoring.radius,
                     Height = authoring.height,
                     StoppingDistance = authoring.stoppingDistance,
+                    TimeHorizon = authoring.timeHorizon,
                 };
 
                 ASFollower follower = new ASFollower
@@ -46,6 +49,7 @@ namespace Framework
                 // 添加初始组件，请求相关组件由System动态添加
                 AddComponent(entity, agent);
                 AddComponent(entity, follower);
+                AddBuffer<ASORCALine>(entity);
 
                 // 判断是否有初始目标点，添加请求实例
                 if (authoring.hasInitDestination)

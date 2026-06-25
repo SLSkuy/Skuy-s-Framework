@@ -6,15 +6,17 @@ using Unity.Transforms;
 namespace Framework
 {
     /// <summary>
-    /// Agent移动系统，根据计算好的速度朝向移动Agent
+    /// Agent移动系统，根据ORCASystem计算好的CurrentVelocity移动Agent
+    /// 该系统不再重新计算避障速度，只负责位置积分和朝向更新
     /// </summary>
-    [UpdateAfter(typeof(PreferVelocitySystem))]
+    [UpdateAfter(typeof(ORCASystem))]
     public partial struct AgentMovementSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<ASGrid>();
+            state.RequireForUpdate<ASAgent>();
         }
 
         [BurstCompile]
@@ -22,31 +24,28 @@ namespace Framework
         {
             float deltaTime = SystemAPI.Time.DeltaTime;
 
-            foreach (var (agentRW, transformRW) in 
+            foreach (var (agentRW, transformRW) in
                      SystemAPI.Query<RefRW<ASAgent>, RefRW<LocalTransform>>())
             {
                 ref ASAgent agent = ref agentRW.ValueRW;
                 ref LocalTransform transform = ref transformRW.ValueRW;
-                
-                // TODO: 替换为ORCA的动态避障速度
-                // 简单线性插值：使实际速度平滑过渡到期望速度，避免瞬时速度跳变
-                agent.CurrentVelocity = math.lerp(agent.CurrentVelocity, agent.PreferVelocity, math.saturate(agent.TurnSpeed * deltaTime));
 
-                // 更新位置
+                // ORCASystem已经把CurrentVelocity限制到安全速度范围内，这里只做位移积分
                 float3 currentPos = transform.Position;
                 float3 moveDelta = agent.CurrentVelocity * deltaTime;
                 float3 newPos = currentPos + moveDelta;
-                newPos.y = currentPos.y;   // 保持 y 不变，由其他系统负责垂直移动
+                newPos.y = currentPos.y;   // 保持y不变，垂直方向由其它系统或场景摆放负责
                 transform.Position = newPos;
 
-                // 更新朝向（仅在有明显运动方向时更新，避免抖动导致朝向归零）
+                // 仅在速度足够明显时更新朝向，避免接近静止时因为浮点误差抖动
                 if (math.lengthsq(agent.CurrentVelocity) > 0.0001f)
                 {
                     float3 forwardDir = math.normalize(new float3(agent.CurrentVelocity.x, 0f, agent.CurrentVelocity.z));
                     float3 upAxis = new float3(0f, 1f, 0f);
+                    quaternion targetRotation = quaternion.LookRotation(forwardDir, upAxis);
 
-                    // 通过 LookRotation 计算朝向四元数
-                    transform.Rotation = quaternion.LookRotation(forwardDir, upAxis);
+                    float t = math.saturate(agent.TurnSpeed * deltaTime);
+                    transform.Rotation = math.slerp(transform.Rotation, targetRotation, t);
                 }
             }
         }
