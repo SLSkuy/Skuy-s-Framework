@@ -14,16 +14,12 @@ namespace Framework
     [UpdateAfter(typeof(PreferVelocitySystem))]
     public partial struct ORCASystem : ISystem
     {
-        private struct NeighbourInfo
-        {
-            public int Index;
-            public float DistanceSq;
-        }
         /// <summary>
         /// math.EPSILON太小了
         /// </summary>
         private const float EPSILON = 0.00001f;
         private const float DEFAULT_TIME_HORIZON = 2.5f;
+        private const int MAX_NEIGHBOURS = 8;
         
         private EntityQuery _query;
         
@@ -45,6 +41,23 @@ namespace Framework
             NativeArray<Entity> entities = _query.ToEntityArray(Allocator.Temp);
             NativeArray<ASAgent> agents = _query.ToComponentDataArray<ASAgent>(Allocator.Temp);
             NativeArray<LocalTransform> transforms = _query.ToComponentDataArray<LocalTransform>(Allocator.Temp);
+
+            if (entities.Length == 0)
+            {
+                entities.Dispose();
+                agents.Dispose();
+                transforms.Dispose();
+                return;
+            }
+
+            var positions = new NativeArray<float3>(transforms.Length, Allocator.Temp);
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                positions[i] = transforms[i].Position;
+            }
+
+            KDTree kdTree = new KDTree(positions, Allocator.Temp);
+            NativeList<int> neighbourIndices = new NativeList<int>(MAX_NEIGHBOURS + 1, Allocator.Temp);
             
             // ORCA计算
             for (int i = 0; i < entities.Length; i++)
@@ -58,7 +71,7 @@ namespace Framework
                 float2 preferredVelocity = ORCAUtils.ToPlane(agent.PreferVelocity);
 
                 // 构造ORCA约束线
-                BuildAgentLines(i, agents, transforms, dt, orcaLines);
+                BuildAgentLines(i, agents, transforms, dt, kdTree, neighbourIndices, orcaLines);
                 
                 int failedLine = LinearProgram2(orcaLines, agent.MaxSpeed, preferredVelocity, out var currentVelocity);
                 if (failedLine < orcaLines.Length)
@@ -69,6 +82,10 @@ namespace Framework
                 agent.CurrentVelocity = ORCAUtils.ToWorld(currentVelocity);
                 state.EntityManager.SetComponentData(entity, agent);
             }
+
+            neighbourIndices.Dispose();
+            kdTree.Dispose();
+            positions.Dispose();
             
             entities.Dispose();
             agents.Dispose();
@@ -80,7 +97,7 @@ namespace Framework
         /// </summary>
         [BurstCompile]
         private void BuildAgentLines(int agentIndex, NativeArray<ASAgent> agents, NativeArray<LocalTransform> transforms,
-            float dt, DynamicBuffer<ASORCALine> orcaLines)
+            float dt, KDTree kdTree, NativeList<int> neighbourIndices, DynamicBuffer<ASORCALine> orcaLines)
         {
             // 获取Agent数据，只支持平面处理
             ASAgent agent = agents[agentIndex];
@@ -88,45 +105,22 @@ namespace Framework
             float2 velocity = ORCAUtils.ToPlane(agent.CurrentVelocity);
             float timeHorizon = agent.TimeHorizon > 0f ? agent.TimeHorizon : DEFAULT_TIME_HORIZON;
             
-            // TODO: 使用KD-Tree查找周围邻居
-            // 遍历获取周围的所有邻居
-            NativeList<NeighbourInfo> neighbours = new NativeList<NeighbourInfo>(Allocator.Temp);
-            for (int otherIndex = 0; otherIndex < agents.Length; otherIndex++)
-            {
-                if(otherIndex == agentIndex) continue;
-                
-                float2 otherPosition = ORCAUtils.ToPlane(transforms[otherIndex].Position);
-                float distanceSq = math.lengthsq(position - otherPosition);
+            int queryCount = math.min(MAX_NEIGHBOURS + 1, agents.Length);
+            kdTree.QueryKNearest(transforms[agentIndex].Position, queryCount, neighbourIndices);
 
-                neighbours.Add(new NeighbourInfo
-                {
-                    Index = otherIndex,
-                    DistanceSq = distanceSq,
-                });
-            }
-            
-            // 按距离排序
-            for (int i = 1; i < neighbours.Length; i++)
+            int neighbourCount = 0;
+            for (int i = 0; i < neighbourIndices.Length && neighbourCount < MAX_NEIGHBOURS; i++)
             {
-                NeighbourInfo value = neighbours[i];
-                int j = i - 1;
-
-                while (j >= 0 && neighbours[j].DistanceSq > value.DistanceSq)
+                int otherIndex = neighbourIndices[i];
+                if (otherIndex == agentIndex)
                 {
-                    neighbours[j + 1] = neighbours[j];
-                    j--;
+                    continue;
                 }
 
-                neighbours[j + 1] = value;
-            }
-            
-            // 粗略计算邻居数量，暂时采用的是全部遍历，而不是KD-Tree获取邻居节点
-            // 省去部分计算量
-            int neighbourCount = math.min(8, neighbours.Length);
-            for (int i = 0; i < neighbourCount; i++)
-            {
-                ASAgent otherAgent = agents[neighbours[i].Index];
-                float2 otherPosition = ORCAUtils.ToPlane(transforms[neighbours[i].Index].Position);
+                neighbourCount++;
+
+                ASAgent otherAgent = agents[otherIndex];
+                float2 otherPosition = ORCAUtils.ToPlane(transforms[otherIndex].Position);
                 float2 otherVelocity = ORCAUtils.ToPlane(otherAgent.CurrentVelocity);
                 
                 // 以当前Agent为坐标中心，计算另一个Agent的相对位置，以及当前Agent的相对速度
@@ -243,8 +237,6 @@ namespace Framework
                 line.Point = ORCAUtils.ToWorld(velocity + u * 0.5f);
                 orcaLines.Add(line);
             }
-
-            neighbours.Dispose();
         }
 
         /// <summary>

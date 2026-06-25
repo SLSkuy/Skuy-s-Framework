@@ -173,6 +173,59 @@ namespace Framework
         }
 
         /// <summary>
+        /// 查询最近的 K 个点，并写入调用方提供的结果列表。
+        /// </summary>
+        public void QueryKNearest(float3 queryPosition, int k, NativeList<int> result)
+        {
+            ValidateQueryState();
+
+            if (k < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(k));
+            }
+
+            result.Clear();
+            if (k == 0)
+            {
+                return;
+            }
+
+            int candidateCapacity = math.min(k, _points.Length);
+            NativeMinHeap<CandidateNode> candidates = new NativeMinHeap<CandidateNode>(candidateCapacity, Allocator.Temp);
+            NativeMinHeap<QueryNode> pendingNodes = new NativeMinHeap<QueryNode>(_nodes.Length, Allocator.Temp);
+
+            float bestSqrRadius = float.PositiveInfinity;
+            PushQueryNode(ROOT_NODE_INDEX, RootNode.Bound.ClosestPoint(queryPosition), queryPosition, ref pendingNodes);
+
+            while (pendingNodes.Length > 0)
+            {
+                QueryNode queryNode = pendingNodes.Pop();
+                if (queryNode.DistanceSq > bestSqrRadius)
+                {
+                    continue;
+                }
+
+                KDTreeNode node = _nodes[queryNode.NodeIndex];
+                if (node.IsLeaf)
+                {
+                    SearchKNearestLeaf(node, queryPosition, candidateCapacity, ref bestSqrRadius, ref candidates);
+                }
+                else
+                {
+                    PushChildNodes(node, queryNode, queryPosition, ref pendingNodes);
+                }
+            }
+
+            while (candidates.Length > 0)
+            {
+                result.Add(candidates.Pop().PointIndex);
+            }
+
+            candidates.Dispose();
+            pendingNodes.Dispose();
+        }
+
+        /// <summary>
         /// 查询一定范围内的点
         /// </summary>
         public NativeList<int> QueryRange(float3 queryPosition, float radius)
