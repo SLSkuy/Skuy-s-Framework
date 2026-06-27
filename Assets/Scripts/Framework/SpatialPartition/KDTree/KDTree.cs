@@ -65,6 +65,9 @@ namespace Framework
 
         private KDTreeNode RootNode => _nodes[ROOT_NODE_INDEX];
 
+        public NativeArray<KDTreeNode> DebugNodes => _nodes.AsArray();
+        public NativeArray<float3> DebugPoints => _points;
+
         /// <summary>
         /// 待访问树节点，记录查询点到节点包围盒的最近点和平方距离
         /// </summary>
