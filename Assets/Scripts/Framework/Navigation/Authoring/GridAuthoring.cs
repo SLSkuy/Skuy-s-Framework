@@ -37,7 +37,6 @@ namespace Framework
                     TargetInaccessibleSearchTolerance = authoring.targetInaccessibleSearchTolerance,
                     ObstacleLayerMask = authoring.obstacleLayerMask,
                     PenaltyLayerMask = authoring.penaltyLayerMask,
-                    CellCreated = true,
                     IslandCreated = false
                 };
                 AddComponent(gridEntity, grid);

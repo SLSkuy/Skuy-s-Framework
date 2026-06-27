@@ -56,6 +56,7 @@ namespace Framework
                 positions[i] = transforms[i].Position;
             }
 
+            // 建立KD-Tree
             KDTree kdTree = new KDTree(positions, Allocator.Temp);
             NativeList<int> neighbourIndices = new NativeList<int>(MAX_NEIGHBOURS + 1, Allocator.Temp);
             
@@ -373,6 +374,42 @@ namespace Framework
             return lines.Length;
         }
         
+        private int LinearProgram2(NativeArray<ASORCALine> lines, float maxSpeed,
+            float2 preferredVelocity, out float2 result)
+        {
+            result = preferredVelocity;
+            
+            float speedSq = math.lengthsq(result);
+            if (speedSq > maxSpeed * maxSpeed) result = math.normalize(result) * maxSpeed;
+            
+            for (int i = 0; i < lines.Length; i++)
+            {
+                float2 point = ORCAUtils.ToPlane(lines[i].Point);
+                float2 dir = math.normalize(ORCAUtils.ToPlane(lines[i].Direction));
+
+                float determinant = ORCAUtils.Cross(dir, result - point);
+                if (determinant >= 0f) continue;
+                
+                float2 tempResult = result;
+                NativeArray<ASORCALine> tempLines = new NativeArray<ASORCALine>(lines.Length, Allocator.Temp);
+                for (int j = 0; j < lines.Length; j++)
+                {
+                    tempLines[j] = lines[j];
+                }
+                
+                bool success = LinearProgram1(tempLines, i, maxSpeed, preferredVelocity, out result);
+                tempLines.Dispose();
+                
+                if (!success)
+                {
+                    result = tempResult;
+                    return i;
+                }
+            }
+
+            return lines.Length;
+        }
+        
         /// <summary>
         /// 计算两条线的交点
         /// </summary>
@@ -390,31 +427,6 @@ namespace Framework
             return p1 + t * d1;
         }
         
-        private bool LinearProgram2Projected(NativeArray<ASORCALine> lines, float maxSpeed,
-            float2 optVelocity, out float2 result)
-        {
-            result = optVelocity * maxSpeed;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                float2 point = ORCAUtils.ToPlane(lines[i].Point);
-                float2 dir = ORCAUtils.ToPlane(lines[i].Direction);
-
-                if (ORCAUtils.Cross(dir, result - point) >= 0f)
-                {
-                    continue;
-                }
-
-                float2 tempResult = result;
-                if (!LinearProgram1(lines, i, maxSpeed, optVelocity * maxSpeed, out result))
-                {
-                    result = tempResult;
-                    return false;
-                }
-            }
-            return true;
-        }
-        
         private void LinearProgram3(DynamicBuffer<ASORCALine> lines, int beginLine, 
             float maxSpeed, ref float2 result)
         {
@@ -426,59 +438,71 @@ namespace Framework
             {
                 float2 pointI = ORCAUtils.ToPlane(lines[i].Point);
                 float2 dirI = ORCAUtils.ToPlane(lines[i].Direction);
+                // 当前速度的侵入第i条线的程度
                 float currentDistance = ORCAUtils.Cross(dirI, pointI - result);
 
+                // 如果侵入程度还没到达当前的最大记录，直接跳过
+                // 只关心冲突最严重的线
                 if (currentDistance <= distance)
                 {
                     continue;
                 }
 
+                // 保留前面已符合的线
                 projLines.Clear();
                 for (int j = 0; j < beginLine; j++)
                 {
                     projLines.Add(lines[j]);
                 }
 
+                // 从冲突先开始
                 for (int j = beginLine; j < i; j++)
                 {
                     ASORCALine projectedLine;
 
                     float2 pointJ = ORCAUtils.ToPlane(lines[j].Point);
                     float2 dirJ = ORCAUtils.ToPlane(lines[j].Direction);
+                    // 计算两条线的位置关系
                     float determinant = ORCAUtils.Cross(dirI, dirJ);
+                    
+                    // 两线平行的情况
                     if (math.abs(determinant) < EPSILON)
                     {
+                        // 方向相同，跳过
                         if (math.dot(dirI, dirJ) > 0f)
                         {
                             continue;
                         }
 
+                        // 方向相反，各退一步，取中点
                         float2 midpoint = (pointI + pointJ) * 0.5f;
-
                         projectedLine.Point = ORCAUtils.ToWorld(midpoint);
                     }
                     else
                     {
+                        // 两线相交，以它们的交点作为新约束线的基准点
                         float2 intersection = ComputeIntersection(lines[i], lines[j]);
                         projectedLine.Point = ORCAUtils.ToWorld(intersection);
                     }
 
+                    // 重新计算方向，将方向进行矢量对冲，转换为侧滑移动
                     float2 direction = ORCAUtils.SafeNormalize(dirJ - dirI);
                     projectedLine.Direction = ORCAUtils.ToWorld(direction);
                     projLines.Add(projectedLine);
                 }
 
                 NativeArray<ASORCALine> tempLines = new NativeArray<ASORCALine>(projLines.Length, Allocator.Temp);
-
                 for (int k = 0; k < projLines.Length; k++)
                 { 
                     tempLines[k] = projLines[k];
                 }
 
-                float2 optVelocity = new float2(-dirI.y, dirI.x);
-
-                LinearProgram2Projected(tempLines, maxSpeed, optVelocity, out result);
+                // 在绝境下，Agent 放弃了“我要去终点”的幻想，将期望方向改为了“我要尽快从当前最挤压的约束（dirI）里逃逸出去”。
+                float2 optVelocity = new float2(-dirI.y, dirI.x) * maxSpeed;
+                LinearProgram2(tempLines, maxSpeed, optVelocity, out result);
                 tempLines.Dispose();
+                
+                // 更新当前最大的冲突距离
                 distance = ORCAUtils.Cross(dirI, pointI - result);
             }
 

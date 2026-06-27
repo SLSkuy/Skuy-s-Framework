@@ -257,6 +257,7 @@ GameObject:
   - component: {fileID: 426890753}
   - component: {fileID: 426890754}
   - component: {fileID: 426890755}
+  - component: {fileID: 426890756}
   m_Layer: 0
   m_Name: GridDebuger
   m_TagString: Untagged
@@ -294,7 +295,7 @@ MonoBehaviour:
   gridColor: {r: 0.3137255, g: 0.78431374, b: 1, a: 1}
   gridWireColor: {r: 0, g: 0, b: 0, a: 1}
   obstaclesColor: {r: 1, g: 0, b: 0, a: 1}
-  showGrid: 1
+  showGrid: 0
   showPenalties: 0
   showIslands: 0
   maxPenalty: 20
@@ -312,6 +313,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Framework.AgentClickBridge
   targetCamera: {fileID: 1099105764}
   targetPlane: {fileID: 963384709}
+--- !u!114 &426890756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426890751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4e18f5d30f5486cb4695292ef72f372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Framework.KDTreeDrawGizmos
+  showKDTree: 1
+  showBounds: 1
+  showSplitPlanes: 1
+  showPoints: 1
+  maxDepth: -1
+  pointRadius: 0.12
+  minBoxHeight: 0.1
+  rootBoundColor: {r: 1, g: 1, b: 1, a: 0.55}
+  leafBoundColor: {r: 0.25, g: 0.9, b: 0.45, a: 0.55}
+  xSplitColor: {r: 1, g: 0.2, b: 0.2, a: 0.65}
+  ySplitColor: {r: 0.2, g: 1, b: 0.2, a: 0.65}
+  zSplitColor: {r: 0.25, g: 0.55, b: 1, a: 0.65}
+  pointColor: {r: 1, g: 0.85, b: 0.2, a: 0.9}
 --- !u!1 &607230437
 GameObject:
   m_ObjectHideFlags: 0
