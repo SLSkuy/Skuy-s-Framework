@@ -367,15 +367,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45a335734b1572644a6a5d09d87adc65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Scenes::Unity.Scenes.SubScene
-  _SceneAsset: {fileID: 102900000, guid: 3d3937b3461b2764390c1dcf447dcf42, type: 3}
+  _SceneAsset: {fileID: 102900000, guid: c057cfa16934e5f438a68cda4e11138a, type: 3}
   _HierarchyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   AutoLoadScene: 1
   _SceneGUID:
     Value:
-      x: 997430227
-      y: 1181921636
-      z: 4241604755
-      w: 620549956
+      x: 452752652
+      y: 1331577750
+      z: 2915592835
+      w: 2821788132
 --- !u!4 &607230439
 Transform:
   m_ObjectHideFlags: 0
