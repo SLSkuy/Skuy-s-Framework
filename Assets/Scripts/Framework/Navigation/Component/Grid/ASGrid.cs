@@ -38,8 +38,6 @@ namespace Framework
 
         public bool NeedRefreshGrid;
         public bool NeedRefreshIsland;
-
-        public bool CellCreated;
         public bool IslandCreated;
     }
 }

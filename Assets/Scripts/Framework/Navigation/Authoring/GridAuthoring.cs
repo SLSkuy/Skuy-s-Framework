@@ -37,7 +37,6 @@ namespace Framework
                     TargetInaccessibleSearchTolerance = authoring.targetInaccessibleSearchTolerance,
                     ObstacleLayerMask = authoring.obstacleLayerMask,
                     PenaltyLayerMask = authoring.penaltyLayerMask,
-                    CellCreated = true,
                     IslandCreated = false
                 };
                 AddComponent(gridEntity, grid);
@@ -63,9 +62,6 @@ namespace Framework
                     MaxComputePerFrame = authoring.maxComputePerFrame
                 };
                 AddComponent(gridEntity, config);
-                
-                // 添加寻路请求队列缓冲
-                AddBuffer<ASOperationsBuffer>(gridEntity);
             }
         }
     }

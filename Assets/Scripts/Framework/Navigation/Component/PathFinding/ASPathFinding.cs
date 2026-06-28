@@ -52,16 +52,7 @@ namespace Framework
         public bool PathFounded;
         public bool FinishedSearch;
     }
-
-    /// <summary>
-    /// 寻路操作实例，记录当前正在进行的寻路操作
-    /// </summary>
-    public struct ASOperationsBuffer : IBufferElementData
-    {
-        public Entity RequestEntity;
-        public ASOperation Operation;
-    }
-
+    
     /// <summary>
     /// 寻路结果单位节点，用于构成寻路节点链
     /// </summary>

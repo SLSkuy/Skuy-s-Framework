@@ -438,67 +438,86 @@ namespace Framework
             {
                 float2 pointI = ORCAUtils.ToPlane(lines[i].Point);
                 float2 dirI = ORCAUtils.ToPlane(lines[i].Direction);
-                // 当前速度的侵入第i条线的程度
+                // 当前速度侵犯第 i 条 ORCA 半平面的距离
+                // Cross(dir, point-result) > 0 表示已经进入非法区域
                 float currentDistance = ORCAUtils.Cross(dirI, pointI - result);
 
-                // 如果侵入程度还没到达当前的最大记录，直接跳过
-                // 只关心冲突最严重的线
+                // 如果没有比之前记录的违规更严重，则无需处理
+                // LP3 始终只处理"当前最严重"的一条违规约束
                 if (currentDistance <= distance)
                 {
                     continue;
                 }
 
-                // 保留前面已符合的线
+                // beginLine 之前的约束本来就是满足的
+                // 可以直接保留下来
                 projLines.Clear();
                 for (int j = 0; j < beginLine; j++)
                 {
                     projLines.Add(lines[j]);
                 }
 
-                // 从冲突先开始
+                // 将 beginLine ~ i-1 的约束重新投影到
+                // "第 i 条约束边界"上
                 for (int j = beginLine; j < i; j++)
                 {
                     ASORCALine projectedLine;
 
                     float2 pointJ = ORCAUtils.ToPlane(lines[j].Point);
                     float2 dirJ = ORCAUtils.ToPlane(lines[j].Direction);
-                    // 计算两条线的位置关系
-                    float determinant = ORCAUtils.Cross(dirI, dirJ);
                     
-                    // 两线平行的情况
+                    // 判断两条边界线是否平行
+                    float determinant = ORCAUtils.Cross(dirI, dirJ);
                     if (math.abs(determinant) < EPSILON)
                     {
-                        // 方向相同，跳过
+                        // 同向平行
+                        // 两条约束实际上表达的是同一个方向
+                        // 后面的约束不会进一步限制可行域，因此直接跳过
                         if (math.dot(dirI, dirJ) > 0f)
                         {
                             continue;
                         }
 
-                        // 方向相反，各退一步，取中点
+                        // 反向平行
+                        // 两条边界互相夹逼，没有唯一交点
+                        // 取两条边界中点作为新的参考位置
                         float2 midpoint = (pointI + pointJ) * 0.5f;
                         projectedLine.Point = ORCAUtils.ToWorld(midpoint);
                     }
                     else
                     {
-                        // 两线相交，以它们的交点作为新约束线的基准点
+                        // 两条边界存在唯一交点
+                        // 将交点作为新的约束起点
                         float2 intersection = ComputeIntersection(lines[i], lines[j]);
                         projectedLine.Point = ORCAUtils.ToWorld(intersection);
                     }
 
-                    // 重新计算方向，将方向进行矢量对冲，转换为侧滑移动
+                    // 新约束方向是在第 i 条边界平面上的投影结果
+                    // dirJ-dirI 实际是在构造新的二维约束方向
                     float2 direction = ORCAUtils.SafeNormalize(dirJ - dirI);
                     projectedLine.Direction = ORCAUtils.ToWorld(direction);
                     projLines.Add(projectedLine);
                 }
 
+                // 在新的半平面集合中求解
                 NativeArray<ASORCALine> tempLines = new NativeArray<ASORCALine>(projLines.Length, Allocator.Temp);
                 for (int k = 0; k < projLines.Length; k++)
                 { 
                     tempLines[k] = projLines[k];
                 }
 
-                // 在绝境下，Agent 放弃了“我要去终点”的幻想，将期望方向改为了“我要尽快从当前最挤压的约束（dirI）里逃逸出去”。
+                // 注意：
+                // 这里已经放弃继续逼近期望速度，
+                // 而是在第 i 条约束边界上寻找一个
+                // 尽可能远离违规区域的速度。
+                //
+                // (-dir.y, dir.x) 就是边界线方向，
+                // 即沿着约束边界滑动（Slide）。
                 float2 optVelocity = new float2(-dirI.y, dirI.x) * maxSpeed;
+                
+                // 在固定第 i 条约束边界的前提下，
+                // 对其余约束重新执行 LP2，
+                // 找到新的可行速度。
                 LinearProgram2(tempLines, maxSpeed, optVelocity, out result);
                 tempLines.Dispose();
                 
