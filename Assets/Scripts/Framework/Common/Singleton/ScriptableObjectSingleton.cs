@@ -6,7 +6,7 @@ namespace Framework
     /// 全局数据单例，提供对单例数据的快速访问方法
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class ScriptObjectSingleton<T> : ScriptableObject where T : ScriptableObject
+    public abstract class ScriptableObjectSingleton<T> : ScriptableObject where T : ScriptableObject
     {
         private static T _instance;
 

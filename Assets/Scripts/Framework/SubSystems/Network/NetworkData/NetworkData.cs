@@ -1,9 +1,10 @@
+using Framework;
 using UnityEngine;
 
 namespace Network
 {
     [CreateAssetMenu(fileName = "NetworkingConfig", menuName = "Networking/Networking Config", order = 1)]
-    public class NetworkData : ScriptableObject
+    public class NetworkData : ScriptableObjectSingleton<NetworkData>
     {
         [Header("服务器配置")]
         public string ip = "127.0.0.1";
