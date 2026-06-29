@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Framework
 {
-    public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static T _instance;
         

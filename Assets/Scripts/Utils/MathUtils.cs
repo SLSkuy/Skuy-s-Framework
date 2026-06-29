@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Mathematics;
+using UnityEngine;
 
 namespace Utils
 {
@@ -8,11 +9,24 @@ namespace Utils
     public static class MathUtils
     {
         /// <summary>
+        /// 转换三维向量到平面上，忽略Y轴
+        /// </summary>
+        public static float2 ToPlane(float3 vec)
+        {
+            return new float2(vec.x, vec.z);
+        }
+
+        /// <summary>
+        /// 将二维向量转换到空间中，Y轴置空
+        /// </summary>
+        public static float3 ToWorld(float2 vec)
+        {
+            return new float3(vec.x, 0, vec.y);
+        }
+        
+        /// <summary>
         /// 沿y轴旋转二维向量
         /// </summary>
-        /// <param name="v">原始向量</param>
-        /// <param name="degrees">旋转角度（度）</param>
-        /// <returns>旋转后的向量</returns>
         public static Vector2 RotateVector2_Y(Vector2 v, float degrees)
         {
             float radians = degrees * Mathf.Deg2Rad;
@@ -24,25 +38,38 @@ namespace Utils
         /// <summary>
         /// 安全的归一化，如果向量长度为0则返回零向量
         /// </summary>
-        /// <param name="vector">输入向量</param>
-        /// <returns>归一化后的向量</returns>
         public static Vector2 SafeNormalize(Vector2 vector)
         {
             if (vector.sqrMagnitude < Mathf.Epsilon)
                 return Vector2.zero;
             return vector.normalized;
         }
+        
+        /// <summary>
+        /// 安全的归一化，如果向量长度为0则返回零向量
+        /// </summary>
+        public static float2 SafeNormalize(float2 value)
+        {
+            float lengthSq = math.lengthsq(value);
+            return lengthSq > math.EPSILON ? value * math.rsqrt(lengthSq) : float2.zero;
+        }
 
         /// <summary>
         /// 安全的归一化，如果向量长度为0则返回零向量
         /// </summary>
-        /// <param name="vector">输入向量</param>
-        /// <returns>归一化后的向量</returns>
         public static Vector3 SafeNormalize(Vector3 vector)
         {
             if (vector.sqrMagnitude < Mathf.Epsilon)
                 return Vector3.zero;
             return vector.normalized;
+        }
+        
+        /// <summary>
+        /// 叉乘
+        /// </summary>
+        public static float Cross(float2 left, float2 right)
+        {
+            return left.x * right.y - left.y * right.x;
         }
     }
 }

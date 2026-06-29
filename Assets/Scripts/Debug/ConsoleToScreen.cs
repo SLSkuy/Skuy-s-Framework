@@ -1,0 +1,55 @@
+#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ConsoleToScreen : MonoBehaviour
+{
+    private const int MAX_LINES = 50;
+    private const int MAX_LINE_LENGTH = 120;
+    private string _logStr = "";
+
+    private readonly List<string> _lines = new();
+
+    public int fontSize = 15;
+
+    void OnEnable() { Application.logMessageReceived += Log; }
+    void OnDisable() { Application.logMessageReceived -= Log; }
+
+    private void Log(string logString, string stackTrace, LogType type)
+    {
+        foreach (var line in logString.Split('\n'))
+        {
+            if (line.Length <= MAX_LINE_LENGTH)
+            {
+                _lines.Add(line);
+                continue;
+            }
+            var lineCount = line.Length / MAX_LINE_LENGTH + 1;
+            for (int i = 0; i < lineCount; i++)
+            {
+                if ((i + 1) * MAX_LINE_LENGTH <= line.Length)
+                {
+                    _lines.Add(line.Substring(i * MAX_LINE_LENGTH, MAX_LINE_LENGTH));
+                }
+                else
+                {
+                    _lines.Add(line.Substring(i * MAX_LINE_LENGTH, line.Length - i * MAX_LINE_LENGTH));
+                }
+            }
+        }
+        if (_lines.Count > MAX_LINES)
+        {
+            _lines.RemoveRange(0, _lines.Count - MAX_LINES);
+        }
+        _logStr = string.Join("\n", _lines);
+    }
+
+    void OnGUI()
+    {
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,
+            new Vector3(Screen.width / 1200.0f, Screen.height / 800.0f, 1.0f));
+        GUI.Label(new Rect(10, 10, 800, 370), _logStr, new GUIStyle() { fontSize = Math.Max(10, fontSize) });
+    }
+}
+#endif
