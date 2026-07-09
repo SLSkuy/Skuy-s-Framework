@@ -258,6 +258,7 @@ GameObject:
   - component: {fileID: 426890754}
   - component: {fileID: 426890755}
   - component: {fileID: 426890756}
+  - component: {fileID: 426890757}
   m_Layer: 0
   m_Name: GridDebuger
   m_TagString: Untagged
@@ -338,6 +339,19 @@ MonoBehaviour:
   ySplitColor: {r: 0.2, g: 1, b: 0.2, a: 0.65}
   zSplitColor: {r: 0.25, g: 0.55, b: 1, a: 0.65}
   pointColor: {r: 1, g: 0.85, b: 0.2, a: 0.9}
+--- !u!114 &426890757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426890751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81206aa15f117014aa5f25169d6a7e90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConsoleToScreen
+  fontSize: 15
 --- !u!1 &607230437
 GameObject:
   m_ObjectHideFlags: 0
