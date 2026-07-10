@@ -11,8 +11,8 @@ namespace Network
     {
         [Header("服务器配置")]
         public string ip = "127.0.0.1";
-        public short tcpPort = 11451;
-        public short udpPort = 19198;
+        public short lobbyPort = 11451;
+        public short battlePort = 19198;
 
         [Header("网络属性配置")]
         [Tooltip("网络心跳间隔")] 

@@ -58,18 +58,18 @@ namespace Network
         #region 序列化处理
 
         /// <summary>
-        /// 接受服务端发送的TCP事件
+        /// 接受服务端发送的大厅事件（可靠性事件）
         /// </summary>
-        public void DeserializeTcp(byte[] data)
+        public void DeserializeLobby(byte[] data)
         {
 
         }
 
         /// <summary>
-        /// 接收服务端发送的UDP事件
+        /// 接收服务端发送的战局事件（即时性事件）
         /// </summary>
         /// <param name="data"></param>
-        public void DeserializeUdp(byte[] data)
+        public void DeserializeBattle(byte[] data)
         {
 
         }

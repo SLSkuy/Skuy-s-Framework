@@ -7,6 +7,6 @@ namespace Network
     {
         TCP,
         UDP,
-        KCP
+        KCP,
     }
 }

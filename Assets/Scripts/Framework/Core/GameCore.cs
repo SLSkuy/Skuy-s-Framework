@@ -10,7 +10,6 @@ namespace Core
         #region 组件
         public SystemManager SystemMgr { get; private set; }
         public TimerManager TimerMgr { get; private set; }
-        public NetManager NetMgr { get; private set; }
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
@@ -48,7 +47,6 @@ namespace Core
             ResourceMgr = SystemMgr.RegisterSystem<ResourceManager>();
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();
             TimerMgr = SystemMgr.RegisterSystem<TimerManager>();
-            NetMgr = SystemMgr.RegisterSystem<NetManager>();
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             UIMgr = SystemMgr.RegisterSystem<UIManager>();

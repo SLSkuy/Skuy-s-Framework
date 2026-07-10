@@ -11,7 +11,7 @@ namespace Network
         bool IsRunning { get; }
         event Action<byte[]> OnDataReceived;
         event Action<string> OnTransportError;
-        void StartClient(string host, int port, TransportSettings settings);
+        void StartClient(string host, short port);
         void Send(byte[] data);
         void Update(float deltaTime);
         void Stop();

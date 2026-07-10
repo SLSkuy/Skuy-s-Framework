@@ -5,7 +5,7 @@ namespace Network
     /// </summary>
     public enum NetEvent
     {
-        MSG_CLIENT_CONNECT,
-        MSG_CLIENT_DISCONNECT,
+        CLIENT_CONNECT,
+        CLIENT_DISCONNECT,
     }
 }
