@@ -6,6 +6,9 @@ using System.Net.Sockets;
 
 namespace Network
 {
+    /// <summary>
+    /// KCP服务端传输封装
+    /// </summary>
     public sealed class KcpServerTransport : IServerTransport
     {
         private sealed class ClientSession

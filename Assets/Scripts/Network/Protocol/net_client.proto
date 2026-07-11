@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package NetClient;
+
+message Client_Connect_Request{
+  
+}
+
+message Client_Connect_Response{
+  int32 port = 1;
+}
+
