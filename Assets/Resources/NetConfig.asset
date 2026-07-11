@@ -16,3 +16,8 @@ MonoBehaviour:
   reliablePort: 11451
   fastPort: 19198
   heartBeatStep: 1
+  kcpConv: 1
+  kcpMtu: 1024
+  kcpSendWindow: 128
+  kcpReceiveWindow: 128
+  kcpUpdateInterval: 10

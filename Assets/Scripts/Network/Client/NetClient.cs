@@ -79,18 +79,19 @@ namespace Network
         /// <summary>
         /// 发送消息
         /// </summary>
+        /// <param name="evt">事件类型</param>
         /// <param name="message">消息体</param>
-        /// <param name="reliable">是否为可靠消息</param>
-        public void Send(IMessage message, bool reliable = true)
+        public void Send(NetEvent evt, IMessage message)
         {
-            if (reliable)
-            {
-                _reliableTransport?.Send(NetUtils.Proto2Bytes(message));
-            }
-            else
-            {
-                _fastTransport?.Send(NetUtils.Proto2Bytes(message));
-            }
+            _fastTransport?.Send(NetUtils.Proto2Bytes(evt, message));
+        }
+
+        /// <summary>
+        /// 使用可靠传输发送
+        /// </summary>
+        public void SendReliable(NetEvent evt, IMessage message)
+        {
+            _reliableTransport?.Send(NetUtils.Proto2Bytes(evt, message));
         }
 
         public void Send(byte[] data)
@@ -129,7 +130,8 @@ namespace Network
         private void HandleDataReceived(byte[] data)
         {
             Debug.Log($"[NetClient] 收到服务端消息: {Encoding.UTF8.GetString(data)}");
-            _messageProcessor.HandleMessage(NetUtils.Bytes2Proto(data));
+            var msg = NetUtils.Bytes2Proto(data);
+            _messageProcessor.HandleMessage(msg.Item1, msg.Item2);
         }
 
         private void HandleTransportError(string error)

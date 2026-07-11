@@ -20,7 +20,7 @@ namespace Network
 
         [Header("KCP设置")]
         public uint kcpConv = 1;
-        public int kcpMtu = 1400;
+        public int kcpMtu = 1024;
         public int kcpSendWindow = 128;
         public int kcpReceiveWindow = 128;
         public int kcpUpdateInterval = 10;

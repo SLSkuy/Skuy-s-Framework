@@ -52,17 +52,17 @@ namespace Network
         /// <summary>
         /// 给单个客户端发送消息
         /// </summary>
-        public void Send(uint clientId, IMessage message)
+        public void Send(uint clientId, NetEvent evt, IMessage message)
         {
-            _fastTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+            _fastTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
         }
         
         /// <summary>
         /// 使用可靠传输发送
         /// </summary>
-        public void SendReliable(uint clientId, IMessage message)
+        public void SendReliable(uint clientId, NetEvent evt, IMessage message)
         {
-            _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+            _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
         }
 
         /// <summary>
@@ -84,39 +84,39 @@ namespace Network
         /// <summary>
         /// 给一组客户端发送消息
         /// </summary>
-        public void SendGroup(uint[] clientIds, IMessage message)
+        public void SendGroup(uint[] clientIds, NetEvent evt, IMessage message)
         {
             foreach (var clientId in clientIds)
             {
-                _fastTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+                _fastTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
             }
         }
 
         /// <summary>
         /// 给一组客户端发送消息，使用可靠传输发送
         /// </summary>
-        public void SendGroupReliable(uint[] clientIds, IMessage message)
+        public void SendGroupReliable(uint[] clientIds, NetEvent evt, IMessage message)
         {
             foreach (var clientId in clientIds)
             {
-                _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+                _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
             }
         }
 
         /// <summary>
         /// 为所有客户端广播消息
         /// </summary>
-        public void Broadcast(IMessage message)
+        public void Broadcast(NetEvent evt, IMessage message)
         {
-            _fastTransport.Broadcast(NetUtils.Proto2Bytes(message));
+            _fastTransport.Broadcast(NetUtils.Proto2Bytes(evt, message));
         }
 
         /// <summary>
         /// 为所有客户端广播消息,，使用可靠传输发送
         /// </summary>
-        public void BroadcastReliable(IMessage message)
+        public void BroadcastReliable(NetEvent evt, IMessage message)
         {
-            _reliableTransport.Broadcast(NetUtils.Proto2Bytes(message));
+            _reliableTransport.Broadcast(NetUtils.Proto2Bytes(evt, message));
         }
 
         public void Broadcast(byte[] data)
@@ -154,8 +154,8 @@ namespace Network
         private void HandleDataReceived(uint clientId, byte[] data)
         {
             Debug.Log($"[NetServer] Received data from {clientId}, content: {Encoding.UTF8.GetString(data)}");
-            
-            _messageProcessor.HandleServerMessage(clientId, NetUtils.Bytes2Proto(data));
+            var msg = NetUtils.Bytes2Proto(data);
+            _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
         }
 
         private void HandleTransportError(string error)
