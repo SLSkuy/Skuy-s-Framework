@@ -23,9 +23,7 @@ namespace Network
         /// <summary>
         /// 开启客户端连接
         /// </summary>
-        /// <param name="host">服务器IP</param>
-        /// <param name="port">服务器端口</param>
-        public void StartClient(string host, short port)
+        public void StartClient()
         {
             try
             {
@@ -35,7 +33,7 @@ namespace Network
                     return;
                 }
                 
-                _clientTransport.StartClient(host, port);
+                _clientTransport.StartClient(_config.ip, _config.udpPort);
             }
             catch (Exception e)
             {
@@ -55,6 +53,11 @@ namespace Network
         public void Send(IMessage message)
         {
             _clientTransport?.Send(NetUtils.Proto2Bytes(message));
+        }
+
+        public void Send(byte[] data)
+        {
+            _clientTransport?.Send(data);
         }
         
         /// <summary>
@@ -94,6 +97,8 @@ namespace Network
             _config = NetConfig.Instance;
             _messageProcessor = new MessageProcessor();
 
+            // TODO: 接入TCP传输层用于处理需要可靠连接的消息
+            
             TransportSettings settings = TransportSettings.FromConfig(_config);
             _clientTransport = new KcpClientTransport(settings);
             _clientTransport.OnDataReceived += HandleDataReceived;

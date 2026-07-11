@@ -129,7 +129,6 @@ GameObject:
   m_Component:
   - component: {fileID: 936858522}
   - component: {fileID: 936858523}
-  - component: {fileID: 936858524}
   m_Layer: 0
   m_Name: GameCore
   m_TagString: Untagged
@@ -164,18 +163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab121c4526cac5a4095d3a27fefff2d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameCore
---- !u!114 &936858524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 936858521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8295170fb8e307d4bb67252375a3cbfe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClientNetTest
 --- !u!1 &1611761442
 GameObject:
   m_ObjectHideFlags: 0

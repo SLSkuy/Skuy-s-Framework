@@ -5,11 +5,14 @@ using System.Net.Sockets.Kcp;
 
 namespace Network
 {
-    internal sealed class KcpPeer : IKcpCallback, IDisposable
+    /// <summary>
+    /// 单一KCP连接抽象
+    /// </summary>
+    internal sealed class KcpSession : IKcpCallback, IDisposable
     {
         private const int BUFFER_SIZE = 1024 * 64;
         
-        private readonly Action<KcpPeer, byte[], int> _output;
+        private readonly Action<KcpSession, byte[], int> _output;
         private readonly byte[] _receiveBuffer = new byte[BUFFER_SIZE];
 
         public uint Conv { get; }
@@ -17,7 +20,7 @@ namespace Network
         public SimpleSegManager.Kcp Kcp { get; }
         public DateTimeOffset LastReceiveTime { get; private set; }
 
-        public KcpPeer(uint conv, EndPoint remoteEndPoint, TransportSettings settings, Action<KcpPeer, byte[], int> output)
+        public KcpSession(uint conv, EndPoint remoteEndPoint, TransportSettings settings, Action<KcpSession, byte[], int> output)
         {
             Conv = conv;
             RemoteEndPoint = remoteEndPoint;

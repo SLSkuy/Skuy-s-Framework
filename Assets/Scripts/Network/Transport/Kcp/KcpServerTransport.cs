@@ -8,14 +8,17 @@ namespace Network
 {
     public sealed class KcpServerTransport : IServerTransport
     {
-        private const int KcpHeaderSize = 24;
-
         private sealed class ClientSession
         {
             public uint ClientId;
-            public KcpPeer Peer;
+            public KcpSession Session;
             public string EndPointKey;
         }
+        
+        private const int KCP_HEADER_SIZE = 24;
+        
+        public TransportType Type => TransportType.KCP;
+        public bool IsRunning { get; private set; }
 
         private readonly TransportSettings _settings;
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
@@ -23,9 +26,6 @@ namespace Network
         private UdpClient _udpServer;
         private uint _nextClientId = 1;
         private bool _isDisposed;
-
-        public TransportType Type => TransportType.KCP;
-        public bool IsRunning { get; private set; }
 
         public event Action<uint> OnClientConnected;
         public event Action<uint> OnClientDisconnected;
@@ -37,7 +37,9 @@ namespace Network
             _settings = settings ?? TransportSettings.Default;
         }
 
-        public void StartServer(int port)
+        #region 暴露接口
+
+         public void StartServer(int port)
         {
             ThrowIfDisposed();
             Stop();
@@ -64,7 +66,7 @@ namespace Network
 
             if (_clientsById.TryGetValue(clientId, out ClientSession session))
             {
-                session.Peer.Send(data);
+                session.Session.Send(data);
             }
         }
 
@@ -72,7 +74,7 @@ namespace Network
         {
             foreach (ClientSession session in _clientsById.Values)
             {
-                session.Peer.Send(data);
+                session.Session.Send(data);
             }
         }
 
@@ -110,7 +112,7 @@ namespace Network
 
             foreach (ClientSession session in _clientsById.Values)
             {
-                session.Peer.Dispose();
+                session.Session.Dispose();
             }
 
             _clientsById.Clear();
@@ -132,6 +134,11 @@ namespace Network
             _isDisposed = true;
         }
 
+        #endregion
+
+        #region 内部管理方法
+
+        
         private void ReceiveAvailableDatagrams()
         {
             while (_udpServer.Available > 0)
@@ -144,8 +151,8 @@ namespace Network
                     continue;
                 }
 
-                session.Peer.RemoteEndPoint = remoteEndPoint;
-                session.Peer.Input(datagram);
+                session.Session.RemoteEndPoint = remoteEndPoint;
+                session.Session.Input(datagram);
             }
         }
 
@@ -157,7 +164,7 @@ namespace Network
                 return session;
             }
 
-            if (datagram == null || datagram.Length < KcpHeaderSize)
+            if (datagram == null || datagram.Length < KCP_HEADER_SIZE)
             {
                 return null;
             }
@@ -167,7 +174,7 @@ namespace Network
             {
                 ClientId = _nextClientId++,
                 EndPointKey = endPointKey,
-                Peer = new KcpPeer(conv, remoteEndPoint, _settings, SendRaw)
+                Session = new KcpSession(conv, remoteEndPoint, _settings, SendRaw)
             };
 
             _clientsById.Add(session.ClientId, session);
@@ -180,9 +187,9 @@ namespace Network
         {
             foreach (ClientSession session in _clientsById.Values)
             {
-                session.Peer.Update(now);
+                session.Session.Update(now);
 
-                while (session.Peer.TryReceive(out byte[] data))
+                while (session.Session.TryReceive(out byte[] data))
                 {
                     OnDataReceived?.Invoke(session.ClientId, data);
                 }
@@ -199,7 +206,7 @@ namespace Network
             List<uint> timedOutClientIds = null;
             foreach (ClientSession session in _clientsById.Values)
             {
-                double inactiveSeconds = (now - session.Peer.LastReceiveTime).TotalSeconds;
+                double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
                 if (inactiveSeconds < _settings.disconnectTimeout)
                 {
                     continue;
@@ -233,18 +240,18 @@ namespace Network
 
             _clientsById.Remove(clientId);
             _clientsByEndPoint.Remove(session.EndPointKey);
-            session.Peer.Dispose();
+            session.Session.Dispose();
             OnClientDisconnected?.Invoke(clientId);
         }
 
-        private void SendRaw(KcpPeer peer, byte[] data, int length)
+        private void SendRaw(KcpSession session, byte[] data, int length)
         {
-            if (!IsRunning || _udpServer == null || peer.RemoteEndPoint == null)
+            if (!IsRunning || _udpServer == null || session.RemoteEndPoint == null)
             {
                 return;
             }
 
-            _udpServer.Send(data, length, (IPEndPoint)peer.RemoteEndPoint);
+            _udpServer.Send(data, length, (IPEndPoint)session.RemoteEndPoint);
         }
 
         private static uint ReadConv(byte[] datagram)
@@ -269,5 +276,7 @@ namespace Network
                 throw new ObjectDisposedException(nameof(KcpServerTransport));
             }
         }
+
+        #endregion
     }
 }

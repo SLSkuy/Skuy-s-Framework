@@ -11,7 +11,7 @@ namespace Network
     {
         private readonly TransportSettings _settings;
         private UdpClient _udpClient;
-        private KcpPeer _peer;
+        private KcpSession _session;
         private IPEndPoint _serverEndPoint;
         private bool _isDisposed;
 
@@ -46,7 +46,7 @@ namespace Network
                 _serverEndPoint = new IPEndPoint(address, port);
                 _udpClient = new UdpClient(address.AddressFamily);
                 _udpClient.Connect(_serverEndPoint);
-                _peer = new KcpPeer(_settings.conv, _serverEndPoint, _settings, Send);
+                _session = new KcpSession(_settings.conv, _serverEndPoint, _settings, Send);
                 IsRunning = true;
             }
             catch (Exception ex)
@@ -58,7 +58,7 @@ namespace Network
 
         public void Send(byte[] data)
         {
-            if (!IsRunning || _peer == null)
+            if (!IsRunning || _session == null)
             {
                 RaiseError("KCP client is not running.");
                 return;
@@ -66,7 +66,7 @@ namespace Network
 
             try
             {
-                _peer.Send(data);
+                _session.Send(data);
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace Network
 
         public void Update(float deltaTime)
         {
-            if (!IsRunning || _udpClient == null || _peer == null)
+            if (!IsRunning || _udpClient == null || _session == null)
             {
                 return;
             }
@@ -85,7 +85,7 @@ namespace Network
             {
                 ReceiveDatagrams();
                 DateTimeOffset now = DateTimeOffset.UtcNow;
-                _peer.Update(now);
+                _session.Update(now);
                 DispatchMessages();
             }
             catch (SocketException ex)
@@ -106,8 +106,8 @@ namespace Network
         {
             IsRunning = false;
 
-            _peer?.Dispose();
-            _peer = null;
+            _session?.Dispose();
+            _session = null;
 
             _udpClient?.Close();
             _udpClient?.Dispose();
@@ -136,19 +136,19 @@ namespace Network
             {
                 IPEndPoint remoteEndPoint = null;
                 byte[] datagram = _udpClient.Receive(ref remoteEndPoint);
-                _peer.Input(datagram);
+                _session.Input(datagram);
             }
         }
 
         private void DispatchMessages()
         {
-            while (_peer.TryReceive(out byte[] data))
+            while (_session.TryReceive(out byte[] data))
             {
                 OnDataReceived?.Invoke(data);
             }
         }
 
-        private void Send(KcpPeer peer, byte[] data, int length)
+        private void Send(KcpSession session, byte[] data, int length)
         {
             if (!IsRunning || _udpClient == null)
             {
