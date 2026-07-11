@@ -10,14 +10,11 @@ namespace Network
     /// </summary>
     internal sealed class KcpSession : IKcpCallback, IDisposable
     {
-        private const int BUFFER_SIZE = 1024 * 64;
-        
         private readonly Action<KcpSession, byte[], int> _output;
-        private readonly byte[] _receiveBuffer = new byte[BUFFER_SIZE];
+        private readonly SimpleSegManager.Kcp _kcp;
 
         public uint Conv { get; }
-        public EndPoint RemoteEndPoint { get; set; }
-        public SimpleSegManager.Kcp Kcp { get; }
+        public EndPoint RemoteEndPoint { get; }
         public DateTimeOffset LastReceiveTime { get; private set; }
 
         public KcpSession(uint conv, EndPoint remoteEndPoint, TransportSettings settings, Action<KcpSession, byte[], int> output)
@@ -27,49 +24,64 @@ namespace Network
             _output = output;
             LastReceiveTime = DateTimeOffset.UtcNow;
 
-            Kcp = new SimpleSegManager.Kcp(conv, this);
-            Kcp.SetMtu(settings.mtu);
-            Kcp.WndSize(settings.sendWindow, settings.receiveWindow);
-            Kcp.NoDelay(settings.noDelay, settings.updateInterval, settings.fastResend, settings.disableCongestionControl);
+            _kcp = new SimpleSegManager.Kcp(conv, this);
+            _kcp.SetMtu(settings.mtu);
+            _kcp.WndSize(settings.sendWindow, settings.receiveWindow);
+            _kcp.NoDelay(settings.noDelay, settings.updateInterval, settings.fastResend, settings.disableCongestionControl);
         }
 
-        public void Input(byte[] data)
-        {
-            LastReceiveTime = DateTimeOffset.UtcNow;
-            Kcp.Input(data);
-        }
-
-        public void Send(byte[] data)
+        public int Input(byte[] data)
         {
             if (data == null || data.Length == 0)
             {
-                return;
+                return -1;
             }
 
-            Kcp.Send(data);
+            int result = _kcp.Input(data);
+            if (result >= 0)
+            {
+                LastReceiveTime = DateTimeOffset.UtcNow;
+            }
+
+            return result;
+        }
+
+        public int Send(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+            {
+                return -1;
+            }
+
+            return _kcp.Send(data);
         }
 
         public bool TryReceive(out byte[] data)
         {
             data = null;
 
-            while (true)
+            (IMemoryOwner<byte> buffer, int length) = _kcp.TryRecv();
+            if (length < 0)
             {
-                int length = Kcp.Recv(_receiveBuffer);
-                if (length < 0)
-                {
-                    return false;
-                }
+                buffer?.Dispose();
+                return false;
+            }
 
+            try
+            {
                 data = new byte[length];
-                Buffer.BlockCopy(_receiveBuffer, 0, data, 0, length);
+                buffer.Memory.Span.Slice(0, length).CopyTo(data);
                 return true;
+            }
+            finally
+            {
+                buffer?.Dispose();
             }
         }
 
         public void Update(DateTimeOffset now)
         {
-            Kcp.Update(now);
+            _kcp.Update(now);
         }
 
         public void Output(IMemoryOwner<byte> buffer, int avalidLength)
@@ -88,7 +100,7 @@ namespace Network
 
         public void Dispose()
         {
-            Kcp?.Dispose();
+            _kcp?.Dispose();
         }
     }
 }

@@ -66,7 +66,11 @@ namespace Network
 
             try
             {
-                _session.Send(data);
+                int result = _session.Send(data);
+                if (result < 0)
+                {
+                    RaiseError($"KCP client send failed with code: {result}");
+                }
             }
             catch (Exception ex)
             {
@@ -136,7 +140,11 @@ namespace Network
             {
                 IPEndPoint remoteEndPoint = null;
                 byte[] datagram = _udpClient.Receive(ref remoteEndPoint);
-                _session.Input(datagram);
+                int result = _session.Input(datagram);
+                if (result < 0)
+                {
+                    RaiseError($"KCP client input failed with code: {result}");
+                }
             }
         }
 

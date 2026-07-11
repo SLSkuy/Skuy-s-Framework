@@ -66,7 +66,11 @@ namespace Network
 
             if (_clientsById.TryGetValue(clientId, out ClientSession session))
             {
-                session.Session.Send(data);
+                int result = session.Session.Send(data);
+                if (result < 0)
+                {
+                    RaiseError($"KCP server send failed for client {clientId} with code: {result}");
+                }
             }
         }
 
@@ -74,7 +78,11 @@ namespace Network
         {
             foreach (ClientSession session in _clientsById.Values)
             {
-                session.Session.Send(data);
+                int result = session.Session.Send(data);
+                if (result < 0)
+                {
+                    RaiseError($"KCP server broadcast failed for client {session.ClientId} with code: {result}");
+                }
             }
         }
 
@@ -151,8 +159,11 @@ namespace Network
                     continue;
                 }
 
-                session.Session.RemoteEndPoint = remoteEndPoint;
-                session.Session.Input(datagram);
+                int result = session.Session.Input(datagram);
+                if (result < 0)
+                {
+                    RaiseError($"KCP server input failed for client {session.ClientId} with code: {result}");
+                }
             }
         }
 
