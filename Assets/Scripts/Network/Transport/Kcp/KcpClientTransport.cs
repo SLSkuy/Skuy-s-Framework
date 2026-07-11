@@ -1,11 +1,12 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using UnityEngine;
 
 namespace Network
 {
+    /// <summary>
+    /// KCP客户端传输封装
+    /// </summary>
     public sealed class KcpClientTransport : IClientTransport
     {
         private readonly TransportSettings _settings;
@@ -25,6 +26,8 @@ namespace Network
             _settings = settings ?? TransportSettings.Default;
         }
 
+        #region 暴露接口
+
         public void StartClient(string host, short port)
         {
             ThrowIfDisposed();
@@ -43,7 +46,7 @@ namespace Network
                 _serverEndPoint = new IPEndPoint(address, port);
                 _udpClient = new UdpClient(address.AddressFamily);
                 _udpClient.Connect(_serverEndPoint);
-                _peer = new KcpPeer(_settings.Conv, _serverEndPoint, _settings, SendRaw);
+                _peer = new KcpPeer(_settings.Conv, _serverEndPoint, _settings, Send);
                 IsRunning = true;
             }
             catch (Exception ex)
@@ -80,10 +83,10 @@ namespace Network
 
             try
             {
-                ReceiveAvailableDatagrams();
+                ReceiveDatagrams();
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 _peer.Update(now);
-                DispatchReceivedMessages();
+                DispatchMessages();
             }
             catch (SocketException ex)
             {
@@ -123,7 +126,11 @@ namespace Network
             _isDisposed = true;
         }
 
-        private void ReceiveAvailableDatagrams()
+        #endregion
+
+        #region 内部管理方法
+
+        private void ReceiveDatagrams()
         {
             while (_udpClient.Available > 0)
             {
@@ -133,7 +140,7 @@ namespace Network
             }
         }
 
-        private void DispatchReceivedMessages()
+        private void DispatchMessages()
         {
             while (_peer.TryReceive(out byte[] data))
             {
@@ -141,7 +148,7 @@ namespace Network
             }
         }
 
-        private void SendRaw(KcpPeer peer, byte[] data, int length)
+        private void Send(KcpPeer peer, byte[] data, int length)
         {
             if (!IsRunning || _udpClient == null)
             {
@@ -176,5 +183,7 @@ namespace Network
                 throw new ObjectDisposedException(nameof(KcpClientTransport));
             }
         }
+
+        #endregion
     }
 }

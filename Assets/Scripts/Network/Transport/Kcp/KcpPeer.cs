@@ -7,8 +7,10 @@ namespace Network
 {
     internal sealed class KcpPeer : IKcpCallback, IDisposable
     {
+        private const int BUFFER_SIZE = 1024 * 64;
+        
         private readonly Action<KcpPeer, byte[], int> _output;
-        private readonly byte[] _receiveBuffer = new byte[64 * 1024];
+        private readonly byte[] _receiveBuffer = new byte[BUFFER_SIZE];
 
         public uint Conv { get; }
         public EndPoint RemoteEndPoint { get; set; }

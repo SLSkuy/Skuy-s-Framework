@@ -5,6 +5,7 @@ namespace Network
     /// </summary>
     public enum NetEvent
     {
+        ERROR,
         CLIENT_CONNECT,
         CLIENT_DISCONNECT,
     }

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfe587569de446c4887b8e462bfff3f7, type: 3}
-  m_Name: NetworkingConfig
+  m_Name: NetConfig
   m_EditorClassIdentifier: Assembly-CSharp::Network.NetworkData
   ip: 127.0.0.1
   tcpPort: 11451
