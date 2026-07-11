@@ -99,6 +99,14 @@ namespace Network
         }
 
         /// <summary>
+        /// 使用可靠传输(TCP)发送
+        /// </summary>
+        public void SendReliable(byte[] data)
+        {
+            _reliableTransport?.Send(data);
+        }
+
+        /// <summary>
         /// 处理网络事件
         /// </summary>
         public void Register<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()

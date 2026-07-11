@@ -103,6 +103,7 @@ InitTestScene*.unity*
 /[Pp]rofilerCaptures/
 
 SceneDependencyCache/
+HybridCLRData/
 
 .cursor
 .vscode

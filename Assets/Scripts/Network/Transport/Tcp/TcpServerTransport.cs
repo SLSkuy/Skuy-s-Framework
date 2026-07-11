@@ -15,8 +15,49 @@ namespace Network
     {
         private sealed class ClientSession
         {
+            public TcpServerTransport Owner;
             public uint ClientId;
             public TcpSession Session;
+
+            public void Bind()
+            {
+                Session.OnMessageReceived += HandleMessageReceived;
+                Session.OnDisconnected += HandleDisconnected;
+                Session.OnError += HandleError;
+            }
+
+            public void Unbind()
+            {
+                Session.OnMessageReceived -= HandleMessageReceived;
+                Session.OnDisconnected -= HandleDisconnected;
+                Session.OnError -= HandleError;
+            }
+
+            private void HandleMessageReceived(byte[] data)
+            {
+                Owner.EnqueueMessage(ClientId, data);
+            }
+
+            private void HandleDisconnected()
+            {
+                Owner.RemoveClient(ClientId, true);
+            }
+
+            private void HandleError(string message)
+            {
+                Owner.RaiseError(message);
+            }
+        }
+
+        private struct ClientMessage
+        {
+            public uint ClientId;
+            public byte[] Data;
+        }
+
+        private struct TransportError
+        {
+            public string Message;
         }
 
         public TransportType Type => TransportType.TCP;
@@ -24,8 +65,10 @@ namespace Network
 
         private readonly object _clientLock = new object();
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
-        private readonly Dictionary<TcpSession, uint> _clientIdsBySession = new Dictionary<TcpSession, uint>();
-        private readonly ConcurrentQueue<Action> _mainThreadEvents = new ConcurrentQueue<Action>();
+        private readonly ConcurrentQueue<uint> _connectedClients = new ConcurrentQueue<uint>();
+        private readonly ConcurrentQueue<uint> _disconnectedClients = new ConcurrentQueue<uint>();
+        private readonly ConcurrentQueue<ClientMessage> _receivedMessages = new ConcurrentQueue<ClientMessage>();
+        private readonly ConcurrentQueue<TransportError> _errors = new ConcurrentQueue<TransportError>();
         private Socket _listener;
         private CancellationTokenSource _cts;
         private uint _nextClientId = 1;
@@ -58,6 +101,7 @@ namespace Network
             }
             catch (Exception ex)
             {
+                // 同步抛出错误消息
                 string message = $"TCP server start failed: {ex.Message}";
                 Stop();
                 OnTransportError?.Invoke(message);
@@ -98,9 +142,24 @@ namespace Network
 
         public void Update(float deltaTime)
         {
-            while (_mainThreadEvents.TryDequeue(out Action action))
+            while (_connectedClients.TryDequeue(out uint connectedClientId))
             {
-                action?.Invoke();
+                OnClientConnected?.Invoke(connectedClientId);
+            }
+
+            while (_disconnectedClients.TryDequeue(out uint disconnectedClientId))
+            {
+                OnClientDisconnected?.Invoke(disconnectedClientId);
+            }
+
+            while (_receivedMessages.TryDequeue(out ClientMessage message))
+            {
+                OnDataReceived?.Invoke(message.ClientId, message.Data);
+            }
+
+            while (_errors.TryDequeue(out TransportError error))
+            {
+                OnTransportError?.Invoke(error.Message);
             }
         }
 
@@ -121,17 +180,11 @@ namespace Network
             _listener?.Dispose();
             _listener = null;
 
-            List<TcpSession> sessions = GetSessionSnapshot();
-            lock (_clientLock)
+            List<ClientSession> sessions = RemoveAllClients();
+            foreach (ClientSession session in sessions)
             {
-                _clientsById.Clear();
-                _clientIdsBySession.Clear();
-            }
-
-            foreach (TcpSession session in sessions)
-            {
-                UnbindSession(session);
-                session.Dispose();
+                session.Unbind();
+                session.Session.Dispose();
             }
 
             _cts?.Dispose();
@@ -156,12 +209,25 @@ namespace Network
 
         private async Task AcceptLoop(CancellationToken token)
         {
-            while (!token.IsCancellationRequested)
+            while (IsRunning && !token.IsCancellationRequested)
             {
                 try
                 {
-                    Socket socket = await _listener.AcceptAsync();
+                    Socket listener = _listener;
+                    if (listener == null)
+                    {
+                        break;
+                    }
+
+                    Socket socket = await listener.AcceptAsync();
                     token.ThrowIfCancellationRequested();
+
+                    if (!IsRunning)
+                    {
+                        socket.Dispose();
+                        break;
+                    }
+
                     AddClient(socket);
                 }
                 catch (OperationCanceledException)
@@ -174,6 +240,16 @@ namespace Network
                 }
                 catch (SocketException ex)
                 {
+                    if (!IsRunning || token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    if (_listener == null)
+                    {
+                        break;
+                    }
+
                     if (!token.IsCancellationRequested)
                     {
                         RaiseError($"TCP server accept failed: {ex.Message}");
@@ -181,6 +257,16 @@ namespace Network
                 }
                 catch (Exception ex)
                 {
+                    if (!IsRunning || token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    if (_listener == null)
+                    {
+                        break;
+                    }
+
                     if (!token.IsCancellationRequested)
                     {
                         RaiseError($"TCP server accept failed: {ex.Message}");
@@ -193,73 +279,79 @@ namespace Network
         {
             TcpSession session = new TcpSession();
             ClientSession clientSession;
+            uint clientId = 0;
+            bool registered = false;
 
-            lock (_clientLock)
+            try
             {
-                uint clientId = _nextClientId++;
-                clientSession = new ClientSession
+                lock (_clientLock)
                 {
-                    ClientId = clientId,
-                    Session = session
-                };
-                _clientsById.Add(clientId, clientSession);
-                _clientIdsBySession.Add(session, clientId);
+                    if (!IsRunning)
+                    {
+                        socket.Dispose();
+                        session.Dispose();
+                        return;
+                    }
+
+                    clientId = _nextClientId++;
+                    clientSession = new ClientSession
+                    {
+                        Owner = this,
+                        ClientId = clientId,
+                        Session = session
+                    };
+                    _clientsById.Add(clientId, clientSession);
+                    registered = true;
+                    clientSession.Bind();
+                    session.Start(socket);
+                }
+
+                _connectedClients.Enqueue(clientId);
             }
-
-            session.OnMessageReceived += data => HandleMessageReceived(session, data);
-            session.OnDisconnected += () => HandleDisconnected(session);
-            session.OnError += RaiseError;
-            session.Start(socket);
-
-            _mainThreadEvents.Enqueue(() => OnClientConnected?.Invoke(clientSession.ClientId));
-        }
-
-        private void HandleMessageReceived(TcpSession session, byte[] data)
-        {
-            if (!TryGetClientId(session, out uint clientId))
+            catch (Exception ex)
             {
-                return;
+                if (registered)
+                {
+                    lock (_clientLock)
+                    {
+                        _clientsById.Remove(clientId);
+                    }
+                }
+
+                session.Dispose();
+                RaiseError($"TCP server client start failed: {ex.Message}");
             }
-
-            _mainThreadEvents.Enqueue(() => OnDataReceived?.Invoke(clientId, data));
         }
 
-        private void HandleDisconnected(TcpSession session)
+        private void EnqueueMessage(uint clientId, byte[] data)
         {
-            RemoveClient(session, true);
-        }
-
-        private void RemoveClient(TcpSession session, bool raiseEvent)
-        {
-            if (session == null)
+            _receivedMessages.Enqueue(new ClientMessage
             {
-                return;
-            }
+                ClientId = clientId,
+                Data = data
+            });
+        }
 
-            uint clientId;
+        private void RemoveClient(uint clientId, bool raiseEvent)
+        {
+            ClientSession session;
             lock (_clientLock)
             {
-                if (!_clientIdsBySession.TryGetValue(session, out clientId))
+                if (!_clientsById.TryGetValue(clientId, out session))
                 {
                     return;
                 }
 
-                _clientIdsBySession.Remove(session);
                 _clientsById.Remove(clientId);
             }
 
-            UnbindSession(session);
-            session.Dispose();
+            session.Unbind();
+            session.Session.Dispose();
 
             if (raiseEvent)
             {
-                _mainThreadEvents.Enqueue(() => OnClientDisconnected?.Invoke(clientId));
+                _disconnectedClients.Enqueue(clientId);
             }
-        }
-
-        private void UnbindSession(TcpSession session)
-        {
-            session.OnError -= RaiseError;
         }
 
         private TcpSession GetSession(uint clientId)
@@ -284,22 +376,39 @@ namespace Network
             }
         }
 
-        private bool TryGetClientId(TcpSession session, out uint clientId)
+        private List<ClientSession> RemoveAllClients()
         {
             lock (_clientLock)
             {
-                return _clientIdsBySession.TryGetValue(session, out clientId);
+                List<ClientSession> sessions = new List<ClientSession>(_clientsById.Values);
+                _clientsById.Clear();
+                return sessions;
             }
         }
 
         private void RaiseError(string message)
         {
-            _mainThreadEvents.Enqueue(() => OnTransportError?.Invoke(message));
+            _errors.Enqueue(new TransportError
+            {
+                Message = message
+            });
         }
 
         private void ClearEvents()
         {
-            while (_mainThreadEvents.TryDequeue(out _))
+            while (_connectedClients.TryDequeue(out _))
+            {
+            }
+
+            while (_disconnectedClients.TryDequeue(out _))
+            {
+            }
+
+            while (_receivedMessages.TryDequeue(out _))
+            {
+            }
+
+            while (_errors.TryDequeue(out _))
             {
             }
         }

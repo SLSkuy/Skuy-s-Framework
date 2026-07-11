@@ -44,9 +44,9 @@ namespace Network
 
         public void StopServer()
         {
-            _clientManager.Clear();
-            _reliableTransport.Stop();
-            _fastTransport.Stop();
+            _clientManager?.Clear();
+            _reliableTransport?.Stop();
+            _fastTransport?.Stop();
         }
 
         /// <summary>
@@ -56,10 +56,29 @@ namespace Network
         {
             _fastTransport.Send(clientId, NetUtils.Proto2Bytes(message));
         }
+        
+        /// <summary>
+        /// 使用可靠传输发送
+        /// </summary>
+        public void SendReliable(uint clientId, IMessage message)
+        {
+            _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+        }
 
+        /// <summary>
+        /// 给单个客户端发送消息
+        /// </summary>
         public void Send(uint clientId, byte[] data)
         {
             _fastTransport.Send(clientId, data);
+        }
+
+        /// <summary>
+        /// 使用可靠传输发送
+        /// </summary>
+        public void SendReliable(uint clientId, byte[] data)
+        {
+            _reliableTransport.Send(clientId, data);
         }
 
         /// <summary>
@@ -74,17 +93,43 @@ namespace Network
         }
 
         /// <summary>
+        /// 给一组客户端发送消息，使用可靠传输发送
+        /// </summary>
+        public void SendGroupReliable(uint[] clientIds, IMessage message)
+        {
+            foreach (var clientId in clientIds)
+            {
+                _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+            }
+        }
+
+        /// <summary>
         /// 为所有客户端广播消息
         /// </summary>
-        /// <param name="message"></param>
         public void Broadcast(IMessage message)
         {
             _fastTransport.Broadcast(NetUtils.Proto2Bytes(message));
         }
 
+        /// <summary>
+        /// 为所有客户端广播消息,，使用可靠传输发送
+        /// </summary>
+        public void BroadcastReliable(IMessage message)
+        {
+            _reliableTransport.Broadcast(NetUtils.Proto2Bytes(message));
+        }
+
         public void Broadcast(byte[] data)
         {
             _fastTransport.Broadcast(data);
+        }
+
+        /// <summary>
+        /// 使用可靠传输(TCP)广播
+        /// </summary>
+        public void BroadcastReliable(byte[] data)
+        {
+            _reliableTransport.Broadcast(data);
         }
         
         /// <summary>

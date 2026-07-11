@@ -28,10 +28,12 @@ namespace Network.Test
         // UI输入
         private string _chatInput = "";
         private string _broadcastInput = "";
-        private string _serverPort = "19198";
         private string _clientIp = "127.0.0.1";
-        private string _clientPort = "19198";
         private bool _showPanel = true;
+
+        // 传输类型选择
+        private bool _useTcpForChat;
+        private bool _useTcpForBroadcast;
 
         /// <summary>
         /// 运行时自动在场景中创建面板
@@ -157,7 +159,7 @@ namespace Network.Test
             {
                 _netServer.StartServer();
                 _isServerRunning = true;
-                AddLog($"[NetworkTestPanel] 服务端已启动，端口: {_serverPort}");
+                AddLog($"[NetworkTestPanel] 服务端已启动 (TCP:11451, KCP:19198)");
             }
             catch (Exception e)
             {
@@ -184,7 +186,7 @@ namespace Network.Test
             {
                 _netClient.StartClient();
                 _isClientRunning = true;
-                AddLog($"[NetworkTestPanel] 客户端已连接: {_clientIp}:{_clientPort}");
+                AddLog($"[NetworkTestPanel] 客户端已连接 (TCP+KCP)");
             }
             catch (Exception e)
             {
@@ -209,8 +211,16 @@ namespace Network.Test
             }
 
             var data = Encoding.UTF8.GetBytes(_chatInput);
-            _netClient.Send(data);
-            AddLog($"[客户端 -> 服务端] {_chatInput}");
+            if (_useTcpForChat)
+            {
+                _netClient.SendReliable(data);
+                AddLog($"[客户端 -TCP-> 服务端] {_chatInput}");
+            }
+            else
+            {
+                _netClient.Send(data);
+                AddLog($"[客户端 -KCP-> 服务端] {_chatInput}");
+            }
             _chatInput = "";
         }
 
@@ -224,8 +234,16 @@ namespace Network.Test
             }
 
             var data = Encoding.UTF8.GetBytes(_broadcastInput);
-            _netServer.Broadcast(data);
-            AddLog($"[服务端 -> 广播] {_broadcastInput}");
+            if (_useTcpForBroadcast)
+            {
+                _netServer.BroadcastReliable(data);
+                AddLog($"[服务端 -TCP广播->] {_broadcastInput}");
+            }
+            else
+            {
+                _netServer.Broadcast(data);
+                AddLog($"[服务端 -KCP广播->] {_broadcastInput}");
+            }
             _broadcastInput = "";
         }
 
@@ -241,7 +259,7 @@ namespace Network.Test
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,
                 new Vector3(scale, scale, 1f));
 
-            GUILayout.BeginArea(new Rect(10, 10, 500, 580));
+            GUILayout.BeginArea(new Rect(10, 10, 500, 650));
             {
                 DrawTitle();
                 DrawServerSection();
@@ -278,8 +296,7 @@ namespace Network.Test
                 GUILayout.Label("服务端 (Host)", new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("端口:", GUILayout.Width(40));
-                _serverPort = GUILayout.TextField(_serverPort, GUILayout.Width(60));
+                GUILayout.Label($"TCP端口:11451  KCP端口:19198", new GUIStyle(GUI.skin.label) { fontSize = 11 });
                 GUILayout.FlexibleSpace();
 
                 GUI.enabled = !_isServerRunning;
@@ -297,7 +314,7 @@ namespace Network.Test
                 GUI.enabled = true;
                 GUILayout.EndHorizontal();
 
-                GUILayout.Label($"状态: {(_isServerRunning ? "运行中" : "未启动")}",
+                GUILayout.Label($"状态: {(_isServerRunning ? "运行中 (TCP+KCP)" : "未启动")}",
                     new GUIStyle(GUI.skin.label)
                     {
                         normal = { textColor = _isServerRunning ? Color.green : Color.gray }
@@ -316,8 +333,6 @@ namespace Network.Test
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("IP:", GUILayout.Width(25));
                 _clientIp = GUILayout.TextField(_clientIp, GUILayout.Width(100));
-                GUILayout.Label("端口:", GUILayout.Width(35));
-                _clientPort = GUILayout.TextField(_clientPort, GUILayout.Width(50));
                 GUILayout.FlexibleSpace();
 
                 GUI.enabled = !_isClientRunning;
@@ -335,7 +350,7 @@ namespace Network.Test
                 GUI.enabled = true;
                 GUILayout.EndHorizontal();
 
-                GUILayout.Label($"状态: {(_isClientRunning ? "已连接" : "未连接")}",
+                GUILayout.Label($"状态: {(_isClientRunning ? "已连接 (TCP+KCP)" : "未连接")}",
                     new GUIStyle(GUI.skin.label)
                     {
                         normal = { textColor = _isClientRunning ? Color.green : Color.gray }
@@ -355,12 +370,24 @@ namespace Network.Test
                 _chatInput = GUILayout.TextField(_chatInput, GUILayout.ExpandWidth(true));
 
                 GUI.enabled = _isClientRunning;
-                if (GUILayout.Button("发送", GUILayout.Width(80)))
+                if (GUILayout.Button("发送", GUILayout.Width(60)))
                 {
                     SendChatMessage();
                 }
 
                 GUI.enabled = true;
+                GUILayout.EndHorizontal();
+
+                // 传输类型切换
+                GUILayout.BeginHorizontal();
+                var transportName = _useTcpForChat ? "TCP" : "KCP";
+                var transportColor = _useTcpForChat ? Color.cyan : Color.yellow;
+                var toggleStyle = new GUIStyle(GUI.skin.toggle)
+                {
+                    normal = { textColor = transportColor },
+                    fontSize = 11
+                };
+                _useTcpForChat = GUILayout.Toggle(_useTcpForChat, $"使用TCP发送 (当前: {transportName})", toggleStyle);
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
@@ -377,12 +404,24 @@ namespace Network.Test
                 _broadcastInput = GUILayout.TextField(_broadcastInput, GUILayout.ExpandWidth(true));
 
                 GUI.enabled = _isServerRunning;
-                if (GUILayout.Button("广播", GUILayout.Width(80)))
+                if (GUILayout.Button("广播", GUILayout.Width(60)))
                 {
                     SendBroadcast();
                 }
 
                 GUI.enabled = true;
+                GUILayout.EndHorizontal();
+
+                // 传输类型切换
+                GUILayout.BeginHorizontal();
+                var transportName = _useTcpForBroadcast ? "TCP" : "KCP";
+                var transportColor = _useTcpForBroadcast ? Color.cyan : Color.yellow;
+                var toggleStyle = new GUIStyle(GUI.skin.toggle)
+                {
+                    normal = { textColor = transportColor },
+                    fontSize = 11
+                };
+                _useTcpForBroadcast = GUILayout.Toggle(_useTcpForBroadcast, $"使用TCP广播 (当前: {transportName})", toggleStyle);
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
@@ -405,21 +444,15 @@ namespace Network.Test
                     ? string.Join("\n", _logLines)
                     : "等待通信...";
 
-                // 计算日志文本总高度，用于自动滚到底部
-                float logHeight = logStyle.CalcHeight(new GUIContent(logText), 480);
+                // 自动滚到底部
+                _logScrollPosition.y = float.MaxValue;
 
                 _logScrollPosition = GUILayout.BeginScrollView(
                     _logScrollPosition,
                     false, true,
-                    GUILayout.Height(180));
+                    GUILayout.ExpandHeight(true));
 
                 GUILayout.Label(logText, logStyle, GUILayout.ExpandWidth(true));
-
-                // 自动滚动到底部（内容高度超出视口时）
-                if (logHeight > 180)
-                {
-                    _logScrollPosition.y = logHeight;
-                }
 
                 GUILayout.EndScrollView();
             }
