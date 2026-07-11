@@ -28,8 +28,12 @@ namespace Network
             }
         }
 
-        public int ClientCount => _clientsById.Count;
+        public int ClientCount
+        {
+            get { lock (_lock) { return _clientsById.Count; } }
+        }
 
+        private readonly object _lock = new object();
         private uint _nextClientId = 1;
         private readonly Dictionary<uint, Client> _clientsById = new Dictionary<uint, Client>();
         private readonly Dictionary<ulong, Client> _clientsByToken = new Dictionary<ulong, Client>();
@@ -41,14 +45,17 @@ namespace Network
         /// </summary>
         public Client AddClient()
         {
-            ulong token = CreateUniqueToken();
-            Client client = new Client(_nextClientId, token);
-            
-            _clientsById[_nextClientId] = client;
-            _clientsByToken[token] = client;
-            
-            _nextClientId++;
-            return client;
+            lock (_lock)
+            {
+                ulong token = CreateUniqueToken();
+                Client client = new Client(_nextClientId, token);
+
+                _clientsById[_nextClientId] = client;
+                _clientsByToken[token] = client;
+
+                _nextClientId++;
+                return client;
+            }
         }
 
         /// <summary>
@@ -56,11 +63,14 @@ namespace Network
         /// </summary>
         public void UpdateClientTcp(uint clientId, EndPoint tcpEndPoint)
         {
-            if (_clientsById.ContainsKey(clientId))
+            lock (_lock)
             {
-                Client client = _clientsById[clientId];
-                client.TcpEndPoint = tcpEndPoint;
-                _clientsById[clientId] = client;
+                if (_clientsById.ContainsKey(clientId))
+                {
+                    Client client = _clientsById[clientId];
+                    client.TcpEndPoint = tcpEndPoint;
+                    _clientsById[clientId] = client;
+                }
             }
         }
         
@@ -69,11 +79,14 @@ namespace Network
         /// </summary>
         public void UpdateClientKcp(ulong token, EndPoint kcpEndPoint)
         {
-            if (_clientsByToken.ContainsKey(token))
+            lock (_lock)
             {
-                Client client =  _clientsByToken[token];
-                client.KcpEndPoint = kcpEndPoint;
-                _clientsByToken[token] = client;
+                if (_clientsByToken.ContainsKey(token))
+                {
+                    Client client = _clientsByToken[token];
+                    client.KcpEndPoint = kcpEndPoint;
+                    _clientsByToken[token] = client;
+                }
             }
         }
 
@@ -82,14 +95,17 @@ namespace Network
         /// </summary>
         public bool RemoveClient(uint clientId)
         {
-            if (!_clientsById.TryGetValue(clientId, out Client client))
+            lock (_lock)
             {
-                return false;
-            }
+                if (!_clientsById.TryGetValue(clientId, out Client client))
+                {
+                    return false;
+                }
 
-            _clientsById.Remove(clientId);
-            _clientsByToken.Remove(client.Token);
-            return true;
+                _clientsById.Remove(clientId);
+                _clientsByToken.Remove(client.Token);
+                return true;
+            }
         }
 
         /// <summary>
@@ -97,14 +113,17 @@ namespace Network
         /// </summary>
         public bool RemoveClient(ulong token)
         {
-            if (!_clientsByToken.TryGetValue(token, out Client client))
+            lock (_lock)
             {
-                return false;
-            }
+                if (!_clientsByToken.TryGetValue(token, out Client client))
+                {
+                    return false;
+                }
 
-            _clientsById.Remove(client.ClientId);
-            _clientsByToken.Remove(token);
-            return true;
+                _clientsById.Remove(client.ClientId);
+                _clientsByToken.Remove(token);
+                return true;
+            }
         }
 
         #endregion
@@ -113,51 +132,74 @@ namespace Network
 
         public bool TryGetClient(uint clientId, out Client client)
         {
-            return _clientsById.TryGetValue(clientId, out client);
+            lock (_lock)
+            {
+                return _clientsById.TryGetValue(clientId, out client);
+            }
         }
 
         public bool TryGetClient(ulong token, out Client client)
         {
-            return _clientsByToken.TryGetValue(token, out client);
+            lock (_lock)
+            {
+                return _clientsByToken.TryGetValue(token, out client);
+            }
         }
 
         public bool TryGetClientId(ulong token, out uint clientId)
         {
-            if (_clientsByToken.TryGetValue(token, out Client client))
+            lock (_lock)
             {
-                clientId = client.ClientId;
-                return true;
-            }
+                if (_clientsByToken.TryGetValue(token, out Client client))
+                {
+                    clientId = client.ClientId;
+                    return true;
+                }
 
-            clientId = 0;
-            return false;
+                clientId = 0;
+                return false;
+            }
         }
 
         public bool TryGetToken(uint clientId, out ulong token)
         {
-            if (_clientsById.TryGetValue(clientId, out Client client))
+            lock (_lock)
             {
-                token = client.Token;
-                return true;
-            }
+                if (_clientsById.TryGetValue(clientId, out Client client))
+                {
+                    token = client.Token;
+                    return true;
+                }
 
-            token = 0;
-            return false;
+                token = 0;
+                return false;
+            }
         }
 
         public bool ContainsClient(uint clientId)
         {
-            return _clientsById.ContainsKey(clientId);
+            lock (_lock)
+            {
+                return _clientsById.ContainsKey(clientId);
+            }
         }
 
         public bool ContainsClient(ulong token)
         {
-            return _clientsByToken.ContainsKey(token);
+            lock (_lock)
+            {
+                return _clientsByToken.ContainsKey(token);
+            }
         }
 
         public IEnumerable<Client> GetAllClients()
         {
-            return _clientsById.Values;
+            lock (_lock)
+            {
+                Client[] snapshot = new Client[_clientsById.Count];
+                _clientsById.Values.CopyTo(snapshot, 0);
+                return snapshot;
+            }
         }
 
         #endregion
@@ -166,8 +208,11 @@ namespace Network
 
         public void Clear()
         {
-            _clientsById.Clear();
-            _clientsByToken.Clear();
+            lock (_lock)
+            {
+                _clientsById.Clear();
+                _clientsByToken.Clear();
+            }
         }
 
         #endregion
