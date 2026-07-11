@@ -9,14 +9,14 @@ namespace Network
     /// </summary>
     public sealed class KcpClientTransport : IClientTransport
     {
+        public TransportType Type => TransportType.KCP;
+        public bool IsRunning { get; private set; }
+
         private readonly TransportSettings _settings;
         private UdpClient _udpClient;
         private KcpSession _session;
         private IPEndPoint _serverEndPoint;
         private bool _isDisposed;
-
-        public TransportType Type => TransportType.KCP;
-        public bool IsRunning { get; private set; }
 
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;

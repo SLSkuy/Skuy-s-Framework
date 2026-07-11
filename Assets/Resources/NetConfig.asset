@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: NetConfig
   m_EditorClassIdentifier: Assembly-CSharp::Network.NetworkData
   ip: 127.0.0.1
-  tcpPort: 11451
-  udpPort: 19198
+  reliablePort: 11451
+  fastPort: 19198
   heartBeatStep: 1

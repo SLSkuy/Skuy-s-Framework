@@ -14,10 +14,8 @@ namespace Network
     {
         public override SubSystemPriority Priority => SubSystemPriority.NetWorkManager;
         
-        public bool IsConnected => _serverTransport is {IsRunning: true};
-        public TransportType TransportType => _serverTransport.Type;
-        
-        private IServerTransport _serverTransport;
+        private IServerTransport _reliableTransport;
+        private IServerTransport _fastTransport;
         private ClientManager _clientManager;
         private MessageProcessor _messageProcessor;
         private NetConfig _config;
@@ -29,13 +27,14 @@ namespace Network
         {
             try
             {
-                if (_serverTransport == null)
+                if (_reliableTransport == null || _fastTransport == null)
                 {
                     Debug.LogError("[NetServer] Transport not initialized");
                     return;
                 }
                 
-                _serverTransport.StartServer(_config.udpPort);
+                _reliableTransport.StartServer(_config.reliablePort);
+                _fastTransport.StartServer(_config.fastPort);
             }
             catch (Exception e)
             {
@@ -46,7 +45,8 @@ namespace Network
         public void StopServer()
         {
             _clientManager.Clear();
-            _serverTransport.Stop();
+            _reliableTransport.Stop();
+            _fastTransport.Stop();
         }
 
         /// <summary>
@@ -54,12 +54,12 @@ namespace Network
         /// </summary>
         public void Send(uint clientId, IMessage message)
         {
-            _serverTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+            _fastTransport.Send(clientId, NetUtils.Proto2Bytes(message));
         }
 
         public void Send(uint clientId, byte[] data)
         {
-            _serverTransport.Send(clientId, data);
+            _fastTransport.Send(clientId, data);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Network
         {
             foreach (var clientId in clientIds)
             {
-                _serverTransport.Send(clientId, NetUtils.Proto2Bytes(message));
+                _fastTransport.Send(clientId, NetUtils.Proto2Bytes(message));
             }
         }
 
@@ -79,12 +79,12 @@ namespace Network
         /// <param name="message"></param>
         public void Broadcast(IMessage message)
         {
-            _serverTransport.Broadcast(NetUtils.Proto2Bytes(message));
+            _fastTransport.Broadcast(NetUtils.Proto2Bytes(message));
         }
 
         public void Broadcast(byte[] data)
         {
-            _serverTransport.Broadcast(data);
+            _fastTransport.Broadcast(data);
         }
         
         /// <summary>
@@ -135,32 +135,47 @@ namespace Network
             _config = NetConfig.Instance;
             _messageProcessor = new MessageProcessor();
             _clientManager = new ClientManager();
-
-            // TODO: 接入TCP传输层用于处理需要可靠连接的消息
-            
             TransportSettings settings = TransportSettings.FromConfig(_config);
-            _serverTransport = new KcpServerTransport(settings);
-            _serverTransport.OnDataReceived += HandleDataReceived;
-            _serverTransport.OnTransportError += HandleTransportError;
-            _serverTransport.OnClientConnected += HandleClientConnect;
-            _serverTransport.OnClientDisconnected += HandleClientDisconnect;
+            
+            _reliableTransport = new TcpServerTransport();
+            _reliableTransport.OnDataReceived += HandleDataReceived;
+            _reliableTransport.OnTransportError += HandleTransportError;
+            _reliableTransport.OnClientConnected += HandleClientConnect;
+            _reliableTransport.OnClientDisconnected += HandleClientDisconnect;
+
+            _fastTransport = new KcpServerTransport(settings);
+            _fastTransport.OnDataReceived += HandleDataReceived;
+            _fastTransport.OnTransportError += HandleTransportError;
+            _fastTransport.OnClientConnected += HandleClientConnect;
+            _fastTransport.OnClientDisconnected += HandleClientDisconnect;
         }
 
         public override void Update(float deltaTime)
         {
-            _serverTransport.Update(deltaTime);
+            _reliableTransport?.Update(deltaTime);
+            _fastTransport?.Update(deltaTime);
         }
 
         public override void Destroy()
         {
-            if (_serverTransport != null)
+            if (_fastTransport != null)
             {
-                _serverTransport.OnDataReceived -= HandleDataReceived;
-                _serverTransport.OnTransportError -= HandleTransportError;
-                _serverTransport.OnClientConnected -= HandleClientConnect;
-                _serverTransport.OnClientDisconnected -= HandleClientDisconnect;
-                _serverTransport.Dispose();
-                _serverTransport = null;
+                _fastTransport.OnDataReceived -= HandleDataReceived;
+                _fastTransport.OnTransportError -= HandleTransportError;
+                _fastTransport.OnClientConnected -= HandleClientConnect;
+                _fastTransport.OnClientDisconnected -= HandleClientDisconnect;
+                _fastTransport.Dispose();
+                _fastTransport = null;
+            }
+
+            if (_reliableTransport != null)
+            {
+                _reliableTransport.OnDataReceived -= HandleDataReceived;
+                _reliableTransport.OnTransportError -= HandleTransportError;
+                _reliableTransport.OnClientConnected -= HandleClientConnect;
+                _reliableTransport.OnClientDisconnected -= HandleClientDisconnect;
+                _reliableTransport.Dispose();
+                _reliableTransport = null;
             }
             
             _clientManager.Clear();
