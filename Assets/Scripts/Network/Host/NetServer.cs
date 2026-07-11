@@ -79,6 +79,11 @@ namespace Network
         {
             _serverTransport.Broadcast(NetUtils.Proto2Bytes(message));
         }
+
+        public void Broadcast(byte[] data)
+        {
+            _serverTransport.Broadcast(data);
+        }
         
         /// <summary>
         /// 处理网络事件

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Framework;
 using Google.Protobuf;
 using UnityEngine;
@@ -82,6 +83,7 @@ namespace Network
         /// <param name="data"></param>
         private void HandleDataReceived(byte[] data)
         {
+            Debug.Log($"[NetClient] 收到服务端消息: {Encoding.UTF8.GetString(data)}");
             _messageProcessor.HandleMessage(NetUtils.Bytes2Proto(data));
         }
 
