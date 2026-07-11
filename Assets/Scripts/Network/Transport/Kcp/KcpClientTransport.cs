@@ -46,7 +46,7 @@ namespace Network
                 _serverEndPoint = new IPEndPoint(address, port);
                 _udpClient = new UdpClient(address.AddressFamily);
                 _udpClient.Connect(_serverEndPoint);
-                _peer = new KcpPeer(_settings.Conv, _serverEndPoint, _settings, Send);
+                _peer = new KcpPeer(_settings.conv, _serverEndPoint, _settings, Send);
                 IsRunning = true;
             }
             catch (Exception ex)

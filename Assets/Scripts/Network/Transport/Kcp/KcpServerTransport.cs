@@ -191,7 +191,7 @@ namespace Network
 
         private void RemoveTimedOutClients(DateTimeOffset now)
         {
-            if (_settings.DisconnectTimeout <= 0f)
+            if (_settings.disconnectTimeout <= 0f)
             {
                 return;
             }
@@ -200,7 +200,7 @@ namespace Network
             foreach (ClientSession session in _clientsById.Values)
             {
                 double inactiveSeconds = (now - session.Peer.LastReceiveTime).TotalSeconds;
-                if (inactiveSeconds < _settings.DisconnectTimeout)
+                if (inactiveSeconds < _settings.disconnectTimeout)
                 {
                     continue;
                 }

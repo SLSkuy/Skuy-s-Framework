@@ -25,9 +25,9 @@ namespace Network
             LastReceiveTime = DateTimeOffset.UtcNow;
 
             Kcp = new SimpleSegManager.Kcp(conv, this);
-            Kcp.SetMtu(settings.Mtu);
-            Kcp.WndSize(settings.SendWindow, settings.ReceiveWindow);
-            Kcp.NoDelay(settings.NoDelay, settings.UpdateInterval, settings.FastResend, settings.DisableCongestionControl);
+            Kcp.SetMtu(settings.mtu);
+            Kcp.WndSize(settings.sendWindow, settings.receiveWindow);
+            Kcp.NoDelay(settings.noDelay, settings.updateInterval, settings.fastResend, settings.disableCongestionControl);
         }
 
         public void Input(byte[] data)

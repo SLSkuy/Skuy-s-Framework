@@ -2,18 +2,21 @@ using System;
 
 namespace Network
 {
+    /// <summary>
+    /// KCP传输设置
+    /// </summary>
     [Serializable]
     public sealed class TransportSettings
     {
-        public uint Conv = 1;
-        public int Mtu = 1400;
-        public int SendWindow = 128;
-        public int ReceiveWindow = 128;
-        public int UpdateInterval = 10;
-        public int NoDelay = 1;
-        public int FastResend = 2;
-        public int DisableCongestionControl = 1;
-        public float DisconnectTimeout = 10f;
+        public uint conv = 1;
+        public int mtu = 1400;
+        public int sendWindow = 128;
+        public int receiveWindow = 128;
+        public int updateInterval = 10; 
+        public int noDelay = 1;
+        public int fastResend = 2;
+        public int disableCongestionControl = 1;
+        public float disconnectTimeout = 10f;
 
         public static TransportSettings Default => new TransportSettings();
 
@@ -26,11 +29,11 @@ namespace Network
 
             return new TransportSettings
             {
-                Conv = config.kcpConv,
-                Mtu = config.kcpMtu,
-                SendWindow = config.kcpSendWindow,
-                ReceiveWindow = config.kcpReceiveWindow,
-                UpdateInterval = config.kcpUpdateInterval
+                conv = config.kcpConv,
+                mtu = config.kcpMtu,
+                sendWindow = config.kcpSendWindow,
+                receiveWindow = config.kcpReceiveWindow,
+                updateInterval = config.kcpUpdateInterval
             };
         }
     }
