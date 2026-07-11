@@ -18,6 +18,7 @@ namespace Network
         public TransportType TransportType => _serverTransport.Type;
         
         private IServerTransport _serverTransport;
+        private ClientManager _clientManager;
         private MessageProcessor _messageProcessor;
         private NetConfig _config;
 
@@ -44,7 +45,8 @@ namespace Network
 
         public void StopServer()
         {
-            _serverTransport?.Stop();
+            _clientManager.Clear();
+            _serverTransport.Stop();
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace Network
         /// </summary>
         public void Register<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
         {
-            _messageProcessor?.Register(eventId, handler);
+            _messageProcessor.Register(eventId, handler);
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace Network
         /// </summary>
         public void UnRegister(NetEvent eventId)
         {
-            _messageProcessor?.UnRegister(eventId);
+            _messageProcessor.UnRegister(eventId);
         }
 
         /// <summary>
@@ -118,12 +120,12 @@ namespace Network
 
         private void HandleClientConnect(uint clientId)
         {
-            // TODO: 处理客户端连接请求
+            
         }
 
         private void HandleClientDisconnect(uint clientId)
         {
-            // TODO: 处理客户端断连请求
+            
         }
 
         #region 生命周期
@@ -132,6 +134,7 @@ namespace Network
         {
             _config = NetConfig.Instance;
             _messageProcessor = new MessageProcessor();
+            _clientManager = new ClientManager();
 
             // TODO: 接入TCP传输层用于处理需要可靠连接的消息
             
@@ -145,7 +148,7 @@ namespace Network
 
         public override void Update(float deltaTime)
         {
-            _serverTransport?.Update(deltaTime);
+            _serverTransport.Update(deltaTime);
         }
 
         public override void Destroy()
@@ -160,8 +163,7 @@ namespace Network
                 _serverTransport = null;
             }
             
-            _messageProcessor = null;
-            _config = null;
+            _clientManager.Clear();
         }
 
         #endregion
