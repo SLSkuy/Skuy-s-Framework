@@ -22,6 +22,7 @@ namespace Network
         // ========== 连接标识 ==========
         private uint _clientId;
         private ulong _token;
+        // ========== 连接标识 ==========
 
         /// <summary>
         /// 开启可靠连接
@@ -65,20 +66,29 @@ namespace Network
             }
         }
 
-        /// <summary>
-        /// 开启客户端连接
-        /// </summary>
-        public void StartClient()
-        {
-            StartReliableConnect();
-            StartFastConnect(_config.ip, _config.fastPort);
-        }
-
         public void StopClient()
         {
             _fastTransport?.Stop();
             _reliableTransport?.Stop();
         }
+        
+        /// <summary>
+        /// 处理网络事件
+        /// </summary>
+        public void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
+        {
+            _messageProcessor?.Register(eventId, handler);
+        }
+
+        /// <summary>
+        /// 注销网络事件
+        /// </summary>
+        public void UnRegNetHandler(NetEvent eventId)
+        {
+            _messageProcessor?.UnRegister(eventId);
+        }
+
+        #region 消息发送
 
         /// <summary>
         /// 发送消息
@@ -111,21 +121,9 @@ namespace Network
             _reliableTransport?.Send(data);
         }
 
-        /// <summary>
-        /// 处理网络事件
-        /// </summary>
-        public void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
-        {
-            _messageProcessor?.Register(eventId, handler);
-        }
+        #endregion
 
-        /// <summary>
-        /// 注销网络事件
-        /// </summary>
-        public void UnRegNetHandler(NetEvent eventId)
-        {
-            _messageProcessor?.UnRegister(eventId);
-        }
+        #region 传输回调
 
         /// <summary>
         /// 处理接收到的消息
@@ -142,6 +140,8 @@ namespace Network
         {
             Debug.LogError("[NetClient] Transport error: " + error);
         }
+
+        #endregion
 
         #region 事件回调
 
@@ -170,6 +170,11 @@ namespace Network
             };
             Send(NetEvent.FAST_CONNECT_REQUEST, request);
         }
+        
+        private void HandleDebugChat(Chat_Test msg)
+        {
+            Debug.Log($"[NetServer] Chat Test From Server: {msg.Content}");
+        }
 
         #endregion
 
@@ -194,6 +199,7 @@ namespace Network
         public override void BindEvents()
         {
             RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
+            RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
         }
 
         public override void Update(float deltaTime)

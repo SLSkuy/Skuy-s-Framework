@@ -33,7 +33,8 @@ namespace Network
                 mtu = config.kcpMtu,
                 sendWindow = config.kcpSendWindow,
                 receiveWindow = config.kcpReceiveWindow,
-                updateInterval = config.kcpUpdateInterval
+                updateInterval = config.kcpUpdateInterval,
+                disconnectTimeout = config.disconnectTimeout
             };
         }
     }

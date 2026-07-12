@@ -112,8 +112,8 @@ namespace Core
 
         protected override void Destroy()
         {
-            SystemMgr.Destroy();
             Global.Clear();
+            SystemMgr.Destroy();
         }
 
         /// <summary>

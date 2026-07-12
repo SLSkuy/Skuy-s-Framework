@@ -21,6 +21,7 @@ namespace Network
         private const int KCP_HEADER_SIZE = 24;
         
         public TransportType Type => TransportType.KCP;
+        public short Port { get; private set; }
         public bool IsRunning { get; private set; }
 
         private readonly TransportSettings _settings;
@@ -42,7 +43,7 @@ namespace Network
 
         #region 暴露接口
 
-         public void StartServer(int port)
+         public void StartServer(short port)
         {
             ThrowIfDisposed();
             Stop();
@@ -50,6 +51,7 @@ namespace Network
             try
             {
                 _udpServer = new UdpClient(port);
+                Port = port;
                 IsRunning = true;
             }
             catch (Exception ex)

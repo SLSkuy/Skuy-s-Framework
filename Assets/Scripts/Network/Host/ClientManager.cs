@@ -13,14 +13,14 @@ namespace Network
         /// </summary>
         public struct Client
         {
-            public readonly uint ClientId;
+            public readonly uint Id;
             public readonly ulong Token;
             public uint ReliableSessionId;
             public uint FastSessionId;
 
-            public Client(uint clientId, ulong token)
+            public Client(uint id, ulong token)
             {
-                ClientId = clientId;
+                Id = id;
                 Token = token;
                 ReliableSessionId = 0;
                 FastSessionId = 0;
@@ -36,24 +36,104 @@ namespace Network
         private uint _nextClientId = 1;
         private readonly Dictionary<uint, Client> _clientsById = new Dictionary<uint, Client>();
         private readonly Dictionary<ulong, Client> _clientsByToken = new Dictionary<ulong, Client>();
+        private readonly Dictionary<uint, uint> _clientIdsByReliableSessionId = new Dictionary<uint, uint>();
+        private readonly Dictionary<uint, uint> _clientIdsByFastSessionId = new Dictionary<uint, uint>();
 
         #region 客户端管理
 
         /// <summary>
         /// 注册新客户端连接，生成唯一Token
         /// </summary>
-        public Client AddClient()
+        public Client AddClient(uint reliableSessionId = 0)
         {
             lock (_lock)
             {
+                if (reliableSessionId != 0 && 
+                    _clientIdsByReliableSessionId.TryGetValue(reliableSessionId, out uint existingClientId) &&
+                    _clientsById.TryGetValue(existingClientId, out Client existingClient))
+                {
+                    return existingClient;
+                }
+
                 ulong token = CreateUniqueToken();
-                Client client = new Client(_nextClientId, token);
+                Client client = new Client(_nextClientId, token)
+                {
+                    ReliableSessionId = reliableSessionId
+                };
 
                 _clientsById[_nextClientId] = client;
                 _clientsByToken[token] = client;
+                if (reliableSessionId != 0)
+                {
+                    _clientIdsByReliableSessionId[reliableSessionId] = _nextClientId;
+                }
 
                 _nextClientId++;
                 return client;
+            }
+        }
+
+        public bool BindFastSession(ulong token, uint fastSessionId)
+        {
+            lock (_lock)
+            {
+                if (!TryGetClient(token, out var client))
+                {
+                    return false;
+                }
+
+                if (client.FastSessionId != 0)
+                {
+                    _clientIdsByFastSessionId.Remove(client.FastSessionId);
+                }
+
+                client.FastSessionId = fastSessionId;
+                _clientsById[client.Id] = client;
+                _clientsByToken[token] = client;
+                _clientIdsByFastSessionId[fastSessionId] = client.Id;
+                return true;
+            }
+        }
+
+        public bool UnBindReliableSession(uint reliableSessionId, out uint clientId)
+        {
+            lock (_lock)
+            {
+                if (!_clientIdsByReliableSessionId.Remove(reliableSessionId, out clientId))
+                {
+                    clientId = 0;
+                    return false;
+                }
+
+                if (_clientsById.TryGetValue(clientId, out Client client) && client.ReliableSessionId == reliableSessionId)
+                {
+                    client.ReliableSessionId = 0;
+                    _clientsById[clientId] = client;
+                    _clientsByToken[client.Token] = client;
+                }
+
+                return true;
+            }
+        }
+
+        public bool UnbindFastSession(uint fastSessionId, out uint clientId)
+        {
+            lock (_lock)
+            {
+                if (!_clientIdsByFastSessionId.Remove(fastSessionId, out clientId))
+                {
+                    clientId = 0;
+                    return false;
+                }
+
+                if (_clientsById.TryGetValue(clientId, out Client client) && client.FastSessionId == fastSessionId)
+                {
+                    client.FastSessionId = 0;
+                    _clientsById[clientId] = client;
+                    _clientsByToken[client.Token] = client;
+                }
+
+                return true;
             }
         }
 
@@ -64,13 +144,22 @@ namespace Network
         {
             lock (_lock)
             {
-                if (!_clientsById.TryGetValue(clientId, out Client client))
+                if (!_clientsById.Remove(clientId, out Client client))
                 {
                     return false;
                 }
 
-                _clientsById.Remove(clientId);
                 _clientsByToken.Remove(client.Token);
+                if (client.ReliableSessionId != 0)
+                {
+                    _clientIdsByReliableSessionId.Remove(client.ReliableSessionId);
+                }
+
+                if (client.FastSessionId != 0)
+                {
+                    _clientIdsByFastSessionId.Remove(client.FastSessionId);
+                }
+
                 return true;
             }
         }
@@ -87,8 +176,18 @@ namespace Network
                     return false;
                 }
 
-                _clientsById.Remove(client.ClientId);
+                _clientsById.Remove(client.Id);
                 _clientsByToken.Remove(token);
+                if (client.ReliableSessionId != 0)
+                {
+                    _clientIdsByReliableSessionId.Remove(client.ReliableSessionId);
+                }
+
+                if (client.FastSessionId != 0)
+                {
+                    _clientIdsByFastSessionId.Remove(client.FastSessionId);
+                }
+
                 return true;
             }
         }
@@ -119,7 +218,7 @@ namespace Network
             {
                 if (_clientsByToken.TryGetValue(token, out Client client))
                 {
-                    clientId = client.ClientId;
+                    clientId = client.Id;
                     return true;
                 }
 
@@ -139,6 +238,48 @@ namespace Network
                 }
 
                 token = 0;
+                return false;
+            }
+        }
+
+        public bool TryGetClientId(TransportType transportType, uint transportSessionId, out uint clientId)
+        {
+            lock (_lock)
+            {
+                Dictionary<uint, uint> map = transportType == TransportType.TCP
+                    ? _clientIdsByReliableSessionId
+                    : _clientIdsByFastSessionId;
+
+                return map.TryGetValue(transportSessionId, out clientId);
+            }
+        }
+
+        public bool TryGetReliableSessionId(uint clientId, out uint reliableSessionId)
+        {
+            lock (_lock)
+            {
+                if (_clientsById.TryGetValue(clientId, out Client client) && client.ReliableSessionId != 0)
+                {
+                    reliableSessionId = client.ReliableSessionId;
+                    return true;
+                }
+
+                reliableSessionId = 0;
+                return false;
+            }
+        }
+
+        public bool TryGetFastSessionId(uint clientId, out uint fastSessionId)
+        {
+            lock (_lock)
+            {
+                if (_clientsById.TryGetValue(clientId, out Client client) && client.FastSessionId != 0)
+                {
+                    fastSessionId = client.FastSessionId;
+                    return true;
+                }
+
+                fastSessionId = 0;
                 return false;
             }
         }
@@ -163,6 +304,9 @@ namespace Network
             {
                 _clientsById.Clear();
                 _clientsByToken.Clear();
+                _clientIdsByReliableSessionId.Clear();
+                _clientIdsByFastSessionId.Clear();
+                _nextClientId = 1;
             }
         }
 

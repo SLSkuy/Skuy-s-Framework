@@ -1,5 +1,6 @@
 using Framework;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Network
 {
@@ -24,5 +25,6 @@ namespace Network
         public int kcpSendWindow = 128;
         public int kcpReceiveWindow = 128;
         public int kcpUpdateInterval = 10;
+        public float disconnectTimeout = 10f;
     }
 }

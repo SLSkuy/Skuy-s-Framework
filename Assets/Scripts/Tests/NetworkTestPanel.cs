@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Core;
+using NetConnect;
 using UnityEngine;
 
 namespace Network.Test
@@ -184,7 +185,7 @@ namespace Network.Test
 
             try
             {
-                _netClient.StartClient();
+                _netClient.StartReliableConnect();
                 _isClientRunning = true;
                 AddLog($"[NetworkTestPanel] 客户端已连接 (TCP+KCP)");
             }
@@ -210,15 +211,18 @@ namespace Network.Test
                 return;
             }
 
-            var data = Encoding.UTF8.GetBytes(_chatInput);
+            Chat_Test msg = new Chat_Test()
+            {
+                Content = _chatInput,
+            };
             if (_useTcpForChat)
             {
-                _netClient.SendReliable(data);
+                _netClient.SendReliable(NetEvent.CHAT_TEST, msg);
                 AddLog($"[客户端 -TCP-> 服务端] {_chatInput}");
             }
             else
             {
-                _netClient.Send(data);
+                _netClient.Send(NetEvent.CHAT_TEST, msg);
                 AddLog($"[客户端 -KCP-> 服务端] {_chatInput}");
             }
             _chatInput = "";
@@ -233,15 +237,18 @@ namespace Network.Test
                 return;
             }
 
-            var data = Encoding.UTF8.GetBytes(_broadcastInput);
+            Chat_Test msg = new Chat_Test()
+            {
+                Content = _broadcastInput,
+            };
             if (_useTcpForBroadcast)
             {
-                _netServer.BroadcastReliable(data);
+                _netServer.BroadcastReliable(NetEvent.CHAT_TEST, msg);
                 AddLog($"[服务端 -TCP广播->] {_broadcastInput}");
             }
             else
             {
-                _netServer.Broadcast(data);
+                _netServer.Broadcast(NetEvent.CHAT_TEST, msg);
                 AddLog($"[服务端 -KCP广播->] {_broadcastInput}");
             }
             _broadcastInput = "";

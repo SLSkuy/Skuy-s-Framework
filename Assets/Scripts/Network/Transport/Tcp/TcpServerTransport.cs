@@ -61,6 +61,7 @@ namespace Network
         }
 
         public TransportType Type => TransportType.TCP;
+        public short Port { get; private set; }
         public bool IsRunning { get; private set; }
 
         private readonly object _clientLock = new object();
@@ -81,7 +82,7 @@ namespace Network
 
         #region 暴露接口
         
-        public void StartServer(int port)
+        public void StartServer(short port)
         {
             ThrowIfDisposed();
             Stop();
@@ -95,6 +96,7 @@ namespace Network
                 };
                 _listener.Bind(new IPEndPoint(IPAddress.Any, port));
                 _listener.Listen(128);
+                Port = port;
                 IsRunning = true;
 
                 _ = Task.Run(() => AcceptLoop(_cts.Token));

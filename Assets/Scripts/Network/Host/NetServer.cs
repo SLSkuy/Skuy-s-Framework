@@ -1,7 +1,7 @@
 using System;
-using System.Text;
 using Framework;
 using Google.Protobuf;
+using NetConnect;
 using UnityEngine;
 
 namespace Network
@@ -47,89 +47,6 @@ namespace Network
             _reliableTransport?.Stop();
             _fastTransport?.Stop();
         }
-
-        /// <summary>
-        /// 给单个客户端发送消息
-        /// </summary>
-        public void Send(uint clientId, NetEvent evt, IMessage message)
-        {
-            _fastTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
-        }
-        
-        /// <summary>
-        /// 使用可靠传输发送
-        /// </summary>
-        public void SendReliable(uint clientId, NetEvent evt, IMessage message)
-        {
-            _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
-        }
-
-        /// <summary>
-        /// 给单个客户端发送消息
-        /// </summary>
-        public void Send(uint clientId, byte[] data)
-        {
-            _fastTransport.Send(clientId, data);
-        }
-
-        /// <summary>
-        /// 使用可靠传输发送
-        /// </summary>
-        public void SendReliable(uint clientId, byte[] data)
-        {
-            _reliableTransport.Send(clientId, data);
-        }
-
-        /// <summary>
-        /// 给一组客户端发送消息
-        /// </summary>
-        public void SendGroup(uint[] clientIds, NetEvent evt, IMessage message)
-        {
-            foreach (var clientId in clientIds)
-            {
-                _fastTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
-            }
-        }
-
-        /// <summary>
-        /// 给一组客户端发送消息，使用可靠传输发送
-        /// </summary>
-        public void SendGroupReliable(uint[] clientIds, NetEvent evt, IMessage message)
-        {
-            foreach (var clientId in clientIds)
-            {
-                _reliableTransport.Send(clientId, NetUtils.Proto2Bytes(evt, message));
-            }
-        }
-
-        /// <summary>
-        /// 为所有客户端广播消息
-        /// </summary>
-        public void Broadcast(NetEvent evt, IMessage message)
-        {
-            _fastTransport.Broadcast(NetUtils.Proto2Bytes(evt, message));
-        }
-
-        /// <summary>
-        /// 为所有客户端广播消息,，使用可靠传输发送
-        /// </summary>
-        public void BroadcastReliable(NetEvent evt, IMessage message)
-        {
-            _reliableTransport.Broadcast(NetUtils.Proto2Bytes(evt, message));
-        }
-
-        public void Broadcast(byte[] data)
-        {
-            _fastTransport.Broadcast(data);
-        }
-
-        /// <summary>
-        /// 使用可靠传输(TCP)广播
-        /// </summary>
-        public void BroadcastReliable(byte[] data)
-        {
-            _reliableTransport.Broadcast(data);
-        }
         
         /// <summary>
         /// 处理网络事件
@@ -147,14 +64,147 @@ namespace Network
             _messageProcessor.UnRegisterServer(eventId);
         }
 
-        /// <summary>
-        /// 处理接收到的消息
+        #region 消息发送
+
+         /// <summary>
+        /// 给单个客户端发送消息
         /// </summary>
-        private void HandleDataReceived(uint clientId, byte[] data)
+        public void Send(uint clientId, NetEvent evt, IMessage message)
         {
-            Debug.Log($"[NetServer] Received data from {clientId}, content: {Encoding.UTF8.GetString(data)}");
+            Send(clientId, NetUtils.Proto2Bytes(evt, message));
+        }
+        
+        /// <summary>
+        /// 使用可靠传输发送
+        /// </summary>
+        public void SendReliable(uint clientId, NetEvent evt, IMessage message)
+        {
+            SendReliable(clientId, NetUtils.Proto2Bytes(evt, message));
+        }
+
+        /// <summary>
+        /// 给单个客户端发送消息
+        /// </summary>
+        public void Send(uint clientId, byte[] data)
+        {
+            if (!_clientManager.TryGetFastSessionId(clientId, out uint fastSessionId))
+            {
+                Debug.LogWarning($"[NetServer] Fast session not found for client {clientId}");
+                return;
+            }
+
+            _fastTransport.Send(fastSessionId, data);
+        }
+
+        /// <summary>
+        /// 使用可靠传输发送
+        /// </summary>
+        public void SendReliable(uint clientId, byte[] data)
+        {
+            if (!_clientManager.TryGetReliableSessionId(clientId, out uint reliableSessionId))
+            {
+                Debug.LogWarning($"[NetServer] Reliable session not found for client {clientId}");
+                return;
+            }
+
+            _reliableTransport.Send(reliableSessionId, data);
+        }
+
+        /// <summary>
+        /// 给一组客户端发送消息
+        /// </summary>
+        public void SendGroup(uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            foreach (var clientId in clientIds)
+            {
+                Send(clientId, evt, message);
+            }
+        }
+
+        /// <summary>
+        /// 给一组客户端发送消息，使用可靠传输发送
+        /// </summary>
+        public void SendGroupReliable(uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            foreach (var clientId in clientIds)
+            {
+                SendReliable(clientId, evt, message);
+            }
+        }
+
+        /// <summary>
+        /// 为所有客户端广播消息
+        /// </summary>
+        public void Broadcast(NetEvent evt, IMessage message)
+        {
+            Broadcast(NetUtils.Proto2Bytes(evt, message));
+        }
+
+        /// <summary>
+        /// 为所有客户端广播消息,，使用可靠传输发送
+        /// </summary>
+        public void BroadcastReliable(NetEvent evt, IMessage message)
+        {
+            BroadcastReliable(NetUtils.Proto2Bytes(evt, message));
+        }
+
+        public void Broadcast(byte[] data)
+        {
+            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            {
+                if (client.FastSessionId != 0)
+                {
+                    _fastTransport.Send(client.FastSessionId, data);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 使用可靠传输(TCP)广播
+        /// </summary>
+        public void BroadcastReliable(byte[] data)
+        {
+            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            {
+                if (client.ReliableSessionId != 0)
+                {
+                    _reliableTransport.Send(client.ReliableSessionId, data);
+                }
+            }
+        }
+
+        #endregion
+        
+        #region 数据回调
+
+        /// <summary>
+        /// 处理接收到的可靠消息
+        /// </summary>
+        private void HandleReliableDataReceived(uint transportSessionId, byte[] data)
+        {
+            if (_clientManager.TryGetClientId(_reliableTransport.Type, transportSessionId, out var clientId))
+            {
+                var msg = NetUtils.Bytes2Proto(data);
+                _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
+            }
+        }
+
+        /// <summary>
+        /// 处理接收到的即时消息
+        /// </summary>
+        private void HandleFastDataReceived(uint transportSessionId, byte[] data)
+        {
             var msg = NetUtils.Bytes2Proto(data);
-            _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
+            if (_clientManager.TryGetClientId(_fastTransport.Type, transportSessionId, out var clientId))
+            {
+                _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
+            }
+            else if(msg is { Item1: NetEvent.FAST_CONNECT_REQUEST, Item2: Client_Fast_Connect_Request request })
+            {
+                // 特殊处理KCP连接请求
+                _clientManager.BindFastSession(request.Token, transportSessionId);
+                Debug.Log("Fast Transport Connect");
+            }
         }
 
         private void HandleTransportError(string error)
@@ -162,15 +212,74 @@ namespace Network
             Debug.LogError("[NetServer] Transport error: " + error);
         }
 
-        private void HandleClientConnect(uint clientId)
+        private void HandleReliableClientConnect(uint transportSessionId)
         {
+            Debug.Log($"[NetServer] Reliable transport session connected: {transportSessionId}");
             
+            // 添加新的客户端连接
+            _clientManager.AddClient(transportSessionId);
         }
 
-        private void HandleClientDisconnect(uint clientId)
+        private void HandleFastClientConnect(uint transportSessionId)
         {
-            
+            Debug.Log($"[NetServer] Fast transport session connected: {transportSessionId}");
         }
+
+        private void HandleReliableClientDisconnect(uint transportSessionId)
+        {
+            if (_clientManager.TryGetClientId(TransportType.TCP, transportSessionId, out uint clientId))
+            {
+                _clientManager.RemoveClient(clientId);
+                Debug.Log($"[NetServer] Client {clientId} disconnected with reliable session {transportSessionId}");
+                return;
+            }
+
+            Debug.Log($"[NetServer] Reliable transport session disconnected: {transportSessionId}");
+        }
+
+        private void HandleFastClientDisconnect(uint transportSessionId)
+        {
+            if (_clientManager.UnbindFastSession(transportSessionId, out uint clientId))
+            {
+                Debug.Log($"[NetServer] Fast session {transportSessionId} unbound from client {clientId}");
+                return;
+            }
+
+            Debug.Log($"[NetServer] Fast transport session disconnected: {transportSessionId}");
+        }
+
+        #endregion
+
+        #region 事件回调
+
+        private void HandleReliableConnectRequest(uint clientId, Client_Reliable_Connect_Request request)
+        {
+            if (_clientManager.TryGetClient(clientId, out var client))
+            {
+                // 发送回连接响应包
+                Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
+                {
+                    ClientId = clientId,
+                    FastPort = _fastTransport.Port,
+                    Token = client.Token,
+                };
+                SendReliable(clientId, NetEvent.RELIABLE_CONNECT_RESPONSE, response);
+            }
+        }
+
+        private void HandleDebugChat(uint clientId, Chat_Test msg)
+        {
+            if (_clientManager.TryGetClient(clientId, out var client))
+            {
+                Debug.Log($"[NetServer] Chat Test From Client: {clientId}\n" +
+                          $"FastSessionId: {client.FastSessionId}\n" +
+                          $"ReliableSessionId: {client.ReliableSessionId}\n" +
+                          $"Token: {client.Token}\n" +
+                          $"Message: {msg.Content}\n");
+            }
+        }
+
+        #endregion
 
         #region 生命周期
 
@@ -182,16 +291,22 @@ namespace Network
             TransportSettings settings = TransportSettings.FromConfig(_config);
             
             _reliableTransport = new TcpServerTransport();
-            _reliableTransport.OnDataReceived += HandleDataReceived;
+            _reliableTransport.OnDataReceived += HandleReliableDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
-            _reliableTransport.OnClientConnected += HandleClientConnect;
-            _reliableTransport.OnClientDisconnected += HandleClientDisconnect;
+            _reliableTransport.OnClientConnected += HandleReliableClientConnect;
+            _reliableTransport.OnClientDisconnected += HandleReliableClientDisconnect;
 
             _fastTransport = new KcpServerTransport(settings);
-            _fastTransport.OnDataReceived += HandleDataReceived;
+            _fastTransport.OnDataReceived += HandleFastDataReceived;
             _fastTransport.OnTransportError += HandleTransportError;
-            _fastTransport.OnClientConnected += HandleClientConnect;
-            _fastTransport.OnClientDisconnected += HandleClientDisconnect;
+            _fastTransport.OnClientConnected += HandleFastClientConnect;
+            _fastTransport.OnClientDisconnected += HandleFastClientDisconnect;
+        }
+
+        public override void BindEvents()
+        {
+            RegNetHandler<Client_Reliable_Connect_Request>(NetEvent.RELIABLE_CONNECT_REQUEST, HandleReliableConnectRequest);
+            RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
         }
 
         public override void Update(float deltaTime)
@@ -204,20 +319,20 @@ namespace Network
         {
             if (_fastTransport != null)
             {
-                _fastTransport.OnDataReceived -= HandleDataReceived;
+                _fastTransport.OnDataReceived -= HandleFastDataReceived;
                 _fastTransport.OnTransportError -= HandleTransportError;
-                _fastTransport.OnClientConnected -= HandleClientConnect;
-                _fastTransport.OnClientDisconnected -= HandleClientDisconnect;
+                _fastTransport.OnClientConnected -= HandleFastClientConnect;
+                _fastTransport.OnClientDisconnected -= HandleFastClientDisconnect;
                 _fastTransport.Dispose();
                 _fastTransport = null;
             }
 
             if (_reliableTransport != null)
             {
-                _reliableTransport.OnDataReceived -= HandleDataReceived;
+                _reliableTransport.OnDataReceived -= HandleReliableDataReceived;
                 _reliableTransport.OnTransportError -= HandleTransportError;
-                _reliableTransport.OnClientConnected -= HandleClientConnect;
-                _reliableTransport.OnClientDisconnected -= HandleClientDisconnect;
+                _reliableTransport.OnClientConnected -= HandleReliableClientConnect;
+                _reliableTransport.OnClientDisconnected -= HandleReliableClientDisconnect;
                 _reliableTransport.Dispose();
                 _reliableTransport = null;
             }

@@ -52,7 +52,7 @@ namespace Network
         public void Register<T>(NetEvent clientEventId, Action<T> handler) where T : IMessage, new()
         {
             _handlers[clientEventId] = msg => handler((T)msg);
-            Debug.Log($"[MessageProcessor] 注册事件 {clientEventId}");
+            Debug.Log($"[MessageProcessor] 注册客户端事件 {clientEventId}");
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Network
         public void UnRegister(NetEvent clientEventId)
         {
             _handlers.Remove(clientEventId);
-            Debug.Log($"[MessageProcessor] 注销事件 {clientEventId}");
+            Debug.Log($"[MessageProcessor] 注销客户端事件 {clientEventId}");
         }
         
         /// <summary>
@@ -74,7 +74,7 @@ namespace Network
         public void RegisterServer<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
         {
             _serverHandlers[eventId] = (id, msg) => handler(id, (T)msg);
-            Debug.Log($"[MessageProcessor] 注册事件 {eventId}");
+            Debug.Log($"[MessageProcessor] 注册服务器事件 {eventId}");
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Network
         public void UnRegisterServer(NetEvent eventId)
         {
             _serverHandlers.Remove(eventId);
-            Debug.Log($"[MessageProcessor] 注销事件 {eventId}");
+            Debug.Log($"[MessageProcessor] 注销服务端事件 {eventId}");
         }
     }
 }
