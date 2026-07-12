@@ -2,8 +2,8 @@ using System;
 using System.Text;
 using Framework;
 using Google.Protobuf;
+using NetConnect;
 using UnityEngine;
-using Utils;
 
 namespace Network
 {
@@ -18,6 +18,10 @@ namespace Network
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
         private NetConfig _config;
+
+        // ========== 连接标识 ==========
+        private uint _clientId;
+        private ulong _token;
 
         /// <summary>
         /// 开启可靠连接
@@ -110,7 +114,7 @@ namespace Network
         /// <summary>
         /// 处理网络事件
         /// </summary>
-        public void Register<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
+        public void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
         {
             _messageProcessor?.Register(eventId, handler);
         }
@@ -118,7 +122,7 @@ namespace Network
         /// <summary>
         /// 注销网络事件
         /// </summary>
-        public void UnRegister(NetEvent eventId)
+        public void UnRegNetHandler(NetEvent eventId)
         {
             _messageProcessor?.UnRegister(eventId);
         }
@@ -139,6 +143,36 @@ namespace Network
             Debug.LogError("[NetClient] Transport error: " + error);
         }
 
+        #region 事件回调
+
+        /// <summary>
+        /// 发送连接请求
+        /// </summary>
+        private void HandleConnected()
+        {
+            Client_Reliable_Connect_Request request = new Client_Reliable_Connect_Request();
+            SendReliable(NetEvent.RELIABLE_CONNECT_REQUEST, request);
+        }
+
+        private void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
+        {
+            _clientId = response.ClientId;
+            _token = response.Token;
+            
+            // 开启实时连接
+            StartFastConnect(_config.ip, (short)response.FastPort);
+            
+            // 发送快速连接请求
+            Client_Fast_Connect_Request request = new Client_Fast_Connect_Request()
+            {
+                ClientId = _clientId,
+                Token = _token
+            };
+            Send(NetEvent.FAST_CONNECT_REQUEST, request);
+        }
+
+        #endregion
+
         #region 生命周期
 
         public override void Init()
@@ -150,10 +184,16 @@ namespace Network
             _reliableTransport = new TcpClientTransport();
             _reliableTransport.OnDataReceived += HandleDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
+            _reliableTransport.OnConnected += HandleConnected;
 
             _fastTransport = new KcpClientTransport(settings);
             _fastTransport.OnDataReceived += HandleDataReceived;
             _fastTransport.OnTransportError += HandleTransportError;
+        }
+
+        public override void BindEvents()
+        {
+            RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
         }
 
         public override void Update(float deltaTime)
@@ -164,20 +204,20 @@ namespace Network
 
         public override void Destroy()
         {
-            if (_fastTransport != null)
-            {
-                _fastTransport.OnDataReceived -= HandleDataReceived;
-                _fastTransport.OnTransportError -= HandleTransportError;
-                _fastTransport.Dispose();
-                _fastTransport = null;
-            }
-
             if (_reliableTransport != null)
             {
                 _reliableTransport.OnDataReceived -= HandleDataReceived;
                 _reliableTransport.OnTransportError -= HandleTransportError;
                 _reliableTransport.Dispose();
                 _reliableTransport = null;
+            }
+            
+            if (_fastTransport != null)
+            {
+                _fastTransport.OnDataReceived -= HandleDataReceived;
+                _fastTransport.OnTransportError -= HandleTransportError;
+                _fastTransport.Dispose();
+                _fastTransport = null;
             }
             
             _messageProcessor = null;

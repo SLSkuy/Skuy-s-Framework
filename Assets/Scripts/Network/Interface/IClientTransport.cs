@@ -26,6 +26,11 @@ namespace Network
         /// 传输错误回调
         /// </summary>
         event Action<string> OnTransportError;
+
+        /// <summary>
+        /// 完成连接回调
+        /// </summary>
+        event Action OnConnected;
         
         /// <summary>
         /// 开始连接

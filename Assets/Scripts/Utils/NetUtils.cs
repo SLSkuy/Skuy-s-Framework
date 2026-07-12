@@ -27,17 +27,10 @@ namespace Network
         /// </summary>
         public static byte[] Proto2Bytes(NetEvent evt, IMessage msg)
         {
-            return BuildPacket((ushort)evt, msg);
-        }
-        
-
-        /// <summary>
-        /// 加入消息类型包头
-        /// </summary>
-        private static byte[] BuildPacket(ushort messageId, IMessage msg)
-        {
+            ushort messageId = (ushort)evt;
             byte[] body = msg.ToByteArray();
 
+            // 后续接入消息flag
             ushort flag = 0;
 
             uint header = ((uint)flag << 16) | messageId;
@@ -75,14 +68,14 @@ namespace Network
         {
             switch (evt)
             {
-                case NetEvent.START_REQUEST:
-                    return Client_Start_Request.Parser.ParseFrom(body);
+                case NetEvent.RELIABLE_CONNECT_REQUEST:
+                    return Client_Reliable_Connect_Request.Parser.ParseFrom(body);
                 
-                case NetEvent.START_RESPONSE:
-                    return Client_Start_Response.Parser.ParseFrom(body);
+                case NetEvent.RELIABLE_CONNECT_RESPONSE:
+                    return Client_Reliable_Connect_Response.Parser.ParseFrom(body);
                 
-                case NetEvent.KCP_CONNECT_REQUEST:
-                    return Client_KCP_Connect_Request.Parser.ParseFrom(body);
+                case NetEvent.FAST_CONNECT_REQUEST:
+                    return Client_Fast_Connect_Request.Parser.ParseFrom(body);
 
                 case NetEvent.PING:
                     return Ping.Parser.ParseFrom(body);

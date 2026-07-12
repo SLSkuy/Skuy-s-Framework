@@ -23,11 +23,18 @@ namespace Framework
             // 自动注册到全局服务定位器，业务层通过 Services.Get<T>() 获取
             Global.Register(this);
             
+            BindEvents();
+            
             Debug.Log($"[{GetType().Name}] 初始化");
             IsInitialized = true;
         }
 
         public virtual void Init()
+        {
+            
+        }
+
+        public virtual void BindEvents()
         {
             
         }

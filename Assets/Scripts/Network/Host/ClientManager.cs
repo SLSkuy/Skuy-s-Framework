@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 
 namespace Network
 {
@@ -16,15 +15,15 @@ namespace Network
         {
             public readonly uint ClientId;
             public readonly ulong Token;
-            public EndPoint TcpEndPoint;
-            public EndPoint KcpEndPoint;
+            public uint ReliableSessionId;
+            public uint FastSessionId;
 
             public Client(uint clientId, ulong token)
             {
                 ClientId = clientId;
                 Token = token;
-                TcpEndPoint = null;
-                KcpEndPoint = null;
+                ReliableSessionId = 0;
+                FastSessionId = 0;
             }
         }
 
@@ -55,38 +54,6 @@ namespace Network
 
                 _nextClientId++;
                 return client;
-            }
-        }
-
-        /// <summary>
-        /// 更新客户端TCP连接信息
-        /// </summary>
-        public void UpdateClientTcp(uint clientId, EndPoint tcpEndPoint)
-        {
-            lock (_lock)
-            {
-                if (_clientsById.ContainsKey(clientId))
-                {
-                    Client client = _clientsById[clientId];
-                    client.TcpEndPoint = tcpEndPoint;
-                    _clientsById[clientId] = client;
-                }
-            }
-        }
-        
-        /// <summary>
-        /// 更新客户端KCP连接信息
-        /// </summary>
-        public void UpdateClientKcp(ulong token, EndPoint kcpEndPoint)
-        {
-            lock (_lock)
-            {
-                if (_clientsByToken.ContainsKey(token))
-                {
-                    Client client = _clientsByToken[token];
-                    client.KcpEndPoint = kcpEndPoint;
-                    _clientsByToken[token] = client;
-                }
             }
         }
 
@@ -173,22 +140,6 @@ namespace Network
 
                 token = 0;
                 return false;
-            }
-        }
-
-        public bool ContainsClient(uint clientId)
-        {
-            lock (_lock)
-            {
-                return _clientsById.ContainsKey(clientId);
-            }
-        }
-
-        public bool ContainsClient(ulong token)
-        {
-            lock (_lock)
-            {
-                return _clientsByToken.ContainsKey(token);
             }
         }
 

@@ -18,6 +18,7 @@ namespace Network
 
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
+        public event Action OnConnected;
 
         #region 暴露接口
         
@@ -35,6 +36,7 @@ namespace Network
             {
                 _session.Connect(host, port);
                 IsRunning = true;
+                OnConnected?.Invoke();
             }
             catch (Exception ex)
             {

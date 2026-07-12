@@ -3,7 +3,6 @@ using System.Text;
 using Framework;
 using Google.Protobuf;
 using UnityEngine;
-using Utils;
 
 namespace Network
 { 
@@ -135,17 +134,17 @@ namespace Network
         /// <summary>
         /// 处理网络事件
         /// </summary>
-        public void Register<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
+        public void RegNetHandler<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
         {
-            _messageProcessor.Register(eventId, handler);
+            _messageProcessor.RegisterServer(eventId, handler);
         }
 
         /// <summary>
         /// 注销网络事件
         /// </summary>
-        public void UnRegister(NetEvent eventId)
+        public void UnRegNetHandler(NetEvent eventId)
         {
-            _messageProcessor.UnRegister(eventId);
+            _messageProcessor.UnRegisterServer(eventId);
         }
 
         /// <summary>

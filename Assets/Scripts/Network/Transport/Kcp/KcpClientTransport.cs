@@ -20,6 +20,7 @@ namespace Network
 
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
+        public event Action OnConnected;
 
         public KcpClientTransport(TransportSettings settings)
         {
@@ -48,6 +49,7 @@ namespace Network
                 _udpClient.Connect(_serverEndPoint);
                 _session = new KcpSession(_settings.conv, _serverEndPoint, _settings, Send);
                 IsRunning = true;
+                OnConnected?.Invoke();
             }
             catch (Exception ex)
             {

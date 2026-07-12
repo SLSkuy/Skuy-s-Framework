@@ -25,20 +25,21 @@ namespace NetConnect {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFuZXRfY29ubmVjdC5wcm90bxIKTmV0Q29ubmVjdCIxCgpOZXRfUGFja2V0",
-            "EhIKCm1lc3NhZ2VfaWQYASABKA0SDwoHcGF5bG9hZBgCIAEoDCIWChRDbGll",
-            "bnRfU3RhcnRfUmVxdWVzdCJMChVDbGllbnRfU3RhcnRfUmVzcG9uc2USEQoJ",
-            "Y2xpZW50X2lkGAEgASgNEg0KBXRva2VuGAIgASgEEhEKCWZhc3RfcG9ydBgD",
-            "IAEoBSI+ChpDbGllbnRfS0NQX0Nvbm5lY3RfUmVxdWVzdBIRCgljbGllbnRf",
-            "aWQYASABKA0SDQoFdG9rZW4YAiABKAQiGQoEUGluZxIRCgl0aW1lc3RhbXAY",
-            "ASABKAQiGQoEUG9uZxIRCgl0aW1lc3RhbXAYASABKAQiHAoJQ2hhdF9UZXN0",
-            "Eg8KB2NvbnRlbnQYASABKAliBnByb3RvMw=="));
+            "EhIKCm1lc3NhZ2VfaWQYASABKA0SDwoHcGF5bG9hZBgCIAEoDCIhCh9DbGll",
+            "bnRfUmVsaWFibGVfQ29ubmVjdF9SZXF1ZXN0IlcKIENsaWVudF9SZWxpYWJs",
+            "ZV9Db25uZWN0X1Jlc3BvbnNlEhEKCWNsaWVudF9pZBgBIAEoDRINCgV0b2tl",
+            "bhgCIAEoBBIRCglmYXN0X3BvcnQYAyABKAUiPwobQ2xpZW50X0Zhc3RfQ29u",
+            "bmVjdF9SZXF1ZXN0EhEKCWNsaWVudF9pZBgBIAEoDRINCgV0b2tlbhgCIAEo",
+            "BCIZCgRQaW5nEhEKCXRpbWVzdGFtcBgBIAEoBCIZCgRQb25nEhEKCXRpbWVz",
+            "dGFtcBgBIAEoBCIcCglDaGF0X1Rlc3QSDwoHY29udGVudBgBIAEoCWIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Net_Packet), global::NetConnect.Net_Packet.Parser, new[]{ "MessageId", "Payload" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Start_Request), global::NetConnect.Client_Start_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Start_Response), global::NetConnect.Client_Start_Response.Parser, new[]{ "ClientId", "Token", "FastPort" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_KCP_Connect_Request), global::NetConnect.Client_KCP_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Request), global::NetConnect.Client_Reliable_Connect_Request.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Response), global::NetConnect.Client_Reliable_Connect_Response.Parser, new[]{ "ClientId", "Token", "FastPort" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Fast_Connect_Request), global::NetConnect.Client_Fast_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Ping), global::NetConnect.Ping.Parser, new[]{ "Timestamp" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Pong), global::NetConnect.Pong.Parser, new[]{ "Timestamp" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Chat_Test), global::NetConnect.Chat_Test.Parser, new[]{ "Content" }, null, null, null, null)
@@ -274,16 +275,16 @@ namespace NetConnect {
 
   }
 
-  public sealed partial class Client_Start_Request : pb::IMessage<Client_Start_Request>
+  public sealed partial class Client_Reliable_Connect_Request : pb::IMessage<Client_Reliable_Connect_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Client_Start_Request> _parser = new pb::MessageParser<Client_Start_Request>(() => new Client_Start_Request());
+    private static readonly pb::MessageParser<Client_Reliable_Connect_Request> _parser = new pb::MessageParser<Client_Reliable_Connect_Request>(() => new Client_Reliable_Connect_Request());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Client_Start_Request> Parser { get { return _parser; } }
+    public static pb::MessageParser<Client_Reliable_Connect_Request> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -299,7 +300,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Request() {
+    public Client_Reliable_Connect_Request() {
       OnConstruction();
     }
 
@@ -307,25 +308,25 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Request(Client_Start_Request other) : this() {
+    public Client_Reliable_Connect_Request(Client_Reliable_Connect_Request other) : this() {
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Request Clone() {
-      return new Client_Start_Request(this);
+    public Client_Reliable_Connect_Request Clone() {
+      return new Client_Reliable_Connect_Request(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Client_Start_Request);
+      return Equals(other as Client_Reliable_Connect_Request);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Client_Start_Request other) {
+    public bool Equals(Client_Reliable_Connect_Request other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -385,7 +386,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Client_Start_Request other) {
+    public void MergeFrom(Client_Reliable_Connect_Request other) {
       if (other == null) {
         return;
       }
@@ -426,16 +427,16 @@ namespace NetConnect {
 
   }
 
-  public sealed partial class Client_Start_Response : pb::IMessage<Client_Start_Response>
+  public sealed partial class Client_Reliable_Connect_Response : pb::IMessage<Client_Reliable_Connect_Response>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Client_Start_Response> _parser = new pb::MessageParser<Client_Start_Response>(() => new Client_Start_Response());
+    private static readonly pb::MessageParser<Client_Reliable_Connect_Response> _parser = new pb::MessageParser<Client_Reliable_Connect_Response>(() => new Client_Reliable_Connect_Response());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Client_Start_Response> Parser { get { return _parser; } }
+    public static pb::MessageParser<Client_Reliable_Connect_Response> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -451,7 +452,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Response() {
+    public Client_Reliable_Connect_Response() {
       OnConstruction();
     }
 
@@ -459,7 +460,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Response(Client_Start_Response other) : this() {
+    public Client_Reliable_Connect_Response(Client_Reliable_Connect_Response other) : this() {
       clientId_ = other.clientId_;
       token_ = other.token_;
       fastPort_ = other.fastPort_;
@@ -468,8 +469,8 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_Start_Response Clone() {
-      return new Client_Start_Response(this);
+    public Client_Reliable_Connect_Response Clone() {
+      return new Client_Reliable_Connect_Response(this);
     }
 
     /// <summary>Field number for the "client_id" field.</summary>
@@ -511,12 +512,12 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Client_Start_Response);
+      return Equals(other as Client_Reliable_Connect_Response);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Client_Start_Response other) {
+    public bool Equals(Client_Reliable_Connect_Response other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -615,7 +616,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Client_Start_Response other) {
+    public void MergeFrom(Client_Reliable_Connect_Response other) {
       if (other == null) {
         return;
       }
@@ -689,16 +690,16 @@ namespace NetConnect {
 
   }
 
-  public sealed partial class Client_KCP_Connect_Request : pb::IMessage<Client_KCP_Connect_Request>
+  public sealed partial class Client_Fast_Connect_Request : pb::IMessage<Client_Fast_Connect_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Client_KCP_Connect_Request> _parser = new pb::MessageParser<Client_KCP_Connect_Request>(() => new Client_KCP_Connect_Request());
+    private static readonly pb::MessageParser<Client_Fast_Connect_Request> _parser = new pb::MessageParser<Client_Fast_Connect_Request>(() => new Client_Fast_Connect_Request());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Client_KCP_Connect_Request> Parser { get { return _parser; } }
+    public static pb::MessageParser<Client_Fast_Connect_Request> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -714,7 +715,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_KCP_Connect_Request() {
+    public Client_Fast_Connect_Request() {
       OnConstruction();
     }
 
@@ -722,7 +723,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_KCP_Connect_Request(Client_KCP_Connect_Request other) : this() {
+    public Client_Fast_Connect_Request(Client_Fast_Connect_Request other) : this() {
       clientId_ = other.clientId_;
       token_ = other.token_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -730,8 +731,8 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Client_KCP_Connect_Request Clone() {
-      return new Client_KCP_Connect_Request(this);
+    public Client_Fast_Connect_Request Clone() {
+      return new Client_Fast_Connect_Request(this);
     }
 
     /// <summary>Field number for the "client_id" field.</summary>
@@ -761,12 +762,12 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Client_KCP_Connect_Request);
+      return Equals(other as Client_Fast_Connect_Request);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Client_KCP_Connect_Request other) {
+    public bool Equals(Client_Fast_Connect_Request other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -852,7 +853,7 @@ namespace NetConnect {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Client_KCP_Connect_Request other) {
+    public void MergeFrom(Client_Fast_Connect_Request other) {
       if (other == null) {
         return;
       }

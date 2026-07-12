@@ -7,17 +7,17 @@ message Net_Packet {
   bytes payload = 2;
 }
 
-message Client_Start_Request {
+message Client_Reliable_Connect_Request {
   
 }
 
-message Client_Start_Response {
+message Client_Reliable_Connect_Response {
   uint32 client_id = 1;
   uint64 token = 2;
   int32 fast_port = 3;
 }
 
-message Client_KCP_Connect_Request {
+message Client_Fast_Connect_Request {
   uint32 client_id = 1;
   uint64 token = 2;
 }

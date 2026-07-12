@@ -6,9 +6,9 @@ namespace Network
     public enum NetEvent : ushort
     {
         ERROR,
-        START_REQUEST,
-        START_RESPONSE,
-        KCP_CONNECT_REQUEST,
+        RELIABLE_CONNECT_REQUEST,
+        RELIABLE_CONNECT_RESPONSE,
+        FAST_CONNECT_REQUEST,
         PING,
         PONG,
         CHAT_TEST,
