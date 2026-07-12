@@ -131,7 +131,6 @@ namespace Network
         /// <param name="data"></param>
         private void HandleDataReceived(byte[] data)
         {
-            Debug.Log($"[NetClient] 收到服务端消息: {Encoding.UTF8.GetString(data)}");
             var msg = NetUtils.Bytes2Proto(data);
             _messageProcessor.HandleMessage(msg.Item1, msg.Item2);
         }
@@ -173,7 +172,7 @@ namespace Network
         
         private void HandleDebugChat(Chat_Test msg)
         {
-            Debug.Log($"[NetServer] Chat Test From Server: {msg.Content}");
+            Debug.Log($"[NetClient] Chat Test From Server: {msg}");
         }
 
         #endregion

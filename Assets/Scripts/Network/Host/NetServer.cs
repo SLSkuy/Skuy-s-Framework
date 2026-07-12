@@ -203,7 +203,6 @@ namespace Network
             {
                 // 特殊处理KCP连接请求
                 _clientManager.BindFastSession(request.Token, transportSessionId);
-                Debug.Log("Fast Transport Connect");
             }
         }
 
@@ -305,6 +304,7 @@ namespace Network
 
         public override void BindEvents()
         {
+            NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
             RegNetHandler<Client_Reliable_Connect_Request>(NetEvent.RELIABLE_CONNECT_REQUEST, HandleReliableConnectRequest);
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
         }

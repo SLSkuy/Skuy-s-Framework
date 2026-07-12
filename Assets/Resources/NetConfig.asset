@@ -21,4 +21,4 @@ MonoBehaviour:
   kcpSendWindow: 128
   kcpReceiveWindow: 128
   kcpUpdateInterval: 10
-  disconnectTimeout: 60
+  disconnectTimeout: 10

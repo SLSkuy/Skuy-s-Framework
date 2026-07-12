@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using Google.Protobuf;
-using NetConnect;
+using UnityEngine;
 
 namespace Network
 {
@@ -19,6 +20,8 @@ namespace Network
         /// 协议头长度
         /// </summary>
         private const int HEADER_SIZE = sizeof(uint);
+
+        private static readonly Dictionary<NetEvent, MessageParser> Parsers = new();
 
         #region 序列化
 
@@ -55,39 +58,29 @@ namespace Network
             uint header = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
 
             ushort messageId = (ushort)(header & 0xFFFF);
+            NetEvent evt = (NetEvent)messageId;
+
+            if (!Parsers.TryGetValue(evt, out var parser))
+            {
+                return (NetEvent.ERROR, null);
+            }
+
             ReadOnlySpan<byte> body = bytes.AsSpan(HEADER_SIZE);
-            
-            return ((NetEvent)messageId, ParseNetMessage((NetEvent)messageId, body));
+            return (evt, parser.ParseFrom(body));
         }
 
         #endregion
 
-        #region Parser
+        #region Parser注册
 
-        private static IMessage ParseNetMessage(NetEvent evt, ReadOnlySpan<byte> body)
+        /// <summary>
+        /// 注册消息类型的Protobuf Parser，用于反序列化
+        /// </summary>
+        public static void RegisterParser(NetEvent evt, MessageParser parser)
         {
-            switch (evt)
+            if (Parsers.TryAdd(evt, parser))
             {
-                case NetEvent.RELIABLE_CONNECT_REQUEST:
-                    return Client_Reliable_Connect_Request.Parser.ParseFrom(body);
-                
-                case NetEvent.RELIABLE_CONNECT_RESPONSE:
-                    return Client_Reliable_Connect_Response.Parser.ParseFrom(body);
-                
-                case NetEvent.FAST_CONNECT_REQUEST:
-                    return Client_Fast_Connect_Request.Parser.ParseFrom(body);
-
-                case NetEvent.PING:
-                    return Ping.Parser.ParseFrom(body);
-                
-                case NetEvent.PONG:
-                    return Pong.Parser.ParseFrom(body);
-
-                case NetEvent.CHAT_TEST:
-                    return Chat_Test.Parser.ParseFrom(body);
-
-                default:
-                    return null;
+                Debug.Log($"[Net] 注册事件 {evt}");   
             }
         }
 

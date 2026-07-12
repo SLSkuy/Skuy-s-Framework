@@ -52,7 +52,7 @@ namespace Network
         public void Register<T>(NetEvent clientEventId, Action<T> handler) where T : IMessage, new()
         {
             _handlers[clientEventId] = msg => handler((T)msg);
-            Debug.Log($"[MessageProcessor] 注册客户端事件 {clientEventId}");
+            NetUtils.RegisterParser(clientEventId, new T().Descriptor.Parser);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Network
         public void RegisterServer<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
         {
             _serverHandlers[eventId] = (id, msg) => handler(id, (T)msg);
-            Debug.Log($"[MessageProcessor] 注册服务器事件 {eventId}");
+            NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
         }
 
         /// <summary>
