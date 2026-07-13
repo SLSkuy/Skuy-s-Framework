@@ -13,7 +13,7 @@ namespace Network
     {
         private sealed class ClientSession
         {
-            public uint ClientId;
+            public uint SessionId;
             public KcpSession Session;
             public string EndPointKey;
         }
@@ -27,6 +27,7 @@ namespace Network
         private readonly TransportSettings _settings;
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly Dictionary<string, ClientSession> _clientsByEndPoint = new Dictionary<string, ClientSession>();
+        private readonly List<uint> _timeOutSessionIds = new List<uint>();
         private UdpClient _udpServer;
         private uint _nextClientId = 1;
         private bool _isDisposed;
@@ -86,7 +87,7 @@ namespace Network
                 int result = session.Session.Send(data);
                 if (result < 0)
                 {
-                    RaiseError($"KCP server broadcast failed for client {session.ClientId} with code: {result}");
+                    RaiseError($"KCP server broadcast failed for client {session.SessionId} with code: {result}");
                 }
             }
         }
@@ -150,7 +151,6 @@ namespace Network
         #endregion
 
         #region 内部管理方法
-
         
         private void ReceiveAvailableDatagrams()
         {
@@ -167,7 +167,7 @@ namespace Network
                 int result = session.Session.Input(datagram);
                 if (result < 0)
                 {
-                    RaiseError($"KCP server input failed for client {session.ClientId} with code: {result}");
+                    RaiseError($"KCP server input failed for client {session.SessionId} with code: {result}");
                 }
             }
         }
@@ -188,14 +188,14 @@ namespace Network
             uint conv = ReadConv(datagram);
             session = new ClientSession
             {
-                ClientId = _nextClientId++,
+                SessionId = _nextClientId++,
                 EndPointKey = endPointKey,
                 Session = new KcpSession(conv, remoteEndPoint, _settings, SendRaw)
             };
 
-            _clientsById.Add(session.ClientId, session);
+            _clientsById.Add(session.SessionId, session);
             _clientsByEndPoint.Add(endPointKey, session);
-            OnClientConnected?.Invoke(session.ClientId);
+            OnClientConnected?.Invoke(session.SessionId);
             return session;
         }
 
@@ -207,7 +207,7 @@ namespace Network
 
                 while (session.Session.TryReceive(out byte[] data))
                 {
-                    OnDataReceived?.Invoke(session.ClientId, data);
+                    OnDataReceived?.Invoke(session.SessionId, data);
                 }
             }
         }
@@ -218,43 +218,31 @@ namespace Network
             {
                 return;
             }
-
-            List<uint> timedOutClientIds = null;
-            foreach (ClientSession session in _clientsById.Values)
+            
+            foreach (var session in _clientsById.Values)
             {
                 double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
                 if (inactiveSeconds < _settings.disconnectTimeout)
                 {
                     continue;
                 }
-
-                if (timedOutClientIds == null)
-                {
-                    timedOutClientIds = new List<uint>();
-                }
-
-                timedOutClientIds.Add(session.ClientId);
+                _timeOutSessionIds.Add(session.SessionId);
             }
 
-            if (timedOutClientIds == null)
+            foreach (uint sessionId in _timeOutSessionIds)
             {
-                return;
+                RemoveClient(sessionId);
             }
-
-            foreach (uint clientId in timedOutClientIds)
-            {
-                RemoveClient(clientId);
-            }
+            _timeOutSessionIds.Clear();
         }
 
         private void RemoveClient(uint clientId)
         {
-            if (!_clientsById.TryGetValue(clientId, out ClientSession session))
+            if (!_clientsById.Remove(clientId, out ClientSession session))
             {
                 return;
             }
 
-            _clientsById.Remove(clientId);
             _clientsByEndPoint.Remove(session.EndPointKey);
             session.Session.Dispose();
             OnClientDisconnected?.Invoke(clientId);

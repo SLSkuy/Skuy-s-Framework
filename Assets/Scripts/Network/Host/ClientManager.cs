@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Network
 {
@@ -112,6 +113,12 @@ namespace Network
                     _clientsByToken[client.Token] = client;
                 }
 
+                if (!CheckClientConnected(clientId))
+                {
+                    Debug.Log($"[ClientManager] Client {clientId} has not been connected, Removed");
+                    RemoveClient(clientId);
+                }
+
                 return true;
             }
         }
@@ -132,9 +139,28 @@ namespace Network
                     _clientsById[clientId] = client;
                     _clientsByToken[client.Token] = client;
                 }
+                
+                if (!CheckClientConnected(clientId))
+                {
+                    Debug.Log($"[ClientManager] Client {clientId} has not been connected, Removed");
+                    RemoveClient(clientId);
+                }
 
                 return true;
             }
+        }
+
+        /// <summary>
+        /// 检测当前Client是否还存在某一个连接，若都不存在，则Client彻底断连
+        /// </summary>
+        public bool CheckClientConnected(uint clientId)
+        {
+            if (TryGetClient(clientId, out var client))
+            {
+                return (client.ReliableSessionId != 0 || client.FastSessionId != 0);
+            }
+
+            return false;
         }
 
         /// <summary>

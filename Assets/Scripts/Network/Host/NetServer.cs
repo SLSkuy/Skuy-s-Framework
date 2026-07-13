@@ -226,10 +226,9 @@ namespace Network
 
         private void HandleReliableClientDisconnect(uint transportSessionId)
         {
-            if (_clientManager.TryGetClientId(TransportType.TCP, transportSessionId, out uint clientId))
+            if (_clientManager.UnBindReliableSession(transportSessionId, out uint clientId))
             {
-                _clientManager.RemoveClient(clientId);
-                Debug.Log($"[NetServer] Client {clientId} disconnected with reliable session {transportSessionId}");
+                Debug.Log($"[NetServer] Reliable session {transportSessionId} unbound from client {clientId}");
                 return;
             }
 
@@ -289,7 +288,7 @@ namespace Network
             _clientManager = new ClientManager();
             TransportSettings settings = TransportSettings.FromConfig(_config);
             
-            _reliableTransport = new TcpServerTransport();
+            _reliableTransport = new TcpServerTransport(settings);
             _reliableTransport.OnDataReceived += HandleReliableDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
             _reliableTransport.OnClientConnected += HandleReliableClientConnect;

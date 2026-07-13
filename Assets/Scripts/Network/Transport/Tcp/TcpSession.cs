@@ -16,6 +16,8 @@ namespace Network
         private const int MAX_MESSAGE_SIZE = 1024 * 512;
         
         public bool Connected => _socket is { Connected: true };
+        public EndPoint RemoteEndPoint => _socket.RemoteEndPoint;
+        public DateTimeOffset LastReceiveTime { get; private set; }
 
         private readonly ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
         private readonly SemaphoreSlim _sendSignal = new SemaphoreSlim(0);
@@ -67,10 +69,11 @@ namespace Network
             Disconnect(false);
 
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            _cts = new CancellationTokenSource();
             _socket.NoDelay = true;
             _receiveCount = 0;
             _disconnectRaised = 0;
-            _cts = new CancellationTokenSource();
+            LastReceiveTime = DateTimeOffset.UtcNow;
 
             _ = Task.Run(() => ReceiveLoop(_cts.Token));
             _ = Task.Run(() => SendLoop(_cts.Token));
@@ -225,9 +228,10 @@ namespace Network
                 {
                     break;
                 }
-
+                
                 byte[] message = new byte[bodyLength];
                 Buffer.BlockCopy(_receiveBuffer, offset + sizeof(int), message, 0, bodyLength);
+                LastReceiveTime = DateTimeOffset.UtcNow;
                 OnMessageReceived?.Invoke(message);
                 offset += sizeof(int) + bodyLength;
             }

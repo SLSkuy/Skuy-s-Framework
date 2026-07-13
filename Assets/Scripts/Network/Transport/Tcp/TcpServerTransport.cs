@@ -16,7 +16,7 @@ namespace Network
         private sealed class ClientSession
         {
             public TcpServerTransport Owner;
-            public uint ClientId;
+            public uint SessionId;
             public TcpSession Session;
 
             public void Bind()
@@ -35,12 +35,12 @@ namespace Network
 
             private void HandleMessageReceived(byte[] data)
             {
-                Owner.EnqueueMessage(ClientId, data);
+                Owner.EnqueueMessage(SessionId, data);
             }
 
             private void HandleDisconnected()
             {
-                Owner.RemoveClient(ClientId, true);
+                Owner.RemoveClient(SessionId, true);
             }
 
             private void HandleError(string message)
@@ -63,13 +63,15 @@ namespace Network
         public TransportType Type => TransportType.TCP;
         public short Port { get; private set; }
         public bool IsRunning { get; private set; }
-
+        
+        private readonly TransportSettings _settings;
         private readonly object _clientLock = new object();
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
-        private readonly ConcurrentQueue<uint> _connectedClients = new ConcurrentQueue<uint>();
-        private readonly ConcurrentQueue<uint> _disconnectedClients = new ConcurrentQueue<uint>();
+        private readonly ConcurrentQueue<uint> _connectedSessions = new ConcurrentQueue<uint>();
+        private readonly ConcurrentQueue<uint> _disconnectedSessions = new ConcurrentQueue<uint>();
         private readonly ConcurrentQueue<ClientMessage> _receivedMessages = new ConcurrentQueue<ClientMessage>();
         private readonly ConcurrentQueue<TransportError> _errors = new ConcurrentQueue<TransportError>();
+        private readonly List<uint> _timeOutSessionIds = new List<uint>();
         private Socket _listener;
         private CancellationTokenSource _cts;
         private uint _nextClientId = 1;
@@ -79,6 +81,11 @@ namespace Network
         public event Action<uint> OnClientDisconnected;
         public event Action<uint, byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
+
+        public TcpServerTransport(TransportSettings settings)
+        {
+            _settings = settings ?? TransportSettings.Default;
+        }
 
         #region 暴露接口
         
@@ -144,12 +151,12 @@ namespace Network
 
         public void Update(float deltaTime)
         {
-            while (_connectedClients.TryDequeue(out uint connectedClientId))
+            while (_connectedSessions.TryDequeue(out uint connectedClientId))
             {
                 OnClientConnected?.Invoke(connectedClientId);
             }
 
-            while (_disconnectedClients.TryDequeue(out uint disconnectedClientId))
+            while (_disconnectedSessions.TryDequeue(out uint disconnectedClientId))
             {
                 OnClientDisconnected?.Invoke(disconnectedClientId);
             }
@@ -163,6 +170,9 @@ namespace Network
             {
                 OnTransportError?.Invoke(error.Message);
             }
+            
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            RemoveTimedOutClients(now);
         }
 
         public void Stop()
@@ -208,6 +218,33 @@ namespace Network
         #endregion
 
         #region 内部管理方法
+
+        private void RemoveTimedOutClients(DateTimeOffset now)
+        {
+            if (_settings.disconnectTimeout <= 0f)
+            {
+                return;
+            }
+            
+            lock (_clientLock)
+            {
+                foreach (var session in _clientsById.Values)
+                {
+                    double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
+                    if (inactiveSeconds < _settings.disconnectTimeout)
+                    {
+                        continue;
+                    }
+                    _timeOutSessionIds.Add(session.SessionId);    
+                }
+            }
+            
+            foreach (var session in _timeOutSessionIds)
+            {
+                RemoveClient(session, true);
+            }
+            _timeOutSessionIds.Clear();
+        }
 
         private async Task AcceptLoop(CancellationToken token)
         {
@@ -280,7 +317,6 @@ namespace Network
         private void AddClient(Socket socket)
         {
             TcpSession session = new TcpSession();
-            ClientSession clientSession;
             uint clientId = 0;
             bool registered = false;
 
@@ -296,10 +332,10 @@ namespace Network
                     }
 
                     clientId = _nextClientId++;
-                    clientSession = new ClientSession
+                    var clientSession = new ClientSession
                     {
                         Owner = this,
-                        ClientId = clientId,
+                        SessionId = clientId,
                         Session = session
                     };
                     _clientsById.Add(clientId, clientSession);
@@ -308,7 +344,7 @@ namespace Network
                     session.Start(socket);
                 }
 
-                _connectedClients.Enqueue(clientId);
+                _connectedSessions.Enqueue(clientId);
             }
             catch (Exception ex)
             {
@@ -334,17 +370,15 @@ namespace Network
             });
         }
 
-        private void RemoveClient(uint clientId, bool raiseEvent)
+        private void RemoveClient(uint sessionId, bool raiseEvent)
         {
             ClientSession session;
             lock (_clientLock)
             {
-                if (!_clientsById.TryGetValue(clientId, out session))
+                if (!_clientsById.Remove(sessionId, out session))
                 {
                     return;
                 }
-
-                _clientsById.Remove(clientId);
             }
 
             session.Unbind();
@@ -352,7 +386,7 @@ namespace Network
 
             if (raiseEvent)
             {
-                _disconnectedClients.Enqueue(clientId);
+                _disconnectedSessions.Enqueue(sessionId);
             }
         }
 
@@ -398,21 +432,10 @@ namespace Network
 
         private void ClearEvents()
         {
-            while (_connectedClients.TryDequeue(out _))
-            {
-            }
-
-            while (_disconnectedClients.TryDequeue(out _))
-            {
-            }
-
-            while (_receivedMessages.TryDequeue(out _))
-            {
-            }
-
-            while (_errors.TryDequeue(out _))
-            {
-            }
+            while (_connectedSessions.TryDequeue(out _)) { }
+            while (_disconnectedSessions.TryDequeue(out _)) { }
+            while (_receivedMessages.TryDequeue(out _)) { }
+            while (_errors.TryDequeue(out _)) { }
         }
 
         private void ThrowIfDisposed()
