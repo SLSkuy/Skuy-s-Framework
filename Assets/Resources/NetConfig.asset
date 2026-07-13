@@ -15,10 +15,12 @@ MonoBehaviour:
   ip: 127.0.0.1
   reliablePort: 11451
   fastPort: 19198
-  heartBeatStep: 1
+  heartBeatStep: 5
+  rttStep: 2.5
+  maxHeartbeatMisses: 5
+  disconnectTimeout: 20
   kcpConv: 1
   kcpMtu: 1024
   kcpSendWindow: 128
   kcpReceiveWindow: 128
   kcpUpdateInterval: 10
-  disconnectTimeout: 5

@@ -6,11 +6,17 @@ namespace Network
     public enum NetEvent : ushort
     {
         ERROR,
+        CHAT_TEST,
+        
+        // 客户端连接
         RELIABLE_CONNECT_REQUEST,
         RELIABLE_CONNECT_RESPONSE,
         FAST_CONNECT_REQUEST,
+        
+        // 心跳/RTT
+        HEART_BEAT_REQUEST,
+        HEART_BEAT_RESPONSE,
         PING,
         PONG,
-        CHAT_TEST,
     }
 }

@@ -16,8 +16,10 @@ namespace Network
         public short fastPort = 19198;
 
         [Header("网络配置")]
-        public float heartBeatStep = 1f;
-        public float disconnectTimeout = 10f;
+        [Tooltip("心跳发送间隔(秒)")] public float heartBeatStep = 5f;
+        [Tooltip("RTT计算间隔(秒)")] public float rttStep = 2.5f;
+        [Tooltip("最大心跳丢失次数，超过后判定断连")] public int maxHeartbeatMisses = 5;
+        [Tooltip("传输层超时(秒)，无任何数据接收超过此时间则断连，应 >= heartBeatStep * maxHeartbeatMisses")] public float disconnectTimeout = 20f;
 
         [Header("KCP设置")]
         public uint kcpConv = 1;
@@ -25,6 +27,5 @@ namespace Network
         public int kcpSendWindow = 128;
         public int kcpReceiveWindow = 128;
         public int kcpUpdateInterval = 10;
-
     }
 }

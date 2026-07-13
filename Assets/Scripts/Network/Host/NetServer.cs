@@ -3,6 +3,7 @@ using Framework;
 using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
+using Ping = NetConnect.Ping;
 
 namespace Network
 { 
@@ -205,12 +206,12 @@ namespace Network
                 _clientManager.BindFastSession(request.Token, transportSessionId);
             }
         }
-
+        
         private void HandleTransportError(string error)
         {
             Debug.LogError("[NetServer] Transport error: " + error);
         }
-
+        
         private void HandleReliableClientConnect(uint transportSessionId)
         {
             Debug.Log($"[NetServer] Reliable transport session connected: {transportSessionId}");
@@ -245,10 +246,22 @@ namespace Network
 
             Debug.Log($"[NetServer] Fast transport session disconnected: {transportSessionId}");
         }
-
+        
         #endregion
 
         #region 事件回调
+        
+        private void HandleDebugChat(uint clientId, Chat_Test msg)
+        {
+            if (_clientManager.TryGetClient(clientId, out var client))
+            {
+                Debug.Log($"[NetServer] Chat Test From Client: {clientId}\n" +
+                          $"FastSessionId: {client.FastSessionId}\n" +
+                          $"ReliableSessionId: {client.ReliableSessionId}\n" +
+                          $"Token: {client.Token}\n" +
+                          $"Message: {msg.Content}\n");
+            }
+        }
 
         private void HandleReliableConnectRequest(uint clientId, Client_Reliable_Connect_Request request)
         {
@@ -265,18 +278,24 @@ namespace Network
             }
         }
 
-        private void HandleDebugChat(uint clientId, Chat_Test msg)
+        /// <summary>
+        /// TCP心跳：客户端发来HeartBeat，服务端回复确认
+        /// </summary>
+        private void HandleHeartBeatRequest(uint clientId, Heart_Beat_Request request)
         {
-            if (_clientManager.TryGetClient(clientId, out var client))
-            {
-                Debug.Log($"[NetServer] Chat Test From Client: {clientId}\n" +
-                          $"FastSessionId: {client.FastSessionId}\n" +
-                          $"ReliableSessionId: {client.ReliableSessionId}\n" +
-                          $"Token: {client.Token}\n" +
-                          $"Message: {msg.Content}\n");
-            }
+            Heart_Beat_Response response = new Heart_Beat_Response();
+            SendReliable(clientId, NetEvent.HEART_BEAT_RESPONSE, response);
         }
 
+        /// <summary>
+        /// KCP Ping：客户端测延迟，服务端原样返回时间戳
+        /// </summary>
+        private void HandlePing(uint clientId, Ping ping)
+        {
+            Pong pong = new Pong { Timestamp = ping.Timestamp };
+            Send(clientId, NetEvent.PONG, pong);
+        }
+        
         #endregion
 
         #region 生命周期
@@ -303,9 +322,11 @@ namespace Network
 
         public override void BindEvents()
         {
+            RegNetHandler<Ping>(NetEvent.PING, HandlePing);
+            RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
             RegNetHandler<Client_Reliable_Connect_Request>(NetEvent.RELIABLE_CONNECT_REQUEST, HandleReliableConnectRequest);
-            RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
+            RegNetHandler<Heart_Beat_Request>(NetEvent.HEART_BEAT_REQUEST, HandleHeartBeatRequest);
         }
 
         public override void Update(float deltaTime)

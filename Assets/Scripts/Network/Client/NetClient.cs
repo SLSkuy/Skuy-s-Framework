@@ -3,6 +3,7 @@ using Framework;
 using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
+using Ping = NetConnect.Ping;
 
 namespace Network
 {
@@ -12,7 +13,12 @@ namespace Network
     public class NetClient : SubSystemBase
     {
         public override SubSystemPriority Priority => SubSystemPriority.NetWorkManager;
-        
+
+        /// <summary>
+        /// 当前网络延迟
+        /// </summary>
+        public float RTT => _lastRtt;
+
         private IClientTransport _reliableTransport;
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
@@ -22,6 +28,16 @@ namespace Network
         private uint _clientId;
         private ulong _token;
         // ========== 连接标识 ==========
+
+        // ========== 网络心跳 ==========
+        private float _heartbeatAccumulator;
+        private int _heartbeatMissCount;
+        // ========== 网络心跳 ==========
+
+        // ========== RTT ==========
+        private float _pingAccumulator;
+        private float _lastRtt;
+        // ========== RTT ==========
 
         /// <summary>
         /// 开启可靠连接
@@ -69,6 +85,14 @@ namespace Network
         {
             _fastTransport?.Stop();
             _reliableTransport?.Stop();
+
+            // 重置连接标识和心跳状态
+            _clientId = 0;
+            _token = 0;
+            _heartbeatAccumulator = 0f;
+            _heartbeatMissCount = 0;
+            _pingAccumulator = 0f;
+            _lastRtt = 0f;
         }
         
         /// <summary>
@@ -143,6 +167,11 @@ namespace Network
 
         #region 事件回调
 
+        private void HandleDebugChat(Chat_Test msg)
+        {
+            Debug.Log($"[NetClient] Chat Test From Server: {msg}");
+        }
+        
         /// <summary>
         /// 发送连接请求
         /// </summary>
@@ -157,6 +186,12 @@ namespace Network
             _clientId = response.ClientId;
             _token = response.Token;
             
+            // 重置心跳和Ping状态
+            _heartbeatAccumulator = 0f;
+            _heartbeatMissCount = 0;
+            _pingAccumulator = 0f;
+            _lastRtt = 0f;
+            
             // 开启实时连接
             StartFastConnect(_config.ip, (short)response.FastPort);
             
@@ -168,10 +203,79 @@ namespace Network
             };
             Send(NetEvent.FAST_CONNECT_REQUEST, request);
         }
-        
-        private void HandleDebugChat(Chat_Test msg)
+
+        /// <summary>
+        /// TCP心跳响应：服务器确认存活，重置丢失计数
+        /// </summary>
+        private void HandleHeartBeatResponse(Heart_Beat_Response response)
         {
-            Debug.Log($"[NetClient] Chat Test From Server: {msg}");
+            _heartbeatMissCount = 0;
+        }
+
+        /// <summary>
+        /// KCP Pong响应：计算RTT
+        /// </summary>
+        private void HandlePong(Pong pong)
+        {
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _lastRtt = (nowMs - pong.Timestamp) / 1000f;
+        }
+
+        #endregion
+
+        #region 心跳 / Ping
+
+        /// <summary>
+        /// 网络心跳：通过可靠通道发送HeartBeat，检测服务器存活
+        /// </summary>
+        private void SendHeartbeat()
+        {
+            _heartbeatMissCount++;
+
+            if (_heartbeatMissCount >= _config.maxHeartbeatMisses)
+            {
+                Debug.LogWarning("[NetClient] Server heartbeat timeout, disconnecting...");
+                StopClient();
+                return;
+            }
+            
+            Heart_Beat_Request request = new Heart_Beat_Request();
+            SendReliable(NetEvent.HEART_BEAT_REQUEST, request);
+        }
+
+        /// <summary>
+        /// 延迟计算：通过快速通道测量RTT延迟
+        /// </summary>
+        private void SendPing()
+        {
+            long nowTicks = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            Ping ping = new Ping { Timestamp = nowTicks };
+            Send(NetEvent.PING, ping);
+        }
+
+        private void ComputeRTT(float deltaTime)
+        {
+            // ========== 网络心跳：检测服务器存活 ==========
+            if (_config.heartBeatStep > 0f)
+            {
+                _heartbeatAccumulator += deltaTime;
+                if (_heartbeatAccumulator >= _config.heartBeatStep)
+                {
+                    _heartbeatAccumulator -= _config.heartBeatStep;
+                    SendHeartbeat();
+                }
+            }
+
+            // ========== 延迟计算：测量RTT延迟 ==========
+            if (_config.rttStep > 0f)
+            {
+                _pingAccumulator += deltaTime;
+                if (_pingAccumulator >= _config.rttStep)
+                {
+                    _pingAccumulator -= _config.rttStep;
+                    SendPing();
+                }
+            }
         }
 
         #endregion
@@ -196,14 +300,25 @@ namespace Network
 
         public override void BindEvents()
         {
-            RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
+            RegNetHandler<Pong>(NetEvent.PONG, HandlePong);
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
+            RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
+            RegNetHandler<Heart_Beat_Response>(NetEvent.HEART_BEAT_RESPONSE, HandleHeartBeatResponse);
         }
 
         public override void Update(float deltaTime)
         {
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
+
+            // 仅在可靠连接建立后（已获得clientId）才启用心跳/Ping
+            if (_clientId == 0)
+            {
+                return;
+            }
+
+            // 计算心跳与延迟
+            ComputeRTT(deltaTime);
         }
 
         public override void Destroy()
