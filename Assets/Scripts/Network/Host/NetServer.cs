@@ -292,7 +292,9 @@ namespace Network
         /// </summary>
         private void HandlePing(uint clientId, Ping ping)
         {
-            Pong pong = new Pong { Timestamp = ping.Timestamp };
+            // 添加帧驱动延时
+            long timeOffset = ping.Timestamp + (long)(Time.deltaTime * 1000f);
+            Pong pong = new Pong { Timestamp = timeOffset };
             Send(clientId, NetEvent.PONG, pong);
         }
         

@@ -362,6 +362,20 @@ namespace Network.Test
                     {
                         normal = { textColor = _isClientRunning ? Color.green : Color.gray }
                     });
+
+                // 延迟显示
+                if (_isClientRunning && _netClient != null)
+                {
+                    float rtt = _netClient.RTT;
+                    Color rttColor = rtt < 0.05f ? Color.green : (rtt < 0.1f ? Color.yellow : Color.red);
+                    GUILayout.Label($"延迟: {(rtt * 1000f):F0} ms",
+                        new GUIStyle(GUI.skin.label)
+                        {
+                            normal = { textColor = rttColor },
+                            fontSize = 12,
+                            fontStyle = FontStyle.Bold
+                        });
+                }
             }
             GUILayout.EndVertical();
             GUILayout.Space(5);

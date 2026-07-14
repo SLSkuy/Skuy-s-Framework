@@ -217,8 +217,12 @@ namespace Network
         /// </summary>
         private void HandlePong(Pong pong)
         {
+            // 添加帧驱动延时
+            long sendMs = pong.Timestamp + (long)(Time.deltaTime * 1000f);
             long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            _lastRtt = (nowMs - pong.Timestamp) / 1000f;
+            
+            // 帧间隔存在误差，防止延迟小于零 
+            _lastRtt = Math.Clamp((nowMs - sendMs) / 1000f, 0f, float.MaxValue);
         }
 
         #endregion
@@ -249,6 +253,7 @@ namespace Network
         private void SendPing()
         {
             long nowTicks = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            nowTicks += (long)(Time.deltaTime * 1000f); // 添加帧驱动延时
             Ping ping = new Ping { Timestamp = nowTicks };
             Send(NetEvent.PING, ping);
         }

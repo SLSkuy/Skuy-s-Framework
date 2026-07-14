@@ -16,7 +16,7 @@ MonoBehaviour:
   reliablePort: 11451
   fastPort: 19198
   heartBeatStep: 5
-  rttStep: 2.5
+  rttStep: 2
   maxHeartbeatMisses: 5
   disconnectTimeout: 20
   kcpConv: 1

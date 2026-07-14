@@ -1,6 +1,5 @@
 using Framework;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Network
 {
@@ -17,7 +16,7 @@ namespace Network
 
         [Header("网络配置")]
         [Tooltip("心跳发送间隔(秒)")] public float heartBeatStep = 5f;
-        [Tooltip("RTT计算间隔(秒)")] public float rttStep = 2.5f;
+        [Tooltip("RTT计算间隔(秒)")] public float rttStep = 1f;
         [Tooltip("最大心跳丢失次数，超过后判定断连")] public int maxHeartbeatMisses = 5;
         [Tooltip("传输层超时(秒)，无任何数据接收超过此时间则断连，应 >= heartBeatStep * maxHeartbeatMisses")] public float disconnectTimeout = 20f;
 
