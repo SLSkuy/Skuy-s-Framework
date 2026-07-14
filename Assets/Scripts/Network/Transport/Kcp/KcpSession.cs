@@ -86,14 +86,19 @@ namespace Network
 
         public void Output(IMemoryOwner<byte> buffer, int avalidLength)
         {
+            byte[] datagram = null;
             try
             {
-                byte[] datagram = new byte[avalidLength];
+                datagram = ArrayPool<byte>.Shared.Rent(avalidLength);
                 buffer.Memory.Span.Slice(0, avalidLength).CopyTo(datagram);
                 _output?.Invoke(this, datagram, avalidLength);
             }
             finally
             {
+                if (datagram != null)
+                {
+                    ArrayPool<byte>.Shared.Return(datagram);
+                }
                 buffer.Dispose();
             }
         }

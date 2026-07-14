@@ -17,6 +17,7 @@ namespace Network
         private KcpSession _session;
         private IPEndPoint _serverEndPoint;
         private bool _isDisposed;
+        private bool _disconnected;
 
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
@@ -98,6 +99,7 @@ namespace Network
             catch (SocketException ex)
             {
                 RaiseError($"KCP client socket error: {ex.Message}");
+                _disconnected = true;
             }
             catch (ObjectDisposedException)
             {
@@ -107,12 +109,20 @@ namespace Network
             {
                 RaiseError($"KCP client update failed: {ex.Message}");
             }
+
+            // 断连事件延迟派发，保持与TCP传输一致的语义
+            if (_disconnected)
+            {
+                _disconnected = false;
+                IsRunning = false;
+                OnDisconnected?.Invoke();
+            }
         }
 
         public void Stop()
         {
             IsRunning = false;
-            OnDisconnected?.Invoke();
+            _disconnected = false;  // 清除挂起的断线标记，防止显式Stop后Update仍触发OnDisconnected
 
             _session?.Dispose();
             _session = null;
