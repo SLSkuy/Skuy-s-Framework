@@ -17,13 +17,14 @@ namespace Network
         [Header("连接配置")]
         [Tooltip("心跳发送间隔(秒)")] public float heartBeatStep = 5f;
         [Tooltip("RTT计算间隔(秒)")] public float rttStep = 1f;
-        [Tooltip("最大心跳丢失次数，超过后判定断连")] public int maxHeartbeatMisses = 5;
+        [Tooltip("最大连接包体丢失次数，超过后判定断连")] public int maxMissCount = 5;
         [Tooltip("传输层超时(秒)，无任何数据接收超过此时间则断连，应 >= heartBeatStep * maxHeartbeatMisses")] public float disconnectTimeout = 20f;
         
         [Header("重连配置")]
         public bool autoReconnect = true;
         public float reconnectInterval = 5f;
         public int maxReconnectCount = 5;
+        [Tooltip("最大重连等待时间")]public float maxReconnectTime = 60f;
 
         [Header("KCP设置")]
         public uint kcpConv = 1;

@@ -18,6 +18,10 @@ namespace Network
             public readonly ulong Token;
             public uint ReliableSessionId;
             public uint FastSessionId;
+            /// <summary>断连时间戳，-1表示已连接，>=0表示断连时刻</summary>
+            public float DisconnectTime;
+
+            public bool IsConnected => ReliableSessionId != 0 || FastSessionId != 0;
 
             public Client(uint id, ulong token)
             {
@@ -25,6 +29,7 @@ namespace Network
                 Token = token;
                 ReliableSessionId = 0;
                 FastSessionId = 0;
+                DisconnectTime = -1f;
             }
         }
 
@@ -89,6 +94,7 @@ namespace Network
                 }
 
                 client.FastSessionId = fastSessionId;
+                client.DisconnectTime = -1f;
                 _clientsById[client.Id] = client;
                 _clientsByToken[token] = client;
                 _clientIdsByFastSessionId[fastSessionId] = client.Id;
@@ -115,6 +121,7 @@ namespace Network
                 }
 
                 client.ReliableSessionId = reliableSessionId;
+                client.DisconnectTime = -1f;
                 _clientsById[client.Id] = client;
                 _clientsByToken[token] = client;
                 _clientIdsByReliableSessionId[reliableSessionId] = client.Id;
@@ -122,7 +129,7 @@ namespace Network
             }
         }
 
-        public bool UnBindReliableSession(uint reliableSessionId, out uint clientId)
+        public bool UnBindReliableSession(uint reliableSessionId, out uint clientId, float currentTime = 0f)
         {
             lock (_lock)
             {
@@ -139,17 +146,19 @@ namespace Network
                     _clientsByToken[client.Token] = client;
                 }
 
-                if (!CheckClientConnected(clientId))
+                // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
+                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Client disconnected))
                 {
-                    Debug.Log($"[ClientManager] Client {clientId} has not been connected, Removed");
-                    RemoveClient(clientId);
+                    disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
+                    _clientsById[clientId] = disconnected;
+                    _clientsByToken[disconnected.Token] = disconnected;
                 }
 
                 return true;
             }
         }
 
-        public bool UnbindFastSession(uint fastSessionId, out uint clientId)
+        public bool UnbindFastSession(uint fastSessionId, out uint clientId, float currentTime = 0f)
         {
             lock (_lock)
             {
@@ -166,10 +175,12 @@ namespace Network
                     _clientsByToken[client.Token] = client;
                 }
                 
-                if (!CheckClientConnected(clientId))
+                // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
+                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Client disconnected))
                 {
-                    Debug.Log($"[ClientManager] Client {clientId} has not been connected, Removed");
-                    RemoveClient(clientId);
+                    disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
+                    _clientsById[clientId] = disconnected;
+                    _clientsByToken[disconnected.Token] = disconnected;
                 }
 
                 return true;
@@ -349,6 +360,39 @@ namespace Network
         #endregion
 
         #region 清理
+
+        /// <summary>
+        /// 清理超出宽限期的断连客户端
+        /// </summary>
+        /// <param name="currentTime">当前时间（通常为Time.time）</param>
+        /// <param name="gracePeriodSeconds">宽限期（秒），断连超过此时间后彻底移除</param>
+        public void CleanupDisconnectedClients(float currentTime, float gracePeriodSeconds)
+        {
+            if (gracePeriodSeconds <= 0f) return;
+
+            lock (_lock)
+            {
+                List<uint> toRemove = null;
+                foreach (var kv in _clientsById)
+                {
+                    Client client = kv.Value;
+                    if (client.DisconnectTime < 0f) continue;
+                    if (currentTime - client.DisconnectTime >= gracePeriodSeconds)
+                    {
+                        toRemove ??= new List<uint>();
+                        toRemove.Add(client.Id);
+                    }
+                }
+
+                if (toRemove != null)
+                {
+                    foreach (uint id in toRemove)
+                    {
+                        RemoveClient(id);
+                    }
+                }
+            }
+        }
 
         public void Clear()
         {

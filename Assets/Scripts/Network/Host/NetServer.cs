@@ -231,7 +231,7 @@ namespace Network
 
         private void HandleReliableClientDisconnect(uint transportSessionId)
         {
-            if (_clientManager.UnBindReliableSession(transportSessionId, out uint clientId))
+            if (_clientManager.UnBindReliableSession(transportSessionId, out uint clientId, Time.time))
             {
                 Debug.Log($"[NetServer] Reliable session {transportSessionId} unbound from client {clientId}");
                 return;
@@ -242,7 +242,7 @@ namespace Network
 
         private void HandleFastClientDisconnect(uint transportSessionId)
         {
-            if (_clientManager.UnbindFastSession(transportSessionId, out uint clientId))
+            if (_clientManager.UnbindFastSession(transportSessionId, out uint clientId, Time.time))
             {
                 Debug.Log($"[NetServer] Fast session {transportSessionId} unbound from client {clientId}");
                 return;
@@ -361,6 +361,7 @@ namespace Network
         {
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
+            _clientManager?.CleanupDisconnectedClients(Time.time, _config.maxReconnectTime);
         }
 
         public override void Destroy()

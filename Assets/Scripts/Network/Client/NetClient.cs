@@ -39,6 +39,7 @@ namespace Network
 
         // ========== RTT ==========
         private float _pingAccumulator;
+        private int _pingMissCount;
         private float _lastRtt;
         // ========== RTT ==========
 
@@ -209,14 +210,7 @@ namespace Network
             
             // 开启实时连接
             StartFastConnect(_config.ip, (short)response.FastPort);
-            
-            // 发送快速连接请求
-            Client_Fast_Connect_Request request = new Client_Fast_Connect_Request()
-            {
-                ClientId = _clientId,
-                Token = _token
-            };
-            Send(NetEvent.FAST_CONNECT_REQUEST, request);
+            SendFastConnectRequest();
         }
 
         /// <summary>
@@ -238,6 +232,7 @@ namespace Network
             
             // 帧间隔存在误差，防止延迟小于零 
             _lastRtt = Math.Clamp((nowMs - sendMs) / 1000f, 0f, float.MaxValue);
+            _pingMissCount = 0;
         }
 
         #endregion
@@ -251,7 +246,7 @@ namespace Network
         {
             _heartbeatMissCount++;
 
-            if (_heartbeatMissCount >= _config.maxHeartbeatMisses)
+            if (_heartbeatMissCount >= _config.maxMissCount)
             {
                 Debug.LogWarning("[NetClient] Server heartbeat timeout, disconnecting...");
                 
@@ -271,10 +266,29 @@ namespace Network
         /// </summary>
         private void SendPing()
         {
+            _pingMissCount++;
+
+            if (_pingMissCount >= _config.maxMissCount)
+            {
+                SendFastConnectRequest();
+                return;
+            }
+            
             long nowTicks = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             nowTicks += (long)(Time.deltaTime * 1000f); // 添加帧驱动延时
             Ping ping = new Ping { Timestamp = nowTicks };
             Send(NetEvent.PING, ping);
+        }
+
+        private void SendFastConnectRequest()
+        {
+            // 发送快速连接请求
+            Client_Fast_Connect_Request request = new Client_Fast_Connect_Request()
+            {
+                ClientId = _clientId,
+                Token = _token
+            };
+            Send(NetEvent.FAST_CONNECT_REQUEST, request);
         }
         
         /// <summary>
