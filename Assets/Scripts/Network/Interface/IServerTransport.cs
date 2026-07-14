@@ -16,6 +16,7 @@ namespace Network
         event Action<string> OnTransportError;
         void StartServer(short port);
         void Stop();
+        void Disconnect(uint sessionId);
         void Send(uint sessionId, byte[] data);
         void Broadcast(byte[] data);
         void Update(float deltaTime);

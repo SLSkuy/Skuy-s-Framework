@@ -92,6 +92,11 @@ namespace Network
             }
         }
 
+        public void Disconnect(uint sessionId)
+        {
+            RemoveClient(sessionId);
+        }
+
         public void Update(float deltaTime)
         {
             if (!IsRunning || _udpServer == null)

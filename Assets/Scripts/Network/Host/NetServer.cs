@@ -210,7 +210,11 @@ namespace Network
             else if(msg is { Item1: NetEvent.FAST_CONNECT_REQUEST, Item2: Client_Fast_Connect_Request request })
             {
                 // 特殊处理KCP连接请求
-                _clientManager.BindFastSession(request.Token, transportSessionId);
+                if (_clientManager.BindFastSession(request.Token, transportSessionId, out uint oldFastSessionId))
+                {
+                    // 关闭旧的KCP session（若有），避免悬挂连接
+                    if (oldFastSessionId != 0) _fastTransport.Disconnect(oldFastSessionId);
+                }
             }
         }
         
@@ -269,39 +273,71 @@ namespace Network
 
         /// <summary>
         /// 处理可靠连接请求
-        /// token == 0 或 token 无效：新建客户端
-        /// token 有效：恢复旧客户端，重新绑定TCP session
+        /// token==0：新建客户端
+        /// token有效 + clientId匹配 + client处于断线宽限期：恢复旧客户端
+        /// token有效 + clientId匹配 + client仍在线：顶号（踢掉旧连接，绑定新TCP）
         /// </summary>
         private void HandleReliableConnectRequest(uint transportSessionId, Client_Reliable_Connect_Request request)
         {
-            if (request.Token != 0 && _clientManager.RebindReliableSession(request.Token, transportSessionId))
+            if (request.Token != 0 && request.ClientId != 0 && _clientManager.TryGetClient(request.Token, out var client) && client.Id == request.ClientId)
             {
-                // 旧客户端恢复：把新TCP session绑定回原client
-                if (_clientManager.TryGetClient(request.Token, out var client))
+                // --- token + clientId 双重匹配 ---
+                if (client.IsConnected)
                 {
-                    Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
-                    {
-                        ClientId = client.Id,
-                        FastPort = _fastTransport.Port,
-                        Token = client.Token,
-                    };
-                    _reliableTransport.Send(transportSessionId, NetUtils.Proto2Bytes(NetEvent.RELIABLE_CONNECT_RESPONSE, response));
+                    // 顶号：client仍在线，踢掉旧session并重新绑定
+                    uint oldReliableId = client.ReliableSessionId;
+                    uint oldFastId = client.FastSessionId;
+
+                    _clientManager.RebindReliableSession(request.Token, transportSessionId, out _);
+
+                    // 关闭旧transport session，避免悬挂连接
+                    if (oldReliableId != 0) _reliableTransport.Disconnect(oldReliableId);
+                    if (oldFastId != 0) _fastTransport.Disconnect(oldFastId);
+
+                    SendReliableConnectResponse(transportSessionId, client.Id, client.Token);
+                    Debug.Log($"[NetServer] Client {client.Id} kicked and rebound, TCP session {transportSessionId}");
+                }
+                else if (client.DisconnectTime >= 0f)
+                {
+                    // 断线恢复：client在宽限期内，重新绑定TCP
+                    _clientManager.RebindReliableSession(request.Token, transportSessionId, out uint oldReliableId);
+
+                    // 关闭旧TCP session（若有），避免残留
+                    if (oldReliableId != 0) _reliableTransport.Disconnect(oldReliableId);
+
+                    SendReliableConnectResponse(transportSessionId, client.Id, client.Token);
                     Debug.Log($"[NetServer] Client {client.Id} recovered, TCP session rebound to {transportSessionId}");
+                }
+                else
+                {
+                    // 状态异常，降级为新建
+                    Debug.LogWarning($"[NetServer] Recovery rejected: client {client.Id} in unexpected state, creating new");
+                    CreateNewClient(transportSessionId);
                 }
             }
             else
             {
-                // Token为0或Token失效，创建新的客户端
-                var client = _clientManager.AddClient(transportSessionId);
-                Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
-                {
-                    ClientId = client.Id,
-                    FastPort = _fastTransport.Port,
-                    Token = client.Token,
-                };
-                _reliableTransport.Send(transportSessionId, NetUtils.Proto2Bytes(NetEvent.RELIABLE_CONNECT_RESPONSE, response));
-                Debug.Log($"[NetServer] New client {client.Id} created, TCP session {transportSessionId}");
+                // Token为0 / token无效 / clientId不匹配 → 创建新客户端
+                CreateNewClient(transportSessionId);
             }
+        }
+
+        private void SendReliableConnectResponse(uint transportSessionId, uint clientId, ulong token)
+        {
+            Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
+            {
+                ClientId = clientId,
+                FastPort = _fastTransport.Port,
+                Token = token,
+            };
+            _reliableTransport.Send(transportSessionId, NetUtils.Proto2Bytes(NetEvent.RELIABLE_CONNECT_RESPONSE, response));
+        }
+
+        private void CreateNewClient(uint transportSessionId)
+        {
+            var client = _clientManager.AddClient(transportSessionId);
+            SendReliableConnectResponse(transportSessionId, client.Id, client.Token);
+            Debug.Log($"[NetServer] New client {client.Id} created, TCP session {transportSessionId}");
         }
 
         /// <summary>

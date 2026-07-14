@@ -51,7 +51,7 @@ namespace Network
 
         private struct ClientMessage
         {
-            public uint ClientId;
+            public uint SessionId;
             public byte[] Data;
         }
 
@@ -163,7 +163,7 @@ namespace Network
 
             while (_receivedMessages.TryDequeue(out ClientMessage message))
             {
-                OnDataReceived?.Invoke(message.ClientId, message.Data);
+                OnDataReceived?.Invoke(message.SessionId, message.Data);
             }
 
             while (_errors.TryDequeue(out TransportError error))
@@ -203,6 +203,11 @@ namespace Network
             _cts?.Dispose();
             _cts = null;
             ClearEvents();
+        }
+
+        public void Disconnect(uint sessionId)
+        {
+            RemoveClient(sessionId, true);
         }
 
         public void Dispose()
@@ -366,7 +371,7 @@ namespace Network
         {
             _receivedMessages.Enqueue(new ClientMessage
             {
-                ClientId = clientId,
+                SessionId = clientId,
                 Data = data
             });
         }

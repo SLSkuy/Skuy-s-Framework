@@ -79,8 +79,9 @@ namespace Network
             }
         }
 
-        public bool BindFastSession(ulong token, uint fastSessionId)
+        public bool BindFastSession(ulong token, uint fastSessionId, out uint oldFastSessionId)
         {
+            oldFastSessionId = 0;
             lock (_lock)
             {
                 if (!TryGetClient(token, out var client))
@@ -88,9 +89,10 @@ namespace Network
                     return false;
                 }
 
-                if (client.FastSessionId != 0)
+                oldFastSessionId = client.FastSessionId;
+                if (oldFastSessionId != 0)
                 {
-                    _clientIdsByFastSessionId.Remove(client.FastSessionId);
+                    _clientIdsByFastSessionId.Remove(oldFastSessionId);
                 }
 
                 client.FastSessionId = fastSessionId;
@@ -103,10 +105,11 @@ namespace Network
         }
 
         /// <summary>
-        /// 将新的TCP session重新绑定到已有客户端（旧客户端恢复）
+        /// 将新的TCP session重新绑定到已有客户端（旧客户端恢复/顶号）
         /// </summary>
-        public bool RebindReliableSession(ulong token, uint reliableSessionId)
+        public bool RebindReliableSession(ulong token, uint reliableSessionId, out uint oldReliableSessionId)
         {
+            oldReliableSessionId = 0;
             lock (_lock)
             {
                 if (!_clientsByToken.TryGetValue(token, out var client))
@@ -115,9 +118,10 @@ namespace Network
                 }
 
                 // 如果已有旧TCP session，先解除
-                if (client.ReliableSessionId != 0)
+                oldReliableSessionId = client.ReliableSessionId;
+                if (oldReliableSessionId != 0)
                 {
-                    _clientIdsByReliableSessionId.Remove(client.ReliableSessionId);
+                    _clientIdsByReliableSessionId.Remove(oldReliableSessionId);
                 }
 
                 client.ReliableSessionId = reliableSessionId;
