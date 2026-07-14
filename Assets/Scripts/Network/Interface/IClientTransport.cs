@@ -33,6 +33,11 @@ namespace Network
         event Action OnConnected;
         
         /// <summary>
+        /// 断线回调
+        /// </summary>
+        event Action OnDisconnected;
+        
+        /// <summary>
         /// 开始连接
         /// </summary>
         /// <param name="host">目标IP</param>

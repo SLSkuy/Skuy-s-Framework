@@ -62,7 +62,7 @@ namespace Network
             }
         }
 
-        public void Send(uint clientId, byte[] data)
+        public void Send(uint sessionId, byte[] data)
         {
             if (!IsRunning)
             {
@@ -70,12 +70,12 @@ namespace Network
                 return;
             }
 
-            if (_clientsById.TryGetValue(clientId, out ClientSession session))
+            if (_clientsById.TryGetValue(sessionId, out ClientSession session))
             {
                 int result = session.Session.Send(data);
                 if (result < 0)
                 {
-                    RaiseError($"KCP server send failed for client {clientId} with code: {result}");
+                    RaiseError($"KCP server send failed for client {sessionId} with code: {result}");
                 }
             }
         }

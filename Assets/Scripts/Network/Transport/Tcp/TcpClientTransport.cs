@@ -19,6 +19,7 @@ namespace Network
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
         public event Action OnConnected;
+        public event Action OnDisconnected;
 
         #region 暴露接口
         
@@ -108,6 +109,7 @@ namespace Network
         private void HandleDisconnected()
         {
             IsRunning = false;
+            OnDisconnected?.Invoke();
         }
 
         private void HandleError(string error)

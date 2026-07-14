@@ -21,6 +21,7 @@ namespace Network
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
         public event Action OnConnected;
+        public event Action OnDisconnected;
 
         public KcpClientTransport(TransportSettings settings)
         {
@@ -111,6 +112,7 @@ namespace Network
         public void Stop()
         {
             IsRunning = false;
+            OnDisconnected?.Invoke();
 
             _session?.Dispose();
             _session = null;

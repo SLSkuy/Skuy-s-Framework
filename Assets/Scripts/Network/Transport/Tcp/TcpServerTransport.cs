@@ -117,7 +117,7 @@ namespace Network
             }
         }
 
-        public void Send(uint clientId, byte[] data)
+        public void Send(uint sessionId, byte[] data)
         {
             if (!IsRunning)
             {
@@ -125,10 +125,10 @@ namespace Network
                 return;
             }
 
-            TcpSession session = GetSession(clientId);
+            TcpSession session = GetSession(sessionId);
             if (session == null)
             {
-                RaiseError($"TCP server client not found: {clientId}");
+                RaiseError($"TCP server client not found: {sessionId}");
                 return;
             }
 

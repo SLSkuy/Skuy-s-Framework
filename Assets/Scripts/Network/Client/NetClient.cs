@@ -97,6 +97,7 @@ namespace Network
             _heartbeatAccumulator = 0f;
             _heartbeatMissCount = 0;
             _pingAccumulator = 0f;
+            _pingMissCount = 0;
             _lastRtt = 0f;
             
             _tryReconnect = false;
@@ -206,6 +207,7 @@ namespace Network
             _heartbeatAccumulator = 0f;
             _heartbeatMissCount = 0;
             _pingAccumulator = 0f;
+            _pingMissCount = 0;
             _lastRtt = 0f;
             
             // 开启实时连接
@@ -270,6 +272,7 @@ namespace Network
 
             if (_pingMissCount >= _config.maxMissCount)
             {
+                _pingMissCount = 0;
                 SendFastConnectRequest();
                 return;
             }
@@ -375,6 +378,7 @@ namespace Network
             _reliableTransport.OnDataReceived += HandleDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
             _reliableTransport.OnConnected += HandleConnected;
+            _reliableTransport.OnDisconnected += TryReconnect;
 
             _fastTransport = new KcpClientTransport(settings);
             _fastTransport.OnDataReceived += HandleDataReceived;
