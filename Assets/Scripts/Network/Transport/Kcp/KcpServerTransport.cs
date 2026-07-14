@@ -129,6 +129,7 @@ namespace Network
                 session.Session.Dispose();
             }
 
+            _nextClientId = 1;
             _clientsById.Clear();
             _clientsByEndPoint.Clear();
 

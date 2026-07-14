@@ -8,7 +8,9 @@ message Net_Packet {
 }
 
 message Client_Reliable_Connect_Request {
-  // 待定
+  // 初次连接全为0，重连时带上旧信息
+  uint32 client_id = 1;
+  uint64 token = 2;
 }
 
 message Client_Reliable_Connect_Response {

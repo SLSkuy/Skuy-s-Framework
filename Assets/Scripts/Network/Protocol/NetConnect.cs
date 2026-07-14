@@ -25,20 +25,20 @@ namespace NetConnect {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFuZXRfY29ubmVjdC5wcm90bxIKTmV0Q29ubmVjdCIxCgpOZXRfUGFja2V0",
-            "EhIKCm1lc3NhZ2VfaWQYASABKA0SDwoHcGF5bG9hZBgCIAEoDCIhCh9DbGll",
-            "bnRfUmVsaWFibGVfQ29ubmVjdF9SZXF1ZXN0IlcKIENsaWVudF9SZWxpYWJs",
-            "ZV9Db25uZWN0X1Jlc3BvbnNlEhEKCWNsaWVudF9pZBgBIAEoDRINCgV0b2tl",
-            "bhgCIAEoBBIRCglmYXN0X3BvcnQYAyABKAUiPwobQ2xpZW50X0Zhc3RfQ29u",
-            "bmVjdF9SZXF1ZXN0EhEKCWNsaWVudF9pZBgBIAEoDRINCgV0b2tlbhgCIAEo",
-            "BCIUChJIZWFydF9CZWF0X1JlcXVlc3QiFQoTSGVhcnRfQmVhdF9SZXNwb25z",
-            "ZSIZCgRQaW5nEhEKCXRpbWVzdGFtcBgBIAEoAyIZCgRQb25nEhEKCXRpbWVz",
-            "dGFtcBgBIAEoAyIcCglDaGF0X1Rlc3QSDwoHY29udGVudBgBIAEoCWIGcHJv",
-            "dG8z"));
+            "EhIKCm1lc3NhZ2VfaWQYASABKA0SDwoHcGF5bG9hZBgCIAEoDCJDCh9DbGll",
+            "bnRfUmVsaWFibGVfQ29ubmVjdF9SZXF1ZXN0EhEKCWNsaWVudF9pZBgBIAEo",
+            "DRINCgV0b2tlbhgCIAEoBCJXCiBDbGllbnRfUmVsaWFibGVfQ29ubmVjdF9S",
+            "ZXNwb25zZRIRCgljbGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQSEQoJ",
+            "ZmFzdF9wb3J0GAMgASgFIj8KG0NsaWVudF9GYXN0X0Nvbm5lY3RfUmVxdWVz",
+            "dBIRCgljbGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQiFAoSSGVhcnRf",
+            "QmVhdF9SZXF1ZXN0IhUKE0hlYXJ0X0JlYXRfUmVzcG9uc2UiGQoEUGluZxIR",
+            "Cgl0aW1lc3RhbXAYASABKAMiGQoEUG9uZxIRCgl0aW1lc3RhbXAYASABKAMi",
+            "HAoJQ2hhdF9UZXN0Eg8KB2NvbnRlbnQYASABKAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Net_Packet), global::NetConnect.Net_Packet.Parser, new[]{ "MessageId", "Payload" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Request), global::NetConnect.Client_Reliable_Connect_Request.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Request), global::NetConnect.Client_Reliable_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Response), global::NetConnect.Client_Reliable_Connect_Response.Parser, new[]{ "ClientId", "Token", "FastPort" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Fast_Connect_Request), global::NetConnect.Client_Fast_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Heart_Beat_Request), global::NetConnect.Heart_Beat_Request.Parser, null, null, null, null, null),
@@ -278,9 +278,6 @@ namespace NetConnect {
 
   }
 
-  /// <summary>
-  /// 待定
-  /// </summary>
   public sealed partial class Client_Reliable_Connect_Request : pb::IMessage<Client_Reliable_Connect_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -315,6 +312,8 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Client_Reliable_Connect_Request(Client_Reliable_Connect_Request other) : this() {
+      clientId_ = other.clientId_;
+      token_ = other.token_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -322,6 +321,33 @@ namespace NetConnect {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Client_Reliable_Connect_Request Clone() {
       return new Client_Reliable_Connect_Request(this);
+    }
+
+    /// <summary>Field number for the "client_id" field.</summary>
+    public const int ClientIdFieldNumber = 1;
+    private uint clientId_;
+    /// <summary>
+    /// 初次连接全为0，重连时带上旧信息
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint ClientId {
+      get { return clientId_; }
+      set {
+        clientId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "token" field.</summary>
+    public const int TokenFieldNumber = 2;
+    private ulong token_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ulong Token {
+      get { return token_; }
+      set {
+        token_ = value;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -339,6 +365,8 @@ namespace NetConnect {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (ClientId != other.ClientId) return false;
+      if (Token != other.Token) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -346,6 +374,8 @@ namespace NetConnect {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
+      if (ClientId != 0) hash ^= ClientId.GetHashCode();
+      if (Token != 0UL) hash ^= Token.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -364,6 +394,14 @@ namespace NetConnect {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
+      if (ClientId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(ClientId);
+      }
+      if (Token != 0UL) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(Token);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -374,6 +412,14 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (ClientId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(ClientId);
+      }
+      if (Token != 0UL) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(Token);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -384,6 +430,12 @@ namespace NetConnect {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
+      if (ClientId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ClientId);
+      }
+      if (Token != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Token);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -395,6 +447,12 @@ namespace NetConnect {
     public void MergeFrom(Client_Reliable_Connect_Request other) {
       if (other == null) {
         return;
+      }
+      if (other.ClientId != 0) {
+        ClientId = other.ClientId;
+      }
+      if (other.Token != 0UL) {
+        Token = other.Token;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -411,6 +469,14 @@ namespace NetConnect {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 8: {
+            ClientId = input.ReadUInt32();
+            break;
+          }
+          case 16: {
+            Token = input.ReadUInt64();
+            break;
+          }
         }
       }
     #endif
@@ -426,6 +492,14 @@ namespace NetConnect {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
+          case 8: {
+            ClientId = input.ReadUInt32();
+            break;
+          }
+          case 16: {
+            Token = input.ReadUInt64();
+            break;
+          }
         }
       }
     }

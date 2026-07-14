@@ -40,9 +40,8 @@ namespace Network
             }
             catch (Exception ex)
             {
-                string message = $"TCP client start failed: {ex.Message}";
                 Stop();
-                OnTransportError?.Invoke(message);
+                OnTransportError?.Invoke(ex.Message);
             }
         }
 

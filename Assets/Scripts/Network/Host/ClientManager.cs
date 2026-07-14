@@ -96,6 +96,32 @@ namespace Network
             }
         }
 
+        /// <summary>
+        /// 将新的TCP session重新绑定到已有客户端（旧客户端恢复）
+        /// </summary>
+        public bool RebindReliableSession(ulong token, uint reliableSessionId)
+        {
+            lock (_lock)
+            {
+                if (!_clientsByToken.TryGetValue(token, out var client))
+                {
+                    return false;
+                }
+
+                // 如果已有旧TCP session，先解除
+                if (client.ReliableSessionId != 0)
+                {
+                    _clientIdsByReliableSessionId.Remove(client.ReliableSessionId);
+                }
+
+                client.ReliableSessionId = reliableSessionId;
+                _clientsById[client.Id] = client;
+                _clientsByToken[token] = client;
+                _clientIdsByReliableSessionId[reliableSessionId] = client.Id;
+                return true;
+            }
+        }
+
         public bool UnBindReliableSession(uint reliableSessionId, out uint clientId)
         {
             lock (_lock)

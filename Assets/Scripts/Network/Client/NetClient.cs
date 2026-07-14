@@ -27,6 +27,9 @@ namespace Network
         // ========== 连接标识 ==========
         private uint _clientId;
         private ulong _token;
+        private bool _tryReconnect;
+        private float _reconnectAccumulator;
+        private int _reconnectTimes;
         // ========== 连接标识 ==========
 
         // ========== 网络心跳 ==========
@@ -86,13 +89,18 @@ namespace Network
             _fastTransport?.Stop();
             _reliableTransport?.Stop();
 
-            // 重置连接标识和心跳状态
+            // 重置标识
             _clientId = 0;
             _token = 0;
+            
             _heartbeatAccumulator = 0f;
             _heartbeatMissCount = 0;
             _pingAccumulator = 0f;
             _lastRtt = 0f;
+            
+            _tryReconnect = false;
+            _reconnectAccumulator = 0f;
+            _reconnectTimes = 0;
         }
         
         /// <summary>
@@ -177,7 +185,14 @@ namespace Network
         /// </summary>
         private void HandleConnected()
         {
-            Client_Reliable_Connect_Request request = new Client_Reliable_Connect_Request();
+            // 重置重连状态
+            _tryReconnect = false;
+            
+            Client_Reliable_Connect_Request request = new Client_Reliable_Connect_Request()
+            {
+                ClientId = _clientId,
+                Token = _token,
+            };
             SendReliable(NetEvent.RELIABLE_CONNECT_REQUEST, request);
         }
 
@@ -239,7 +254,11 @@ namespace Network
             if (_heartbeatMissCount >= _config.maxHeartbeatMisses)
             {
                 Debug.LogWarning("[NetClient] Server heartbeat timeout, disconnecting...");
-                StopClient();
+                
+                // 尝试重连
+                if (_config.autoReconnect) TryReconnect();
+                else StopClient();
+                
                 return;
             }
             
@@ -257,10 +276,13 @@ namespace Network
             Ping ping = new Ping { Timestamp = nowTicks };
             Send(NetEvent.PING, ping);
         }
-
-        private void ComputeRTT(float deltaTime)
+        
+        /// <summary>
+        /// 网络心跳：检测连接存活
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        private void HeartBeat(float deltaTime)
         {
-            // ========== 网络心跳：检测服务器存活 ==========
             if (_config.heartBeatStep > 0f)
             {
                 _heartbeatAccumulator += deltaTime;
@@ -270,8 +292,14 @@ namespace Network
                     SendHeartbeat();
                 }
             }
-
-            // ========== 延迟计算：测量RTT延迟 ==========
+        }
+        
+        /// <summary>
+        /// 网络延迟计算：测量RTT
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        private void ComputeRTT(float deltaTime)
+        {
             if (_config.rttStep > 0f)
             {
                 _pingAccumulator += deltaTime;
@@ -279,6 +307,42 @@ namespace Network
                 {
                     _pingAccumulator -= _config.rttStep;
                     SendPing();
+                }
+            }
+        }
+
+        #endregion
+
+        #region 重连逻辑
+
+        private void TryReconnect()
+        {
+            _tryReconnect = true;
+            _reconnectTimes = 0;
+            _reconnectAccumulator = _config.reconnectInterval;
+            
+            _reliableTransport?.Stop();
+            _fastTransport?.Stop();
+        }
+
+        private void DoReconnect(float deltaTime)
+        {
+            if (_config.reconnectInterval > 0f)
+            {
+                _reconnectAccumulator += deltaTime;
+                if (_reconnectAccumulator >= _config.reconnectInterval)
+                {
+                    _reconnectAccumulator -= _config.reconnectInterval;
+                    StartReliableConnect();
+                    
+                    _reconnectTimes++;
+                    Debug.Log($"[NetClient] Reconnecting {_reconnectTimes} / {_config.maxReconnectCount}");
+                    if (_reconnectTimes >= _config.maxReconnectCount)
+                    {
+                        // 连接次数超时
+                        Debug.Log("[NetClient] Reconnect failed, client disconnected");
+                        StopClient();
+                    }
                 }
             }
         }
@@ -322,8 +386,19 @@ namespace Network
                 return;
             }
 
-            // 计算心跳与延迟
-            ComputeRTT(deltaTime);
+            if (_tryReconnect)
+            {
+                DoReconnect(deltaTime);
+            }
+            else
+            {
+                // 网络心跳
+                HeartBeat(deltaTime);
+                
+                // 只有可靠连接时可用时才计算RTT，确保有可靠连接才启用快速连接
+                // 防止服务端有无主的KCP会话连接
+                if(_reliableTransport is { IsRunning: true }) ComputeRTT(deltaTime);
+            }
         }
 
         public override void Destroy()

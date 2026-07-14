@@ -183,10 +183,17 @@ namespace Network
         /// </summary>
         private void HandleReliableDataReceived(uint transportSessionId, byte[] data)
         {
+            var msg = NetUtils.Bytes2Proto(data);
+            
             if (_clientManager.TryGetClientId(_reliableTransport.Type, transportSessionId, out var clientId))
             {
-                var msg = NetUtils.Bytes2Proto(data);
                 _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
+            }
+            else if (msg is { Item1: NetEvent.RELIABLE_CONNECT_REQUEST, Item2: Client_Reliable_Connect_Request request })
+            {
+                // RELIABLE_CONNECT_REQUEST需要特殊处理：此时transportSessionId尚未映射到clientId
+                // 不能走标准的MessageProcessor分发，直接使用transportSessionId
+                HandleReliableConnectRequest(transportSessionId, request);
             }
         }
 
@@ -215,9 +222,6 @@ namespace Network
         private void HandleReliableClientConnect(uint transportSessionId)
         {
             Debug.Log($"[NetServer] Reliable transport session connected: {transportSessionId}");
-            
-            // 添加新的客户端连接
-            _clientManager.AddClient(transportSessionId);
         }
 
         private void HandleFastClientConnect(uint transportSessionId)
@@ -263,18 +267,40 @@ namespace Network
             }
         }
 
-        private void HandleReliableConnectRequest(uint clientId, Client_Reliable_Connect_Request request)
+        /// <summary>
+        /// 处理可靠连接请求
+        /// token == 0 或 token 无效：新建客户端
+        /// token 有效：恢复旧客户端，重新绑定TCP session
+        /// </summary>
+        private void HandleReliableConnectRequest(uint transportSessionId, Client_Reliable_Connect_Request request)
         {
-            if (_clientManager.TryGetClient(clientId, out var client))
+            if (request.Token != 0 && _clientManager.RebindReliableSession(request.Token, transportSessionId))
             {
-                // 发送回连接响应包
+                // 旧客户端恢复：把新TCP session绑定回原client
+                if (_clientManager.TryGetClient(request.Token, out var client))
+                {
+                    Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
+                    {
+                        ClientId = client.Id,
+                        FastPort = _fastTransport.Port,
+                        Token = client.Token,
+                    };
+                    _reliableTransport.Send(transportSessionId, NetUtils.Proto2Bytes(NetEvent.RELIABLE_CONNECT_RESPONSE, response));
+                    Debug.Log($"[NetServer] Client {client.Id} recovered, TCP session rebound to {transportSessionId}");
+                }
+            }
+            else
+            {
+                // Token为0或Token失效，创建新的客户端
+                var client = _clientManager.AddClient(transportSessionId);
                 Client_Reliable_Connect_Response response = new Client_Reliable_Connect_Response()
                 {
-                    ClientId = clientId,
+                    ClientId = client.Id,
                     FastPort = _fastTransport.Port,
                     Token = client.Token,
                 };
-                SendReliable(clientId, NetEvent.RELIABLE_CONNECT_RESPONSE, response);
+                _reliableTransport.Send(transportSessionId, NetUtils.Proto2Bytes(NetEvent.RELIABLE_CONNECT_RESPONSE, response));
+                Debug.Log($"[NetServer] New client {client.Id} created, TCP session {transportSessionId}");
             }
         }
 
@@ -327,7 +353,7 @@ namespace Network
             RegNetHandler<Ping>(NetEvent.PING, HandlePing);
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
-            RegNetHandler<Client_Reliable_Connect_Request>(NetEvent.RELIABLE_CONNECT_REQUEST, HandleReliableConnectRequest);
+            NetUtils.RegisterParser(NetEvent.RELIABLE_CONNECT_REQUEST, Client_Reliable_Connect_Request.Parser);
             RegNetHandler<Heart_Beat_Request>(NetEvent.HEART_BEAT_REQUEST, HandleHeartBeatRequest);
         }
 

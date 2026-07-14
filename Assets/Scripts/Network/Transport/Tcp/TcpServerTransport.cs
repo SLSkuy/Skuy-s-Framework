@@ -199,6 +199,7 @@ namespace Network
                 session.Session.Dispose();
             }
 
+            _nextClientId = 1;
             _cts?.Dispose();
             _cts = null;
             ClearEvents();
