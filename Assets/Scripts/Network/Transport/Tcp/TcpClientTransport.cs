@@ -15,6 +15,7 @@ namespace Network
         private readonly ConcurrentQueue<string> _errors = new ConcurrentQueue<string>();
         private TcpSession _session;
         private bool _isDisposed;
+        private volatile bool _disconnected;    // 主线程派发，防止跨线程访问
 
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
@@ -68,6 +69,13 @@ namespace Network
             {
                 OnTransportError?.Invoke(error);
             }
+
+            // 断连事件延迟到主线程派发，避免网络线程直接修改NetClient状态
+            if (_disconnected)
+            {
+                _disconnected = false;
+                OnDisconnected?.Invoke();
+            }
         }
 
         public void Stop()
@@ -109,7 +117,7 @@ namespace Network
         private void HandleDisconnected()
         {
             IsRunning = false;
-            OnDisconnected?.Invoke();
+            _disconnected = true;
         }
 
         private void HandleError(string error)

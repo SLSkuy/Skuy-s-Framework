@@ -332,6 +332,15 @@ namespace Network
 
         #region 重连逻辑
 
+        /// <summary>
+        /// TCP断线回调：根据配置决定重连或停止
+        /// </summary>
+        private void HandleDisconnected()
+        {
+            if (_config.autoReconnect) TryReconnect();
+            else StopClient();
+        }
+
         private void TryReconnect()
         {
             _tryReconnect = true;
@@ -378,7 +387,7 @@ namespace Network
             _reliableTransport.OnDataReceived += HandleDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
             _reliableTransport.OnConnected += HandleConnected;
-            _reliableTransport.OnDisconnected += TryReconnect;
+            _reliableTransport.OnDisconnected += HandleDisconnected;
 
             _fastTransport = new KcpClientTransport(settings);
             _fastTransport.OnDataReceived += HandleDataReceived;
@@ -398,25 +407,26 @@ namespace Network
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
 
+            // 重连逻辑优先，不受 _clientId==0 影响
+            // 避免首次握手前断线导致 _tryReconnect=true 却永远不执行 DoReconnect
+            if (_tryReconnect)
+            {
+                DoReconnect(deltaTime);
+                return;
+            }
+
             // 仅在可靠连接建立后（已获得clientId）才启用心跳/Ping
             if (_clientId == 0)
             {
                 return;
             }
 
-            if (_tryReconnect)
-            {
-                DoReconnect(deltaTime);
-            }
-            else
-            {
-                // 网络心跳
-                HeartBeat(deltaTime);
-                
-                // 只有可靠连接时可用时才计算RTT，确保有可靠连接才启用快速连接
-                // 防止服务端有无主的KCP会话连接
-                if(_reliableTransport is { IsRunning: true }) ComputeRTT(deltaTime);
-            }
+            // 网络心跳
+            HeartBeat(deltaTime);
+            
+            // 只有可靠连接时可用时才计算RTT，确保有可靠连接才启用快速连接
+            // 防止服务端有无主的KCP会话连接
+            if(_reliableTransport is { IsRunning: true }) ComputeRTT(deltaTime);
         }
 
         public override void Destroy()

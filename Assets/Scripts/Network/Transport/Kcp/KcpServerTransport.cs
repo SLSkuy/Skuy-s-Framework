@@ -28,6 +28,7 @@ namespace Network
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly Dictionary<string, ClientSession> _clientsByEndPoint = new Dictionary<string, ClientSession>();
         private readonly List<uint> _timeOutSessionIds = new List<uint>();
+        private readonly List<uint> _pendingDisconnects = new List<uint>();
         private UdpClient _udpServer;
         private uint _nextClientId = 1;
         private bool _isDisposed;
@@ -94,7 +95,7 @@ namespace Network
 
         public void Disconnect(uint sessionId)
         {
-            RemoveClient(sessionId);
+            _pendingDisconnects.Add(sessionId);
         }
 
         public void Update(float deltaTime)
@@ -110,6 +111,7 @@ namespace Network
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 UpdateClients(now);
                 RemoveTimedOutClients(now);
+                ProcessPendingDisconnects();
             }
             catch (SocketException ex)
             {
@@ -216,6 +218,17 @@ namespace Network
                     OnDataReceived?.Invoke(session.SessionId, data);
                 }
             }
+        }
+
+        private void ProcessPendingDisconnects()
+        {
+            if (_pendingDisconnects.Count == 0) return;
+
+            foreach (uint sessionId in _pendingDisconnects)
+            {
+                RemoveClient(sessionId);
+            }
+            _pendingDisconnects.Clear();
         }
 
         private void RemoveTimedOutClients(DateTimeOffset now)
