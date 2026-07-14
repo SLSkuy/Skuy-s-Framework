@@ -81,6 +81,7 @@ namespace Network
         public void Stop()
         {
             IsRunning = false;
+            _disconnected = false;  // 清除挂起的断线标记，防止显式Stop后Update仍触发OnDisconnected
 
             if (_session != null)
             {
