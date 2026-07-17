@@ -24,20 +24,18 @@ namespace NetConnect {
     static NetConnectReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFuZXRfY29ubmVjdC5wcm90bxIKTmV0Q29ubmVjdCIxCgpOZXRfUGFja2V0",
-            "EhIKCm1lc3NhZ2VfaWQYASABKA0SDwoHcGF5bG9hZBgCIAEoDCJDCh9DbGll",
-            "bnRfUmVsaWFibGVfQ29ubmVjdF9SZXF1ZXN0EhEKCWNsaWVudF9pZBgBIAEo",
-            "DRINCgV0b2tlbhgCIAEoBCJXCiBDbGllbnRfUmVsaWFibGVfQ29ubmVjdF9S",
-            "ZXNwb25zZRIRCgljbGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQSEQoJ",
-            "ZmFzdF9wb3J0GAMgASgFIj8KG0NsaWVudF9GYXN0X0Nvbm5lY3RfUmVxdWVz",
-            "dBIRCgljbGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQiFAoSSGVhcnRf",
-            "QmVhdF9SZXF1ZXN0IhUKE0hlYXJ0X0JlYXRfUmVzcG9uc2UiGQoEUGluZxIR",
-            "Cgl0aW1lc3RhbXAYASABKAMiGQoEUG9uZxIRCgl0aW1lc3RhbXAYASABKAMi",
-            "HAoJQ2hhdF9UZXN0Eg8KB2NvbnRlbnQYASABKAliBnByb3RvMw=="));
+            "ChFuZXRfY29ubmVjdC5wcm90bxIKTmV0Q29ubmVjdCJDCh9DbGllbnRfUmVs",
+            "aWFibGVfQ29ubmVjdF9SZXF1ZXN0EhEKCWNsaWVudF9pZBgBIAEoDRINCgV0",
+            "b2tlbhgCIAEoBCJXCiBDbGllbnRfUmVsaWFibGVfQ29ubmVjdF9SZXNwb25z",
+            "ZRIRCgljbGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQSEQoJZmFzdF9w",
+            "b3J0GAMgASgFIj8KG0NsaWVudF9GYXN0X0Nvbm5lY3RfUmVxdWVzdBIRCglj",
+            "bGllbnRfaWQYASABKA0SDQoFdG9rZW4YAiABKAQiFAoSSGVhcnRfQmVhdF9S",
+            "ZXF1ZXN0IhUKE0hlYXJ0X0JlYXRfUmVzcG9uc2UiGQoEUGluZxIRCgl0aW1l",
+            "c3RhbXAYASABKAMiGQoEUG9uZxIRCgl0aW1lc3RhbXAYASABKAMiHAoJQ2hh",
+            "dF9UZXN0Eg8KB2NvbnRlbnQYASABKAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Net_Packet), global::NetConnect.Net_Packet.Parser, new[]{ "MessageId", "Payload" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Request), global::NetConnect.Client_Reliable_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Reliable_Connect_Response), global::NetConnect.Client_Reliable_Connect_Response.Parser, new[]{ "ClientId", "Token", "FastPort" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetConnect.Client_Fast_Connect_Request), global::NetConnect.Client_Fast_Connect_Request.Parser, new[]{ "ClientId", "Token" }, null, null, null, null),
@@ -52,232 +50,6 @@ namespace NetConnect {
 
   }
   #region Messages
-  public sealed partial class Net_Packet : pb::IMessage<Net_Packet>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<Net_Packet> _parser = new pb::MessageParser<Net_Packet>(() => new Net_Packet());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Net_Packet> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[0]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Net_Packet() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Net_Packet(Net_Packet other) : this() {
-      messageId_ = other.messageId_;
-      payload_ = other.payload_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Net_Packet Clone() {
-      return new Net_Packet(this);
-    }
-
-    /// <summary>Field number for the "message_id" field.</summary>
-    public const int MessageIdFieldNumber = 1;
-    private uint messageId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint MessageId {
-      get { return messageId_; }
-      set {
-        messageId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "payload" field.</summary>
-    public const int PayloadFieldNumber = 2;
-    private pb::ByteString payload_ = pb::ByteString.Empty;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pb::ByteString Payload {
-      get { return payload_; }
-      set {
-        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as Net_Packet);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Net_Packet other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (MessageId != other.MessageId) return false;
-      if (Payload != other.Payload) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (MessageId != 0) hash ^= MessageId.GetHashCode();
-      if (Payload.Length != 0) hash ^= Payload.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (MessageId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(MessageId);
-      }
-      if (Payload.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteBytes(Payload);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (MessageId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(MessageId);
-      }
-      if (Payload.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteBytes(Payload);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (MessageId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(MessageId);
-      }
-      if (Payload.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Payload);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Net_Packet other) {
-      if (other == null) {
-        return;
-      }
-      if (other.MessageId != 0) {
-        MessageId = other.MessageId;
-      }
-      if (other.Payload.Length != 0) {
-        Payload = other.Payload;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            MessageId = input.ReadUInt32();
-            break;
-          }
-          case 18: {
-            Payload = input.ReadBytes();
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 8: {
-            MessageId = input.ReadUInt32();
-            break;
-          }
-          case 18: {
-            Payload = input.ReadBytes();
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
   public sealed partial class Client_Reliable_Connect_Request : pb::IMessage<Client_Reliable_Connect_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -292,7 +64,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[1]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -521,7 +293,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[2]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -784,7 +556,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[3]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1013,7 +785,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[4]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1168,7 +940,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[5]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1320,7 +1092,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[6]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1509,7 +1281,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[7]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1698,7 +1470,7 @@ namespace NetConnect {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[8]; }
+      get { return global::NetConnect.NetConnectReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

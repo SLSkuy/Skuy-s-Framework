@@ -237,6 +237,16 @@ namespace Network
             _pingMissCount = 0;
         }
 
+        /// <summary>
+        /// 服务端Ping：回Pong，供服务端独立测量RTT
+        /// </summary>
+        private void HandleServerPing(Ping ping)
+        {
+            long timeOffset = ping.Timestamp + (long)(Time.deltaTime * 1000f);
+            Pong pong = new Pong { Timestamp = timeOffset };
+            Send(NetEvent.PONG, pong);
+        }
+
         #endregion
 
         #region 心跳 / Ping
@@ -396,6 +406,7 @@ namespace Network
         public override void BindEvents()
         {
             RegNetHandler<Pong>(NetEvent.PONG, HandlePong);
+            RegNetHandler<Ping>(NetEvent.PING, HandleServerPing);
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             RegNetHandler<Heart_Beat_Response>(NetEvent.HEART_BEAT_RESPONSE, HandleHeartBeatResponse);

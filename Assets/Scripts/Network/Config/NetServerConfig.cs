@@ -14,6 +14,7 @@ namespace Network
         public short fastPort = 19198;
 
         [Header("客户端连接管理")] 
+        public float rttStep = 1f; 
         public float maxReconnectTime = 20;
     }
 }

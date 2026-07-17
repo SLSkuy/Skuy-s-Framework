@@ -19,6 +19,7 @@ namespace Network
         private MessageProcessor _messageProcessor;
         private ClientManager _clientManager;
         private NetServerConfig _serverConfig;
+        private float _serverPingAccumulator;
 
         /// <summary>
         /// 开启服务器
@@ -359,7 +360,53 @@ namespace Network
             Pong pong = new Pong { Timestamp = timeOffset };
             Send(clientId, NetEvent.PONG, pong);
         }
+
+        /// <summary>
+        /// 客户端Pong响应：服务端独立计算RTT
+        /// </summary>
+        private void HandleClientPong(uint clientId, Pong pong)
+        {
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long nowMsWithFrameDelay = nowMs + (long)(Time.deltaTime * 1000f);
+            float rtt = Math.Clamp((nowMsWithFrameDelay - pong.Timestamp) / 1000f, 0f, float.MaxValue);
+            _clientManager.UpdateRTT(clientId, rtt);
+        }
         
+        #endregion
+
+        #region 服务端Ping
+
+        /// <summary>
+        /// 服务端主动Ping：独立测量每个客户端的RTT
+        /// </summary>
+        private void UpdateServerPing(float deltaTime)
+        {
+            if (_serverConfig.rttStep <= 0f) return;
+            
+            _serverPingAccumulator += deltaTime;
+            if (_serverPingAccumulator >= _serverConfig.rttStep)
+            {
+                _serverPingAccumulator -= _serverConfig.rttStep;
+                SendServerPing();
+            }
+        }
+
+        private void SendServerPing()
+        {
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long nowMsWithFrameDelay = nowMs + (long)(Time.deltaTime * 1000f);
+            Ping ping = new Ping { Timestamp = nowMsWithFrameDelay };
+            byte[] data = NetUtils.Proto2Bytes(NetEvent.PING, ping);
+
+            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            {
+                if (client.FastSessionId != 0)
+                {
+                    _fastTransport.Send(client.FastSessionId, data);
+                }
+            }
+        }
+
         #endregion
 
         #region 生命周期
@@ -386,6 +433,7 @@ namespace Network
         public override void BindEvents()
         {
             RegNetHandler<Ping>(NetEvent.PING, HandlePing);
+            RegNetHandler<Pong>(NetEvent.PONG, HandleClientPong);
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
             NetUtils.RegisterParser(NetEvent.RELIABLE_CONNECT_REQUEST, Client_Reliable_Connect_Request.Parser);
@@ -397,6 +445,7 @@ namespace Network
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
             _clientManager?.CleanupDisconnectedClients(Time.time, _serverConfig.maxReconnectTime);
+            UpdateServerPing(deltaTime);
         }
 
         public override void Destroy()

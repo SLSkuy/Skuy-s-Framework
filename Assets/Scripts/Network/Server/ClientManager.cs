@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Network
 {
@@ -21,6 +20,11 @@ namespace Network
             /// <summary>断连时间戳，-1表示已连接，>=0表示断连时刻</summary>
             public float DisconnectTime;
 
+            /// <summary>
+            /// 网络延迟
+            /// </summary>
+            public float RTT;
+
             public bool IsConnected => ReliableSessionId != 0 || FastSessionId != 0;
 
             public Client(uint id, ulong token)
@@ -30,6 +34,7 @@ namespace Network
                 ReliableSessionId = 0;
                 FastSessionId = 0;
                 DisconnectTime = -1f;
+                RTT = 0;
             }
         }
 
@@ -394,6 +399,22 @@ namespace Network
                     {
                         RemoveClient(id);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新客户端 RTT（由服务端 Ping 测量）
+        /// </summary>
+        public void UpdateRTT(uint clientId, float rtt)
+        {
+            lock (_lock)
+            {
+                if (_clientsById.TryGetValue(clientId, out Client client))
+                {
+                    client.RTT = rtt;
+                    _clientsById[clientId] = client;
+                    _clientsByToken[client.Token] = client;
                 }
             }
         }

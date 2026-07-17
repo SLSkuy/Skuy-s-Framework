@@ -1,11 +1,10 @@
-﻿syntax = "proto3";
+﻿// ========================================
+// 基础连接协议，用于搭建客户端与服务端通信基础
+// 不应在此添加业务协议
+// ========================================
+syntax = "proto3";
 
 package NetConnect;
-
-message Net_Packet {
-  uint32 message_id = 1;
-  bytes payload = 2;
-}
 
 message Client_Reliable_Connect_Request {
   // 初次连接全为0，重连时带上旧信息
