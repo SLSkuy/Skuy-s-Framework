@@ -64,7 +64,6 @@ namespace Network
         public short Port { get; private set; }
         public bool IsRunning { get; private set; }
         
-        private readonly TransportSettings _settings;
         private readonly object _clientLock = new object();
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly ConcurrentQueue<uint> _connectedSessions = new ConcurrentQueue<uint>();
@@ -72,6 +71,7 @@ namespace Network
         private readonly ConcurrentQueue<ClientMessage> _receivedMessages = new ConcurrentQueue<ClientMessage>();
         private readonly ConcurrentQueue<TransportError> _errors = new ConcurrentQueue<TransportError>();
         private readonly List<uint> _timeOutSessionIds = new List<uint>();
+        private readonly NetServerConfig _config;
         private Socket _listener;
         private CancellationTokenSource _cts;
         private uint _nextClientId = 1;
@@ -82,11 +82,11 @@ namespace Network
         public event Action<uint, byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
 
-        public TcpServerTransport(TransportSettings settings)
+        public TcpServerTransport(NetServerConfig serverConfig)
         {
-            _settings = settings ?? TransportSettings.Default;
+            _config = serverConfig;
         }
-
+        
         #region 暴露接口
         
         public void StartServer(short port)
@@ -227,7 +227,7 @@ namespace Network
 
         private void RemoveTimedOutClients(DateTimeOffset now)
         {
-            if (_settings.disconnectTimeout <= 0f)
+            if (_config.maxReconnectTime <= 0f)
             {
                 return;
             }
@@ -237,7 +237,7 @@ namespace Network
                 foreach (var session in _clientsById.Values)
                 {
                     double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
-                    if (inactiveSeconds < _settings.disconnectTimeout)
+                    if (inactiveSeconds < _config.maxReconnectTime)
                     {
                         continue;
                     }

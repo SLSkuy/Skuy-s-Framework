@@ -10,21 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfe587569de446c4887b8e462bfff3f7, type: 3}
-  m_Name: NetConfig
-  m_EditorClassIdentifier: Assembly-CSharp::Network.NetworkData
-  ip: 127.0.0.1
+  m_Name: NetServerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Network.NetServerConfig
   reliablePort: 11451
   fastPort: 19198
-  heartBeatStep: 2
-  rttStep: 2
-  maxHeartbeatMisses: 3
-  disconnectTimeout: 20
-  autoReconnect: 1
-  reconnectInterval: 5
-  maxReconnectCount: 5
-  maxReconnectTime: 60
-  kcpConv: 1
-  kcpMtu: 1024
-  kcpSendWindow: 128
-  kcpReceiveWindow: 128
-  kcpUpdateInterval: 10
+  maxReconnectTime: 20

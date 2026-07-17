@@ -11,8 +11,7 @@ namespace Network
     {
         public TransportType Type => TransportType.KCP;
         public bool IsRunning { get; private set; }
-
-        private readonly TransportSettings _settings;
+        
         private UdpClient _udpClient;
         private KcpSession _session;
         private IPEndPoint _serverEndPoint;
@@ -23,11 +22,6 @@ namespace Network
         public event Action<string> OnTransportError;
         public event Action OnConnected;
         public event Action OnDisconnected;
-
-        public KcpClientTransport(TransportSettings settings)
-        {
-            _settings = settings ?? TransportSettings.Default;
-        }
 
         #region 暴露接口
 
@@ -49,7 +43,7 @@ namespace Network
                 _serverEndPoint = new IPEndPoint(address, port);
                 _udpClient = new UdpClient(address.AddressFamily);
                 _udpClient.Connect(_serverEndPoint);
-                _session = new KcpSession(_settings.conv, _serverEndPoint, _settings, Send);
+                _session = new KcpSession(_serverEndPoint, Send);
                 IsRunning = true;
                 OnConnected?.Invoke();
             }

@@ -23,12 +23,12 @@ namespace Network
         public TransportType Type => TransportType.KCP;
         public short Port { get; private set; }
         public bool IsRunning { get; private set; }
-
-        private readonly TransportSettings _settings;
+        
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly Dictionary<string, ClientSession> _clientsByEndPoint = new Dictionary<string, ClientSession>();
         private readonly List<uint> _timeOutSessionIds = new List<uint>();
         private readonly List<uint> _pendingDisconnects = new List<uint>();
+        private readonly NetServerConfig _config;
         private UdpClient _udpServer;
         private uint _nextClientId = 1;
         private bool _isDisposed;
@@ -38,9 +38,9 @@ namespace Network
         public event Action<uint, byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
 
-        public KcpServerTransport(TransportSettings settings)
+        public KcpServerTransport(NetServerConfig config)
         {
-            _settings = settings ?? TransportSettings.Default;
+            _config = config;
         }
 
         #region 暴露接口
@@ -198,7 +198,7 @@ namespace Network
             {
                 SessionId = _nextClientId++,
                 EndPointKey = endPointKey,
-                Session = new KcpSession(conv, remoteEndPoint, _settings, SendRaw)
+                Session = new KcpSession(remoteEndPoint, SendRaw, conv)
             };
 
             _clientsById.Add(session.SessionId, session);
@@ -233,7 +233,7 @@ namespace Network
 
         private void RemoveTimedOutClients(DateTimeOffset now)
         {
-            if (_settings.disconnectTimeout <= 0f)
+            if (_config.maxReconnectTime <= 0f)
             {
                 return;
             }
@@ -241,7 +241,7 @@ namespace Network
             foreach (var session in _clientsById.Values)
             {
                 double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
-                if (inactiveSeconds < _settings.disconnectTimeout)
+                if (inactiveSeconds < _config.maxReconnectTime)
                 {
                     continue;
                 }

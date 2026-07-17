@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b749c6bdb264708a9120358e838fbec, type: 3}
+  m_Name: KcpTransportConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Network.KcpTransportConfig
+  conv: 1
+  mtu: 1400
+  sendWindow: 128
+  receiveWindow: 128
+  updateInterval: 10
+  noDelay: 1
+  fastResend: 2
+  disableCongestionControl: 1

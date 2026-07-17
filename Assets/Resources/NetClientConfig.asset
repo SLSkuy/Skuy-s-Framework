@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fbf65681fcf43e2804ed7dcff130575, type: 3}
+  m_Name: NetClientConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Network.NetClientConfig
+  ip: 127.0.0.1
+  reliablePort: 11451
+  heartBeatStep: 5
+  rttStep: 1
+  maxMissCount: 5
+  autoReconnect: 1
+  reconnectInterval: 5
+  maxReconnectCount: 5

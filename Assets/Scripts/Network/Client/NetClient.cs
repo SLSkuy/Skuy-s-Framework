@@ -22,7 +22,7 @@ namespace Network
         private IClientTransport _reliableTransport;
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
-        private NetConfig _config;
+        private NetClientConfig _clientConfig;
 
         // ========== 连接标识 ==========
         private uint _clientId;
@@ -56,7 +56,7 @@ namespace Network
                     return;
                 }
                 
-                _reliableTransport.StartClient(_config.ip, _config.reliablePort);
+                _reliableTransport.StartClient(_clientConfig.ip, _clientConfig.reliablePort);
             }
             catch (Exception e)
             {
@@ -211,7 +211,7 @@ namespace Network
             _lastRtt = 0f;
             
             // 开启实时连接
-            StartFastConnect(_config.ip, (short)response.FastPort);
+            StartFastConnect(_clientConfig.ip, (short)response.FastPort);
             SendFastConnectRequest();
         }
 
@@ -248,12 +248,12 @@ namespace Network
         {
             _heartbeatMissCount++;
 
-            if (_heartbeatMissCount >= _config.maxMissCount)
+            if (_heartbeatMissCount >= _clientConfig.maxMissCount)
             {
                 Debug.LogWarning("[NetClient] Server heartbeat timeout, disconnecting...");
                 
                 // 尝试重连
-                if (_config.autoReconnect) TryReconnect();
+                if (_clientConfig.autoReconnect) TryReconnect();
                 else StopClient();
                 
                 return;
@@ -270,7 +270,7 @@ namespace Network
         {
             _pingMissCount++;
 
-            if (_pingMissCount >= _config.maxMissCount)
+            if (_pingMissCount >= _clientConfig.maxMissCount)
             {
                 _pingMissCount = 0;
                 SendFastConnectRequest();
@@ -300,12 +300,12 @@ namespace Network
         /// <param name="deltaTime"></param>
         private void HeartBeat(float deltaTime)
         {
-            if (_config.heartBeatStep > 0f)
+            if (_clientConfig.heartBeatStep > 0f)
             {
                 _heartbeatAccumulator += deltaTime;
-                if (_heartbeatAccumulator >= _config.heartBeatStep)
+                if (_heartbeatAccumulator >= _clientConfig.heartBeatStep)
                 {
-                    _heartbeatAccumulator -= _config.heartBeatStep;
+                    _heartbeatAccumulator -= _clientConfig.heartBeatStep;
                     SendHeartbeat();
                 }
             }
@@ -317,12 +317,12 @@ namespace Network
         /// <param name="deltaTime"></param>
         private void ComputeRTT(float deltaTime)
         {
-            if (_config.rttStep > 0f)
+            if (_clientConfig.rttStep > 0f)
             {
                 _pingAccumulator += deltaTime;
-                if (_pingAccumulator >= _config.rttStep)
+                if (_pingAccumulator >= _clientConfig.rttStep)
                 {
-                    _pingAccumulator -= _config.rttStep;
+                    _pingAccumulator -= _clientConfig.rttStep;
                     SendPing();
                 }
             }
@@ -337,7 +337,7 @@ namespace Network
         /// </summary>
         private void HandleDisconnected()
         {
-            if (_config.autoReconnect) TryReconnect();
+            if (_clientConfig.autoReconnect) TryReconnect();
             else StopClient();
         }
 
@@ -345,7 +345,7 @@ namespace Network
         {
             _tryReconnect = true;
             _reconnectTimes = 0;
-            _reconnectAccumulator = _config.reconnectInterval;
+            _reconnectAccumulator = _clientConfig.reconnectInterval;
             
             _reliableTransport?.Stop();
             _fastTransport?.Stop();
@@ -353,17 +353,17 @@ namespace Network
 
         private void DoReconnect(float deltaTime)
         {
-            if (_config.reconnectInterval > 0f)
+            if (_clientConfig.reconnectInterval > 0f)
             {
                 _reconnectAccumulator += deltaTime;
-                if (_reconnectAccumulator >= _config.reconnectInterval)
+                if (_reconnectAccumulator >= _clientConfig.reconnectInterval)
                 {
-                    _reconnectAccumulator -= _config.reconnectInterval;
+                    _reconnectAccumulator -= _clientConfig.reconnectInterval;
                     StartReliableConnect();
                     
                     _reconnectTimes++;
-                    Debug.Log($"[NetClient] Reconnecting {_reconnectTimes} / {_config.maxReconnectCount}");
-                    if (_reconnectTimes >= _config.maxReconnectCount)
+                    Debug.Log($"[NetClient] Reconnecting {_reconnectTimes} / {_clientConfig.maxReconnectCount}");
+                    if (_reconnectTimes >= _clientConfig.maxReconnectCount)
                     {
                         // 连接次数超时
                         Debug.Log("[NetClient] Reconnect failed, client disconnected");
@@ -379,9 +379,8 @@ namespace Network
 
         public override void Init()
         {
-            _config = NetConfig.Instance;
+            _clientConfig = NetClientConfig.Instance;
             _messageProcessor = new MessageProcessor();
-            TransportSettings settings = TransportSettings.FromConfig(_config);
 
             _reliableTransport = new TcpClientTransport();
             _reliableTransport.OnDataReceived += HandleDataReceived;
@@ -389,7 +388,7 @@ namespace Network
             _reliableTransport.OnConnected += HandleConnected;
             _reliableTransport.OnDisconnected += HandleDisconnected;
 
-            _fastTransport = new KcpClientTransport(settings);
+            _fastTransport = new KcpClientTransport();
             _fastTransport.OnDataReceived += HandleDataReceived;
             _fastTransport.OnTransportError += HandleTransportError;
         }
@@ -448,7 +447,7 @@ namespace Network
             }
             
             _messageProcessor = null;
-            _config = null;
+            _clientConfig = null;
         }
 
         #endregion

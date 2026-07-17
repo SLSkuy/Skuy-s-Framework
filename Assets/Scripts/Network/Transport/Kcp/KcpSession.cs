@@ -17,17 +17,18 @@ namespace Network
         public EndPoint RemoteEndPoint { get; }
         public DateTimeOffset LastReceiveTime { get; private set; }
 
-        public KcpSession(uint conv, EndPoint remoteEndPoint, TransportSettings settings, Action<KcpSession, byte[], int> output)
+        public KcpSession(EndPoint remoteEndPoint, Action<KcpSession, byte[], int> output, uint conv = 0)
         {
-            Conv = conv;
+            KcpTransportConfig config = KcpTransportConfig.Instance;
+            Conv = conv > 0 ? conv : config.conv;
             RemoteEndPoint = remoteEndPoint;
             _output = output;
             LastReceiveTime = DateTimeOffset.UtcNow;
 
-            _kcp = new SimpleSegManager.Kcp(conv, this);
-            _kcp.SetMtu(settings.mtu);
-            _kcp.WndSize(settings.sendWindow, settings.receiveWindow);
-            _kcp.NoDelay(settings.noDelay, settings.updateInterval, settings.fastResend, settings.disableCongestionControl);
+            _kcp = new SimpleSegManager.Kcp(Conv, this);
+            _kcp.SetMtu(config.mtu);
+            _kcp.WndSize(config.sendWindow, config.receiveWindow);
+            _kcp.NoDelay(config.noDelay, config.updateInterval, config.fastResend, config.disableCongestionControl);
         }
 
         public int Input(byte[] data)

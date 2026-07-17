@@ -16,9 +16,9 @@ namespace Network
         
         private IServerTransport _reliableTransport;
         private IServerTransport _fastTransport;
-        private ClientManager _clientManager;
         private MessageProcessor _messageProcessor;
-        private NetConfig _config;
+        private ClientManager _clientManager;
+        private NetServerConfig _serverConfig;
 
         /// <summary>
         /// 开启服务器
@@ -33,8 +33,8 @@ namespace Network
                     return;
                 }
                 
-                _reliableTransport.StartServer(_config.reliablePort);
-                _fastTransport.StartServer(_config.fastPort);
+                _reliableTransport.StartServer(_serverConfig.reliablePort);
+                _fastTransport.StartServer(_serverConfig.fastPort);
             }
             catch (Exception e)
             {
@@ -366,18 +366,17 @@ namespace Network
 
         public override void Init()
         {
-            _config = NetConfig.Instance;
+            _serverConfig = NetServerConfig.Instance;
             _messageProcessor = new MessageProcessor();
             _clientManager = new ClientManager();
-            TransportSettings settings = TransportSettings.FromConfig(_config);
             
-            _reliableTransport = new TcpServerTransport(settings);
+            _reliableTransport = new TcpServerTransport(_serverConfig);
             _reliableTransport.OnDataReceived += HandleReliableDataReceived;
             _reliableTransport.OnTransportError += HandleTransportError;
             _reliableTransport.OnClientConnected += HandleReliableClientConnect;
             _reliableTransport.OnClientDisconnected += HandleReliableClientDisconnect;
 
-            _fastTransport = new KcpServerTransport(settings);
+            _fastTransport = new KcpServerTransport(_serverConfig);
             _fastTransport.OnDataReceived += HandleFastDataReceived;
             _fastTransport.OnTransportError += HandleTransportError;
             _fastTransport.OnClientConnected += HandleFastClientConnect;
@@ -397,7 +396,7 @@ namespace Network
         {
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
-            _clientManager?.CleanupDisconnectedClients(Time.time, _config.maxReconnectTime);
+            _clientManager?.CleanupDisconnectedClients(Time.time, _serverConfig.maxReconnectTime);
         }
 
         public override void Destroy()
