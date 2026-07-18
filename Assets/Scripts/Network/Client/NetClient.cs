@@ -1,8 +1,10 @@
 using System;
+using Events;
 using Framework;
 using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
+using Utils;
 using Ping = NetConnect.Ping;
 
 namespace Network
@@ -18,6 +20,21 @@ namespace Network
         /// 当前网络延迟
         /// </summary>
         public float RTT => _lastRtt;
+
+        /// <summary>
+        /// 客户端当前是否已连接到任一传输通道
+        /// </summary>
+        public bool IsRunning => _reliableTransport?.IsRunning == true || _fastTransport?.IsRunning == true;
+
+        /// <summary>
+        /// 当前客户端ID
+        /// </summary>
+        public uint ClientId => _clientId;
+
+        /// <summary>
+        /// 检测是否已经开启快速连接通道
+        /// </summary>
+        public bool HasFastChannel => _fastTransport?.IsRunning == true;
 
         private IClientTransport _reliableTransport;
         private IClientTransport _fastTransport;

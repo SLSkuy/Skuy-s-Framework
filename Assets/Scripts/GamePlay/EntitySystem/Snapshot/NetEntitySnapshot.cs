@@ -7,6 +7,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public struct NetEntitySnapshot : IEntitySnapshot
     {
+        public uint Tick { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 Rotation { get; set; }
     }

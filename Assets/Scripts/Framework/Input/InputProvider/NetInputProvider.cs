@@ -4,7 +4,7 @@ namespace Framework
     /// 网络输入提供器
     /// 用于接收和同步网络玩家的输入状态
     /// </summary>
-    public class NetworkInputProvider : BaseInputProvider
+    public class NetInputProvider : BaseInputProvider
     {
         /// <summary>
         /// 设置输入状态（从网络接收时调用）

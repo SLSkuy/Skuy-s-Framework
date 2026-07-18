@@ -61,7 +61,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void Interpolation(float deltaTime)
         {
-            if (!_hasSnapshot) return;
+            if (!_hasSnapshot || _tickDuration <= 0f) return;
 
             _tickAccumulator += deltaTime;
             float t = Mathf.Clamp01(_tickAccumulator / _tickDuration);

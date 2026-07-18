@@ -15,13 +15,22 @@ message Vec3 {
 
 // 玩家输入命令
 message Player_Input {
-  uint32 index = 1;
-  Vec2 move_input = 2;
+  uint32 clientId = 1;
+  uint32 tick = 2;
+  Vec2 move_input = 3;
+  Vec2 aim_input = 4;
+  bool primary_attack_pressed = 5;
+  bool special_attack_pressed = 6;
+  bool special_action_pressed = 7;
+  bool interact_pressed = 8;
+  bool sprint_pressed = 9;
+  bool dash_pressed = 10;
 }
 
 // 玩家状态快照
 message Player_Snapshot {
-  uint32 index = 1;
-  Vec3 position = 2;
-  Vec3 rotation = 3;
+  uint32 cliendId = 1;
+  uint32 tick = 2;
+  Vec3 position = 3;
+  Vec3 rotation = 4;
 }

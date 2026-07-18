@@ -26,17 +26,23 @@ namespace NetSync {
           string.Concat(
             "Cg5uZXRfc3luYy5wcm90bxIHTmV0U3luYyIcCgRWZWMyEgkKAXgYASABKAIS",
             "CQoBeRgCIAEoAiInCgRWZWMzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6",
-            "GAMgASgCIkAKDFBsYXllcl9JbnB1dBINCgVpbmRleBgBIAEoDRIhCgptb3Zl",
-            "X2lucHV0GAIgASgLMg0uTmV0U3luYy5WZWMyImIKD1BsYXllcl9TbmFwc2hv",
-            "dBINCgVpbmRleBgBIAEoDRIfCghwb3NpdGlvbhgCIAEoCzINLk5ldFN5bmMu",
-            "VmVjMxIfCghyb3RhdGlvbhgDIAEoCzINLk5ldFN5bmMuVmVjM2IGcHJvdG8z"));
+            "GAMgASgCIpsCCgxQbGF5ZXJfSW5wdXQSEAoIY2xpZW50SWQYASABKA0SDAoE",
+            "dGljaxgCIAEoDRIhCgptb3ZlX2lucHV0GAMgASgLMg0uTmV0U3luYy5WZWMy",
+            "EiAKCWFpbV9pbnB1dBgEIAEoCzINLk5ldFN5bmMuVmVjMhIeChZwcmltYXJ5",
+            "X2F0dGFja19wcmVzc2VkGAUgASgIEh4KFnNwZWNpYWxfYXR0YWNrX3ByZXNz",
+            "ZWQYBiABKAgSHgoWc3BlY2lhbF9hY3Rpb25fcHJlc3NlZBgHIAEoCBIYChBp",
+            "bnRlcmFjdF9wcmVzc2VkGAggASgIEhYKDnNwcmludF9wcmVzc2VkGAkgASgI",
+            "EhQKDGRhc2hfcHJlc3NlZBgKIAEoCCJzCg9QbGF5ZXJfU25hcHNob3QSEAoI",
+            "Y2xpZW5kSWQYASABKA0SDAoEdGljaxgCIAEoDRIfCghwb3NpdGlvbhgDIAEo",
+            "CzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgEIAEoCzINLk5ldFN5bmMu",
+            "VmVjM2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec2), global::NetSync.Vec2.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "Index", "MoveInput" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "Index", "Position", "Rotation" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "ClientId", "Tick", "MoveInput", "AimInput", "PrimaryAttackPressed", "SpecialAttackPressed", "SpecialActionPressed", "InteractPressed", "SprintPressed", "DashPressed" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "CliendId", "Tick", "Position", "Rotation" }, null, null, null, null)
           }));
     }
     #endregion
@@ -569,8 +575,16 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player_Input(Player_Input other) : this() {
-      index_ = other.index_;
+      clientId_ = other.clientId_;
+      tick_ = other.tick_;
       moveInput_ = other.moveInput_ != null ? other.moveInput_.Clone() : null;
+      aimInput_ = other.aimInput_ != null ? other.aimInput_.Clone() : null;
+      primaryAttackPressed_ = other.primaryAttackPressed_;
+      specialAttackPressed_ = other.specialAttackPressed_;
+      specialActionPressed_ = other.specialActionPressed_;
+      interactPressed_ = other.interactPressed_;
+      sprintPressed_ = other.sprintPressed_;
+      dashPressed_ = other.dashPressed_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -580,20 +594,32 @@ namespace NetSync {
       return new Player_Input(this);
     }
 
-    /// <summary>Field number for the "index" field.</summary>
-    public const int IndexFieldNumber = 1;
-    private uint index_;
+    /// <summary>Field number for the "clientId" field.</summary>
+    public const int ClientIdFieldNumber = 1;
+    private uint clientId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint Index {
-      get { return index_; }
+    public uint ClientId {
+      get { return clientId_; }
       set {
-        index_ = value;
+        clientId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "tick" field.</summary>
+    public const int TickFieldNumber = 2;
+    private uint tick_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Tick {
+      get { return tick_; }
+      set {
+        tick_ = value;
       }
     }
 
     /// <summary>Field number for the "move_input" field.</summary>
-    public const int MoveInputFieldNumber = 2;
+    public const int MoveInputFieldNumber = 3;
     private global::NetSync.Vec2 moveInput_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -601,6 +627,90 @@ namespace NetSync {
       get { return moveInput_; }
       set {
         moveInput_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "aim_input" field.</summary>
+    public const int AimInputFieldNumber = 4;
+    private global::NetSync.Vec2 aimInput_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NetSync.Vec2 AimInput {
+      get { return aimInput_; }
+      set {
+        aimInput_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "primary_attack_pressed" field.</summary>
+    public const int PrimaryAttackPressedFieldNumber = 5;
+    private bool primaryAttackPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool PrimaryAttackPressed {
+      get { return primaryAttackPressed_; }
+      set {
+        primaryAttackPressed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "special_attack_pressed" field.</summary>
+    public const int SpecialAttackPressedFieldNumber = 6;
+    private bool specialAttackPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool SpecialAttackPressed {
+      get { return specialAttackPressed_; }
+      set {
+        specialAttackPressed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "special_action_pressed" field.</summary>
+    public const int SpecialActionPressedFieldNumber = 7;
+    private bool specialActionPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool SpecialActionPressed {
+      get { return specialActionPressed_; }
+      set {
+        specialActionPressed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "interact_pressed" field.</summary>
+    public const int InteractPressedFieldNumber = 8;
+    private bool interactPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool InteractPressed {
+      get { return interactPressed_; }
+      set {
+        interactPressed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "sprint_pressed" field.</summary>
+    public const int SprintPressedFieldNumber = 9;
+    private bool sprintPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool SprintPressed {
+      get { return sprintPressed_; }
+      set {
+        sprintPressed_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "dash_pressed" field.</summary>
+    public const int DashPressedFieldNumber = 10;
+    private bool dashPressed_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool DashPressed {
+      get { return dashPressed_; }
+      set {
+        dashPressed_ = value;
       }
     }
 
@@ -619,8 +729,16 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Index != other.Index) return false;
+      if (ClientId != other.ClientId) return false;
+      if (Tick != other.Tick) return false;
       if (!object.Equals(MoveInput, other.MoveInput)) return false;
+      if (!object.Equals(AimInput, other.AimInput)) return false;
+      if (PrimaryAttackPressed != other.PrimaryAttackPressed) return false;
+      if (SpecialAttackPressed != other.SpecialAttackPressed) return false;
+      if (SpecialActionPressed != other.SpecialActionPressed) return false;
+      if (InteractPressed != other.InteractPressed) return false;
+      if (SprintPressed != other.SprintPressed) return false;
+      if (DashPressed != other.DashPressed) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -628,8 +746,16 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (Index != 0) hash ^= Index.GetHashCode();
+      if (ClientId != 0) hash ^= ClientId.GetHashCode();
+      if (Tick != 0) hash ^= Tick.GetHashCode();
       if (moveInput_ != null) hash ^= MoveInput.GetHashCode();
+      if (aimInput_ != null) hash ^= AimInput.GetHashCode();
+      if (PrimaryAttackPressed != false) hash ^= PrimaryAttackPressed.GetHashCode();
+      if (SpecialAttackPressed != false) hash ^= SpecialAttackPressed.GetHashCode();
+      if (SpecialActionPressed != false) hash ^= SpecialActionPressed.GetHashCode();
+      if (InteractPressed != false) hash ^= InteractPressed.GetHashCode();
+      if (SprintPressed != false) hash ^= SprintPressed.GetHashCode();
+      if (DashPressed != false) hash ^= DashPressed.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -648,13 +774,45 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (Index != 0) {
+      if (ClientId != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(Index);
+        output.WriteUInt32(ClientId);
+      }
+      if (Tick != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Tick);
       }
       if (moveInput_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(MoveInput);
+      }
+      if (aimInput_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(AimInput);
+      }
+      if (PrimaryAttackPressed != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(PrimaryAttackPressed);
+      }
+      if (SpecialAttackPressed != false) {
+        output.WriteRawTag(48);
+        output.WriteBool(SpecialAttackPressed);
+      }
+      if (SpecialActionPressed != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(SpecialActionPressed);
+      }
+      if (InteractPressed != false) {
+        output.WriteRawTag(64);
+        output.WriteBool(InteractPressed);
+      }
+      if (SprintPressed != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(SprintPressed);
+      }
+      if (DashPressed != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(DashPressed);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -666,13 +824,45 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Index != 0) {
+      if (ClientId != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(Index);
+        output.WriteUInt32(ClientId);
+      }
+      if (Tick != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Tick);
       }
       if (moveInput_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(MoveInput);
+      }
+      if (aimInput_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(AimInput);
+      }
+      if (PrimaryAttackPressed != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(PrimaryAttackPressed);
+      }
+      if (SpecialAttackPressed != false) {
+        output.WriteRawTag(48);
+        output.WriteBool(SpecialAttackPressed);
+      }
+      if (SpecialActionPressed != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(SpecialActionPressed);
+      }
+      if (InteractPressed != false) {
+        output.WriteRawTag(64);
+        output.WriteBool(InteractPressed);
+      }
+      if (SprintPressed != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(SprintPressed);
+      }
+      if (DashPressed != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(DashPressed);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -684,11 +874,35 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (Index != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Index);
+      if (ClientId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ClientId);
+      }
+      if (Tick != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Tick);
       }
       if (moveInput_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MoveInput);
+      }
+      if (aimInput_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(AimInput);
+      }
+      if (PrimaryAttackPressed != false) {
+        size += 1 + 1;
+      }
+      if (SpecialAttackPressed != false) {
+        size += 1 + 1;
+      }
+      if (SpecialActionPressed != false) {
+        size += 1 + 1;
+      }
+      if (InteractPressed != false) {
+        size += 1 + 1;
+      }
+      if (SprintPressed != false) {
+        size += 1 + 1;
+      }
+      if (DashPressed != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -702,14 +916,41 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.Index != 0) {
-        Index = other.Index;
+      if (other.ClientId != 0) {
+        ClientId = other.ClientId;
+      }
+      if (other.Tick != 0) {
+        Tick = other.Tick;
       }
       if (other.moveInput_ != null) {
         if (moveInput_ == null) {
           MoveInput = new global::NetSync.Vec2();
         }
         MoveInput.MergeFrom(other.MoveInput);
+      }
+      if (other.aimInput_ != null) {
+        if (aimInput_ == null) {
+          AimInput = new global::NetSync.Vec2();
+        }
+        AimInput.MergeFrom(other.AimInput);
+      }
+      if (other.PrimaryAttackPressed != false) {
+        PrimaryAttackPressed = other.PrimaryAttackPressed;
+      }
+      if (other.SpecialAttackPressed != false) {
+        SpecialAttackPressed = other.SpecialAttackPressed;
+      }
+      if (other.SpecialActionPressed != false) {
+        SpecialActionPressed = other.SpecialActionPressed;
+      }
+      if (other.InteractPressed != false) {
+        InteractPressed = other.InteractPressed;
+      }
+      if (other.SprintPressed != false) {
+        SprintPressed = other.SprintPressed;
+      }
+      if (other.DashPressed != false) {
+        DashPressed = other.DashPressed;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -727,14 +968,49 @@ namespace NetSync {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Index = input.ReadUInt32();
+            ClientId = input.ReadUInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            Tick = input.ReadUInt32();
+            break;
+          }
+          case 26: {
             if (moveInput_ == null) {
               MoveInput = new global::NetSync.Vec2();
             }
             input.ReadMessage(MoveInput);
+            break;
+          }
+          case 34: {
+            if (aimInput_ == null) {
+              AimInput = new global::NetSync.Vec2();
+            }
+            input.ReadMessage(AimInput);
+            break;
+          }
+          case 40: {
+            PrimaryAttackPressed = input.ReadBool();
+            break;
+          }
+          case 48: {
+            SpecialAttackPressed = input.ReadBool();
+            break;
+          }
+          case 56: {
+            SpecialActionPressed = input.ReadBool();
+            break;
+          }
+          case 64: {
+            InteractPressed = input.ReadBool();
+            break;
+          }
+          case 72: {
+            SprintPressed = input.ReadBool();
+            break;
+          }
+          case 80: {
+            DashPressed = input.ReadBool();
             break;
           }
         }
@@ -753,14 +1029,49 @@ namespace NetSync {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            Index = input.ReadUInt32();
+            ClientId = input.ReadUInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            Tick = input.ReadUInt32();
+            break;
+          }
+          case 26: {
             if (moveInput_ == null) {
               MoveInput = new global::NetSync.Vec2();
             }
             input.ReadMessage(MoveInput);
+            break;
+          }
+          case 34: {
+            if (aimInput_ == null) {
+              AimInput = new global::NetSync.Vec2();
+            }
+            input.ReadMessage(AimInput);
+            break;
+          }
+          case 40: {
+            PrimaryAttackPressed = input.ReadBool();
+            break;
+          }
+          case 48: {
+            SpecialAttackPressed = input.ReadBool();
+            break;
+          }
+          case 56: {
+            SpecialActionPressed = input.ReadBool();
+            break;
+          }
+          case 64: {
+            InteractPressed = input.ReadBool();
+            break;
+          }
+          case 72: {
+            SprintPressed = input.ReadBool();
+            break;
+          }
+          case 80: {
+            DashPressed = input.ReadBool();
             break;
           }
         }
@@ -807,7 +1118,8 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player_Snapshot(Player_Snapshot other) : this() {
-      index_ = other.index_;
+      cliendId_ = other.cliendId_;
+      tick_ = other.tick_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       rotation_ = other.rotation_ != null ? other.rotation_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -819,20 +1131,32 @@ namespace NetSync {
       return new Player_Snapshot(this);
     }
 
-    /// <summary>Field number for the "index" field.</summary>
-    public const int IndexFieldNumber = 1;
-    private uint index_;
+    /// <summary>Field number for the "cliendId" field.</summary>
+    public const int CliendIdFieldNumber = 1;
+    private uint cliendId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint Index {
-      get { return index_; }
+    public uint CliendId {
+      get { return cliendId_; }
       set {
-        index_ = value;
+        cliendId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "tick" field.</summary>
+    public const int TickFieldNumber = 2;
+    private uint tick_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Tick {
+      get { return tick_; }
+      set {
+        tick_ = value;
       }
     }
 
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 2;
+    public const int PositionFieldNumber = 3;
     private global::NetSync.Vec3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -844,7 +1168,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "rotation" field.</summary>
-    public const int RotationFieldNumber = 3;
+    public const int RotationFieldNumber = 4;
     private global::NetSync.Vec3 rotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -870,7 +1194,8 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Index != other.Index) return false;
+      if (CliendId != other.CliendId) return false;
+      if (Tick != other.Tick) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Rotation, other.Rotation)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -880,7 +1205,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (Index != 0) hash ^= Index.GetHashCode();
+      if (CliendId != 0) hash ^= CliendId.GetHashCode();
+      if (Tick != 0) hash ^= Tick.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (rotation_ != null) hash ^= Rotation.GetHashCode();
       if (_unknownFields != null) {
@@ -901,16 +1227,20 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (Index != 0) {
+      if (CliendId != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(Index);
+        output.WriteUInt32(CliendId);
+      }
+      if (Tick != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Tick);
       }
       if (position_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteMessage(Rotation);
       }
       if (_unknownFields != null) {
@@ -923,16 +1253,20 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Index != 0) {
+      if (CliendId != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(Index);
+        output.WriteUInt32(CliendId);
+      }
+      if (Tick != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Tick);
       }
       if (position_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteMessage(Rotation);
       }
       if (_unknownFields != null) {
@@ -945,8 +1279,11 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (Index != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Index);
+      if (CliendId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(CliendId);
+      }
+      if (Tick != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Tick);
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -966,8 +1303,11 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.Index != 0) {
-        Index = other.Index;
+      if (other.CliendId != 0) {
+        CliendId = other.CliendId;
+      }
+      if (other.Tick != 0) {
+        Tick = other.Tick;
       }
       if (other.position_ != null) {
         if (position_ == null) {
@@ -997,17 +1337,21 @@ namespace NetSync {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Index = input.ReadUInt32();
+            CliendId = input.ReadUInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            Tick = input.ReadUInt32();
+            break;
+          }
+          case 26: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 26: {
+          case 34: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Vec3();
             }
@@ -1030,17 +1374,21 @@ namespace NetSync {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            Index = input.ReadUInt32();
+            CliendId = input.ReadUInt32();
             break;
           }
-          case 18: {
+          case 16: {
+            Tick = input.ReadUInt32();
+            break;
+          }
+          case 26: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 26: {
+          case 34: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Vec3();
             }

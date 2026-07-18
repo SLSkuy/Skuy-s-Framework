@@ -1,8 +1,10 @@
 using System;
+using Events;
 using Framework;
 using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
+using Utils;
 using Ping = NetConnect.Ping;
 
 namespace Network
@@ -13,6 +15,16 @@ namespace Network
     public class NetServer : SubSystemBase
     {
         public override SubSystemPriority Priority => SubSystemPriority.NetWorkManager;
+        
+        /// <summary>
+        /// 服务端是否正在运行
+        /// </summary>
+        public bool IsRunning => _reliableTransport?.IsRunning == true || _fastTransport?.IsRunning == true;
+
+        /// <summary>
+        /// 检测当前是否存在快速传输通道
+        /// </summary>
+        public bool HasFastChannel => _fastTransport?.IsRunning == true;
         
         private IServerTransport _reliableTransport;
         private IServerTransport _fastTransport;

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Core;
+using Events;
 using NetConnect;
+using Network;
 using UnityEngine;
 
-namespace Network.Test
+namespace Tests
 {
     /// <summary>
     /// 网络传输测试面板 - 用于测试Host/Client通信

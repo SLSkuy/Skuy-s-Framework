@@ -10,6 +10,7 @@ namespace Framework
         DataProxyManager = -100,
         SceneLoader = -50,
         GameStateManager = 0,
+        NetSyncManager = 100,
         UIManager = 5000,
     }
 }

@@ -1,4 +1,4 @@
-namespace Network
+namespace Events
 {
     /// <summary>
     /// 网络通信事件类型
@@ -18,5 +18,9 @@ namespace Network
         HEART_BEAT_RESPONSE,
         PING,
         PONG,
+
+        // 游戏同步
+        PLAYER_INPUT,
+        PLAYER_SNAPSHOT,
     }
 }

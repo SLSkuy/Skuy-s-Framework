@@ -1,38 +1,40 @@
 using UnityEngine;
 using Framework;
-using Network;
+using Utils;
 using UIFramework;
+using GamePlay.NetSync;
 
 namespace Core
 {
     public class GameCore : MonoSingleton<GameCore>
     {
-        #region 组件
+        #region 子系统
         public SystemManager SystemMgr { get; private set; }
         public TimerManager TimerMgr { get; private set; }
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public GameStateManager GameStateMgr { get; private set; }
+        public NetSyncManager NetSyncMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         #endregion
 
-        #region 属性
+        #region 游戏状态
         public GameState CurrentState => GameStateMgr.CurrentState;
         public bool IsPaused => GameStateMgr.IsPaused();
         #endregion
-        
+
         private void InitializeGameCore()
         {
             Application.targetFrameRate = 60;
-            
+
             InitSubSystems();
             InitDataProxy();
             InitUI();
         }
 
-        #region 全局方法
+        #region Global
 
         /// <summary>
         /// 初始化所有子系统
@@ -53,6 +55,7 @@ namespace Core
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
+            NetSyncMgr = SystemMgr.RegisterSystem<NetSyncManager>();
         }
 
         /// <summary>
@@ -79,7 +82,7 @@ namespace Core
             Application.Quit();
 #endif
         }
-        
+
         #endregion
 
         #region 生命周期
@@ -92,21 +95,21 @@ namespace Core
         private void Update()
         {
             if (IsPaused) return;
-            
+
             SystemMgr.Update(Time.deltaTime);
         }
 
         private void LateUpdate()
         {
             if (IsPaused) return;
-            
+
             SystemMgr.LateUpdate();
         }
 
         private void FixedUpdate()
         {
             if (IsPaused) return;
-            
+
             SystemMgr.FixedUpdate(Time.fixedDeltaTime);
         }
 

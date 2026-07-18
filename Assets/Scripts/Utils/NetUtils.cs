@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using Events;
 using Google.Protobuf;
 using UnityEngine;
 
-namespace Network
+namespace Utils
 {
     /// <summary>
     /// 网络传输工具
