@@ -40,17 +40,17 @@ namespace Tests
         /// <summary>
         /// 运行时自动在场景中创建面板
         /// </summary>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void AutoCreateInScene()
-        {
-            var existing = FindFirstObjectByType<NetworkTestPanel>();
-            if (existing != null) return;
-
-            var go = new GameObject("NetworkTestPanel");
-            go.AddComponent<NetworkTestPanel>();
-            DontDestroyOnLoad(go);
-            Debug.Log("[NetworkTestPanel] 已在场景中自动创建面板");
-        }
+        // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        // private static void AutoCreateInScene()
+        // {
+        //     var existing = FindFirstObjectByType<NetworkTestPanel>();
+        //     if (existing != null) return;
+        //
+        //     var go = new GameObject("NetworkTestPanel");
+        //     go.AddComponent<NetworkTestPanel>();
+        //     DontDestroyOnLoad(go);
+        //     Debug.Log("[NetworkTestPanel] 已在场景中自动创建面板");
+        // }
 
         private void Start()
         {

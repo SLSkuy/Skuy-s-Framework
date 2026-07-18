@@ -1,7 +1,7 @@
-﻿namespace GamePlay.NetSync
+namespace GamePlay.NetSync
 {
     public class HostSimulator
     {
-        
+
     }
 }

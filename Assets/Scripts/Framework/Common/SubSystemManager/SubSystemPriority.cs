@@ -12,5 +12,6 @@ namespace Framework
         GameStateManager = 0,
         NetSyncManager = 100,
         UIManager = 5000,
+        CameraManager = 10000,
     }
 }

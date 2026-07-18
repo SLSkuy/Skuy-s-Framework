@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53908586df7242d094dd7df3a2e65933, type: 3}
+  m_Name: EntityConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
+  walkSpeed: 5
+  sprintSpeed: 10
+  dashSpeed: 20
+  dashDuration: 0.3

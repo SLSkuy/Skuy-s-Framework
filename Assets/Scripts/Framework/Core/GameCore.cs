@@ -1,6 +1,6 @@
 using UnityEngine;
 using Framework;
-using Utils;
+using GamePlay.CameraSystem;
 using UIFramework;
 using GamePlay.NetSync;
 
@@ -55,6 +55,9 @@ namespace Core
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
+            
+            // 业务逻辑
+            SystemMgr.RegisterSystem<CameraManager>();
             NetSyncMgr = SystemMgr.RegisterSystem<NetSyncManager>();
         }
 

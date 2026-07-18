@@ -23,8 +23,8 @@ namespace GamePlay.NetSync
         /// <param name="maxTicksPerFrame">单帧最大追赶 Tick 数，防止螺旋</param>
         public TickSystem(int tickRate, int maxTicksPerFrame = 10)
         {
-            TickRate = tickRate;
-            TickDeltaTime = 1f / tickRate;
+            TickRate = Math.Max(1, tickRate);
+            TickDeltaTime = 1f / TickRate;
             _maxTicksPerFrame = maxTicksPerFrame;
         }
 

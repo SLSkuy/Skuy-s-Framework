@@ -14,7 +14,7 @@ namespace Framework.Editor
     public class ProtoCompilerWindow : EditorWindow
     {
         private string protocPath = "Protocol/protoc.exe";
-        private string outputPath = "Assets/Scripts/Protocol/Generated";
+        private string outputPath = "Assets/Scripts/GamePlay/Protocol/Generated";
         private string searchPath = "Assets";
         private Vector2 scrollPosition;
         private List<ProtoFileInfo> protoFiles = new();
