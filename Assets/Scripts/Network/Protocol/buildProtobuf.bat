@@ -1,1 +1,0 @@
-protoc -I=. --csharp_out=. *.proto
