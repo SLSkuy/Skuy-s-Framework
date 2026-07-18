@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GamePlay.NetSync;
 using UnityEngine;
 
@@ -9,47 +10,71 @@ namespace GamePlay.EntitySystem
     public class NetEntity<T> : MonoBehaviour, INetEntity<T> where T : struct, IEntitySnapshot
     {
         public uint Index { get; set; }
+        public NetEntityRole Role { get; private set; } = NetEntityRole.Authority;
+        
+        #region 逻辑状态
         public Vector3 LogicPosition { get; set; }
         public Vector3 LogicRotation { get; set; }
+        #endregion
 
-        protected Transform _transform;
-        private float _tickDuration;
-        private float _tickAccumulator;
+        private readonly List<T> _snapshotBuffer = new();
+        private int _simulationTickRate;
+        
+        private int _interpolationDelayTicks;
+        private float _renderTick;
+        private bool _hasRenderTick;
 
-        // ===== 快照间插值缓冲 =====
-        private Vector3 _prevPosition;
-        private Quaternion _prevRotation;
-        private bool _hasSnapshot;
-        // ===== 快照间插值缓冲 =====
-
-        #region 网络同步
-
-        public virtual void SetSnapshot(T snapshot)
+        public virtual void AddSnapshot(T snapshot)
         {
-            if (_hasSnapshot)
+            // 权威模拟不使用快照进行状态更新
+            if (Role != NetEntityRole.Replica) return;
+            
+            // 根据Tick顺序，插入新的状态
+            // 倒叙遍历，找到第一个小于当前快照Tick序列的位置进行插入
+            int insertIndex = _snapshotBuffer.Count;
+            for (int i = _snapshotBuffer.Count - 1; i >= 0; i--)
             {
-                // 保存当前逻辑位置作为插值起点
-                _prevPosition = LogicPosition;
-                _prevRotation = Quaternion.Euler(LogicRotation);
-            }
-            else
-            {
-                // 首个快照直接跳变
-                _prevPosition = snapshot.Position;
-                _prevRotation = Quaternion.Euler(snapshot.Rotation);
-                _transform.position = _prevPosition;
-                _transform.rotation = _prevRotation;
-                _hasSnapshot = true;
-            }
+                // 序列重复，更新重复接收的状态
+                if (_snapshotBuffer[i].Tick == snapshot.Tick)
+                {
+                    _snapshotBuffer[i] = snapshot;
+                    return;
+                }
+                
+                if (_snapshotBuffer[i].Tick < snapshot.Tick)
+                {
+                    insertIndex = i + 1;
+                    break;
+                }
 
+                insertIndex = i;
+            }
+            _snapshotBuffer.Insert(insertIndex, snapshot);
+            
+            // 首次接收到快照，此时还未进行旋转缓冲，直接应用第一次快照作为初始状态
+            if (!_hasRenderTick)
+            {
+                _renderTick = snapshot.Tick;
+                _hasRenderTick = true;
+                ApplySnapshot(snapshot);
+            }
+        }
+        
+        /// <summary>
+        /// 强制应用当前快照状态
+        /// </summary>
+        protected virtual void ApplySnapshot(T snapshot)
+        {
             LogicPosition = snapshot.Position;
             LogicRotation = snapshot.Rotation;
-            _tickAccumulator = 0;
+            transform.SetPositionAndRotation(snapshot.Position, Quaternion.Euler(snapshot.Rotation));
         }
 
         public virtual T GetSnapshot()
         {
-            return new T()
+            LogicPosition = transform.position;
+            LogicRotation = transform.eulerAngles;
+            return new T
             {
                 Position = LogicPosition,
                 Rotation = LogicRotation
@@ -57,37 +82,71 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 快照间插值：从上一逻辑状态平滑过渡到当前逻辑状态
+        /// 设置网络同步类型
+        /// </summary>
+        public virtual void SetRole(NetEntityRole role)
+        {
+            Role = role;
+        }
+
+        /// <summary>
+        /// 渲染插值，若有新的状态需由子类重写添加新的状态插值逻辑
         /// </summary>
         protected virtual void Interpolation(float deltaTime)
         {
-            if (!_hasSnapshot || _tickDuration <= 0f) return;
+            // 若缓存的快照数量少于配置值，不进行插值操作
+            // 防止直接进行消耗快照插值结束后新的快照还未抵达，导致实体直接停止
+            if (Role != NetEntityRole.Replica || _snapshotBuffer.Count < _interpolationDelayTicks)
+            {
+                return;
+            }
 
-            _tickAccumulator += deltaTime;
-            float t = Mathf.Clamp01(_tickAccumulator / _tickDuration);
+            // 使用浮点 Tick 表示连续的客户端渲染时间
+            // 渲染newest.Tick之前若干Tick的历史状态
+            // 从而为网络抖动保留插值缓冲
+            T newest = _snapshotBuffer[^1];
+            float targetRenderTick = Mathf.Max(_snapshotBuffer[0].Tick, newest.Tick - _interpolationDelayTicks);
+            
+            // 将本帧经过的秒数转换成逻辑 Tick，并保证不超过消费缓存的Tick状态，为网络抖动保留插值缓冲
+            _renderTick = Mathf.Min(_renderTick + deltaTime * _simulationTickRate, targetRenderTick);
 
-            _transform.position = Vector3.Lerp(_prevPosition, LogicPosition, t);
-            _transform.rotation = Quaternion.Slerp(_prevRotation, Quaternion.Euler(LogicRotation), t);
+            // 丢弃已经完整播放过的快照
+            // 循环结束后，通常满足：from.Tick <= renderTick < to.Tick
+            while (_snapshotBuffer.Count >= 2 && _snapshotBuffer[1].Tick <= _renderTick)
+            {
+                _snapshotBuffer.RemoveAt(0);
+            }
+
+            // 找到渲染时间两侧的快照，并计算其间的归一化插值比例。
+            T from = _snapshotBuffer[0];
+            T to = _snapshotBuffer[1];
+            float tickSpan = Mathf.Max(1f, to.Tick - from.Tick);
+            float t = Mathf.Clamp01((_renderTick - from.Tick) / tickSpan);
+
+            // 插值应用位置和旋转
+            LogicPosition = Vector3.Lerp(from.Position, to.Position, t);
+            Quaternion rotation = Quaternion.Slerp(Quaternion.Euler(from.Rotation), Quaternion.Euler(to.Rotation), t);
+            LogicRotation = rotation.eulerAngles;
+            transform.SetPositionAndRotation(LogicPosition, rotation);
         }
-        
-        #endregion
 
         #region 生命周期
 
         protected virtual void Awake()
         {
-            _transform = GetComponent<Transform>();
-
-            // TODO: 服务器可能和客户端同步配置不同，后续通过外部传入同步属性
             SyncConfig config = SyncConfig.Instance;
-            _tickDuration = 1f / config.snapShotTickRate;
+            
+            _simulationTickRate = Mathf.Max(1, config.simulationTickRate);
+            _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
+            
+            // 初始化逻辑位置，后续由主机同步
+            LogicPosition = transform.position;
+            LogicRotation = transform.eulerAngles;
         }
 
         protected virtual void Update()
         {
-            float deltaTime = Time.deltaTime;
-            
-            Interpolation(deltaTime);
+            Interpolation(Time.deltaTime);
         }
 
         #endregion

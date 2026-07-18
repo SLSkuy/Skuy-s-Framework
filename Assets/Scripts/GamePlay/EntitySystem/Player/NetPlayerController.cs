@@ -3,22 +3,32 @@ using GamePlay.CameraSystem;
 using UnityEngine;
 using Utils;
 
-namespace GamePlay.EntitySystem
+namespace GamePlay.EntitySystem.Player
 {
     /// <summary>
-    /// 玩家控制器，需要访问到EntityCharacter组件进行控制
+    /// 远程玩家控制器，捕获远程输入，对本地实体进行模拟
     /// </summary>
-    public class LocalPlayerController : AutoEventMonoBehaviour
+    public class NetPlayerController : AutoEventMonoBehaviour
     {
-        private IPlayerCharacter _playerCharacter;
+        private NetPlayerCharacter _playerCharacter;
         private IInputStateProvider _inputProvider;
         private Transform _cameraTransform;
-        
-        /// <summary>
-        /// 缓存当前原始移动输入
-        /// </summary>
+
         private Vector2 _currentRawMoveInput;
         private Vector2 _currentMappedMoveInput;
+
+        #region 模拟
+
+        /// <summary>
+        /// 使用Tick间隔模拟，避免帧率不同导致模拟结果不一致
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public void Simulate(float deltaTime)
+        {
+            _playerCharacter.Move(_currentMappedMoveInput, deltaTime);
+        }
+
+        #endregion
         
         /// <summary>
         /// 设置相机Transform
@@ -37,7 +47,7 @@ namespace GamePlay.EntitySystem
         {
             _inputProvider = provider;
         }
-
+        
         /// <summary>
         /// 获取映射后的输入方向
         /// </summary>
@@ -148,7 +158,7 @@ namespace GamePlay.EntitySystem
         }
 
         #endregion
-
+        
         #region 生命周期
 
         protected override void Start()
@@ -171,11 +181,6 @@ namespace GamePlay.EntitySystem
             Global.Get<CameraManager>().SetTarget(transform);
             
             base.Start();
-        }
-
-        private void Update()
-        {
-            _playerCharacter.Move(_currentMappedMoveInput);
         }
 
         #endregion

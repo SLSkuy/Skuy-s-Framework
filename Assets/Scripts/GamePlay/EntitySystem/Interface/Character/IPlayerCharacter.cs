@@ -28,11 +28,5 @@
         /// </summary>
         void Interact();
         void StopInteract();
-        
-        /// <summary>
-        /// 切换武器
-        /// </summary>
-        /// <param name="index">武器索引</param>
-        void SwitchWeapon(int index);
     }
 }

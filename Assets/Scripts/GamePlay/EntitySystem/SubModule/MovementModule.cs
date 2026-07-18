@@ -1,4 +1,3 @@
-﻿using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
@@ -8,71 +7,92 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class MovementModule
     {
-        // 组件引用
         private CharacterController _characterController;
         private EntityConfig _config;
         private Transform _transform;
-        
+
         private float _locomotionMultiplier;
-        private bool _isLockInput;
-        private bool _isKnockback;
+        private float _dashAccumulator;
         private Vector2 _lastMoveDir;
+        private bool _isLockInput;
+        
+        /// <summary>
+        /// 垂直速度
+        /// </summary>
+        private float _verticalVelocity;
 
         public void Init(CharacterController controller, EntityConfig config, Transform entityTransform)
         {
             _characterController = controller;
             _config = config;
             _transform = entityTransform;
-
             _locomotionMultiplier = _config.walkSpeed;
-            _isLockInput = false;
         }
 
-        public virtual void Move(Vector2 dir)
+        public void Move(Vector2 dir, float deltaTime)
         {
-            if (!_isLockInput) _lastMoveDir = dir;
+            if (!_isLockInput)
+            {
+                _lastMoveDir = dir;
+            }
 
-            Vector3 moveDir = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.y) * _locomotionMultiplier;
-            _characterController.SimpleMove(moveDir);
+            if (_isLockInput)
+            {
+                _dashAccumulator -= deltaTime;
+                if (_dashAccumulator <= 0f)
+                {
+                    OnDashComplete();
+                }
+            }
+
+            // 重力计算
+            if (_characterController.isGrounded && _verticalVelocity < 0f) _verticalVelocity = -1f; // 防止奇怪的抽动，添加一个默认的向下速度
+            else _verticalVelocity -= _config.gravity * deltaTime;
+            
+            // 限制最大掉落速度
+            if(_verticalVelocity < -_config.maxFallSpeed) _verticalVelocity = -_config.maxFallSpeed;
+
+            Vector3 velocity = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.y) * _locomotionMultiplier;
+            velocity.y = _verticalVelocity;
+            _characterController.Move(velocity * deltaTime);
         }
 
-        public virtual void StartSprint()
+        public void StartSprint()
         {
             if (_isLockInput) return;
+            
             _locomotionMultiplier = _config.sprintSpeed;
         }
 
-        public virtual void StopSprint()
+        public void StopSprint()
         {
             if (_isLockInput) return;
+            
             _locomotionMultiplier = _config.walkSpeed;
         }
 
-        public virtual void Dash()
+        public void Dash()
         {
             if (_isLockInput) return;
 
             _isLockInput = true;
             _locomotionMultiplier = _config.dashSpeed;
-
-            // 启动计时操作
-            Global.Get<TimerManager>().CreateAndStart(_config.dashDuration, OnDashComplete);
+            _dashAccumulator = _config.dashDuration;
         }
 
-        protected virtual void OnDashComplete()
-        {
-            _isLockInput = false;
-            _locomotionMultiplier = _config.walkSpeed;
-        }
-
-        public virtual void Rotate(Vector3 direction)
+        public void Rotate(Vector3 direction)
         {
             direction.y = 0f;
             if (direction != Vector3.zero)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                _transform.rotation = targetRotation;
+                _transform.rotation = Quaternion.LookRotation(direction);
             }
+        }
+
+        private void OnDashComplete()
+        {
+            _isLockInput = false;
+            _locomotionMultiplier = _config.walkSpeed;
         }
     }
 }

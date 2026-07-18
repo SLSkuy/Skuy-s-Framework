@@ -3,7 +3,7 @@
 namespace GamePlay
 {
     /// <summary>
-    /// 网络玩家实体
+    /// 网络玩家实体，提供玩家的操作行为入口
     /// </summary>
     public class NetPlayerCharacter : NetEntityCharacter<NetPlayerSnapshot>, IPlayerCharacter
     {
@@ -43,11 +43,6 @@ namespace GamePlay
         }
 
         public void StopInteract()
-        {
-
-        }
-
-        public void SwitchWeapon(int index)
         {
 
         }

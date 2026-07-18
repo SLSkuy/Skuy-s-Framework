@@ -16,13 +16,13 @@ namespace GamePlay.EntitySystem
         Vector3 LogicRotation { get; set; }
         
         /// <summary>
-        /// 应用当前快照状态
+        /// 添加缓存新的快照，内部进行快照的消费
         /// </summary>
         /// <param name="snapshot"></param>
-        void SetSnapshot(T snapshot);
+        void AddSnapshot(T snapshot);
         
         /// <summary>
-        /// 获取当前快照状态
+        /// 获取当前实体的快照状态
         /// </summary>
         T GetSnapshot();
     }
