@@ -13,6 +13,6 @@ namespace GamePlay.NetSync
         public int commandTickRate = 20;
         
         [Header("同步属性配置")]
-        public int snapShotTickRate = 128;
+        public int snapShotTickRate = 32;
     }
 }
