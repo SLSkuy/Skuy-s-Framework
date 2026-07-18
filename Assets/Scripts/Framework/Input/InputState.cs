@@ -17,7 +17,6 @@ namespace Framework
         public bool IsInteractPressed { get; set; }
         public bool IsSprintPressed { get; set; }
         public bool IsDashPressed { get; set; }
-        public int WeaponSwitchIndex { get; set; }
 
         public InputState(IInputProvider provider)
         {
@@ -29,7 +28,6 @@ namespace Framework
             IsInteractPressed = provider.IsInteractPressed;
             IsSprintPressed = provider.IsSprintPressed;
             IsDashPressed = provider.IsDashPressed;
-            WeaponSwitchIndex = provider.WeaponSwitchIndex;
         }
     }
 }

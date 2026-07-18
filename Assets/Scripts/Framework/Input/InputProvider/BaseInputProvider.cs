@@ -17,7 +17,6 @@ namespace Framework
         public bool IsInteractPressed => _currentInputState.IsInteractPressed;
         public bool IsSprintPressed => _currentInputState.IsSprintPressed;
         public bool IsDashPressed => _currentInputState.IsDashPressed;
-        public int WeaponSwitchIndex => _currentInputState.WeaponSwitchIndex;
         #endregion
         
         /// <summary>
@@ -41,7 +40,6 @@ namespace Framework
         public event Action OnSprintReleased;
         public event Action OnDashPressed;
         public event Action OnDashReleased;
-        public event Action<int> OnWeaponSwitch;
         #endregion
         
         /// <summary>
@@ -84,9 +82,6 @@ namespace Framework
                 OnDashPressed?.Invoke();
             else if (!_currentInputState.IsDashPressed && _previousInputState.IsDashPressed)
                 OnDashReleased?.Invoke();
-            
-            if (_currentInputState.WeaponSwitchIndex != _previousInputState.WeaponSwitchIndex)
-                OnWeaponSwitch?.Invoke(_currentInputState.WeaponSwitchIndex);
         }
         
         /// <summary>

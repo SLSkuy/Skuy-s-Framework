@@ -43,10 +43,5 @@ namespace Framework
         /// 冲刺输入
         /// </summary>
         bool IsDashPressed { get; }
-        
-        /// <summary>
-        /// 切换武器输入
-        /// </summary>
-        int WeaponSwitchIndex { get; }
     }
 }

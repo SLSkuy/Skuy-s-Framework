@@ -79,11 +79,6 @@ namespace Framework
         event Action OnDashReleased;
         
         /// <summary>
-        /// 切换武器事件
-        /// </summary>
-        event Action<int> OnWeaponSwitch;
-        
-        /// <summary>
         /// 获取当前的输入状态
         /// </summary>
         /// <returns>输入状态</returns>

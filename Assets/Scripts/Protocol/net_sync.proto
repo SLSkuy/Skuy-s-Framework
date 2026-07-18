@@ -1,0 +1,27 @@
+﻿syntax = "proto3";
+
+package NetSync;
+
+message Vec2 {
+  float x = 1;
+  float y = 2;
+}
+
+message Vec3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+// 玩家输入命令
+message Player_Input {
+  uint32 index = 1;
+  Vec2 move_input = 2;
+}
+
+// 玩家状态快照
+message Player_Snapshot {
+  uint32 index = 1;
+  Vec3 position = 2;
+  Vec3 rotation = 3;
+}
