@@ -35,25 +35,17 @@ namespace GamePlay.NetSync
         /// </summary>
         private bool _ownsLocalClient;
         
-        public void StartClient(string serverAddress = null)
+        public void StartClient()
         {
             if (IsClientRunning) return;
-
-            if (!string.IsNullOrWhiteSpace(serverAddress))
-            {
-                NetClientConfig.Instance.ip = serverAddress.Trim();
-            }
             
             _clientSimulator.Start();
             _client.StartReliableConnect();
+            
             Debug.Log($"[MultiPlayManager] Client started for {NetClientConfig.Instance.ip}.");
         }
-
-        /// <summary>
-        /// Starts an authoritative server. By default a local client joins through the same protocol
-        /// so host mode exercises the complete networking path.
-        /// </summary>
-        public void StartHost(bool connectLocalClient = true, string localClientAddress = "127.0.0.1")
+        
+        public void StartHost(bool connectLocalClient = true)
         {
             if (!IsHostRunning)
             {
@@ -65,7 +57,7 @@ namespace GamePlay.NetSync
             if (connectLocalClient && !IsClientRunning)
             {
                 _ownsLocalClient = true;
-                StartClient(localClientAddress);
+                StartClient();
             }
         }
 
@@ -97,7 +89,7 @@ namespace GamePlay.NetSync
         }
 
         /// <summary>
-        /// Sends the gameplay join protocol again. Useful for protocol testing and recovery checks.
+        /// 发送加入游戏请求
         /// </summary>
         public bool SendJoinRequest()
         {

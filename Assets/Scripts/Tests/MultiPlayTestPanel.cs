@@ -53,13 +53,13 @@ namespace Tests
             GUI.enabled = _manager != null && !_manager.IsHostRunning && !_manager.IsClientRunning;
             if (GUILayout.Button("Create Host", GUILayout.Height(30f)))
             {
-                _manager.StartHost(true, "127.0.0.1");
+                _manager.StartHost(true);
                 _lastAction = "Host startup requested";
             }
 
             if (GUILayout.Button("Create Client", GUILayout.Height(30f)))
             {
-                _manager.StartClient(_serverAddress);
+                _manager.StartClient();
                 _lastAction = $"Client startup requested: {_serverAddress}";
             }
             GUI.enabled = true;
