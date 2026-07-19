@@ -33,6 +33,10 @@ namespace Network
         private NetServerConfig _serverConfig;
         private float _serverPingAccumulator;
 
+        #region 事件
+        public event Action<uint> OnClientRemoved;
+        #endregion
+
         /// <summary>
         /// 开启服务器
         /// </summary>
@@ -272,6 +276,11 @@ namespace Network
 
         #region 事件回调
         
+        private void HandleClientRemoved(uint clientId)
+        {
+            OnClientRemoved?.Invoke(clientId);
+        }
+        
         private void HandleDebugChat(uint clientId, Chat_Test msg)
         {
             if (_clientManager.TryGetClient(clientId, out var client))
@@ -428,6 +437,7 @@ namespace Network
             _serverConfig = NetServerConfig.Instance;
             _messageProcessor = new MessageProcessor();
             _clientManager = new ClientManager();
+            _clientManager.OnClientRemoved += HandleClientRemoved;
             
             _reliableTransport = new TcpServerTransport(_serverConfig);
             _reliableTransport.OnDataReceived += HandleReliableDataReceived;
@@ -482,7 +492,11 @@ namespace Network
                 _reliableTransport = null;
             }
             
-            _clientManager.Clear();
+            if (_clientManager != null)
+            {
+                _clientManager.OnClientRemoved -= HandleClientRemoved;
+                _clientManager.Clear();
+            }
         }
 
         #endregion

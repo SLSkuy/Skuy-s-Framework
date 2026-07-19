@@ -15,7 +15,6 @@ namespace GamePlay.NetSync
     public class ClientSimulator
     {
         public bool IsRunning => _tickSystem.IsRunning;
-        public int PlayerCount => _players.Count;
         
         private readonly NetClient _client;
         private readonly TickSystem _tickSystem;
@@ -50,12 +49,15 @@ namespace GamePlay.NetSync
         /// </summary>
         public void RegisterLocalPlayer(IInputStateProvider localInput, NetPlayerCharacter player)
         {
-            player.SetRole(NetEntityRole.Replica);
+            if (localInput == null || player == null) return;
+            
             _localInput = localInput;
+            player.SetRole(NetEntityRole.Replica);
+            if (_players.TryGetValue(_client.ClientId, out NetPlayerCharacter existing) && existing == player) return;
+
             if (!_players.TryAdd(_client.ClientId, player))
             {
-                _players[_client.ClientId] = player;
-                Debug.LogWarning("[ClientSimulator] Client " + _client.ClientId + " 已被注册，旧的将被强制覆盖");
+                Debug.LogWarning("[ClientSimulator] Client " + _client.ClientId + " has already been registered");
             }
         }
 
@@ -64,11 +66,30 @@ namespace GamePlay.NetSync
         /// </summary>
         public void RegisterRemotePlayer(uint clientId, NetPlayerCharacter player)
         {
+            if (player == null) return;
+            
             player.SetRole(NetEntityRole.Replica);
+            if (_players.TryGetValue(clientId, out NetPlayerCharacter existing) && existing == player) return;
+            
             if (!_players.TryAdd(clientId, player))
             {
                 Debug.LogWarning("[ClientSimulator] Client " + clientId + " has already been registered");
             }
+        }
+
+        /// <summary>
+        /// 注销玩家
+        /// </summary>
+        public void UnregisterPlayer(uint clientId)
+        {
+            _players.Remove(clientId);
+            if (clientId == _client.ClientId) _localInput = null;
+        }
+
+        public void ClearPlayers()
+        {
+            _players.Clear();
+            _localInput = null;
         }
         
         #region 同步管理

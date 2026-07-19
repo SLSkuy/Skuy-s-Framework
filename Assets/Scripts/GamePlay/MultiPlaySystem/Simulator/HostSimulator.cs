@@ -12,7 +12,6 @@ namespace GamePlay.NetSync
     public class HostSimulator
     {
         public bool IsRunning => _simulateTickSystem.IsRunning && _snapshotTickSystem.IsRunning;
-        public int PlayerCount => _players.Count;
 
         private readonly NetServer _server;
         private readonly TickSystem _simulateTickSystem;
@@ -68,6 +67,23 @@ namespace GamePlay.NetSync
             }
             
             Debug.LogWarning("[HostSimulator] Client " + clientId + " has already been registered");
+        }
+
+        /// <summary>
+        /// 注销玩家
+        /// </summary>
+        public void UnregisterPlayer(uint clientId)
+        {
+            _players.Remove(clientId);
+            _controllers.Remove(clientId);
+            _inputProviders.Remove(clientId);
+        }
+
+        public void ClearPlayers()
+        {
+            _players.Clear();
+            _controllers.Clear();
+            _inputProviders.Clear();
         }
 
         #region 模拟管理

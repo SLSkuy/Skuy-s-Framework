@@ -49,7 +49,12 @@ namespace Network
         private readonly Dictionary<ulong, Client> _clientsByToken = new Dictionary<ulong, Client>();
         private readonly Dictionary<uint, uint> _clientIdsByReliableSessionId = new Dictionary<uint, uint>();
         private readonly Dictionary<uint, uint> _clientIdsByFastSessionId = new Dictionary<uint, uint>();
+        private readonly List<uint> _clientToRemove = new List<uint>();
 
+        #region 事件
+        public event Action<uint> OnClientRemoved;
+        #endregion
+        
         #region 客户端管理
 
         /// <summary>
@@ -232,8 +237,10 @@ namespace Network
                     _clientIdsByFastSessionId.Remove(client.FastSessionId);
                 }
 
-                return true;
             }
+
+            OnClientRemoved?.Invoke(clientId);
+            return true;
         }
 
         /// <summary>
@@ -241,6 +248,7 @@ namespace Network
         /// </summary>
         public bool RemoveClient(ulong token)
         {
+            uint removedClientId;
             lock (_lock)
             {
                 if (!_clientsByToken.TryGetValue(token, out Client client))
@@ -259,9 +267,11 @@ namespace Network
                 {
                     _clientIdsByFastSessionId.Remove(client.FastSessionId);
                 }
-
-                return true;
+                removedClientId = client.Id;
             }
+
+            OnClientRemoved?.Invoke(removedClientId);
+            return true;
         }
 
         #endregion
@@ -378,29 +388,28 @@ namespace Network
         public void CleanupDisconnectedClients(float currentTime, float gracePeriodSeconds)
         {
             if (gracePeriodSeconds <= 0f) return;
-
+            
             lock (_lock)
             {
-                List<uint> toRemove = null;
                 foreach (var kv in _clientsById)
                 {
                     Client client = kv.Value;
                     if (client.DisconnectTime < 0f) continue;
                     if (currentTime - client.DisconnectTime >= gracePeriodSeconds)
                     {
-                        toRemove ??= new List<uint>();
-                        toRemove.Add(client.Id);
+                        _clientToRemove.Add(client.Id);
                     }
                 }
 
-                if (toRemove != null)
-                {
-                    foreach (uint id in toRemove)
-                    {
-                        RemoveClient(id);
-                    }
-                }
             }
+
+            // 移除超时的客户端
+            if (_clientToRemove.Count == 0) return;
+            foreach (uint id in _clientToRemove)
+            {
+                RemoveClient(id);
+            }
+            _clientToRemove.Clear();
         }
 
         /// <summary>
@@ -421,13 +430,21 @@ namespace Network
 
         public void Clear()
         {
+            uint[] removedClientIds;
             lock (_lock)
             {
+                removedClientIds = new uint[_clientsById.Count];
+                _clientsById.Keys.CopyTo(removedClientIds, 0);
                 _clientsById.Clear();
                 _clientsByToken.Clear();
                 _clientIdsByReliableSessionId.Clear();
                 _clientIdsByFastSessionId.Clear();
                 _nextClientId = 1;
+            }
+
+            foreach (uint clientId in removedClientIds)
+            {
+                OnClientRemoved?.Invoke(clientId);
             }
         }
 
