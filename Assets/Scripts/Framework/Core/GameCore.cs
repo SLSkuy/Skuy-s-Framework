@@ -14,7 +14,7 @@ namespace Core
         public ResourceManager ResourceMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public GameStateManager GameStateMgr { get; private set; }
-        public NetSyncManager NetSyncMgr { get; private set; }
+        public MultiPlayManager MultiPlayMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
@@ -58,7 +58,7 @@ namespace Core
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
             
             // 业务逻辑
-            NetSyncMgr = SystemMgr.RegisterSystem<NetSyncManager>();
+            MultiPlayMgr = SystemMgr.RegisterSystem<MultiPlayManager>();
         }
 
         /// <summary>

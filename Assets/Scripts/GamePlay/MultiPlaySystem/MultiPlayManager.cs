@@ -5,9 +5,9 @@ using NetSync;
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// 网络同步控制器，控制主机/客户端的生命周期与消息同步
+    /// 多人网络同步控制器，控制主机/客户端的生命周期与消息同步
     /// </summary>
-    public class NetSyncManager : SubSystemBase
+    public class MultiPlayManager : SubSystemBase
     {
         public override SubSystemPriority Priority => SubSystemPriority.NetSyncManager;
         
