@@ -89,5 +89,10 @@ namespace Framework
         /// </summary>
         /// <param name="state"></param>
         void SetInputState(InputState state);
+        
+        /// <summary>
+        /// 检查上一状态与当前状态的差距并触发对应的事件
+        /// </summary>
+        void CheckDiffFromLastState();
     }
 }

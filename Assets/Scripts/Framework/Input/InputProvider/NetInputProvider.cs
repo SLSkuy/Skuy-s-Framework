@@ -13,9 +13,6 @@ namespace Framework
         {
             _previousInputState = _currentInputState;
             _currentInputState = state;
-            
-            // 检查远程输入变换
-            CheckInputDifferences();
         }
     }
 }

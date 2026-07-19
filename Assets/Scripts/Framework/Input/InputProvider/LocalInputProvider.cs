@@ -67,7 +67,7 @@ namespace Framework
         private void Update()
         {
             UpdateOriginPlayerActionInput();
-            CheckInputDifferences();
+            CheckDiffFromLastState();
 
             // 鼠标设备单独处理输入
             if (deviceType == InputDeviceType.KeyboardAndMouse)

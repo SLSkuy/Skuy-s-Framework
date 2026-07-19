@@ -44,8 +44,9 @@ namespace Framework
         
         /// <summary>
         /// 检测输入差异并触发相应事件
+        /// 网络控制器则由Tick驱动调用
         /// </summary>
-        protected void CheckInputDifferences()
+        public void CheckDiffFromLastState()
         {
             if (_currentInputState.MoveInput != _previousInputState.MoveInput)
                 OnMove?.Invoke(_currentInputState.MoveInput);
