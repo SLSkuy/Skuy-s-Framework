@@ -53,8 +53,8 @@ namespace Tests
             GUI.enabled = _manager != null && !_manager.IsHostRunning && !_manager.IsClientRunning;
             if (GUILayout.Button("Create Host", GUILayout.Height(30f)))
             {
-                _manager.StartHost(true);
-                _lastAction = "Host startup requested";
+                _manager.StartHost();
+                _lastAction = "Server-only host started";
             }
 
             if (GUILayout.Button("Create Client", GUILayout.Height(30f)))
@@ -84,7 +84,7 @@ namespace Tests
             DrawStatus("Host", _manager?.IsHostRunning == true ? "Running" : "Stopped");
             DrawStatus("Client", _manager?.IsClientRunning == true ? "Running" : "Stopped");
             DrawStatus("Client ID", (_manager?.LocalClientId ?? 0).ToString());
-            DrawStatus("Players", $"Authority {_manager?.HostPlayerCount ?? 0} / Replicas {_manager?.ClientPlayerCount ?? 0}");
+            DrawStatus("Players", $"Server {_manager?.HostPlayerCount ?? 0} / Client {_manager?.ClientPlayerCount ?? 0}");
             DrawStatus("RTT", $"{(_manager?.RTT ?? 0f) * 1000f:0.0} ms");
 
             GUILayout.FlexibleSpace();

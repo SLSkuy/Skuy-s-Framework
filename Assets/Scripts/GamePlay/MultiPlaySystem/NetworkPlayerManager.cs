@@ -6,7 +6,7 @@ using UnityEngine;
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// 网络玩家实体管理器，控制逻辑对象和渲染对象的生成
+    /// 网络玩家实体管理器。主机和客户端模式互斥，因此每个进程只显示一套玩家实体。
     /// </summary>
     public class NetworkPlayerManager
     {
@@ -22,8 +22,8 @@ namespace GamePlay.NetSync
 
         public NetworkPlayerManager()
         {
-            _hostRoot = CreateRoot("Network Players (Authority)");
-            _clientRoot = CreateRoot("Network Players (Replicas)");
+            _hostRoot = CreateRoot("Network Players (Server)");
+            _clientRoot = CreateRoot("Network Players (Client)");
         }
 
         public bool TryGetHostPlayer(uint clientId, out NetPlayerCharacter player)
@@ -47,12 +47,6 @@ namespace GamePlay.NetSync
             player = CreatePlayer(clientId, _hostRoot, NetEntityRole.Authority);
             created = player != null;
             if (!created) return null;
-
-            // Authority objects do not need to be rendered in a host/dedicated-server process.
-            foreach (Renderer renderer in player.GetComponentsInChildren<Renderer>())
-            {
-                renderer.enabled = false;
-            }
 
             _hostPlayers.Add(clientId, player);
             return player;
@@ -147,7 +141,7 @@ namespace GamePlay.NetSync
                 return null;
             }
 
-            instance.name = $"Player {clientId} ({role})";
+            instance.name = $"Network Player {clientId}";
             NetPlayerCharacter player = instance.GetComponent<NetPlayerCharacter>();
             if (!player)
             {
@@ -164,7 +158,7 @@ namespace GamePlay.NetSync
         private static Vector3 GetSpawnPosition(uint clientId)
         {
             int index = Mathf.Max(0, (int)clientId - 1);
-            return new Vector3(index % 4 * 2.5f, 1f, index / 4 * 2.5f);
+            return new Vector3(index % 4 * 2.5f, 1f, index / 4f * 2.5f);
         }
 
         private static Transform CreateRoot(string name)

@@ -29,36 +29,33 @@ namespace GamePlay.NetSync
         private HostSimulator _hostSimulator;
         private NetworkPlayerManager _playerManager;
         private readonly HashSet<uint> _activePlayers = new();
-        
-        /// <summary>
-        /// 关闭Host时判断是否需要同步关闭Client
-        /// </summary>
-        private bool _ownsLocalClient;
-        
+        private bool _joinRequested;
+        private uint _joinClientId;
+
         public void StartClient()
         {
             if (IsClientRunning) return;
             
+            _joinRequested = false;
+            _joinClientId = 0;
             _clientSimulator.Start();
             _client.StartReliableConnect();
             
             Debug.Log($"[MultiPlayManager] Client started for {NetClientConfig.Instance.ip}.");
         }
         
-        public void StartHost(bool connectLocalClient = true)
+        public void StartHost()
         {
-            if (!IsHostRunning)
+            if (IsHostRunning) return;
+            if (IsClientRunning)
             {
-                _server.StartServer();
-                _hostSimulator.Start();
-                Debug.Log("[MultiPlayManager] Host started.");
+                Debug.LogWarning("[MultiPlayManager] Stop the client before starting server-only host mode.");
+                return;
             }
 
-            if (connectLocalClient && !IsClientRunning)
-            {
-                _ownsLocalClient = true;
-                StartClient();
-            }
+            _server.StartServer();
+            _hostSimulator.Start();
+            Debug.Log("[MultiPlayManager] Server-only host started. Waiting for clients.");
         }
 
         public void StopClient()
@@ -67,19 +64,16 @@ namespace GamePlay.NetSync
             _clientSimulator?.ClearPlayers();
             _playerManager?.ClearClientPlayers();
             _client?.StopClient();
-            
-            _ownsLocalClient = false;
+            _joinRequested = false;
+            _joinClientId = 0;
         }
 
         public void StopHost()
         {
-            bool stopOwnedClient = _ownsLocalClient;
             _hostSimulator?.Stop();
             _hostSimulator?.ClearPlayers();
             _playerManager?.ClearHostPlayers();
             _server?.StopServer();
-
-            if (stopOwnedClient) StopClient();
         }
 
         public void StopAll()
@@ -94,7 +88,9 @@ namespace GamePlay.NetSync
         public bool SendJoinRequest()
         {
             if (_client == null || !_client.IsRunning || _client.ClientId == 0) return false;
-            
+
+            _joinRequested = true;
+            _joinClientId = _client.ClientId;
             _client.SendReliable(NetEvent.GAME_JOIN_REQUEST, new Game_Join_Request
             {
                 ClientId = _client.ClientId
@@ -207,6 +203,14 @@ namespace GamePlay.NetSync
         {
             if (_hostSimulator?.IsRunning == true) _hostSimulator.Update(deltaTime);
             if (_clientSimulator?.IsRunning == true) _clientSimulator.Update(deltaTime);
+
+            if (!IsClientRunning || _client.ClientId == 0) return;
+            if (_joinClientId != _client.ClientId)
+            {
+                _joinRequested = false;
+            }
+
+            if (!_joinRequested) SendJoinRequest();
         }
 
         public override void BindEvents()
