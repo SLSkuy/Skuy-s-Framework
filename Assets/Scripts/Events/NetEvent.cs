@@ -22,5 +22,6 @@ namespace Events
         // 游戏同步
         PLAYER_INPUT,
         PLAYER_SNAPSHOT,
+        WORLD_SNAPSHOT,
     }
 }

@@ -75,7 +75,7 @@ namespace Utils
         {
             return new Player_Snapshot
             {
-                CliendId = clientId,
+                ClientId = clientId,
                 Tick = snapshot.Tick,
                 Position = ToProto(snapshot.Position),
                 Rotation = ToProto(snapshot.Rotation)

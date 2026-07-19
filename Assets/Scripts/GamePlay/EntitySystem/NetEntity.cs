@@ -18,12 +18,12 @@ namespace GamePlay.EntitySystem
         #endregion
 
         private readonly List<T> _snapshotBuffer = new();
-        private int _simulationTickRate;
+        private int _snapshotConsumeTickRate;
         
         private int _interpolationDelayTicks;
         private float _renderTick;
         private bool _hasRenderTick;
-
+        
         public virtual void AddSnapshot(T snapshot)
         {
             // 权威模拟不使用快照进行状态更新
@@ -113,7 +113,7 @@ namespace GamePlay.EntitySystem
             float targetRenderTick = Mathf.Max(_snapshotBuffer[0].Tick, newest.Tick - _interpolationDelayTicks);
             
             // 将本帧经过的秒数转换成逻辑 Tick，并保证不超过消费缓存的Tick状态，为网络抖动保留插值缓冲
-            _renderTick = Mathf.Min(_renderTick + deltaTime * _simulationTickRate, targetRenderTick);
+            _renderTick = Mathf.Min(_renderTick + deltaTime * _snapshotConsumeTickRate, targetRenderTick);
 
             // 丢弃已经完整播放过的快照
             // 循环结束后，通常满足：from.Tick <= renderTick < to.Tick
@@ -141,7 +141,7 @@ namespace GamePlay.EntitySystem
         {
             SyncConfig config = SyncConfig.Instance;
             
-            _simulationTickRate = Mathf.Max(1, config.simulationTickRate);
+            _snapshotConsumeTickRate = Mathf.Max(1, config.snapshotTickRate);
             _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
             
             // 初始化逻辑位置，后续由主机同步

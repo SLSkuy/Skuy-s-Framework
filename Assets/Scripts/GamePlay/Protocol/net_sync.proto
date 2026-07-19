@@ -29,8 +29,13 @@ message Player_Input {
 
 // 玩家状态快照
 message Player_Snapshot {
-  uint32 cliendId = 1;
+  uint32 clientId = 1;
   uint32 tick = 2;
   Vec3 position = 3;
   Vec3 rotation = 4;
+}
+
+message World_Snapshot {
+  uint32 tick = 1;
+  repeated Player_Snapshot player_snapshots = 2;
 }
