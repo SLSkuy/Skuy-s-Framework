@@ -39,3 +39,13 @@ message World_Snapshot {
   uint32 tick = 1;
   repeated Player_Snapshot player_snapshots = 2;
 }
+
+// ========== 加入游戏 ==========
+message Game_Join_Request {
+  uint32 clientId = 1;
+}
+
+message Game_Join_Response {
+  bool accepted = 1;
+}
+// ========== 加入游戏 ==========

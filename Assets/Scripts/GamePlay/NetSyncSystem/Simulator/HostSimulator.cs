@@ -12,21 +12,18 @@ namespace GamePlay.NetSync
     public class HostSimulator
     {
         public bool IsRunning => _simulateTickSystem.IsRunning && _snapshotTickSystem.IsRunning;
-        
+        public int PlayerCount => _players.Count;
+
         private readonly NetServer _server;
-        private readonly NetClient _client;
         private readonly TickSystem _simulateTickSystem;
         private readonly TickSystem _snapshotTickSystem;
-        
         private readonly Dictionary<uint, NetPlayerCharacter> _players = new();
         private readonly Dictionary<uint, NetInputProvider> _inputProviders = new();
         private readonly Dictionary<uint, NetPlayerController> _controllers = new();
-        private IInputStateProvider _localInput;
 
-        public HostSimulator(NetClient client, NetServer server, SyncConfig config)
+        public HostSimulator(NetServer server, SyncConfig config)
         {
             _server = server;
-            _client = client;
             _simulateTickSystem = new TickSystem(Mathf.Max(0, config.simulationTickRate));
             _snapshotTickSystem = new TickSystem(Mathf.Max(0, config.snapshotTickRate));
         }
@@ -36,7 +33,7 @@ namespace GamePlay.NetSync
             if (IsRunning) return;
 
             _simulateTickSystem.OnTick += Simulate;
-            _snapshotTickSystem.OnTick += BroadCastSnapShot;
+            _snapshotTickSystem.OnTick += BroadcastSnapshot;
             _simulateTickSystem.Start();
             _snapshotTickSystem.Start();
         }
@@ -46,25 +43,9 @@ namespace GamePlay.NetSync
             if(!IsRunning) return;
             
             _simulateTickSystem.OnTick -= Simulate;
-            _snapshotTickSystem.OnTick -= BroadCastSnapShot;
+            _snapshotTickSystem.OnTick -= BroadcastSnapshot;
             _simulateTickSystem.Stop();
             _snapshotTickSystem.Stop();
-        }
-
-        /// <summary>
-        /// 注册本地玩家
-        /// </summary>
-        /// <param name="localInput"></param>
-        /// <param name="player"></param>
-        public void RegisterLocalPlayer(IInputStateProvider localInput, NetPlayerCharacter player)
-        {
-            player.SetRole(NetEntityRole.Authority);
-            _localInput = localInput;
-            if (!_players.TryAdd(_client.ClientId, player))
-            {
-                _players[_client.ClientId] = player;
-                Debug.LogWarning("[HostSimulator] Client " + _client.ClientId + " 已被注册，旧的将被强制覆盖");
-            }
         }
         
         /// <summary>
@@ -98,7 +79,7 @@ namespace GamePlay.NetSync
         {
             if (!IsRunning || input == null) return;
 
-            if(_inputProviders.TryGetValue(clientId, out NetInputProvider inputProvider))
+            if (_inputProviders.TryGetValue(clientId, out NetInputProvider inputProvider))
             {
                 inputProvider.SetInputState(NetSyncUtils.ToInputState(input));
             }
@@ -106,30 +87,35 @@ namespace GamePlay.NetSync
 
         private void Simulate(uint tick)
         {
-            foreach (var controller in _controllers.Values)
+            foreach (NetPlayerController controller in _controllers.Values)
             {
                 controller.Simulate(_simulateTickSystem.TickDeltaTime);
             }
         }
-        
-        private void BroadCastSnapShot(uint tick)
+
+        private void BroadcastSnapshot(uint tick)
         {
-            // 收集全局状态
-            World_Snapshot snapshot = new World_Snapshot
+            if (_players.Count == 0) return;
+
+            World_Snapshot snapshot = new World_Snapshot { Tick = tick };
+            foreach (KeyValuePair<uint, NetPlayerCharacter> player in _players)
             {
-                Tick = tick
-            };
-            
-            foreach (var player in _players)
-            {
-                snapshot.PlayerSnapshots.Add(
-                    NetSyncUtils.ToPlayerSnapshot(player.Key, player.Value.GetSnapshot()));
+                Player_Snapshot playerSnapshot = NetSyncUtils.ToPlayerSnapshot(player.Key, player.Value.GetSnapshot());
+                playerSnapshot.Tick = tick;
+                snapshot.PlayerSnapshots.Add(playerSnapshot);
             }
 
-            foreach (var controller in _controllers)
-            {
-                _server.Send(controller.Key, NetEvent.WORLD_SNAPSHOT, snapshot);
-            }
+            _server.Broadcast(NetEvent.WORLD_SNAPSHOT, snapshot);
+        }
+
+        #endregion
+
+        #region 生命周期
+
+        public void Update(float deltaTime)
+        {
+            _simulateTickSystem.Update(deltaTime);
+            _snapshotTickSystem.Update(deltaTime);
         }
 
         #endregion

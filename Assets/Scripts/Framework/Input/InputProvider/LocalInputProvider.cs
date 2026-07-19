@@ -25,6 +25,7 @@ namespace Framework
         public LocalInputType currentInputMap = LocalInputType.Player;
         private Dictionary<LocalInputType, InputActionMap> _actionMap;
         private Camera _mainCamera;
+        private bool _isInitialized;
 
         /// <summary>
         /// 鼠标面准事件
@@ -33,29 +34,13 @@ namespace Framework
 
         private void Awake()
         {
-            _actionMap = new Dictionary<LocalInputType, InputActionMap>();
-            InputActions = new PlayerInputActions();
-            PlayerActions = InputActions.Player;
-            UIActions = InputActions.UI;
-            
-            RegisterInputAction(LocalInputType.Player, PlayerActions);
-            RegisterInputAction(LocalInputType.UI, UIActions);
-
-            // 如果是键盘输入，禁用Aim输出，采用鼠标射线检测
-            if (deviceType == InputDeviceType.KeyboardAndMouse)
-            {
-                PlayerActions.Aim.Disable();
-            }
-            
-            // 如果没有设置相机，自动查找主相机
-            if (_mainCamera == null)
-            {
-                _mainCamera = Camera.main;
-            }
+            Init();
         }
 
         private void OnEnable()
         {
+            if(!_isInitialized) Init();
+            
             _actionMap[currentInputMap].Enable();
         }
 
@@ -80,6 +65,31 @@ namespace Framework
 
                 OnMouseAim?.Invoke(mousePos);
             }
+        }
+
+        private void Init()
+        {
+            _actionMap = new Dictionary<LocalInputType, InputActionMap>();
+            InputActions = new PlayerInputActions();
+            PlayerActions = InputActions.Player;
+            UIActions = InputActions.UI;
+            
+            RegisterInputAction(LocalInputType.Player, PlayerActions);
+            RegisterInputAction(LocalInputType.UI, UIActions);
+
+            // 如果是键盘输入，禁用Aim输出，采用鼠标射线检测
+            if (deviceType == InputDeviceType.KeyboardAndMouse)
+            {
+                PlayerActions.Aim.Disable();
+            }
+            
+            // 如果没有设置相机，自动查找主相机
+            if (_mainCamera == null)
+            {
+                _mainCamera = Camera.main;
+            }
+
+            _isInitialized = true;
         }
 
         public void RegisterInputAction(LocalInputType type, InputActionMap action)

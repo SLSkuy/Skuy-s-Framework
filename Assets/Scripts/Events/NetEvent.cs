@@ -20,6 +20,8 @@ namespace Events
         PONG,
 
         // 游戏同步
+        GAME_JOIN_REQUEST,
+        GAME_JOIN_RESPONSE,
         PLAYER_INPUT,
         PLAYER_SNAPSHOT,
         WORLD_SNAPSHOT,

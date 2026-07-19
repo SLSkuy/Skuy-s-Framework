@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Events;
 using Framework;
 using GamePlay.EntitySystem;
@@ -15,6 +15,7 @@ namespace GamePlay.NetSync
     public class ClientSimulator
     {
         public bool IsRunning => _tickSystem.IsRunning;
+        public int PlayerCount => _players.Count;
         
         private readonly NetClient _client;
         private readonly TickSystem _tickSystem;
