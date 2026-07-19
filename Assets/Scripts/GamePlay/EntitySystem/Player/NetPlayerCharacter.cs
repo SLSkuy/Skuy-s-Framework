@@ -1,6 +1,4 @@
-﻿using GamePlay.EntitySystem;
-
-namespace GamePlay
+﻿namespace GamePlay.EntitySystem
 {
     /// <summary>
     /// 网络玩家实体，提供玩家的操作行为入口

@@ -1,9 +1,8 @@
 ﻿using Framework;
-using GamePlay.CameraSystem;
 using UnityEngine;
 using Utils;
 
-namespace GamePlay.EntitySystem.Player
+namespace GamePlay.EntitySystem
 {
     /// <summary>
     /// 远程玩家控制器，捕获远程输入，对本地实体进行模拟

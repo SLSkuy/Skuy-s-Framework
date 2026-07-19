@@ -1,9 +1,7 @@
 using UnityEngine;
 using Framework;
-using GamePlay.CameraSystem;
 using UIFramework;
 using GamePlay.NetSync;
-using Network;
 
 namespace Core
 {
@@ -19,6 +17,7 @@ namespace Core
         public NetSyncManager NetSyncMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
+        public CameraManager CameraMgr { get; private set; }
         #endregion
 
         #region 游戏状态
@@ -53,12 +52,12 @@ namespace Core
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             UIMgr = SystemMgr.RegisterSystem<UIManager>();
+            CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
             
             // 业务逻辑
-            SystemMgr.RegisterSystem<CameraManager>();
             NetSyncMgr = SystemMgr.RegisterSystem<NetSyncManager>();
         }
 

@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using Framework;
-using GamePlay.Proxy;
 using Unity.Cinemachine;
 using UnityEngine;
 
-namespace GamePlay.CameraSystem
+namespace Framework
 {
     /// <summary>
     /// 摄像机管理器，管理当前玩家摄像机状态
@@ -22,15 +20,8 @@ namespace GamePlay.CameraSystem
             _cameraRoot = new GameObject("CameraRoot").transform;
             Object.DontDestroyOnLoad(_cameraRoot);
             
-            // 获取摄像机数据
-            CameraProxy proxy = Global.RegisterDataProxy<CameraProxy>();
-            if (proxy == null)
-            {
-                Debug.LogError($"[CameraManager] Camera proxy not found!");
-                return;
-            }
-            
-            CameraConfig config = proxy.Config;
+            // 读取摄像机配置
+            CameraConfig config = CameraConfig.Instance;
             foreach (var entry in config.cameras)
             {
                 GameObject obj = Object.Instantiate(entry.camera.gameObject, _cameraRoot);
@@ -91,9 +82,7 @@ namespace GamePlay.CameraSystem
             {
                 Object.Destroy(_cameraRoot.gameObject);
             }
-
-            // 不再需要，卸载摄像机数据
-            Global.UnregisterDataProxy<CameraProxy>();
+            
             _cameraMap.Clear();
         }
     }

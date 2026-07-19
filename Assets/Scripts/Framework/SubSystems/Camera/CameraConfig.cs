@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Framework;
 using UnityEngine;
 using Unity.Cinemachine;
 
-namespace GamePlay.CameraSystem
+namespace Framework
 {
     /// <summary>
     /// 摄像机设置实例
