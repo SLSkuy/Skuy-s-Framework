@@ -86,7 +86,12 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public virtual void SetRole(NetEntityRole role)
         {
+            if (Role == role) return;
+
             Role = role;
+            _snapshotBuffer.Clear();
+            _hasRenderTick = false;
+            _renderTick = 0f;
         }
 
         /// <summary>

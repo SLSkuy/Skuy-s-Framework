@@ -9,6 +9,8 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class NetPlayerController : AutoEventMonoBehaviour
     {
+        public bool IsReady { get; private set; }
+
         private NetPlayerCharacter _playerCharacter;
         private IInputStateProvider _inputProvider;
         private Transform _cameraTransform;
@@ -24,6 +26,11 @@ namespace GamePlay.EntitySystem
         /// <param name="deltaTime"></param>
         public void Simulate(float deltaTime)
         {
+            if (!IsReady) return;
+
+            // 通过Tick驱动获取输入变化，再触发内部事件
+            // 若在设置输入状态时直接触发，会扰乱原本的Tick驱动顺序
+            _inputProvider.CheckDiffFromLastState();
             _playerCharacter.Move(_currentMappedMoveInput, deltaTime);
         }
 
@@ -39,11 +46,12 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 设置输入命令来源
+        /// 配置网络控制器操控的玩家角色以及输入源
         /// </summary>
-        /// <param name="provider"></param>
-        public void SetInputStateProvider(IInputStateProvider provider)
+        public void Configure(NetPlayerCharacter playerCharacter, IInputStateProvider provider)
         {
+            IsReady = true;
+            _playerCharacter = playerCharacter;
             _inputProvider = provider;
         }
         
@@ -164,8 +172,8 @@ namespace GamePlay.EntitySystem
         {
             // 测试：直接从本地获取到输入源
             // TODO：多控制器输入时，设置输入源管理进行分配
-            _inputProvider = GetComponent<IInputStateProvider>();
-            _playerCharacter = GetComponent<NetPlayerCharacter>();
+            _inputProvider ??= GetComponent<IInputStateProvider>();
+            _playerCharacter ??= GetComponent<NetPlayerCharacter>();
             
             // 如果没有设置相机，自动查找主相机
             if (_cameraTransform == null)
@@ -176,8 +184,6 @@ namespace GamePlay.EntitySystem
                     _cameraTransform = mainCamera.transform;
                 }
             }
-            
-            Global.Get<CameraManager>().SetTarget(transform);
             
             base.Start();
         }
