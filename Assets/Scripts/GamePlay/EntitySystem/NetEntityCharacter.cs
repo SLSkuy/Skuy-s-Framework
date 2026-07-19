@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     [RequireComponent(typeof(CharacterController))]
     public abstract class NetEntityCharacter<T> : NetEntity<T>, IEntityCharacter where T : struct, IEntitySnapshot
     {
-        [Header("实体属性")]
+        [Header("实体角色属性")]
         [SerializeField] protected EntityConfig config;
 
         private MovementModule _movementModule;

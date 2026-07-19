@@ -150,19 +150,6 @@ namespace GamePlay.EntitySystem
             Vector3 targetPosition = new Vector3(mappedDirection.x, 0, mappedDirection.y);
             _playerCharacter.Rotate(targetPosition);
         }
-        
-        [AutoEvent("OnMouseAim", nameof(_inputProvider))]
-        private void OnMouseAim(Vector2 aimDirection)
-        {
-            if (aimDirection == Vector2.zero)
-            {
-                return;
-            }
-            
-            // 构成朝向方向向量
-            Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y) - transform.position;
-            _playerCharacter.Rotate(targetPosition);
-        }
 
         #endregion
         
