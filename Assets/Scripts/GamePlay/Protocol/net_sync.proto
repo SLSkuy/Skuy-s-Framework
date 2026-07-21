@@ -14,29 +14,25 @@ message Vec3 {
 }
 
 // 玩家输入命令
+// TODO: 先保证最小同步原型，只同步位置和旋转
 message Player_Input {
-  uint32 clientId = 1;
-  uint32 tick = 2;
-  Vec2 move_input = 3;
-  Vec2 aim_input = 4;
-  bool primary_attack_pressed = 5;
-  bool special_attack_pressed = 6;
-  bool special_action_pressed = 7;
-  bool interact_pressed = 8;
-  bool sprint_pressed = 9;
-  bool dash_pressed = 10;
+  uint32 clientId = 2;
+  uint32 inputTick = 3;
+  Vec2 move_input = 4;
+  Vec2 aim_input = 5;
 }
 
 // 玩家状态快照
 message Player_Snapshot {
-  uint32 clientId = 1;
-  uint32 tick = 2;
-  Vec3 position = 3;
-  Vec3 rotation = 4;
+  uint32 clientId = 2;
+  uint32 snapshotTick = 3;
+  uint32 lastProcessedInputTick = 4;
+  Vec3 position = 5;
+  Vec3 rotation = 6;
 }
 
 message World_Snapshot {
-  uint32 tick = 1;
+  uint32 snapshotTick = 1;
   repeated Player_Snapshot player_snapshots = 2;
 }
 

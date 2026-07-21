@@ -1,7 +1,7 @@
 ﻿namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 网络玩家实体，提供玩家的操作行为入口
+    /// 客户端远程玩家角色，消费服务端下发的权威快照进行插值处理
     /// </summary>
     public class NetPlayerCharacter : NetEntityCharacter<NetPlayerSnapshot>, IPlayerCharacter
     {

@@ -35,13 +35,13 @@ namespace GamePlay.EntitySystem
             for (int i = _snapshotBuffer.Count - 1; i >= 0; i--)
             {
                 // 序列重复，更新重复接收的状态
-                if (_snapshotBuffer[i].Tick == snapshot.Tick)
+                if (_snapshotBuffer[i].SnapshotTick == snapshot.SnapshotTick)
                 {
                     _snapshotBuffer[i] = snapshot;
                     return;
                 }
                 
-                if (_snapshotBuffer[i].Tick < snapshot.Tick)
+                if (_snapshotBuffer[i].SnapshotTick < snapshot.SnapshotTick)
                 {
                     insertIndex = i + 1;
                     break;
@@ -54,7 +54,7 @@ namespace GamePlay.EntitySystem
             // 首次接收到快照，此时还未进行旋转缓冲，直接应用第一次快照作为初始状态
             if (!_hasRenderTick)
             {
-                _renderTick = snapshot.Tick;
+                _renderTick = snapshot.SnapshotTick;
                 _hasRenderTick = true;
                 ApplySnapshot(snapshot);
             }
@@ -110,14 +110,14 @@ namespace GamePlay.EntitySystem
             // 渲染newest.Tick之前若干Tick的历史状态
             // 从而为网络抖动保留插值缓冲
             T newest = _snapshotBuffer[^1];
-            float targetRenderTick = Mathf.Max(_snapshotBuffer[0].Tick, newest.Tick - _interpolationDelayTicks);
+            float targetRenderTick = Mathf.Max(_snapshotBuffer[0].SnapshotTick, newest.SnapshotTick - _interpolationDelayTicks);
             
             // 将本帧经过的秒数转换成逻辑 Tick，并保证不超过消费缓存的Tick状态，为网络抖动保留插值缓冲
             _renderTick = Mathf.Min(_renderTick + deltaTime * _snapshotConsumeTickRate, targetRenderTick);
 
             // 丢弃已经完整播放过的快照
             // 循环结束后，通常满足：from.Tick <= renderTick < to.Tick
-            while (_snapshotBuffer.Count >= 2 && _snapshotBuffer[1].Tick <= _renderTick)
+            while (_snapshotBuffer.Count >= 2 && _snapshotBuffer[1].SnapshotTick <= _renderTick)
             {
                 _snapshotBuffer.RemoveAt(0);
             }
@@ -125,8 +125,8 @@ namespace GamePlay.EntitySystem
             // 找到渲染时间两侧的快照，并计算其间的归一化插值比例。
             T from = _snapshotBuffer[0];
             T to = _snapshotBuffer[1];
-            float tickSpan = Mathf.Max(1f, to.Tick - from.Tick);
-            float t = Mathf.Clamp01((_renderTick - from.Tick) / tickSpan);
+            float tickSpan = Mathf.Max(1f, to.SnapshotTick - from.SnapshotTick);
+            float t = Mathf.Clamp01((_renderTick - from.SnapshotTick) / tickSpan);
 
             // 插值应用位置和旋转
             LogicPosition = Vector3.Lerp(from.Position, to.Position, t);

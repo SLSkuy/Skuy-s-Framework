@@ -45,12 +45,6 @@ namespace Utils
             {
                 MoveInput = ToUnity(input.MoveInput),
                 AimInput = ToUnity(input.AimInput),
-                IsPrimaryAttackPressed = input.PrimaryAttackPressed,
-                IsSpecialAttackPressed = input.SpecialAttackPressed,
-                IsSpecialActionPressed = input.SpecialActionPressed,
-                IsInteractPressed = input.InteractPressed,
-                IsSprintPressed = input.SprintPressed,
-                IsDashPressed = input.DashPressed
             };
         }
 
@@ -59,15 +53,9 @@ namespace Utils
             return new Player_Input
             {
                 ClientId = clientId,
-                Tick = tick,
+                InputTick = tick,
                 MoveInput = ToProto(state.MoveInput),
                 AimInput = ToProto(state.AimInput),
-                PrimaryAttackPressed = state.IsPrimaryAttackPressed,
-                SpecialAttackPressed = state.IsSpecialAttackPressed,
-                SpecialActionPressed = state.IsSpecialActionPressed,
-                InteractPressed = state.IsInteractPressed,
-                SprintPressed = state.IsSprintPressed,
-                DashPressed = state.IsDashPressed
             };
         }
 
@@ -76,7 +64,7 @@ namespace Utils
             return new Player_Snapshot
             {
                 ClientId = clientId,
-                Tick = snapshot.Tick,
+                SnapshotTick = snapshot.SnapshotTick,
                 Position = ToProto(snapshot.Position),
                 Rotation = ToProto(snapshot.Rotation)
             };
@@ -86,9 +74,10 @@ namespace Utils
         {
             return new NetPlayerSnapshot
             {
-                Tick = snapshot.Tick,
+                ClientId = snapshot.ClientId,
+                SnapshotTick = snapshot.SnapshotTick,
                 Position = ToUnity(snapshot.Position),
-                Rotation = ToUnity(snapshot.Rotation)
+                Rotation = ToUnity(snapshot.Rotation),
             };
         }
     }

@@ -11,7 +11,8 @@ namespace GamePlay.EntitySystem
         /// 朝指定方向移动
         /// </summary>
         /// <param name="dir">移动方向</param>
-        void Move(Vector2 dir);
+        /// <param name="deltaTime">移动步长</param>
+        void Move(Vector2 dir, float deltaTime);
 
         /// <summary>
         /// 开始疾跑
