@@ -10,7 +10,7 @@ namespace GamePlay.EntitySystem
         uint EntityId { get; set; }
 
         /// <summary>
-        /// 服务器Tick
+        /// 生成该状态时的服务端模拟 Tick，不是快照发送序号
         /// </summary>
         uint SnapshotTick { get; set; }
 
