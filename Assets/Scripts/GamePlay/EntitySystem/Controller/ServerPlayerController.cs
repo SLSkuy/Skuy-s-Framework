@@ -11,11 +11,10 @@ namespace GamePlay.EntitySystem
     {
         public bool IsReady { get; private set; }
 
-        private IPlayerCharacter _serverPlayerCharacter;
+        private IPlayerCharacter _character;
         private IInputStateProvider _serverInputProvider;
 
         // 接收转换后的输入，避免服务端获取摄像机转换，过于麻烦
-        private Vector2 _lastTickInput;
         private Vector2 _currentTickInput;
         
         // 输入缓存，采用循环队列的形式保存
@@ -32,8 +31,20 @@ namespace GamePlay.EntitySystem
         public void Configure(IPlayerCharacter serverPlayerCharacter, IInputStateProvider serverInputProvider)
         {
             IsReady = true;
-            _serverPlayerCharacter = serverPlayerCharacter;
+            _character = serverPlayerCharacter;
             _serverInputProvider = serverInputProvider;
+        }
+
+        /// <summary>
+        /// 接收客户端上传输入
+        /// </summary>
+        public void ReceiveInput(uint inputTick, InputState inputState)
+        {
+            if (!IsReady || inputTick <= _lastProcessedInputIndex) return;
+            
+            _currentTickInput = inputState.MoveInput;
+            _lastProcessedInputIndex = inputTick;
+            _serverInputProvider?.SetInputState(inputState);
         }
 
         /// <summary>
@@ -42,10 +53,17 @@ namespace GamePlay.EntitySystem
         /// <param name="deltaTime"></param>
         public void Simulate(float deltaTime)
         {
+            if (!IsReady || _character == null) return;
+
             // 通过Tick驱动获取输入变化，再触发内部事件
             // 若在设置输入状态时直接触发，会扰乱原本的Tick驱动顺序
             _serverInputProvider.CheckDiffFromLastState();
-            _serverPlayerCharacter.Move(_currentTickInput, deltaTime);
+            _character.Move(_currentTickInput, deltaTime);
+        }
+
+        public NetPlayerSnapshot CaptureSnapshot(uint simulationTick)
+        {
+            return _character.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
         }
 
         #region 事件订阅
@@ -54,7 +72,6 @@ namespace GamePlay.EntitySystem
         [AutoEvent("OnMove", nameof(_serverInputProvider))]
         private void OnMoveEvent(Vector2 moveInput)
         {
-            _lastTickInput = _currentTickInput;
             _currentTickInput = moveInput;
         }
 

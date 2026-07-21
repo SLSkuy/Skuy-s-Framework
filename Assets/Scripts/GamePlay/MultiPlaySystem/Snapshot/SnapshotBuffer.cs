@@ -68,12 +68,8 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 在服务端时间轴上查找渲染时刻两侧的快照。
         /// </summary>
-        public bool TrySample(
-            double renderServerTime,
-            double simulationTickInterval,
-            out T from,
-            out T to,
-            out float t)
+        public bool TrySample(double renderServerTime, double simulationTickInterval,
+            out T from, out T to, out float t)
         {
             if (_items.Count < 2 || simulationTickInterval <= 0d)
             {

@@ -148,6 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 535d5282afbcca542b950742091aa6a4, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Tests.MultiPlayTestPanel
+  _serverAddress: 127.0.0.1
+  _lastAction: Idle
 --- !u!4 &380135292
 Transform:
   m_ObjectHideFlags: 0

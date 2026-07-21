@@ -39,10 +39,7 @@ namespace Utils
             };
         }
 
-        public static Player_Input ToPlayerInput(
-            uint entityId,
-            uint inputTick,
-            InputState state)
+        public static Player_Input ToPlayerInput(uint entityId, uint inputTick, InputState state)
         {
             return new Player_Input
             {

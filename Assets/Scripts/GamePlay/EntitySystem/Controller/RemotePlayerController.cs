@@ -27,7 +27,6 @@ namespace GamePlay.EntitySystem
         public void Configure(NetPlayerCharacter character)
         {
             _character = character;
-            EnsureInitialized();
         }
 
         /// <summary>
@@ -36,7 +35,6 @@ namespace GamePlay.EntitySystem
         /// <param name="snapshot"></param>
         public void AddSnapshot(in NetPlayerSnapshot snapshot)
         {
-            EnsureInitialized();
             if (_character == null || _character.Role != NetEntityRole.Replica) return;
             if (_character.IsInitialized && snapshot.EntityId != _character.EntityId) return;
 
@@ -48,18 +46,7 @@ namespace GamePlay.EntitySystem
             _hasRenderTick = true;
             _character.ApplySnapshot(snapshot);
         }
-
-        private void EnsureInitialized()
-        {
-            _character ??= GetComponent<NetPlayerCharacter>();
-            if (_snapshots != null) return;
-
-            SyncConfig config = SyncConfig.Instance;
-            _simulationTickInterval = 1d / Mathf.Max(1, config.simulationTickRate);
-            _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
-            int capacity = Mathf.Max(8, _interpolationDelayTicks * 4);
-            _snapshots = new SnapshotBuffer<NetPlayerSnapshot>(capacity);
-        }
+        
 
         private void TryInterpolation()
         {
@@ -72,8 +59,7 @@ namespace GamePlay.EntitySystem
             double targetRenderTime = (_snapshots.LatestTick - _interpolationDelayTicks) * _simulationTickInterval;
             _renderServerTime = Math.Min(_renderServerTime + Time.deltaTime, targetRenderTime);
 
-            if (_snapshots.TrySample(_renderServerTime, _simulationTickInterval,
-                    out NetPlayerSnapshot from, out NetPlayerSnapshot to, out float t))
+            if (_snapshots.TrySample(_renderServerTime, _simulationTickInterval, out NetPlayerSnapshot from, out NetPlayerSnapshot to, out float t))
             {
                 _character.ApplyInterpolatedSnapshot(from, to, t);
             }
@@ -81,10 +67,15 @@ namespace GamePlay.EntitySystem
 
         #region 生命周期
 
-        protected override void Start()
+        private void Awake()
         {
-            EnsureInitialized();
-            base.Start();
+            SyncConfig config = SyncConfig.Instance;
+            
+            _simulationTickInterval = 1d / Mathf.Max(1, config.simulationTickRate);
+            _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
+            
+            int capacity = Mathf.Max(8, _interpolationDelayTicks * 4);
+            _snapshots = new SnapshotBuffer<NetPlayerSnapshot>(capacity);
         }
 
         private void Update()
