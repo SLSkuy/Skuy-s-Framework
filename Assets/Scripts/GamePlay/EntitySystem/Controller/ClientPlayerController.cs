@@ -45,6 +45,12 @@ namespace GamePlay.EntitySystem
             _inputProvider = provider;
         }
 
+        // 接收到权威状态
+        public void ReceiveAuthoritySnapshot(NetPlayerSnapshot snapshot)
+        {
+            // TODO: 处理回滚
+        }
+
         /// <summary>
         /// 获取映射后的输入方向
         /// </summary>

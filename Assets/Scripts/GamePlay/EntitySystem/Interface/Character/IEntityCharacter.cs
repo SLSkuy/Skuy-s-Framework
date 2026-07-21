@@ -3,9 +3,9 @@
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体接口，定义实体能够进行哪些操作行为
+    /// 网络实体角色接口，具备基础的移动能力
     /// </summary>
-    public interface IEntityCharacter
+    public interface IEntityCharacter<T>  where T : struct, IEntitySnapshot
     {
         /// <summary>
         /// 朝指定方向移动
@@ -34,5 +34,20 @@ namespace GamePlay.EntitySystem
         /// </summary>
         /// <param name="dir">目标朝向</param>
         void Rotate(Vector3 dir);
+        
+        /// <summary>
+        /// 直接应用快照状态
+        /// </summary>
+        void ApplySnapshot(in T snapshot);
+        
+        /// <summary>
+        /// 插值应用快照状态
+        /// </summary>
+        void ApplyInterpolatedSnapshot(in T from, in T to, float t);
+        
+        /// <summary>
+        /// 获取当前Tick对应的快照状态
+        /// </summary>
+        T CaptureSnapshot(uint snapshotTick, uint lastProcessedInputTick = 0);
     }
 }

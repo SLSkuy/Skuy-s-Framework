@@ -26,12 +26,12 @@ namespace NetSync {
           string.Concat(
             "Cg5uZXRfc3luYy5wcm90bxIHTmV0U3luYyIcCgRWZWMyEgkKAXgYASABKAIS",
             "CQoBeRgCIAEoAiInCgRWZWMzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6",
-            "GAMgASgCIngKDFBsYXllcl9JbnB1dBIQCghjbGllbnRJZBgCIAEoDRIRCglp",
-            "bnB1dFRpY2sYAyABKA0SIQoKbW92ZV9pbnB1dBgEIAEoCzINLk5ldFN5bmMu",
-            "VmVjMhIgCglhaW1faW5wdXQYBSABKAsyDS5OZXRTeW5jLlZlYzIimwEKD1Bs",
-            "YXllcl9TbmFwc2hvdBIQCghjbGllbnRJZBgCIAEoDRIUCgxzbmFwc2hvdFRp",
-            "Y2sYAyABKA0SHgoWbGFzdFByb2Nlc3NlZElucHV0VGljaxgEIAEoDRIfCghw",
-            "b3NpdGlvbhgFIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgGIAEo",
+            "GAMgASgCIngKDFBsYXllcl9JbnB1dBIQCghlbnRpdHlJZBgBIAEoDRIRCglp",
+            "bnB1dFRpY2sYAiABKA0SIQoKbW92ZV9pbnB1dBgDIAEoCzINLk5ldFN5bmMu",
+            "VmVjMhIgCglhaW1faW5wdXQYBCABKAsyDS5OZXRTeW5jLlZlYzIimwEKD1Bs",
+            "YXllcl9TbmFwc2hvdBIQCghlbnRpdHlJZBgBIAEoDRIUCgxzbmFwc2hvdFRp",
+            "Y2sYAiABKA0SHgoWbGFzdFByb2Nlc3NlZElucHV0VGljaxgDIAEoDRIfCghw",
+            "b3NpdGlvbhgEIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgFIAEo",
             "CzINLk5ldFN5bmMuVmVjMyJaCg5Xb3JsZF9TbmFwc2hvdBIUCgxzbmFwc2hv",
             "dFRpY2sYASABKA0SMgoQcGxheWVyX3NuYXBzaG90cxgCIAMoCzIYLk5ldFN5",
             "bmMuUGxheWVyX1NuYXBzaG90IiUKEUdhbWVfSm9pbl9SZXF1ZXN0EhAKCGNs",
@@ -42,8 +42,8 @@ namespace NetSync {
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec2), global::NetSync.Vec2.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "ClientId", "InputTick", "MoveInput", "AimInput" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "ClientId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "EntityId", "InputTick", "MoveInput", "AimInput" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, new[]{ "ClientId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted" }, null, null, null, null)
@@ -580,7 +580,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player_Input(Player_Input other) : this() {
-      clientId_ = other.clientId_;
+      entityId_ = other.entityId_;
       inputTick_ = other.inputTick_;
       moveInput_ = other.moveInput_ != null ? other.moveInput_.Clone() : null;
       aimInput_ = other.aimInput_ != null ? other.aimInput_.Clone() : null;
@@ -593,20 +593,20 @@ namespace NetSync {
       return new Player_Input(this);
     }
 
-    /// <summary>Field number for the "clientId" field.</summary>
-    public const int ClientIdFieldNumber = 2;
-    private uint clientId_;
+    /// <summary>Field number for the "entityId" field.</summary>
+    public const int EntityIdFieldNumber = 1;
+    private uint entityId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint ClientId {
-      get { return clientId_; }
+    public uint EntityId {
+      get { return entityId_; }
       set {
-        clientId_ = value;
+        entityId_ = value;
       }
     }
 
     /// <summary>Field number for the "inputTick" field.</summary>
-    public const int InputTickFieldNumber = 3;
+    public const int InputTickFieldNumber = 2;
     private uint inputTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -618,7 +618,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "move_input" field.</summary>
-    public const int MoveInputFieldNumber = 4;
+    public const int MoveInputFieldNumber = 3;
     private global::NetSync.Vec2 moveInput_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -630,7 +630,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "aim_input" field.</summary>
-    public const int AimInputFieldNumber = 5;
+    public const int AimInputFieldNumber = 4;
     private global::NetSync.Vec2 aimInput_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -656,7 +656,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (ClientId != other.ClientId) return false;
+      if (EntityId != other.EntityId) return false;
       if (InputTick != other.InputTick) return false;
       if (!object.Equals(MoveInput, other.MoveInput)) return false;
       if (!object.Equals(AimInput, other.AimInput)) return false;
@@ -667,7 +667,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (ClientId != 0) hash ^= ClientId.GetHashCode();
+      if (EntityId != 0) hash ^= EntityId.GetHashCode();
       if (InputTick != 0) hash ^= InputTick.GetHashCode();
       if (moveInput_ != null) hash ^= MoveInput.GetHashCode();
       if (aimInput_ != null) hash ^= AimInput.GetHashCode();
@@ -689,20 +689,20 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (ClientId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(ClientId);
+      if (EntityId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(EntityId);
       }
       if (InputTick != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteUInt32(InputTick);
       }
       if (moveInput_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(26);
         output.WriteMessage(MoveInput);
       }
       if (aimInput_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(AimInput);
       }
       if (_unknownFields != null) {
@@ -715,20 +715,20 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (ClientId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(ClientId);
+      if (EntityId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(EntityId);
       }
       if (InputTick != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteUInt32(InputTick);
       }
       if (moveInput_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(26);
         output.WriteMessage(MoveInput);
       }
       if (aimInput_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(AimInput);
       }
       if (_unknownFields != null) {
@@ -741,8 +741,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (ClientId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ClientId);
+      if (EntityId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityId);
       }
       if (InputTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(InputTick);
@@ -765,8 +765,8 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.ClientId != 0) {
-        ClientId = other.ClientId;
+      if (other.EntityId != 0) {
+        EntityId = other.EntityId;
       }
       if (other.InputTick != 0) {
         InputTick = other.InputTick;
@@ -798,22 +798,22 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 16: {
-            ClientId = input.ReadUInt32();
+          case 8: {
+            EntityId = input.ReadUInt32();
             break;
           }
-          case 24: {
+          case 16: {
             InputTick = input.ReadUInt32();
             break;
           }
-          case 34: {
+          case 26: {
             if (moveInput_ == null) {
               MoveInput = new global::NetSync.Vec2();
             }
             input.ReadMessage(MoveInput);
             break;
           }
-          case 42: {
+          case 34: {
             if (aimInput_ == null) {
               AimInput = new global::NetSync.Vec2();
             }
@@ -835,22 +835,22 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 16: {
-            ClientId = input.ReadUInt32();
+          case 8: {
+            EntityId = input.ReadUInt32();
             break;
           }
-          case 24: {
+          case 16: {
             InputTick = input.ReadUInt32();
             break;
           }
-          case 34: {
+          case 26: {
             if (moveInput_ == null) {
               MoveInput = new global::NetSync.Vec2();
             }
             input.ReadMessage(MoveInput);
             break;
           }
-          case 42: {
+          case 34: {
             if (aimInput_ == null) {
               AimInput = new global::NetSync.Vec2();
             }
@@ -901,7 +901,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player_Snapshot(Player_Snapshot other) : this() {
-      clientId_ = other.clientId_;
+      entityId_ = other.entityId_;
       snapshotTick_ = other.snapshotTick_;
       lastProcessedInputTick_ = other.lastProcessedInputTick_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
@@ -915,20 +915,20 @@ namespace NetSync {
       return new Player_Snapshot(this);
     }
 
-    /// <summary>Field number for the "clientId" field.</summary>
-    public const int ClientIdFieldNumber = 2;
-    private uint clientId_;
+    /// <summary>Field number for the "entityId" field.</summary>
+    public const int EntityIdFieldNumber = 1;
+    private uint entityId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint ClientId {
-      get { return clientId_; }
+    public uint EntityId {
+      get { return entityId_; }
       set {
-        clientId_ = value;
+        entityId_ = value;
       }
     }
 
     /// <summary>Field number for the "snapshotTick" field.</summary>
-    public const int SnapshotTickFieldNumber = 3;
+    public const int SnapshotTickFieldNumber = 2;
     private uint snapshotTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -940,7 +940,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "lastProcessedInputTick" field.</summary>
-    public const int LastProcessedInputTickFieldNumber = 4;
+    public const int LastProcessedInputTickFieldNumber = 3;
     private uint lastProcessedInputTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -952,7 +952,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 5;
+    public const int PositionFieldNumber = 4;
     private global::NetSync.Vec3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -964,7 +964,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "rotation" field.</summary>
-    public const int RotationFieldNumber = 6;
+    public const int RotationFieldNumber = 5;
     private global::NetSync.Vec3 rotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -990,7 +990,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (ClientId != other.ClientId) return false;
+      if (EntityId != other.EntityId) return false;
       if (SnapshotTick != other.SnapshotTick) return false;
       if (LastProcessedInputTick != other.LastProcessedInputTick) return false;
       if (!object.Equals(Position, other.Position)) return false;
@@ -1002,7 +1002,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (ClientId != 0) hash ^= ClientId.GetHashCode();
+      if (EntityId != 0) hash ^= EntityId.GetHashCode();
       if (SnapshotTick != 0) hash ^= SnapshotTick.GetHashCode();
       if (LastProcessedInputTick != 0) hash ^= LastProcessedInputTick.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
@@ -1025,24 +1025,24 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (ClientId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(ClientId);
+      if (EntityId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(EntityId);
       }
       if (SnapshotTick != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteUInt32(SnapshotTick);
       }
       if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteUInt32(LastProcessedInputTick);
       }
       if (position_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(42);
         output.WriteMessage(Rotation);
       }
       if (_unknownFields != null) {
@@ -1055,24 +1055,24 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (ClientId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(ClientId);
+      if (EntityId != 0) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(EntityId);
       }
       if (SnapshotTick != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteUInt32(SnapshotTick);
       }
       if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteUInt32(LastProcessedInputTick);
       }
       if (position_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(42);
         output.WriteMessage(Rotation);
       }
       if (_unknownFields != null) {
@@ -1085,8 +1085,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (ClientId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ClientId);
+      if (EntityId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityId);
       }
       if (SnapshotTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SnapshotTick);
@@ -1112,8 +1112,8 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.ClientId != 0) {
-        ClientId = other.ClientId;
+      if (other.EntityId != 0) {
+        EntityId = other.EntityId;
       }
       if (other.SnapshotTick != 0) {
         SnapshotTick = other.SnapshotTick;
@@ -1148,26 +1148,26 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 16: {
-            ClientId = input.ReadUInt32();
+          case 8: {
+            EntityId = input.ReadUInt32();
             break;
           }
-          case 24: {
+          case 16: {
             SnapshotTick = input.ReadUInt32();
             break;
           }
-          case 32: {
+          case 24: {
             LastProcessedInputTick = input.ReadUInt32();
             break;
           }
-          case 42: {
+          case 34: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 50: {
+          case 42: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Vec3();
             }
@@ -1189,26 +1189,26 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 16: {
-            ClientId = input.ReadUInt32();
+          case 8: {
+            EntityId = input.ReadUInt32();
             break;
           }
-          case 24: {
+          case 16: {
             SnapshotTick = input.ReadUInt32();
             break;
           }
-          case 32: {
+          case 24: {
             LastProcessedInputTick = input.ReadUInt32();
             break;
           }
-          case 42: {
+          case 34: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 50: {
+          case 42: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Vec3();
             }

@@ -1,29 +1,17 @@
-﻿using UnityEngine;
-
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 基础网络实体状态定义
+    /// 网络实体只描述身份和当前的模拟角色
     /// </summary>
-    public interface INetEntity<T>
+    public interface INetEntity
     {
-        /// <summary>
-        /// 网络实体索引
-        /// </summary>
-        uint Index { get; set; }
+        uint EntityId { get; }
+        NetEntityRole Role { get; }
         
-        Vector3 LogicPosition { get; set; }
-        Vector3 LogicRotation { get; set; }
-        
-        /// <summary>
-        /// 添加缓存新的快照，内部进行快照的消费
-        /// </summary>
-        /// <param name="snapshot"></param>
-        void AddSnapshot(T snapshot);
-        
-        /// <summary>
-        /// 获取当前实体的快照状态
-        /// </summary>
-        T GetSnapshot();
+        bool IsInitialized { get; }
+        bool HasStateAuthority { get; }
+
+        void Init(uint entityId, NetEntityRole role);
+        void SetRole(NetEntityRole role);
     }
 }

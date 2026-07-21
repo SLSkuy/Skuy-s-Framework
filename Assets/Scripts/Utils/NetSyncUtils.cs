@@ -6,27 +6,18 @@ using UnityEngine;
 namespace Utils
 {
     /// <summary>
-    /// 网络同步工具
+    /// 网络协议对象与游戏状态之间的转换。
     /// </summary>
     public static class NetSyncUtils
     {
         public static Vec2 ToProto(Vector2 value)
         {
-            return new Vec2
-            {
-                X = value.x,
-                Y = value.y
-            };
+            return new Vec2 { X = value.x, Y = value.y };
         }
 
         public static Vec3 ToProto(Vector3 value)
         {
-            return new Vec3
-            {
-                X = value.x,
-                Y = value.y,
-                Z = value.z
-            };
+            return new Vec3 { X = value.x, Y = value.y, Z = value.z };
         }
 
         public static Vector2 ToUnity(Vec2 value)
@@ -44,27 +35,31 @@ namespace Utils
             return new InputState
             {
                 MoveInput = ToUnity(input.MoveInput),
-                AimInput = ToUnity(input.AimInput),
+                AimInput = ToUnity(input.AimInput)
             };
         }
 
-        public static Player_Input ToPlayerInput(uint clientId, uint tick, InputState state)
+        public static Player_Input ToPlayerInput(
+            uint entityId,
+            uint inputTick,
+            InputState state)
         {
             return new Player_Input
             {
-                ClientId = clientId,
-                InputTick = tick,
+                EntityId = entityId,
+                InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
-                AimInput = ToProto(state.AimInput),
+                AimInput = ToProto(state.AimInput)
             };
         }
 
-        public static Player_Snapshot ToPlayerSnapshot(uint clientId, NetPlayerSnapshot snapshot)
+        public static Player_Snapshot ToPlayerSnapshot(in NetPlayerSnapshot snapshot)
         {
             return new Player_Snapshot
             {
-                ClientId = clientId,
+                EntityId = snapshot.EntityId,
                 SnapshotTick = snapshot.SnapshotTick,
+                LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToProto(snapshot.Position),
                 Rotation = ToProto(snapshot.Rotation)
             };
@@ -74,10 +69,11 @@ namespace Utils
         {
             return new NetPlayerSnapshot
             {
-                ClientId = snapshot.ClientId,
+                EntityId = snapshot.EntityId,
                 SnapshotTick = snapshot.SnapshotTick,
+                LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToUnity(snapshot.Position),
-                Rotation = ToUnity(snapshot.Rotation),
+                Rotation = ToUnity(snapshot.Rotation)
             };
         }
     }

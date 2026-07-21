@@ -3,8 +3,8 @@
     public interface IPlayerSnapshot : IEntitySnapshot
     {
         /// <summary>
-        /// 玩家对应的客户端ID索引
+        /// 生成该状态时服务端已处理的最后一个输入 Tick。
         /// </summary>
-        uint ClientId { get; set; }
+        uint LastProcessedInputTick { get; set; }
     }
 }

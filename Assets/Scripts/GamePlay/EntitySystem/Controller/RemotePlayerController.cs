@@ -1,21 +1,92 @@
-﻿using Framework;
+using Framework;
+using GamePlay.NetSync;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 客户端远程玩家控制器，用于桥接与实体的连接，为实体传输快照源
+    /// 客户端远端玩家驱动器，只消费权威快照并进行渲染插值。
     /// </summary>
+    [RequireComponent(typeof(NetPlayerCharacter))]
     public class RemotePlayerController : AutoEventMonoBehaviour
     {
-        private IPlayerCharacter _remotePlayerCharacter;
+        private NetPlayerCharacter _character;
+        private SnapshotBuffer<NetPlayerSnapshot> _snapshots;
+        
+        private int _interpolationDelayTicks;
+        private int _snapshotTickRate;
+        
+        // 渲染状态转换到模拟Tick
+        private float _renderTick;
+        private bool _hasRenderTick;
 
         /// <summary>
-        /// 接收服务端下发的快照
+        /// 配置本地远端玩家控制器
+        /// </summary>
+        /// <param name="character"></param>
+        public void Configure(NetPlayerCharacter character)
+        {
+            _character = character;
+            EnsureInitialized();
+        }
+
+        /// <summary>
+        /// 添加快照
         /// </summary>
         /// <param name="snapshot"></param>
-        public void AddSnapshot(NetPlayerSnapshot snapshot)
+        public void AddSnapshot(in NetPlayerSnapshot snapshot)
         {
+            EnsureInitialized();
+            if (_character == null || _character.Role != NetEntityRole.Replica) return;
+            if (_character.IsInitialized && snapshot.EntityId != _character.EntityId) return;
+
+            _snapshots.Add(snapshot);
             
+            // 初始快照直接应用，后续快照走插值处理
+            if (_hasRenderTick) return;
+            _renderTick = snapshot.SnapshotTick;
+            _hasRenderTick = true;
+            _character.ApplySnapshot(snapshot);
         }
+
+        private void EnsureInitialized()
+        {
+            _character ??= GetComponent<NetPlayerCharacter>();
+            if (_snapshots != null) return;
+
+            SyncConfig config = SyncConfig.Instance;
+            _snapshotTickRate = Mathf.Max(1, config.snapshotTickRate);
+            _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
+            int capacity = Mathf.Max(8, _interpolationDelayTicks * 4);
+            _snapshots = new SnapshotBuffer<NetPlayerSnapshot>(capacity);
+        }
+
+        #region 生命周期
+
+        protected override void Start()
+        {
+            EnsureInitialized();
+            base.Start();
+        }
+
+        private void Update()
+        {
+            if (!_hasRenderTick || _snapshots.Count < 2 || _character == null) return;
+
+            float bufferedTickSpan = _snapshots.LatestTick - _snapshots.OldestTick;
+            if (bufferedTickSpan < _interpolationDelayTicks) return;
+
+            float targetRenderTick = (float)_snapshots.LatestTick - _interpolationDelayTicks;
+            _renderTick = Mathf.Min(
+                _renderTick + Time.deltaTime * _snapshotTickRate,
+                targetRenderTick);
+
+            if (_snapshots.TrySample(_renderTick, out NetPlayerSnapshot from, out NetPlayerSnapshot to, out float t))
+            {
+                _character.ApplyInterpolatedSnapshot(from, to, t);
+            }
+        }
+
+        #endregion
     }
 }

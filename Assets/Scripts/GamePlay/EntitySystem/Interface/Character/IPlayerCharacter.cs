@@ -3,7 +3,7 @@
     /// <summary>
     /// 玩家角色实体接口，定义玩家角色实体能够进行哪些操作
     /// </summary>
-    public interface IPlayerCharacter : IEntityCharacter
+    public interface IPlayerCharacter : IEntityCharacter<NetPlayerSnapshot>
     {
         /// <summary>
         /// 朝当前角色朝向进行基础攻击

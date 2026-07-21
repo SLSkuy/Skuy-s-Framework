@@ -3,38 +3,70 @@ using UnityEngine;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 基础网络实体角色，提供基础的移动能力和网络同步能力
+    /// 可进行固定步长模拟的网络角色。
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public abstract class NetEntityCharacter<T> : NetEntity<T>, IEntityCharacter where T : struct, IEntitySnapshot
+    public abstract class NetEntityCharacter<T> : NetEntity, IEntityCharacter<T> where T : struct, IEntitySnapshot
     {
         [Header("实体角色属性")]
         [SerializeField] protected EntityConfig config;
 
-        private MovementModule _movementModule;
         private CharacterController _characterController;
-
-        public void Move(Vector2 dir)
-        {
-            _movementModule.Move(dir, Time.deltaTime);
-        }
-
+        private MovementModule _movementModule;
+        
         /// <summary>
-        /// 使用Tick时间进行模拟，避免帧率不一致导致模拟偏差过大
+        /// 更新模拟角色
         /// </summary>
-        public void Move(Vector2 dir, float tickTime)
+        /// <param name="entityRole"></param>
+        private void UpdateSimulationAvailability(NetEntityRole entityRole)
         {
-            _movementModule.Move(dir, tickTime);
+            if (_characterController == null) return;
+            _characterController.enabled = entityRole is NetEntityRole.Authority or NetEntityRole.Predict;
+        }
+        
+        #region 快照管理
+        
+        public virtual void ApplySnapshot(in T snapshot)
+        {
+            transform.SetPositionAndRotation(snapshot.Position, Quaternion.Euler(snapshot.Rotation));
+        }
+        
+        public virtual void ApplyInterpolatedSnapshot(in T from, in T to, float t)
+        {
+            Vector3 position = Vector3.Lerp(from.Position, to.Position, t);
+            Quaternion rotation = Quaternion.Slerp(Quaternion.Euler(from.Rotation), Quaternion.Euler(to.Rotation), t);
+            transform.SetPositionAndRotation(position, rotation);
+        }
+        
+
+        public virtual T CaptureSnapshot(uint snapshotTick, uint lastProcessedInputTick = 0)
+        {
+            return new T
+            {
+                EntityId = EntityId,
+                SnapshotTick = snapshotTick,
+                Position = transform.position,
+                Rotation = transform.eulerAngles
+            };
+        }
+        
+        #endregion
+        
+        #region 实体操控方法
+        
+        public void Move(Vector2 direction, float tickDeltaTime)
+        {
+            _movementModule.Move(direction, tickDeltaTime);
         }
 
         public void StartSprint()
         {
-            _movementModule.StartSprint();
+            _movementModule.StartSprint();   
         }
 
         public void StopSprint()
         {
-            _movementModule.StopSprint();
+            _movementModule.StopSprint();   
         }
 
         public void Dash()
@@ -42,28 +74,33 @@ namespace GamePlay.EntitySystem
             _movementModule.Dash();
         }
 
-        public void Rotate(Vector3 dir)
+        public void Rotate(Vector3 direction)
         {
-            _movementModule.Rotate(dir);
+            _movementModule.Rotate(direction);
+        }
+        
+        #endregion
+
+        #region 事件回调
+
+        protected override void OnRoleChanged(NetEntityRole previousRole, NetEntityRole newRole)
+        {
+            base.OnRoleChanged(previousRole, newRole);
+            UpdateSimulationAvailability(newRole);
         }
 
-        public override void SetRole(NetEntityRole role)
-        {
-            base.SetRole(role);
-            _characterController.enabled = role == NetEntityRole.Authority;
-        }
-
+        #endregion
+        
         #region 生命周期
 
-        protected override void Awake()
+        private void Awake()
         {
-            base.Awake();
-
             if (config == null) config = EntityConfig.Instance;
-            
+
             _characterController = GetComponent<CharacterController>();
             _movementModule = new MovementModule();
             _movementModule.Init(_characterController, config, transform);
+            UpdateSimulationAvailability(Role);
         }
 
         #endregion
