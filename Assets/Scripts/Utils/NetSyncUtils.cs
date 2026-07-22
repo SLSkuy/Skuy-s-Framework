@@ -35,7 +35,6 @@ namespace Utils
             return new InputState
             {
                 MoveInput = ToUnity(input.MoveInput),
-                AimInput = ToUnity(input.AimInput)
             };
         }
 
@@ -46,7 +45,6 @@ namespace Utils
                 EntityId = entityId,
                 InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
-                AimInput = ToProto(state.AimInput)
             };
         }
 
@@ -72,6 +70,14 @@ namespace Utils
                 Position = ToUnity(snapshot.Position),
                 Rotation = ToUnity(snapshot.Rotation)
             };
+        }
+
+        /// <summary>
+        /// 计算玩家状态的位置差距
+        /// </summary>
+        public static float SnapshotPosDistance(NetPlayerSnapshot authority, NetPlayerSnapshot predict)
+        {
+            return Vector3.Distance(authority.Position, predict.Position);
         }
     }
 }

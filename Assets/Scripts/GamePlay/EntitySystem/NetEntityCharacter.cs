@@ -28,7 +28,12 @@ namespace GamePlay.EntitySystem
         
         public virtual void ApplySnapshot(in T snapshot)
         {
+            bool controllerWasEnabled = _characterController != null && _characterController.enabled;
+            if (controllerWasEnabled) _characterController.enabled = false;
+
             transform.SetPositionAndRotation(snapshot.Position, Quaternion.Euler(snapshot.Rotation));
+
+            if (controllerWasEnabled) _characterController.enabled = true;
         }
         
         public virtual void ApplyInterpolatedSnapshot(in T from, in T to, float t)

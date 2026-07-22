@@ -20,7 +20,6 @@ namespace GamePlay.NetSync
         private const string PlayerPrefabPath = "Prefabs/NetPlayerCharacter";
 
         private readonly NetClient _netClient;
-        private readonly TickSystem _commandTicks;
         private readonly TickSystem _simulationTicks;
         private readonly Dictionary<uint, RemoteEntry> _remotePlayers = new();
         private readonly HashSet<uint> _snapshotEntities = new();
@@ -45,10 +44,8 @@ namespace GamePlay.NetSync
         {
             _netClient = netClient ?? throw new ArgumentNullException(nameof(netClient));
             SyncConfig config = SyncConfig.Instance;
-            _commandTicks = new TickSystem(config.commandTickRate);
             _simulationTicks = new TickSystem(config.simulationTickRate);
-            _commandTicks.OnTick += SendInput;
-            _simulationTicks.OnTick += Simulate;
+            _simulationTicks.OnTick += SendInput;
         }
 
         public void Start()
@@ -70,7 +67,6 @@ namespace GamePlay.NetSync
             _netClient.RegNetHandler<global::NetSync.Player_Snapshot>(
                 NetEvent.PLAYER_SNAPSHOT,
                 HandlePlayerSnapshot);
-            _commandTicks.Start();
             _simulationTicks.Start();
             _started = true;
         }
@@ -80,7 +76,6 @@ namespace GamePlay.NetSync
             if (!_started) return;
 
             TryJoinGame();
-            _commandTicks.Update(deltaTime);
             _simulationTicks.Update(deltaTime);
         }
 
@@ -105,18 +100,10 @@ namespace GamePlay.NetSync
             if (!IsJoined || !_netClient.HasFastChannel) return;
 
             _inputTick++;
-            InputState input = _localController.OnInputTick(_inputTick, _commandTicks.TickDeltaTime);
+            InputState input = _localController.OnInputTick(_inputTick, _simulationTicks.TickDeltaTime);
             _netClient.Send(
                 NetEvent.PLAYER_INPUT,
                 NetSyncUtils.ToPlayerInput(_localCharacter.EntityId, _inputTick, input));
-        }
-
-        private void Simulate(uint simulationTick)
-        {
-            if (!IsJoined) return;
-            _localController.OnSimulateTick(
-                simulationTick,
-                _simulationTicks.TickDeltaTime);
         }
 
         private void HandleWorldSnapshot(global::NetSync.World_Snapshot world)
@@ -152,7 +139,7 @@ namespace GamePlay.NetSync
             NetPlayerSnapshot snapshot = NetSyncUtils.ToPlayerSnapshot(message);
             if (_localCharacter != null && snapshot.EntityId == _localCharacter.EntityId)
             {
-                _localController.OnAuthoritySnapshot(snapshot);
+                _localController.OnAuthoritySnapshot(snapshot, _simulationTicks.TickDeltaTime);
                 return;
             }
 
@@ -211,10 +198,8 @@ namespace GamePlay.NetSync
         {
             if (!_started) return;
 
-            _commandTicks.Stop();
             _simulationTicks.Stop();
-            _commandTicks.OnTick -= SendInput;
-            _simulationTicks.OnTick -= Simulate;
+            _simulationTicks.OnTick -= SendInput;
             _netClient.UnRegNetHandler(NetEvent.GAME_JOIN_RESPONSE);
             _netClient.UnRegNetHandler(NetEvent.WORLD_SNAPSHOT);
             _netClient.UnRegNetHandler(NetEvent.PLAYER_SNAPSHOT);

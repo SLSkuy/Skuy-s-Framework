@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using Framework;
 
 namespace GamePlay.EntitySystem
@@ -9,6 +10,13 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class ServerPlayerController : AutoEventMonoBehaviour
     {
+        private struct PendingInput
+        {
+            public uint Tick;
+            public InputState State;
+        }
+
+        private readonly Queue<PendingInput> _pendingInputs = new();
         public bool IsReady { get; private set; }
 
         private IPlayerCharacter _character;
@@ -17,8 +25,9 @@ namespace GamePlay.EntitySystem
         // 接收转换后的输入，避免服务端获取摄像机转换，过于麻烦
         private Vector2 _currentTickInput;
         
-        // 输入缓存，采用循环队列的形式保存
+        // 输入缓存，采用循环队列的形式保存，暂不使用
         private InputState[] _inputStates;
+        private uint _latestReceivedInputTick;
         private uint _lastProcessedInputIndex;
         
         // 状态缓存，保存最近1s的状态快照，用于后续延迟补偿，采用循环队列的形式保存，暂不使用
@@ -40,11 +49,10 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void ReceiveInput(uint inputTick, InputState inputState)
         {
-            if (!IsReady || inputTick <= _lastProcessedInputIndex) return;
+            if (!IsReady || inputTick <= _latestReceivedInputTick) return;
             
-            _currentTickInput = inputState.MoveInput;
-            _lastProcessedInputIndex = inputTick;
-            _serverInputProvider?.SetInputState(inputState);
+            _latestReceivedInputTick = inputTick;
+            _pendingInputs.Enqueue(new PendingInput { Tick = inputTick, State = inputState });
         }
 
         /// <summary>
@@ -55,10 +63,20 @@ namespace GamePlay.EntitySystem
         {
             if (!IsReady || _character == null) return;
 
+            // 每个服务端模拟 Tick 只消费一条客户端命令，确保确认 Tick
+            // 与客户端预测/重放的模拟步数保持一一对应。
+            if (_pendingInputs.Count == 0) return;
+
+            PendingInput pendingInput = _pendingInputs.Dequeue();
+            _currentTickInput = pendingInput.State.MoveInput;
+            _serverInputProvider.SetInputState(pendingInput.State);
+
             // 通过Tick驱动获取输入变化，再触发内部事件
             // 若在设置输入状态时直接触发，会扰乱原本的Tick驱动顺序
             _serverInputProvider.CheckDiffFromLastState();
             _character.Move(_currentTickInput, deltaTime);
+            // 只有在本次服务端模拟完成后，才能向客户端确认该输入。
+            _lastProcessedInputIndex = pendingInput.Tick;
         }
 
         public NetPlayerSnapshot CaptureSnapshot(uint simulationTick)

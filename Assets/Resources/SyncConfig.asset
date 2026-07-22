@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: SyncConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.NetSync.SyncConfig
   simulationTickRate: 32
-  commandTickRate: 20
-  snapshotTickRate: 20
+  snapshotTickRate: 16
   interpolationDelayTicks: 3
   maxBufferedInputs: 64

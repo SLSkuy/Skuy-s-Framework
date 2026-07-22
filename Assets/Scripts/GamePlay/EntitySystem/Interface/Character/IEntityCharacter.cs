@@ -48,6 +48,6 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 获取当前Tick对应的快照状态
         /// </summary>
-        T CaptureSnapshot(uint snapshotTick, uint lastProcessedInputTick = 0);
+        T CaptureSnapshot(uint snapshotTick = 0, uint lastProcessedInputTick = 0);
     }
 }

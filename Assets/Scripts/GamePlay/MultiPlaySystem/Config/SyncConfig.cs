@@ -11,9 +11,6 @@ namespace GamePlay.NetSync
     {
         [Header("权威模拟")]
         [Min(1)] public int simulationTickRate = 32;
-
-        [Header("客户端命令")]
-        [Min(1)] public int commandTickRate = 20;
         
         [Header("状态快照")]
         [Min(1)] public int snapshotTickRate = 20;
