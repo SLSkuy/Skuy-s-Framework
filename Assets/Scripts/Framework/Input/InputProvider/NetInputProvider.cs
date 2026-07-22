@@ -13,6 +13,7 @@ namespace Framework
         {
             _previousInputState = _currentInputState;
             _currentInputState = state;
+            CheckDiffFromLastState();
         }
     }
 }

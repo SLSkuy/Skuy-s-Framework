@@ -77,8 +77,8 @@ namespace GamePlay.EntitySystem
                 SnapToDefaultPose();
                 return;
             }
-
-            // 反向应用预测偏移到模型本地坐标，这样模型只需插值到本地初始位置即可
+            
+            // 转换坐标
             if (_hasCapturedPose)
             {
                 modelRoot.SetPositionAndRotation(_capturedWorldPosition, _capturedWorldRotation);

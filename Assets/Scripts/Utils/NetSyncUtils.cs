@@ -35,6 +35,7 @@ namespace Utils
             return new InputState
             {
                 MoveInput = ToUnity(input.MoveInput),
+                AimInput = ToUnity(input.AimInput),
             };
         }
 
@@ -45,6 +46,7 @@ namespace Utils
                 EntityId = entityId,
                 InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
+                AimInput = ToProto(state.AimInput),
             };
         }
 

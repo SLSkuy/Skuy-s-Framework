@@ -15,18 +15,17 @@ namespace GamePlay.EntitySystem
             public uint Tick;
             public InputState State;
         }
-
-        private readonly Queue<PendingInput> _pendingInputs = new();
+        
         public bool IsReady { get; private set; }
 
         private IPlayerCharacter _character;
         private IInputStateProvider _serverInputProvider;
 
         // 接收转换后的输入，避免服务端获取摄像机转换，过于麻烦
-        private Vector2 _currentTickInput;
+        private InputState _currentTickInput;
         
-        // 输入缓存，采用循环队列的形式保存，暂不使用
-        private InputState[] _inputStates;
+        // 输入缓存，暂不使用
+        private readonly Queue<PendingInput> _pendingInputs = new();
         private uint _latestReceivedInputTick;
         private uint _lastProcessedInputIndex;
         
@@ -68,13 +67,12 @@ namespace GamePlay.EntitySystem
             if (_pendingInputs.Count == 0) return;
 
             PendingInput pendingInput = _pendingInputs.Dequeue();
-            _currentTickInput = pendingInput.State.MoveInput;
+            _currentTickInput = pendingInput.State;
             _serverInputProvider.SetInputState(pendingInput.State);
-
-            // 通过Tick驱动获取输入变化，再触发内部事件
-            // 若在设置输入状态时直接触发，会扰乱原本的Tick驱动顺序
-            _serverInputProvider.CheckDiffFromLastState();
-            _character.Move(_currentTickInput, deltaTime);
+            
+            // 模拟当前输入
+            SimulateCharacter(_currentTickInput, deltaTime);
+            
             // 只有在本次服务端模拟完成后，才能向客户端确认该输入。
             _lastProcessedInputIndex = pendingInput.Tick;
         }
@@ -85,12 +83,22 @@ namespace GamePlay.EntitySystem
         }
 
         #region 事件订阅
+        
+        private void SimulateCharacter(InputState inputState, float deltaTime)
+        {
+            OnMove(inputState.MoveInput, deltaTime);
+            OnAim(inputState.AimInput);
+        }
 
         // TODO: 先保证最小同步原型，之同步位置和旋转，不做其他的同步
-        [AutoEvent("OnMove", nameof(_serverInputProvider))]
-        private void OnMoveEvent(Vector2 moveInput)
+        private void OnMove(Vector2 moveInput, float deltaTime)
         {
-            _currentTickInput = moveInput;
+            _character.Move(moveInput, deltaTime);
+        }
+
+        private void OnAim(Vector2 aimInput)
+        {
+            _character.Rotate(aimInput);
         }
 
         #endregion

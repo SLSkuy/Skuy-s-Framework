@@ -85,6 +85,7 @@ namespace GamePlay.EntitySystem
         {
             InputState input = _inputProvider.GetInputState();
             input.MoveInput = GetMappedDirection(input.MoveInput);
+            input.AimInput = GetMappedDirection(input.AimInput);
             
             // 记录当前输入Tick，用于接收权威状态后判断预测了多少Tick
             _currentInputTick = inputTick;
@@ -100,8 +101,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         private void Predict(uint inputTick, float deltaTime)
         {
-            // 立刻模拟移动
-            _character.Move(_currentInputState.MoveInput, deltaTime);
+            // 立刻模拟
+            SimulateCharacter(_currentInputState, deltaTime);
 
             // 防止还未初始化完毕
             if (_predictFrames == null) return;
@@ -125,8 +126,12 @@ namespace GamePlay.EntitySystem
             if (authorityTick <= _lastProcessedInputTick) return;
             _lastProcessedInputTick = authorityTick;
 
+            // 防止还未初始化完毕
+            if (_predictFrames == null) return;
+            int index = (int)(_currentInputTick % (uint)_predictFrames.Length);
+            
             // 获取预测快照
-            NetPlayerSnapshot predict = _character.CaptureSnapshot();
+            NetPlayerSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             _visualSmoother?.CaptureBeforeCorrection();
 
@@ -137,10 +142,10 @@ namespace GamePlay.EntitySystem
             Reply(deltaTime);
 
             // 获取权威修正后的重放快照
-            NetPlayerSnapshot replayedSnapshot = _character.CaptureSnapshot();
+            NetPlayerSnapshot replayedSnapshot = _predictFrames[index].Snapshot;
             
             // 开始和解
-            Reconciliation(predict, replayedSnapshot);
+            Reconciliation(predictSnapshot, replayedSnapshot);
         }
 
         /// <summary>
@@ -158,7 +163,7 @@ namespace GamePlay.EntitySystem
                     break;
             
                 // 更新模拟状态
-                _character.Move(frame.Input.MoveInput, deltaTime);
+                SimulateCharacter(frame.Input, deltaTime);
                 frame.Snapshot = _character.CaptureSnapshot();
                 _predictFrames[index] = frame;
             }
@@ -167,11 +172,55 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 和解，计算预测状态与权威状态间的差距，进行处理
         /// </summary>
-        private void Reconciliation(NetPlayerSnapshot predict, NetPlayerSnapshot replayedSnapshot)
+        private void Reconciliation(NetPlayerSnapshot predictSnapshot, NetPlayerSnapshot replayedSnapshot)
         {
-            _visualSmoother?.ApplyCorrectionOffset(predict, replayedSnapshot);
+            _visualSmoother?.ApplyCorrectionOffset(predictSnapshot, replayedSnapshot);
         }
         
+        #endregion
+
+        #region 角色控制
+
+        private void SimulateCharacter(InputState inputState, float deltaTime)
+        {
+            OnMove(inputState.MoveInput, deltaTime);
+            OnMouseAim(inputState.AimInput);
+        }
+
+        private void OnMove(Vector2 moveInput, float deltaTime)
+        {
+            _character.Move(moveInput, deltaTime);
+        }
+        
+        /// <summary>
+        /// 手柄瞄准使用
+        /// </summary>
+        private void OnAim(Vector2 aimDirection)
+        {
+            if (aimDirection == Vector2.zero)
+            {
+                return;
+            }
+            
+            Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y);
+            _character.Rotate(targetPosition);
+        }
+
+        /// <summary>
+        /// 鼠标瞄准使用
+        /// </summary>
+        private void OnMouseAim(Vector2 aimDirection)
+        {
+            if (aimDirection == Vector2.zero)
+            {
+                return;
+            }
+            
+            // 构成朝向方向向量
+            Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y) - transform.position;
+            _character.Rotate(targetPosition);
+        }
+
         #endregion
 
         #region 生命周期
