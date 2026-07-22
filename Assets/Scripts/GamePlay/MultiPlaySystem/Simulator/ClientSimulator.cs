@@ -163,7 +163,10 @@ namespace GamePlay.NetSync
             _localCharacter.Init(entityId, NetEntityRole.Predict);
             _localInput = _localPlayerObject.AddComponent<LocalInputProvider>();
             _localController = _localPlayerObject.AddComponent<ClientPlayerController>();
-            _localController.Configure(_localCharacter, _localInput);
+            NetworkVisualSmoother visualSmoother =
+                _localPlayerObject.GetComponent<NetworkVisualSmoother>();
+            visualSmoother?.BeginFollowing();
+            _localController.Configure(_localCharacter, _localInput, visualSmoother);
         }
 
         private RemoteEntry SpawnRemotePlayer(uint entityId, Vector3 position)

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6192362820729347585}
   - component: {fileID: 2400904818044064074}
   - component: {fileID: 8992146448826366284}
+  - component: {fileID: 6454160528175109321}
   m_Layer: 0
   m_Name: NetPlayerCharacter
   m_TagString: Untagged
@@ -74,6 +75,24 @@ MonoBehaviour:
   entityId: 0
   role: 0
   config: {fileID: 0}
+--- !u!114 &6454160528175109321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151657255374227713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a07f5b9c12434e8a79c182db2f1a60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetworkVisualSmoother
+  modelRoot: {fileID: 8473385151109934883}
+  positionSharpness: 16
+  rotationSharpness: 16
+  minSmoothDistance: 0.01
+  minSmoothAngle: 0.25
+  maxSmoothDistance: 2
 --- !u!1 &970524763303755433
 GameObject:
   m_ObjectHideFlags: 0

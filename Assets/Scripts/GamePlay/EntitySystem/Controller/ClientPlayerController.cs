@@ -23,6 +23,7 @@ namespace GamePlay.EntitySystem
         
         private IPlayerCharacter _character;
         private IInputStateProvider _inputProvider;
+        private NetworkVisualSmoother _visualSmoother;
         private Transform _cameraTransform;
 
         /// <summary>
@@ -35,10 +36,12 @@ namespace GamePlay.EntitySystem
         private uint _lastProcessedInputTick;
         private uint _currentInputTick;
 
-        public void Configure(IPlayerCharacter character, IInputStateProvider inputProvider)
+        public void Configure(IPlayerCharacter character, IInputStateProvider inputProvider,
+            NetworkVisualSmoother visualSmoother)
         {
             _character = character;
             _inputProvider = inputProvider;
+            _visualSmoother = visualSmoother;
         }
         
         /// <summary>
@@ -99,6 +102,9 @@ namespace GamePlay.EntitySystem
         {
             // 立刻模拟移动
             _character.Move(_currentInputState.MoveInput, deltaTime);
+
+            // 防止还未初始化完毕
+            if (_predictFrames == null) return;
             
             // 记录当前预测对应的信息
             int index = (int)(inputTick % (uint)_predictFrames.Length);
@@ -122,6 +128,8 @@ namespace GamePlay.EntitySystem
             // 获取预测快照
             NetPlayerSnapshot predict = _character.CaptureSnapshot();
 
+            _visualSmoother?.CaptureBeforeCorrection();
+
             // 应用快照状态
             _character.ApplySnapshot(snapshot);
             
@@ -129,10 +137,10 @@ namespace GamePlay.EntitySystem
             Reply(deltaTime);
 
             // 获取权威修正后的重放快照
-            NetPlayerSnapshot authority = _character.CaptureSnapshot();
+            NetPlayerSnapshot replayedSnapshot = _character.CaptureSnapshot();
             
             // 开始和解
-            Reconciliation(predict, authority, deltaTime);
+            Reconciliation(predict, replayedSnapshot);
         }
 
         /// <summary>
@@ -159,9 +167,9 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 和解，计算预测状态与权威状态间的差距，进行处理
         /// </summary>
-        private void Reconciliation(NetPlayerSnapshot predict, NetPlayerSnapshot authority, float deltaTime)
+        private void Reconciliation(NetPlayerSnapshot predict, NetPlayerSnapshot replayedSnapshot)
         {
-            // TODO: 先把预测，重放写好了来
+            _visualSmoother?.ApplyCorrectionOffset(predict, replayedSnapshot);
         }
         
         #endregion
@@ -183,7 +191,9 @@ namespace GamePlay.EntitySystem
                 }
             }
             
-            Global.Get<CameraManager>()?.SetTarget(transform);
+            // 相机不要跟随Tick驱动的权威位置，而是跟随插值驱动的渲染节点，减少卡顿
+            Transform cameraTarget = _visualSmoother != null ? _visualSmoother.VisualRoot : transform;
+            Global.Get<CameraManager>()?.SetTarget(cameraTarget);
             
             base.Start();
         }

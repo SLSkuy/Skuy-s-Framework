@@ -22,6 +22,12 @@ namespace GamePlay.EntitySystem
         {
             if (_characterController == null) return;
             _characterController.enabled = entityRole is NetEntityRole.Authority or NetEntityRole.Predict;
+            if (entityRole is NetEntityRole.Replica)
+            {
+                var col = gameObject.AddComponent<CapsuleCollider>();
+                col.height = _characterController.height;
+                col.radius = _characterController.radius;
+            }
         }
         
         #region 快照管理
