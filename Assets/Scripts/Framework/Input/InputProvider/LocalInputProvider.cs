@@ -25,10 +25,9 @@ namespace Framework
         public LocalInputType currentInputMap = LocalInputType.Player;
         private Dictionary<LocalInputType, InputActionMap> _actionMap;
         private Camera _mainCamera;
-        private bool _isInitialized;
 
         /// <summary>
-        /// 鼠标面准事件
+        /// 鼠标瞄准事件
         /// </summary>
         public event Action<Vector2> OnMouseAim;
 
@@ -39,8 +38,6 @@ namespace Framework
 
         private void OnEnable()
         {
-            if(!_isInitialized) Init();
-            
             _actionMap[currentInputMap].Enable();
         }
 
@@ -52,19 +49,8 @@ namespace Framework
         private void Update()
         {
             UpdateOriginPlayerActionInput();
+            UpdateMouseAimInput();
             CheckDiffFromLastState();
-
-            // 鼠标设备单独处理输入
-            if (deviceType == InputDeviceType.KeyboardAndMouse)
-            {
-                Vector2 mousePos = Vector2.zero;
-                if (ScreenUtils.TryGetMouseWorldPosition(_mainCamera, out Vector3 mousePosition))
-                {
-                    mousePos = new Vector2(mousePosition.x, mousePosition.z);
-                }
-
-                OnMouseAim?.Invoke(mousePos);
-            }
         }
 
         private void Init()
@@ -77,19 +63,11 @@ namespace Framework
             RegisterInputAction(LocalInputType.Player, PlayerActions);
             RegisterInputAction(LocalInputType.UI, UIActions);
 
-            // 如果是键盘输入，禁用Aim输出，采用鼠标射线检测
-            if (deviceType == InputDeviceType.KeyboardAndMouse)
-            {
-                PlayerActions.Aim.Disable();
-            }
-            
             // 如果没有设置相机，自动查找主相机
-            if (_mainCamera == null)
+            if (!_mainCamera)
             {
                 _mainCamera = Camera.main;
             }
-
-            _isInitialized = true;
         }
 
         public void RegisterInputAction(LocalInputType type, InputActionMap action)
@@ -113,13 +91,32 @@ namespace Framework
             
             // 获取当前帧中输入
             _currentInputState.MoveInput = PlayerActions.Move.ReadValue<Vector2>();
-            _currentInputState.AimInput = PlayerActions.Aim.ReadValue<Vector2>();
+            Vector2 aimInput = PlayerActions.Aim.ReadValue<Vector2>();
+            if (deviceType == InputDeviceType.GamePad) aimInput = TransformUtils.MapInputToWorldDirection2D(aimInput, _mainCamera.transform);
+            _currentInputState.AimInput = aimInput;
             _currentInputState.IsPrimaryAttackPressed = PlayerActions.PrimaryAttack.IsPressed();
             _currentInputState.IsSpecialAttackPressed = PlayerActions.SpecialAttack.IsPressed();
             _currentInputState.IsSpecialActionPressed = PlayerActions.SpecialAction.IsPressed();
             _currentInputState.IsInteractPressed = PlayerActions.Interact.IsPressed();
             _currentInputState.IsSprintPressed = PlayerActions.Sprint.IsPressed();
             _currentInputState.IsDashPressed = PlayerActions.Dash.IsPressed();
+        }
+
+        /// <summary>
+        /// 将鼠标位置转换为世界空间瞄准方向，并写入可捕获的输入状态。
+        /// </summary>
+        private void UpdateMouseAimInput()
+        {
+            if (deviceType != InputDeviceType.KeyboardAndMouse) return;
+            Vector2 aimDirection = Vector2.zero;
+            if (ScreenUtils.TryGetMouseWorldPosition(_mainCamera, out Vector3 mousePosition))
+            {
+                Vector3 direction = mousePosition - transform.position;
+                aimDirection = new Vector2(direction.x, direction.z).normalized;
+            }
+
+            _currentInputState.AimInput = aimDirection;
+            OnMouseAim?.Invoke(aimDirection);
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ namespace Utils
         {
             position = default;
 
-            if (!camera) return false;
+            if (!camera || Mouse.current == null) return false;
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = camera.ScreenPointToRay(mousePos);

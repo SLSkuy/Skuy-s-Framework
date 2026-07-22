@@ -85,7 +85,6 @@ namespace GamePlay.EntitySystem
         {
             InputState input = _inputProvider.GetInputState();
             input.MoveInput = GetMappedDirection(input.MoveInput);
-            input.AimInput = GetMappedDirection(input.AimInput);
             
             // 记录当前输入Tick，用于接收权威状态后判断预测了多少Tick
             _currentInputTick = inputTick;
@@ -184,7 +183,7 @@ namespace GamePlay.EntitySystem
         private void SimulateCharacter(InputState inputState, float deltaTime)
         {
             OnMove(inputState.MoveInput, deltaTime);
-            OnMouseAim(inputState.AimInput);
+            OnAim(inputState.AimInput);
         }
 
         private void OnMove(Vector2 moveInput, float deltaTime)
@@ -193,7 +192,7 @@ namespace GamePlay.EntitySystem
         }
         
         /// <summary>
-        /// 手柄瞄准使用
+        /// 使用世界空间方向瞄准
         /// </summary>
         private void OnAim(Vector2 aimDirection)
         {
@@ -203,21 +202,6 @@ namespace GamePlay.EntitySystem
             }
             
             Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y);
-            _character.Rotate(targetPosition);
-        }
-
-        /// <summary>
-        /// 鼠标瞄准使用
-        /// </summary>
-        private void OnMouseAim(Vector2 aimDirection)
-        {
-            if (aimDirection == Vector2.zero)
-            {
-                return;
-            }
-            
-            // 构成朝向方向向量
-            Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y) - transform.position;
             _character.Rotate(targetPosition);
         }
 

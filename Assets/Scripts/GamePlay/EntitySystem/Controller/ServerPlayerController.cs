@@ -98,7 +98,8 @@ namespace GamePlay.EntitySystem
 
         private void OnAim(Vector2 aimInput)
         {
-            _character.Rotate(aimInput);
+            Vector3 aimDirection = new Vector3(aimInput.x, 0f, aimInput.y);
+            _character.Rotate(aimDirection);
         }
 
         #endregion
