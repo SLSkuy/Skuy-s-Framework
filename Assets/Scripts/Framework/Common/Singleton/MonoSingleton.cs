@@ -30,9 +30,9 @@ namespace Framework
                 {
                     if (!_instance)
                     {
-                        _instance = FindFirstObjectByType<T>();
+                        _instance = FindAnyObjectByType<T>();
 
-                        if (FindObjectsByType<T>(FindObjectsSortMode.InstanceID).Length > 1)
+                        if (FindAnyObjectByType<T>())
                         {
                             Debug.LogError("[Singleton] Multiple instances of " + typeof(T) + " found!");
                             return _instance;
@@ -68,7 +68,7 @@ namespace Framework
                 Destroy(gameObject);
                 return;
             }
-
+            
             Init();
         }
 
