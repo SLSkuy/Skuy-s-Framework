@@ -1,7 +1,6 @@
 using UnityEngine;
 using Framework;
 using UIFramework;
-using GamePlay.NetSync;
 
 namespace Core
 {
