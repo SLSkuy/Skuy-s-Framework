@@ -40,6 +40,7 @@ namespace UIFramework
         {
             // 获取UI容器
             _container = Global.Instantiate("UI/UIManager").transform;
+            _container.name = "[UIRoot]";
             Object.DontDestroyOnLoad(_container);
             
             // 初始化Panel层级管理器

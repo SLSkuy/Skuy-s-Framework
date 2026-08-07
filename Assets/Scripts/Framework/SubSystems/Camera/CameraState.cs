@@ -2,6 +2,7 @@
 {
     public enum GameCameraState
     {
-        Normal
+        Normal,
+        ShoulderAiming,
     }
 }

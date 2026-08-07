@@ -14,5 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.CameraSystem.CameraConfig
   cameras:
   - state: 0
-    camera: {fileID: 6658394986820878825, guid: 1a7704b56e721264b92b4362339238f9, type: 3}
+    camera: {fileID: 7964976121750435660, guid: 19b3253930b339e449e336c185f4c47d, type: 3}
+    priority: 1
+  - state: 1
+    camera: {fileID: 959988043601731130, guid: 7b3668c0e7928404cbcedd2c0d4e5683, type: 3}
     priority: 0
