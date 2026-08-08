@@ -1,18 +1,16 @@
-﻿using UnityEngine;
-using Framework.FiniteStateMachine;
+﻿using Framework.StateMachine;
+using UnityEngine;
 
 namespace Framework
 {
     /// <summary>
     /// 全局游戏状态：游戏中
     /// </summary>
-    public class GamingState : StateBase<GameState>
+    public class GamingState : EnumStateBase<GameState>
     {
-        public override GameState StateKey => GameState.Gaming;
+        public override int StateKey => (int)GameState.Gaming;
 
-        public GamingState(StateMachine<GameState> stateMachine) : base(stateMachine)
-        {
-        }
+        public GamingState(EnumStateMachine<GameState> enumStateMachine) : base(enumStateMachine) { }
 
         public override void Enter()
         {

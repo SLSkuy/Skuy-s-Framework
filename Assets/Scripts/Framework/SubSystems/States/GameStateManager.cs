@@ -1,6 +1,6 @@
 using System;
 using EventProcess;
-using Framework.FiniteStateMachine;
+using Framework.StateMachine;
 
 namespace Framework
 {
@@ -12,7 +12,7 @@ namespace Framework
         public override SubSystemPriority Priority => SubSystemPriority.GameStateManager;
         public GameState CurrentState => _fsm.CurrentState;
         
-        private StateMachine<GameState> _fsm;
+        private EnumStateMachine<GameState> _fsm;
 
         #region 事件
         public event Action<GameStateEvent.StateChangeData> OnGameStateChange;
@@ -52,7 +52,7 @@ namespace Framework
         
         public override void Init()
         {
-            _fsm = new StateMachine<GameState>();
+            _fsm = new EnumStateMachine<GameState>();
             _fsm.OnStateChange += DispatchStateChangeEvent;
             RegisterStates();
             _fsm.ChangeState(GameState.MainMenu);

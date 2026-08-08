@@ -1,20 +1,20 @@
 ﻿using System;
 
-namespace Framework.FiniteStateMachine
+namespace Framework.StateMachine
 {
     /// <summary>
     /// 状态机状态基类
     /// </summary>
     /// <typeparam name="TEnum"></typeparam>
-    public abstract class StateBase<TEnum> : IState<TEnum> where TEnum : Enum
+    public abstract class EnumStateBase<TEnum> : IEnumState where TEnum : Enum
     {
-        public abstract TEnum StateKey { get; }
+        public abstract int StateKey { get; }
 
-        protected StateMachine<TEnum> StateMachine;
+        protected EnumStateMachine<TEnum> _stateMachine;
 
-        protected StateBase(StateMachine<TEnum> stateMachine)
+        protected EnumStateBase(EnumStateMachine<TEnum> stateMachine)
         {
-            StateMachine = stateMachine;
+            _stateMachine = stateMachine;
         }
 
         public virtual void Enter()

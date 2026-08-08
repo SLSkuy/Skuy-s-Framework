@@ -1,16 +1,14 @@
-﻿using Framework.FiniteStateMachine;
+﻿using Framework.StateMachine;
 
 namespace Framework
 {
     /// <summary>
     /// 全局游戏状态：主菜单
     /// </summary>
-    public class MainMenuState : StateBase<GameState>
+    public class MainMenuState : EnumStateBase<GameState>
     {
-        public override GameState StateKey => GameState.MainMenu;
+        public override int StateKey => (int)GameState.MainMenu;
 
-        public MainMenuState(StateMachine<GameState> manager) : base(manager)
-        {
-        }
+        public MainMenuState(EnumStateMachine<GameState> manager) : base(manager) { }
     }
 }

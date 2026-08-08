@@ -1,4 +1,4 @@
-﻿using Framework.FiniteStateMachine;
+﻿using Framework.StateMachine;
 using UnityEngine;
 
 namespace Framework
@@ -6,13 +6,11 @@ namespace Framework
     /// <summary>
     /// 全局游戏状态：暂停
     /// </summary>
-    public class PauseState : StateBase<GameState>
+    public class PauseState : EnumStateBase<GameState>
     {
-        public override GameState StateKey => GameState.GamePaused;
+        public override int StateKey => (int)GameState.GamePaused;
 
-        public PauseState(StateMachine<GameState> stateManager) : base(stateManager)
-        {
-        }
+        public PauseState(EnumStateMachine<GameState> enumStateManager) : base(enumStateManager) { }
 
         public override void Enter()
         {

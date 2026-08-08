@@ -1,4 +1,4 @@
-using Framework.FiniteStateMachine;
+using Framework.StateMachine;
 using UnityEngine;
 
 namespace Framework
@@ -6,13 +6,11 @@ namespace Framework
     /// <summary>
     /// 全局游戏状态：加载中
     /// </summary>
-    public class LoadingState : StateBase<GameState>
+    public class LoadingState : EnumStateBase<GameState>
     {
-        public override GameState StateKey => GameState.Loading;
+        public override int StateKey => (int)GameState.Loading;
 
-        public LoadingState(StateMachine<GameState> stateMachine) : base(stateMachine)
-        {
-        }
+        public LoadingState(EnumStateMachine<GameState> enumStateMachine) : base(enumStateMachine) { }
 
         public override void Enter()
         {
