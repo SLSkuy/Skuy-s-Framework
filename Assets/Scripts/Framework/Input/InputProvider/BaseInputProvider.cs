@@ -16,7 +16,7 @@ namespace Framework
         public bool IsSpecialActionPressed => _currentInputState.IsSpecialActionPressed;
         public bool IsInteractPressed => _currentInputState.IsInteractPressed;
         public bool IsSprintPressed => _currentInputState.IsSprintPressed;
-        public bool IsDashPressed => _currentInputState.IsDashPressed;
+        public bool IsJumpPressed => _currentInputState.IsJumpPressed;
         #endregion
         
         /// <summary>
@@ -38,8 +38,7 @@ namespace Framework
         public event Action OnInteractReleased;
         public event Action OnSprintPressed;
         public event Action OnSprintReleased;
-        public event Action OnDashPressed;
-        public event Action OnDashReleased;
+        public event Action OnJump;
         #endregion
         
         /// <summary>
@@ -79,10 +78,8 @@ namespace Framework
             else if (!_currentInputState.IsSprintPressed && _previousInputState.IsSprintPressed)
                 OnSprintReleased?.Invoke();
             
-            if(_currentInputState.IsDashPressed && !_previousInputState.IsDashPressed)
-                OnDashPressed?.Invoke();
-            else if (!_currentInputState.IsDashPressed && _previousInputState.IsDashPressed)
-                OnDashReleased?.Invoke();
+            if(_currentInputState.IsJumpPressed && !_previousInputState.IsJumpPressed)
+                OnJump?.Invoke();
         }
         
         /// <summary>

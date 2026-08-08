@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
   walkSpeed: 5
   sprintSpeed: 10
+  jumpCount: 2
+  jumpSpeed: 6
   dashSpeed: 20
   dashDuration: 0.3
-  gravity: 9.8
+  aimHorizontalSpeed: 90
+  aimVerticalSpeed: 60
+  minAimPitch: -40
+  maxAimPitch: 70
+  gravity: 14
   maxFallSpeed: 20

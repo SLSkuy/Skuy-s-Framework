@@ -54,8 +54,6 @@ namespace Core
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
-            
-            // 业务逻辑
         }
 
         /// <summary>

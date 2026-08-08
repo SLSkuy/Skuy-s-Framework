@@ -71,12 +71,7 @@ namespace Framework
         /// <summary>
         /// 冲刺按下事件
         /// </summary>
-        event Action OnDashPressed;
-        
-        /// <summary>
-        /// 冲刺释放事件
-        /// </summary>
-        event Action OnDashReleased;
+        event Action OnJump;
         
         /// <summary>
         /// 获取当前的输入状态

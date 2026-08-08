@@ -16,7 +16,7 @@ namespace Framework
         public bool IsSpecialActionPressed { get; set; }
         public bool IsInteractPressed { get; set; }
         public bool IsSprintPressed { get; set; }
-        public bool IsDashPressed { get; set; }
+        public bool IsJumpPressed { get; set; }
 
         public InputState(IInputProvider provider)
         {
@@ -27,7 +27,7 @@ namespace Framework
             IsSpecialActionPressed = provider.IsSpecialActionPressed;
             IsInteractPressed = provider.IsInteractPressed;
             IsSprintPressed = provider.IsSprintPressed;
-            IsDashPressed = provider.IsDashPressed;
+            IsJumpPressed = provider.IsJumpPressed;
         }
     }
 }

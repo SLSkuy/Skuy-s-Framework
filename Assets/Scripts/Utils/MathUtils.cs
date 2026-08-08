@@ -40,8 +40,7 @@ namespace Utils
         /// </summary>
         public static Vector2 SafeNormalize(Vector2 vector)
         {
-            if (vector.sqrMagnitude < Mathf.Epsilon)
-                return Vector2.zero;
+            if (vector.sqrMagnitude < Mathf.Epsilon) return Vector2.zero;
             return vector.normalized;
         }
         
@@ -59,8 +58,7 @@ namespace Utils
         /// </summary>
         public static Vector3 SafeNormalize(Vector3 vector)
         {
-            if (vector.sqrMagnitude < Mathf.Epsilon)
-                return Vector3.zero;
+            if (vector.sqrMagnitude < Mathf.Epsilon) return Vector3.zero;
             return vector.normalized;
         }
         
@@ -70,6 +68,17 @@ namespace Utils
         public static float Cross(float2 left, float2 right)
         {
             return left.x * right.y - left.y * right.x;
+        }
+
+        /// <summary>
+        /// 标准化角度
+        /// </summary>
+        public static float NormalizeAngle(float angle)
+        {
+            angle %= 360f;
+            if (angle > 180f) angle -= 360f;
+            else if (angle < -180f) angle += 360f;
+            return angle;
         }
     }
 }

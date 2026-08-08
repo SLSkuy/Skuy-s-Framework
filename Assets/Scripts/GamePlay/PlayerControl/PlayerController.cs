@@ -21,15 +21,26 @@ namespace GamePlay.EntitySystem
         {
             _character.Aim(aim);
         }
+
+        [AutoEvent("OnJump", nameof(_inputProvider))]
+        private void Jump()
+        {
+            _character.Jump();
+        }
         
         #endregion
         
         #region 生命周期
-
-        private void Awake()
+        
+        protected override void Start()
         {
             _character = GetComponent<EntityCharacter>();
             _inputProvider = GetComponent<IInputStateProvider>();
+            
+            Cursor.lockState = CursorLockMode.Locked;
+            Global.Get<CameraManager>().SetTarget(transform.Find("orientation"));
+            
+            base.Start();
         }
 
         #endregion

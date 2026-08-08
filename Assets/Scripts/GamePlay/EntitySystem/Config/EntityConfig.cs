@@ -9,11 +9,16 @@ namespace GamePlay.EntitySystem
         [Header("基础实体属性")] 
         public float walkSpeed = 5f;
         public float sprintSpeed = 10f;
+        public int jumpCount = 2;
+        public float jumpSpeed = 12f;
         public float dashSpeed = 20f;
         public float dashDuration = 0.3f;
 
         [Header("旋转属性")]
-        [Min(0f)] public float rotationSpeed = 720f;
+        [Min(0f)] public float aimHorizontalSpeed = 180f;
+        [Min(0f)] public float aimVerticalSpeed = 120f;
+        public float minAimPitch = -40f;
+        public float maxAimPitch = 70f;
 
         [Header("物理属性")] 
         public float gravity = 12f;

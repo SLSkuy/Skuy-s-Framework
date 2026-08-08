@@ -10,12 +10,9 @@ namespace Framework
     /// </summary>
     public class LocalInputProvider : BaseInputProvider
     {
-        [Header("输入设备配置")]
-        public InputDeviceType deviceType = InputDeviceType.KeyboardAndMouse;
-        
-        public PlayerInputActions InputActions { get; private set; }
-        public PlayerInputActions.PlayerActions PlayerActions { get; private set; }
-        public PlayerInputActions.UIActions UIActions { get; private set; }
+        private PlayerInputActions _inputActions;
+        private PlayerInputActions.PlayerActions _playerActions;
+        private PlayerInputActions.UIActions _uiActions;
 
         /// <summary>
         /// 当前启用的ActionMap
@@ -26,12 +23,12 @@ namespace Framework
         private void Init()
         {
             _actionMap = new Dictionary<LocalInputType, InputActionMap>();
-            InputActions = new PlayerInputActions();
-            PlayerActions = InputActions.Player;
-            UIActions = InputActions.UI;
+            _inputActions = new PlayerInputActions();
+            _playerActions = _inputActions.Player;
+            _uiActions = _inputActions.UI;
             
-            RegisterInputAction(LocalInputType.Player, PlayerActions);
-            RegisterInputAction(LocalInputType.UI, UIActions);
+            RegisterInputAction(LocalInputType.Player, _playerActions);
+            RegisterInputAction(LocalInputType.UI, _uiActions);
         }
 
         public void RegisterInputAction(LocalInputType type, InputActionMap action)
@@ -43,25 +40,6 @@ namespace Framework
         public void UnregisterInputAction(LocalInputType type)
         {
             _actionMap.Remove(type);
-        }
-
-        /// <summary>
-        /// 更新本地玩家控制输入
-        /// </summary>
-        private void UpdateOriginPlayerActionInput()
-        {
-            // 缓存上一帧输入，用于检测需要触发哪些事件
-            _previousInputState = _currentInputState;
-            
-            // 获取当前帧中输入
-            _currentInputState.MoveInput = PlayerActions.Move.ReadValue<Vector2>();
-            _currentInputState.AimInput = PlayerActions.Aim.ReadValue<Vector2>();
-            _currentInputState.IsPrimaryAttackPressed = PlayerActions.PrimaryAttack.IsPressed();
-            _currentInputState.IsSpecialAttackPressed = PlayerActions.SpecialAttack.IsPressed();
-            _currentInputState.IsSpecialActionPressed = PlayerActions.SpecialAction.IsPressed();
-            _currentInputState.IsInteractPressed = PlayerActions.Interact.IsPressed();
-            _currentInputState.IsSprintPressed = PlayerActions.Sprint.IsPressed();
-            _currentInputState.IsDashPressed = PlayerActions.Dash.IsPressed();
         }
 
         /// <summary>
@@ -103,6 +81,25 @@ namespace Framework
             actionMap.Disable();
             yield return new WaitForSeconds(sec);
             actionMap.Enable();
+        }
+        
+        /// <summary>
+        /// 更新本地玩家控制输入
+        /// </summary>
+        private void UpdateOriginPlayerActionInput()
+        {
+            // 缓存上一帧输入，用于检测需要触发哪些事件
+            _previousInputState = _currentInputState;
+            
+            // 获取当前帧中输入
+            _currentInputState.MoveInput = _playerActions.Move.ReadValue<Vector2>();
+            _currentInputState.AimInput = _playerActions.Aim.ReadValue<Vector2>();
+            _currentInputState.IsPrimaryAttackPressed = _playerActions.PrimaryAttack.IsPressed();
+            _currentInputState.IsSpecialAttackPressed = _playerActions.SpecialAttack.IsPressed();
+            _currentInputState.IsSpecialActionPressed = _playerActions.SpecialAction.IsPressed();
+            _currentInputState.IsInteractPressed = _playerActions.Interact.IsPressed();
+            _currentInputState.IsSprintPressed = _playerActions.Sprint.IsPressed();
+            _currentInputState.IsJumpPressed = _playerActions.Jump.IsPressed();
         }
 
         #region 生命周期

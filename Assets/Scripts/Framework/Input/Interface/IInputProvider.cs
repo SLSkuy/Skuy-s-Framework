@@ -40,8 +40,8 @@ namespace Framework
         bool IsSprintPressed { get; }
         
         /// <summary>
-        /// 冲刺输入
+        /// 跳跃输入
         /// </summary>
-        bool IsDashPressed { get; }
+        bool IsJumpPressed { get; }
     }
 }

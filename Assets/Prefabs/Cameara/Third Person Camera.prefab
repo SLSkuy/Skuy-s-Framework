@@ -89,7 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 625c14eee3ad46c99df7c7c891ef668a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineThirdPersonFollow
-  Damping: {x: 0.05, y: 0.1, z: 0.05}
+  Damping: {x: 0, y: 0, z: 0}
   ShoulderOffset: {x: 0.45, y: 0, z: 0}
   VerticalArmLength: 0
   CameraSide: 1
