@@ -27,6 +27,19 @@ namespace GamePlay.EntitySystem
         {
             _character.Jump();
         }
+
+        [AutoEvent("OnSprintPressed", nameof(_inputProvider))]
+        private void SprintPressed()
+        {
+            _character.StartSprint();
+            _character.Dash();
+        }
+
+        [AutoEvent("OnSprintReleased", nameof(_inputProvider))]
+        private void SprintReleased()
+        {
+            _character.StopSprint();
+        }
         
         #endregion
         

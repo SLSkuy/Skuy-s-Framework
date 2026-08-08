@@ -24,14 +24,15 @@ namespace GamePlay.EntitySystem
 
         // 位移控制
         private Vector2 _lastMoveInput;
-        private Vector2 _lastMoveDir;
-        private float _locomotionMultiplier;
+        private Vector3 _lastMoveDir;
+        private float _locomotionSpeed;
         private float _verticalVelocity;
         
         // 跳跃控制
         private int _jumpCount;
 
         // 冲刺控制
+        private Vector3 _dashDir;
         private float _dashAccumulator;
         private bool _isSprinting;
         private bool _isDashing;
@@ -43,8 +44,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Simulate(float deltaTime)
         {
-            ApplyGravity(deltaTime);
             Rotate(deltaTime);
+            ApplyGravity(deltaTime);
             Locomotion(deltaTime);
         }
 
@@ -58,14 +59,22 @@ namespace GamePlay.EntitySystem
                     OnDashComplete();
                 }
             }
+            else
+            {
+                // 将移动方向调整为当前视角朝向
+                Vector3 forward = _orientation.forward; forward.y = 0; forward.Normalize();
+                Vector3 right = _orientation.right; right.y = 0; right.Normalize();
+                _lastMoveDir = forward * _lastMoveInput.y + right * _lastMoveInput.x;
+                
+                // 防止斜向移动速度加快（什么起源引擎）
+                _lastMoveDir = Vector3.ClampMagnitude(_lastMoveDir,1);
+            }
             
-            // 将移动方向调整为当前视角朝向
-            Vector3 faceDir = _orientation.forward * _lastMoveInput.y + _orientation.right * _lastMoveInput.x;
-            _lastMoveDir = new Vector2(faceDir.x, faceDir.z);
-
+            Vector3 moveDir = _isDashing ? _dashDir : _lastMoveDir;
+            
             // 限制最大掉落速度
-            if(_verticalVelocity <= -config.maxFallSpeed) _verticalVelocity = -config.maxFallSpeed;
-            Vector3 velocity = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.y) * _locomotionMultiplier;
+            if(_verticalVelocity < -config.maxFallSpeed) _verticalVelocity = -config.maxFallSpeed;
+            Vector3 velocity = new Vector3(moveDir.x, 0f, moveDir.z) * _locomotionSpeed;
             velocity.y = _verticalVelocity;
 
             _characterController.Move(velocity * deltaTime);
@@ -128,20 +137,28 @@ namespace GamePlay.EntitySystem
         
         public void StartSprint()
         {
+            if(!_characterController.isGrounded) return;
+            
+            _isSprinting = true;
+            
             if (_isDashing) return;
-
-            _locomotionMultiplier = config.sprintSpeed;
+            
+            _locomotionSpeed = config.sprintSpeed;
         }
 
         public void StopSprint()
         {
+            _isSprinting = false;
+            
             if (_isDashing) return;
-
-            _locomotionMultiplier = config.walkSpeed;
+            
+            _locomotionSpeed = config.walkSpeed;
         }
         
         public void Jump()
         {
+            if (_isDashing) return;
+            
             if (_jumpCount >= config.jumpCount) return;
             
             _jumpCount++;
@@ -152,16 +169,26 @@ namespace GamePlay.EntitySystem
         public void Dash()
         {
             if (_isDashing) return;
+            
+            if (!_characterController.isGrounded) return;
+            
+            // 如果没有输入，则按当前朝向进行冲刺
+            Vector3 forward = _orientation.forward; forward.y=0; forward.Normalize();
+            Vector3 right = _orientation.right; right.y=0; right.Normalize();
+            Vector3 dashDir = forward * _lastMoveInput.y + right * _lastMoveInput.x;
+            if(dashDir.sqrMagnitude < Mathf.Epsilon) dashDir = forward;
+
+            _dashDir = Vector3.ClampMagnitude(dashDir, 1f);
 
             _isDashing = true;
-            _locomotionMultiplier = config.dashSpeed;
+            _locomotionSpeed = config.dashSpeed;
             _dashAccumulator = config.dashDuration;
         }
 
         private void OnDashComplete()
         {
             _isDashing = false;
-            _locomotionMultiplier = config.walkSpeed;
+            _locomotionSpeed = _isSprinting ? config.sprintSpeed : config.walkSpeed;
         }
 
         #endregion
@@ -170,12 +197,12 @@ namespace GamePlay.EntitySystem
 
         private void Awake()
         {
-            _characterController = GetComponent<CharacterController>();
-            
             _orientation = transform.Find("orientation").transform;
             _mesh = transform.Find("mesh").transform;
-
-            _locomotionMultiplier = config.walkSpeed;
+            
+            _characterController = GetComponent<CharacterController>();
+            
+            _locomotionSpeed = config.walkSpeed;
         }
 
         private void Update()
