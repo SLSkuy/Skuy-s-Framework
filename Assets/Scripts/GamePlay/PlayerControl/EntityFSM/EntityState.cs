@@ -5,6 +5,7 @@
     /// </summary>
     public static class EntityState
     {
-        public const uint IDLE = 1;
+        public const uint IDLE = 0;
+        public const uint WALK = 1;
     }
 }
