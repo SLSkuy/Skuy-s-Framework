@@ -49,7 +49,6 @@ namespace GamePlay.EntitySystem
             transform.SetPositionAndRotation(position, rotation);
         }
         
-
         public virtual T CaptureSnapshot(uint snapshotTick, uint lastProcessedInputTick = 0)
         {
             return new T

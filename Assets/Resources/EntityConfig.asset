@@ -16,3 +16,5 @@ MonoBehaviour:
   sprintSpeed: 10
   dashSpeed: 20
   dashDuration: 0.3
+  gravity: 9.8
+  maxFallSpeed: 20

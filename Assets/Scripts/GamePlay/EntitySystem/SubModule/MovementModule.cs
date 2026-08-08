@@ -82,7 +82,6 @@ namespace GamePlay.EntitySystem
 
         public void Rotate(Vector3 direction)
         {
-            direction.y = 0f;
             if (direction != Vector3.zero)
             {
                 _transform.rotation = Quaternion.LookRotation(direction);

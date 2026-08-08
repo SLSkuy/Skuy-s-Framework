@@ -12,6 +12,9 @@ namespace GamePlay.EntitySystem
         public float dashSpeed = 20f;
         public float dashDuration = 0.3f;
 
+        [Header("旋转属性")]
+        [Min(0f)] public float rotationSpeed = 720f;
+
         [Header("物理属性")] 
         public float gravity = 12f;
         public float maxFallSpeed = 20f;
