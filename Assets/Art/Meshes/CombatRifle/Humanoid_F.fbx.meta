@@ -1,77 +1,38 @@
 fileFormatVersion: 2
-guid: 495b83a394c5cec429dd0df10492ed56
+guid: b02f7765ace5dff4a866b767512e4a05
 ModelImporter:
-  serializedVersion: 24501
+  serializedVersion: 21300
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: body
-    second: {fileID: 2100000, guid: a0c52d6d266b48d45ae6256ec61b1e44, type: 2}
+      name: Humanoid_Body_Metal
+    second: {fileID: 2100000, guid: 917480fb281ff9541bd3a89120ebb720, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: body1
-    second: {fileID: 2100000, guid: decbb63bff5274d4baf621e27831f926, type: 2}
+      name: Humanoid_Body_Plastic
+    second: {fileID: 2100000, guid: cbed5c9206e01a14a837e5b5a1eb446a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: clos1
-    second: {fileID: 2100000, guid: c7bc6660a08107a48943bb7dba3cdb15, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: clos2
-    second: {fileID: 2100000, guid: 13da7ad12bfd6f341b8cfec73bd78b2e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: eye
-    second: {fileID: 2100000, guid: 0ff6053c47d7c60489b4c04df43013c0, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: face
-    second: {fileID: 2100000, guid: fcb455e3fc03c0b428a50dd6590c3f1f, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: glass
-    second: {fileID: 2100000, guid: ea96ddddc4304374690e4cf37323ea8b, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: glass2
-    second: {fileID: 2100000, guid: af233940813107342a5467afefb3f242, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: hair1
-    second: {fileID: 2100000, guid: ea888a316be32604aa8b5e3b35b58275, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: hair2
-    second: {fileID: 2100000, guid: 539e04e98fc52614dbba7d490ddab9da, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: light
-    second: {fileID: 2100000, guid: 48ceed85b363e7e4fac74f53e2406e94, type: 2}
+      name: Humanoid_Face
+    second: {fileID: 2100000, guid: 43923a31077d0024498b345fd1be457a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
-    removeConstantScaleCurves: 0
+    removeConstantScaleCurves: 1
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -94,7 +55,6 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
-    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
@@ -112,11 +72,6 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
-    generateMeshLods: 0
-    meshLodGenerationFlags: 0
-    maximumMeshLod: -1
-    importUVs: -1
-    importVertexColors: 1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -127,7 +82,6 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
-    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -136,7 +90,6 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-    calculateBlendshapeNormalsDeltaFromImportedNormals: 0
   referencedClips: []
   importAnimation: 1
   humanDescription:
@@ -161,7 +114,6 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
-  importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 
