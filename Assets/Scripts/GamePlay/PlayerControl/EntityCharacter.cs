@@ -77,8 +77,9 @@ namespace GamePlay.EntitySystem
 
             if (config == null) config = EntityConfig.Instance;
 
-            // 初始化组件
-            _context = new EntityContext(config, controller, orientation, mesh);
+            // 初始化组件：Motor 持有跨状态共享的物理状态，Context 聚合所有宿主数据
+            EntityMotor motor = new EntityMotor(controller, config, orientation, mesh);
+            _context = new EntityContext(config, controller, motor);
 
             // 初始化状态
             RegisterStates();

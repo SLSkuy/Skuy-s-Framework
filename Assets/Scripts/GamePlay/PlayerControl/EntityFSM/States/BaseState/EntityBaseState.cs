@@ -1,5 +1,4 @@
 using Framework.StateMachine;
-using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
@@ -11,16 +10,10 @@ namespace GamePlay.EntitySystem
         protected readonly EntityContext Context;
 
         #region 状态属性
-        protected CharacterController Controller => Context.Controller;
         protected EntityConfig Config => Context.Config;
-        protected Transform Orientation => Context.Orientation;
-        protected Transform Mesh => Context.Mesh;
-        
-        protected bool IsGrounded => Context.IsGrounded;
-        protected bool IsDashing => Context.IsDashing;
-        protected bool IsSprinting => Context.IsSprinting;
+        protected EntityMotor Motor => Context.Motor;
         #endregion
-        
+
         protected EntityBaseState(EntityContext context) : base(context.StateMachine)   // 通用基类依旧只看到状态机
         {
             Context = context;

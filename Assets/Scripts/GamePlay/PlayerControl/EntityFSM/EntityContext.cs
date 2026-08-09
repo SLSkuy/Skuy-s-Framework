@@ -11,8 +11,7 @@ namespace GamePlay.EntitySystem
         public readonly ExtendableStateMachine<uint> StateMachine;
         public readonly CharacterController Controller;
         public readonly EntityConfig Config;
-        public readonly Transform Orientation; // 视角变换
-        public readonly Transform Mesh;        // 模型变换
+        public readonly EntityMotor Motor;     // 运动执行器（持有跨状态共享的物理状态）
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
@@ -27,16 +26,13 @@ namespace GamePlay.EntitySystem
         #region 持续状态
         public bool IsGrounded => Controller.isGrounded;
         public bool IsSprinting;
-        public bool IsDashing;
         #endregion
 
-        public EntityContext(EntityConfig config, CharacterController controller,
-            Transform orientationTransform, Transform meshTransform)
+        public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor)
         {
             StateMachine = new ExtendableStateMachine<uint>();
             Controller = controller;
-            Orientation = orientationTransform;
-            Mesh = meshTransform;
+            Motor = motor;
             Config = config;
         }
 
