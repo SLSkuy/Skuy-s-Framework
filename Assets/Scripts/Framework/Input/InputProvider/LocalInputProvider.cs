@@ -100,6 +100,7 @@ namespace Framework
             _currentInputState.IsInteractPressed = _playerActions.Interact.IsPressed();
             _currentInputState.IsSprintPressed = _playerActions.Sprint.IsPressed();
             _currentInputState.IsJumpPressed = _playerActions.Jump.IsPressed();
+            _currentInputState.IsSwitchModePressed = _playerActions.SwitchMode.IsPressed();
         }
 
         #region 生命周期

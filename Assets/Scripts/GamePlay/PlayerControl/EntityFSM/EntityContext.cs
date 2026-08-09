@@ -18,14 +18,16 @@ namespace GamePlay.EntitySystem
 
         // 瞬时状态需要每Tick结束重置
         #region 瞬时状态
-        public bool DashRequest;
+        public bool RunToggleRequest;         // 奔跑模式切换请求（toggle：按一次在 walk/run 之间切换）
+        public bool DashRequest;              // 暂时屏蔽 dash，保留字段供未来恢复
         public bool JumpRequest;
         #endregion
 
-        // 持续状态由外部进行控制
+        // 持续状态：由 Controller/状态机写入，跨 Tick 保持
         #region 持续状态
         public bool IsGrounded => Controller.isGrounded;
-        public bool IsSprinting;
+        public bool IsSprinting;             // Sprint 键是否按住（hold-to-sprint，持续型输入，由 Controller 写入）
+        public bool IsRunning;                // 当前是否处于奔跑模式（walk/run toggle，默认 false=walk）
         #endregion
 
         public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor)
@@ -38,10 +40,11 @@ namespace GamePlay.EntitySystem
 
         /// <summary>
         /// 在 Tick 末尾调用，清除瞬时边沿标志
-        /// 持续型输入（MoveInput/AimInput/IsSprintPressed）不清除
+        /// 持续型输入（MoveInput/AimInput/IsSprintHeld/IsRunning）不清除
         /// </summary>
         public void ResetFrameFlags()
         {
+            RunToggleRequest = false;
             DashRequest = false;
             JumpRequest = false;
         }

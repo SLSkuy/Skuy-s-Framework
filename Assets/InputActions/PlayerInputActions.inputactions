@@ -62,7 +62,7 @@
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Hold",
+                    "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
                 },
@@ -80,6 +80,16 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "a690c738-ceae-4721-ac61-6f509b9f633d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "SwitchMode",
+                    "type": "Button",
+                    "id": "18c5cf5b-8c1c-4b9f-ac2c-51999571866e",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -393,6 +403,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4c607f36-fbd6-4cf1-b3e7-99a9ad6b6e22",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchMode",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

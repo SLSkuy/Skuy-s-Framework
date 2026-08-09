@@ -17,6 +17,7 @@ namespace Framework
         public bool IsInteractPressed => _currentInputState.IsInteractPressed;
         public bool IsSprintPressed => _currentInputState.IsSprintPressed;
         public bool IsJumpPressed => _currentInputState.IsJumpPressed;
+        public bool IsSwitchModePressed => _currentInputState.IsSwitchModePressed;
         #endregion
         
         /// <summary>
@@ -39,6 +40,7 @@ namespace Framework
         public event Action OnSprintPressed;
         public event Action OnSprintReleased;
         public event Action OnJump;
+        public event Action OnSwitchModePressed;
         #endregion
         
         /// <summary>
@@ -80,6 +82,9 @@ namespace Framework
             
             if(_currentInputState.IsJumpPressed && !_previousInputState.IsJumpPressed)
                 OnJump?.Invoke();
+            
+            if(_currentInputState.IsSwitchModePressed && !_previousInputState.IsSwitchModePressed)
+                OnSwitchModePressed?.Invoke();
         }
         
         /// <summary>

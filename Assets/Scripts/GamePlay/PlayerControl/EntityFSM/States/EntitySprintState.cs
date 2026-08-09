@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace GamePlay.EntitySystem
 {
     /// <summary>
@@ -22,11 +20,9 @@ namespace GamePlay.EntitySystem
         {
             if (CheckGroundTransitions()) return;
 
-            // 释放疾跑或停止移动时切回
-            if (!IsSprinting || LastMoveInput == Vector2.zero)
-            {
-                _stateMachine.ChangeState(LastMoveInput != Vector2.zero ? EntityState.WALK : EntityState.IDLE);
-            }
+            // 松开 Sprint 键或停止移动时，回到当前档位对应地面状态（RUN/WALK/IDLE）；
+            // 仍按住 Sprint 且在移动则留在 SPRINT。
+            _stateMachine.ChangeState(GetGroundMoveState());
         }
 
         #endregion

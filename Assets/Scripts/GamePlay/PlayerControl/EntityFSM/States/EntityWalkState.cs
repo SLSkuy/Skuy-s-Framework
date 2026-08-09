@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace GamePlay.EntitySystem
 {
     /// <summary>
@@ -22,16 +20,9 @@ namespace GamePlay.EntitySystem
         {
             if (CheckGroundTransitions()) return;
 
-            if (IsSprinting && LastMoveInput != Vector2.zero)
-            {
-                _stateMachine.ChangeState(EntityState.SPRINT);
-                return;
-            }
-
-            if (LastMoveInput == Vector2.zero)
-            {
-                _stateMachine.ChangeState(EntityState.IDLE);
-            }
+            // 档位变化（toggle→RUN / 按住 sprint→SPRINT / 停止→IDLE）时切换；
+            // 仍处于 WALK 时 ChangeState 自身会被忽略。
+            _stateMachine.ChangeState(GetGroundMoveState());
         }
 
         #endregion

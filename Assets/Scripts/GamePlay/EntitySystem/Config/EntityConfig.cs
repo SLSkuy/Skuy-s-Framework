@@ -7,7 +7,8 @@ namespace GamePlay.EntitySystem
     public class EntityConfig : ScriptableObjectSingleton<EntityConfig>
     {
         [Header("基础实体属性")] 
-        public float walkSpeed = 5f;
+        public float walkSpeed = 3f;
+        public float runSpeed = 5f;
         public float sprintSpeed = 10f;
         public int jumpCount = 2;
         public float jumpSpeed = 12f;

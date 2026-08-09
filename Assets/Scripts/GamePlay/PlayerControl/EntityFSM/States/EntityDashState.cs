@@ -33,6 +33,10 @@ namespace GamePlay.EntitySystem
                 {
                     _stateMachine.ChangeState(EntityState.SPRINT);
                 }
+                else if (Context.IsRunning && Context.LastMoveInput != Vector2.zero)
+                {
+                    _stateMachine.ChangeState(EntityState.RUN);
+                }
                 else if (Context.LastMoveInput != Vector2.zero)
                 {
                     _stateMachine.ChangeState(EntityState.WALK);

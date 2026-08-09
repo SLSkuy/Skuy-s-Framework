@@ -40,6 +40,12 @@ namespace GamePlay.EntitySystem
             _character.StopSprint();
         }
 
+        [AutoEvent("OnSwitchModePressed", nameof(_inputProvider))]
+        private void SwitchModePressed()
+        {
+            _character.ToggleRun();
+        }
+
         #endregion
 
         #region 生命周期

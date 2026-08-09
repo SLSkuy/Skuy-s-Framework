@@ -31,15 +31,29 @@ namespace GamePlay.EntitySystem
             _context.JumpRequest = true;
         }
 
+        /// <summary>
+        /// 按下 Sprint 键（持续型）：进入疾跑，由状态机在 CheckStateChange 中决策是否进 SPRINT。
+        /// </summary>
         public void StartSprint()
         {
             _context.IsSprinting = true;
-            _context.DashRequest = true;
         }
 
+        /// <summary>
+        /// 松开 Sprint 键：退出疾跑，回到当前档位（RUN/WALK/IDLE）。
+        /// </summary>
         public void StopSprint()
         {
             _context.IsSprinting = false;
+        }
+
+        /// <summary>
+        /// 切换奔跑模式（toggle）：按一次在 walk/run 之间切换。
+        /// 实际切换由状态机 Tick 统一处理 IsRunning 翻转。
+        /// </summary>
+        public void ToggleRun()
+        {
+            _context.RunToggleRequest = true;
         }
 
         #endregion
@@ -57,14 +71,17 @@ namespace GamePlay.EntitySystem
         }
         
         /// <summary>
-        /// 注册实体状态，可拓展注册状态
+        /// 注册实体状态，可拓展注册状态。
+        /// 注：Dash 状态当前已屏蔽（CheckGroundTransitions 中 DashRequest 分支注释），
+        /// 同步移除注册以彻底禁用；恢复时取消注释并在此重新注册即可。
         /// </summary>
         protected virtual void RegisterStates()
         {
             _context.StateMachine.RegisterState(new EntityIdleState(_context));
             _context.StateMachine.RegisterState(new EntityWalkState(_context));
+            _context.StateMachine.RegisterState(new EntityRunState(_context));
             _context.StateMachine.RegisterState(new EntitySprintState(_context));
-            _context.StateMachine.RegisterState(new EntityDashState(_context));
+            // _context.StateMachine.RegisterState(new EntityDashState(_context));
             _context.StateMachine.RegisterState(new EntityAirborneState(_context));
         }
 

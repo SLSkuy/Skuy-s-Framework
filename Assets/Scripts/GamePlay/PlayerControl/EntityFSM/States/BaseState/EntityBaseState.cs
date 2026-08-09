@@ -17,7 +17,9 @@ namespace GamePlay.EntitySystem
         protected Vector2 LastAimInput => Context.LastAimInput;
         protected bool IsGrounded => Context.IsGrounded;
         protected bool IsDashing => Context.Motor.IsDashing;
-        protected bool IsSprinting => Context.IsSprinting;
+        protected bool IsSprinting => Context.IsSprinting;   // Sprint 键按住（持续型）
+        protected bool IsRunning => Context.IsRunning;         // 奔跑模式（walk/run toggle 持续型）
+        protected bool RunToggleRequest => Context.RunToggleRequest;  // 奔跑 toggle 瞬时请求
         protected bool JumpRequest => Context.JumpRequest;
         protected bool DashRequest => Context.DashRequest;
         #endregion

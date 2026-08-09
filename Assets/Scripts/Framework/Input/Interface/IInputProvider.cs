@@ -43,5 +43,10 @@ namespace Framework
         /// 跳跃输入
         /// </summary>
         bool IsJumpPressed { get; }
+        
+        /// <summary>
+        /// 切换行走模式输入
+        /// </summary>
+        bool IsSwitchModePressed { get; }
     }
 }
