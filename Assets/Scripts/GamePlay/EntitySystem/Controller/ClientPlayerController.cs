@@ -202,7 +202,7 @@ namespace GamePlay.EntitySystem
             }
             
             Vector3 targetPosition = new Vector3(aimDirection.x, 0, aimDirection.y);
-            _character.Rotate(targetPosition);
+            _character.Aim(targetPosition);
         }
 
         #endregion

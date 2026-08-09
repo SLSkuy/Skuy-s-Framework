@@ -1,4 +1,4 @@
-﻿using Framework;
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     {
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
-        
+
         #region 实体控制
         
         [AutoEvent("OnMove", nameof(_inputProvider))]
@@ -25,14 +25,13 @@ namespace GamePlay.EntitySystem
         [AutoEvent("OnJump", nameof(_inputProvider))]
         private void Jump()
         {
-            _character.Jump();
+            
         }
 
         [AutoEvent("OnSprintPressed", nameof(_inputProvider))]
         private void SprintPressed()
         {
             _character.StartSprint();
-            _character.Dash();
         }
 
         [AutoEvent("OnSprintReleased", nameof(_inputProvider))]
@@ -40,19 +39,19 @@ namespace GamePlay.EntitySystem
         {
             _character.StopSprint();
         }
-        
+
         #endregion
-        
+
         #region 生命周期
-        
+
         protected override void Start()
         {
             _character = GetComponent<EntityCharacter>();
             _inputProvider = GetComponent<IInputStateProvider>();
-            
+
             Cursor.lockState = CursorLockMode.Locked;
             Global.Get<CameraManager>().SetTarget(transform.Find("orientation"));
-            
+
             base.Start();
         }
 

@@ -1,210 +1,90 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体角色基类，提供一系列移动控制基础方法
+    /// 实体角色基类，装配状态机并暴露输入写入接口。
+    /// 旧版的动作型接口（Move/Aim/Jump/Dash/StartSprint/StopSprint）已被
+    /// "输入数据 + 状态机自驱"模式取代：Controller 只写入输入数据，行为决策权在状态机。
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class EntityCharacter : MonoBehaviour
     {
         [SerializeField] protected EntityConfig config;
 
-        private CharacterController _characterController;
-
-        // 根节点只负责位置控制，不负责旋转
-        private Transform _orientation; // 视角变换
-        private Transform _mesh;   // 模型变换
-
-        // 朝向控制
-        private Vector2 _lastAimInput;
-        private Quaternion _lastFaceDir;
-        private float _yaw;
-        private float _pitch;
-
-        // 位移控制
-        private Vector2 _lastMoveInput;
-        private Vector3 _lastMoveDir;
-        private float _locomotionSpeed;
-        private float _verticalVelocity;
+        private EntityContext _context;
         
-        // 跳跃控制
-        private int _jumpCount;
-
-        // 冲刺控制
-        private Vector3 _dashDir;
-        private float _dashAccumulator;
-        private bool _isSprinting;
-        private bool _isDashing;
-
-        #region 模拟入口
-
-        /// <summary>
-        /// 模拟运动入口，便于Tick驱动
-        /// </summary>
-        public void Simulate(float deltaTime)
-        {
-            Rotate(deltaTime);
-            ApplyGravity(deltaTime);
-            Locomotion(deltaTime);
-        }
-
-        private void Locomotion(float deltaTime)
-        {
-            if (_isDashing)
-            {
-                _dashAccumulator -= deltaTime;
-                if (_dashAccumulator <= 0f)
-                {
-                    OnDashComplete();
-                }
-            }
-            else
-            {
-                // 将移动方向调整为当前视角朝向
-                Vector3 forward = _orientation.forward; forward.y = 0; forward.Normalize();
-                Vector3 right = _orientation.right; right.y = 0; right.Normalize();
-                _lastMoveDir = forward * _lastMoveInput.y + right * _lastMoveInput.x;
-                
-                // 防止斜向移动速度加快（什么起源引擎）
-                _lastMoveDir = Vector3.ClampMagnitude(_lastMoveDir,1);
-            }
-            
-            Vector3 moveDir = _isDashing ? _dashDir : _lastMoveDir;
-            
-            // 限制最大掉落速度
-            if(_verticalVelocity < -config.maxFallSpeed) _verticalVelocity = -config.maxFallSpeed;
-            Vector3 velocity = new Vector3(moveDir.x, 0f, moveDir.z) * _locomotionSpeed;
-            velocity.y = _verticalVelocity;
-
-            _characterController.Move(velocity * deltaTime);
-        }
-
-        /// <summary>
-        /// 视角即刻转换，模型朝向则根据选择进行插值或即刻旋转
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        private void Rotate(float deltaTime)
-        {
-            if (_lastAimInput.sqrMagnitude < Mathf.Epsilon) return;
-            
-            // 计算俯仰角
-            _yaw += _lastAimInput.x * config.aimHorizontalSpeed * deltaTime;
-            _pitch -= _lastAimInput.y * config.aimVerticalSpeed * deltaTime;
-            _pitch = Mathf.Clamp(_pitch, config.minAimPitch, config.maxAimPitch);
-
-            _lastFaceDir = Quaternion.Euler(_pitch, _yaw, 0f);
-            _orientation.rotation = _lastFaceDir;
-            
-            // 模型旋转，当前立即转向视角朝向
-            _mesh.rotation = Quaternion.Euler(0, _yaw, 0f);
-        }
-
-        private void ApplyGravity(float deltaTime)
-        {
-            // 重力计算
-            if (_characterController.isGrounded)
-            {
-                if (_verticalVelocity < 0f)
-                {
-                    _verticalVelocity = -1f; // 防止奇怪的抽动，添加一个默认的向下速度
-                    _jumpCount = 0; // 滞空跳跃累计次数
-                }
-            }
-            else
-            {
-                if(_jumpCount < 1) _jumpCount = 1;   // 从边缘坠落时只允许跳跃一次
-                
-                _verticalVelocity -= config.gravity * deltaTime;
-            }
-        }
-
-        #endregion
-
         #region 实体控制
 
         public void Move(Vector2 dir)
         {
-            if (_isDashing) return;
-            
-            _lastMoveInput = dir;
+            _context.LastMoveInput = dir;
         }
 
-        public void Aim(Vector2 aim)
+        public void Aim(Vector2 dir)
         {
-            _lastAimInput = aim;
+            _context.LastAimInput = dir;
         }
-        
+
+        public void Jump()
+        {
+            _context.JumpRequest = true;
+        }
+
         public void StartSprint()
         {
-            if(!_characterController.isGrounded) return;
-            
-            _isSprinting = true;
-            
-            if (_isDashing) return;
-            
-            _locomotionSpeed = config.sprintSpeed;
+            _context.IsSprinting = true;
+            _context.DashRequest = true;
         }
 
         public void StopSprint()
         {
-            _isSprinting = false;
-            
-            if (_isDashing) return;
-            
-            _locomotionSpeed = config.walkSpeed;
+            _context.IsSprinting = false;
+        }
+
+        #endregion
+
+        #region 模拟入口
+
+        /// <summary>
+        /// 推进状态机一帧，并清除瞬时输入标志
+        /// 由 Update 自动调用；外部 Tick 驱动场景（如网络层）
+        /// </summary>
+        public void Simulate(float deltaTime)
+        {
+            _context.StateMachine.Update(deltaTime);
+            _context.ResetFrameFlags();
         }
         
-        public void Jump()
+        /// <summary>
+        /// 注册实体状态，可拓展注册状态
+        /// </summary>
+        protected virtual void RegisterStates()
         {
-            if (_isDashing) return;
-            
-            if (_jumpCount >= config.jumpCount) return;
-            
-            _jumpCount++;
-            
-            _verticalVelocity = config.jumpSpeed;
-        }
-
-        public void Dash()
-        {
-            if (_isDashing) return;
-            
-            if (!_characterController.isGrounded) return;
-            
-            // 如果没有输入，则按当前朝向进行冲刺
-            Vector3 forward = _orientation.forward; forward.y=0; forward.Normalize();
-            Vector3 right = _orientation.right; right.y=0; right.Normalize();
-            Vector3 dashDir = forward * _lastMoveInput.y + right * _lastMoveInput.x;
-            if(dashDir.sqrMagnitude < Mathf.Epsilon) dashDir = forward;
-
-            _dashDir = Vector3.ClampMagnitude(dashDir, 1f);
-
-            _isDashing = true;
-            _locomotionSpeed = config.dashSpeed;
-            _dashAccumulator = config.dashDuration;
-        }
-
-        private void OnDashComplete()
-        {
-            _isDashing = false;
-            _locomotionSpeed = _isSprinting ? config.sprintSpeed : config.walkSpeed;
+            _context.StateMachine.RegisterState(new EntityIdleState(_context));
+            _context.StateMachine.RegisterState(new EntityWalkState(_context));
         }
 
         #endregion
 
         #region 生命周期
 
-        private void Awake()
+        private void Start()
         {
-            _orientation = transform.Find("orientation").transform;
-            _mesh = transform.Find("mesh").transform;
-            
-            _characterController = GetComponent<CharacterController>();
-            
-            _locomotionSpeed = config.walkSpeed;
-        }
+            CharacterController controller = GetComponent<CharacterController>();
+            Transform orientation = transform.Find("orientation");
+            Transform mesh = transform.Find("mesh");
 
+            if (config == null) config = EntityConfig.Instance;
+
+            // 初始化组件
+            _context = new EntityContext(config, controller, orientation, mesh);
+
+            // 初始化状态
+            RegisterStates();
+            _context.StateMachine.ChangeState(EntityState.IDLE);
+        }
+        
         private void Update()
         {
             Simulate(Time.deltaTime);

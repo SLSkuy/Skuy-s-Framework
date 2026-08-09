@@ -109,6 +109,7 @@ HybridCLRData/
 .vscode
 .idea
 .trae
+.codex
 .cursorignore
 UserSettings
 tools

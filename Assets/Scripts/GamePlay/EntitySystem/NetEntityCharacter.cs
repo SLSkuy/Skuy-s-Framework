@@ -84,7 +84,7 @@ namespace GamePlay.EntitySystem
             _movementModule.Dash();
         }
 
-        public void Rotate(Vector3 direction)
+        public void Aim(Vector3 direction)
         {
             _movementModule.Rotate(direction);
         }

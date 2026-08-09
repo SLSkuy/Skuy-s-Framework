@@ -1,4 +1,4 @@
-﻿using Framework.StateMachine;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
@@ -8,7 +8,24 @@ namespace GamePlay.EntitySystem
     public class EntityIdleState : EntityLocomotionState
     {
         public override uint StateKey => EntityState.IDLE;
-        
-        public EntityIdleState(ExtendableStateMachine<uint> stateMachine) : base(stateMachine) { }
+
+        public EntityIdleState(EntityContext context) : base(context) { }
+
+        #region 状态控制
+
+        public override void Enter()
+        {
+            _locomotionSpeed = 0;
+        }
+
+        protected override void CheckStateChange()
+        {
+            if (Context.LastMoveInput != Vector2.zero)
+            {
+                _stateMachine.ChangeState(EntityState.WALK);
+            }
+        }
+
+        #endregion
     }
 }

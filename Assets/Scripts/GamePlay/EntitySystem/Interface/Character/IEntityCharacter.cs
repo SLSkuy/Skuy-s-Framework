@@ -33,7 +33,7 @@ namespace GamePlay.EntitySystem
         /// 朝设定位置旋转
         /// </summary>
         /// <param name="dir">目标朝向</param>
-        void Rotate(Vector3 dir);
+        void Aim(Vector3 dir);
         
         /// <summary>
         /// 直接应用快照状态

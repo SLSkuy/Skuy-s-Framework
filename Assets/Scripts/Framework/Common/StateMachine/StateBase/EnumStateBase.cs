@@ -27,9 +27,26 @@ namespace Framework.StateMachine
 
         }
 
-        public virtual void Update(float deltaTime)
+        public void Update(float deltaTime)
         {
+            Tick(deltaTime);
+            CheckStateChange();
+        }
 
+        /// <summary>
+        /// 状态机Tick逻辑处理
+        /// </summary>
+        protected virtual void Tick(float deltaTime)
+        {
+            
+        }
+
+        /// <summary>
+        /// 检测状态变换
+        /// </summary>
+        protected virtual void CheckStateChange()
+        {
+            
         }
 
         public virtual void FixedUpdate(float fixedDeltaTime)
