@@ -1,4 +1,4 @@
-﻿using Framework;
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     [CreateAssetMenu(fileName = "EntityConfig", menuName = "GamePlay/EntityConfig")]
     public class EntityConfig : ScriptableObjectSingleton<EntityConfig>
     {
-        [Header("基础实体属性")] 
+        [Header("基础实体属性")]
         public float walkSpeed = 3f;
         public float runSpeed = 5f;
         public float sprintSpeed = 8f;

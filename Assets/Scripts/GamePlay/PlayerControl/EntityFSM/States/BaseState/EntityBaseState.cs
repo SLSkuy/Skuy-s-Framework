@@ -15,6 +15,7 @@ namespace GamePlay.EntitySystem
         protected EntityMotor Motor => Context.Motor;
         protected Vector2 LastMoveInput => Context.LastMoveInput;
         protected Vector2 LastAimInput => Context.LastAimInput;
+        protected float LocomotionSpeed => Context.locomotionSpeed;
         protected bool IsGrounded => Context.IsGrounded;
         protected bool IsDashing => Context.Motor.IsDashing;
         protected bool IsSprinting => Context.IsSprinting;   // Sprint 键按住（持续型）

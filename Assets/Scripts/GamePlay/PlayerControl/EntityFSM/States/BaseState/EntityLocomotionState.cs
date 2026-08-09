@@ -3,30 +3,17 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体运动状态基类，统一编排每帧的运动调用（旋转 + 位移 + 重力）。
     /// 物理状态由 EntityMotor 集中持有跨状态共享。
-    /// _locomotionSpeed 为状态目标速度，由派生状态在 Enter 时设定。
     /// </summary>
     public abstract class EntityLocomotionState : EntityBaseState
     {
-        /// <summary>
-        /// 当前状态的目标移动速度，由派生状态在 Enter 时设置
-        /// </summary>
-        protected float _locomotionSpeed;
-
         protected EntityLocomotionState(EntityContext context) : base(context) { }
 
         #region 状态控制
 
         protected override void Tick(float dt)
         {
-            // 奔跑模式切换（toggle）：在所有运动状态中统一处理，保证地面/空中均能响应。
-            // 切换 IsRunning 后由各状态 CheckStateChange 决定是否流转 WALK/RUN。
-            if (RunToggleRequest)
-            {
-                Context.IsRunning = !Context.IsRunning;
-            }
-
             Motor.Rotate(Context.LastAimInput, dt);
-            Motor.Move(Context.LastMoveInput, _locomotionSpeed, dt);
+            Motor.Move(Context.LastMoveInput, LocomotionSpeed, dt);
         }
 
         /// <summary>
@@ -36,6 +23,12 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected bool CheckGroundTransitions()
         {
+            // 奔跑模式切换（toggle）
+            if (RunToggleRequest)
+            {
+                Context.IsRunning = !Context.IsRunning;
+            }
+            
             if (!IsGrounded)
             {
                 _stateMachine.ChangeState(EntityState.AIRBORNE);

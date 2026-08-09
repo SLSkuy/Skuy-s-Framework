@@ -14,7 +14,7 @@ namespace GamePlay.EntitySystem
         public EntityAirborneState(EntityContext context) : base(context) { }
 
         #region 状态控制
-        
+
         protected override void CheckStateChange()
         {
             // 空中二段跳（不切状态，Motor 内部判定 jumpCount 上限）

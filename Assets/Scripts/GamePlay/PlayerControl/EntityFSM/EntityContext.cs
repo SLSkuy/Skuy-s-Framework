@@ -25,6 +25,8 @@ namespace GamePlay.EntitySystem
 
         // 持续状态：由 Controller/状态机写入，跨 Tick 保持
         #region 持续状态
+        public float locomotionSpeed;
+        
         public bool IsGrounded => Controller.isGrounded;
         public bool IsSprinting;
         public bool IsRunning;

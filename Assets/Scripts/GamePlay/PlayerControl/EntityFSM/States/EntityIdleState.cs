@@ -15,7 +15,7 @@ namespace GamePlay.EntitySystem
 
         public override void Enter()
         {
-            _locomotionSpeed = 0;
+            Context.locomotionSpeed = 0;
         }
 
         protected override void CheckStateChange()

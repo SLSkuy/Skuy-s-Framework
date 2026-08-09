@@ -15,7 +15,7 @@ namespace GamePlay.EntitySystem
 
         public override void Enter()
         {
-            _locomotionSpeed = Config.walkSpeed;
+            Context.locomotionSpeed = Config.walkSpeed;
         }
 
         protected override void CheckStateChange()
