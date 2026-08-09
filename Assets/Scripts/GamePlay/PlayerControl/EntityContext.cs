@@ -11,15 +11,15 @@ namespace GamePlay.EntitySystem
         public readonly ExtendableStateMachine<uint> StateMachine;
         public readonly CharacterController Controller;
         public readonly EntityConfig Config;
-        public readonly EntityMotor Motor;     // 运动执行器（持有跨状态共享的物理状态）
+        public readonly EntityMotor Motor;
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
 
         // 瞬时状态需要每Tick结束重置
         #region 瞬时状态
-        public bool RunToggleRequest;         // 奔跑模式切换请求（toggle：按一次在 walk/run 之间切换）
-        public bool DashRequest;              // 暂时屏蔽 dash，保留字段供未来恢复
+        public bool RunToggleRequest;         
+        public bool DashRequest;
         public bool JumpRequest;
         #endregion
 
