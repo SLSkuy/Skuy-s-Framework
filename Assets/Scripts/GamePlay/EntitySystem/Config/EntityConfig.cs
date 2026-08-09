@@ -9,7 +9,7 @@ namespace GamePlay.EntitySystem
         [Header("基础实体属性")] 
         public float walkSpeed = 3f;
         public float runSpeed = 5f;
-        public float sprintSpeed = 10f;
+        public float sprintSpeed = 8f;
         public int jumpCount = 2;
         public float jumpSpeed = 12f;
         public float dashSpeed = 20f;

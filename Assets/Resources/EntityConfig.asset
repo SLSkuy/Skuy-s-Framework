@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: EntityConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
   walkSpeed: 3
-  sprintSpeed: 6
+  runSpeed: 5
+  sprintSpeed: 8
   jumpCount: 2
   jumpSpeed: 6
   dashSpeed: 12

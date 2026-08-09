@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace GamePlay.EntitySystem
 {
     /// <summary>
@@ -20,8 +22,11 @@ namespace GamePlay.EntitySystem
         {
             if (CheckGroundTransitions()) return;
 
-            // 有移动输入时按当前档位进入对应地面状态（WALK/RUN/SPRINT）
-            _stateMachine.ChangeState(GetGroundMoveState());
+            // 有移动输入时按档位进入对应地面状态：Sprint 优先，其次 Run，默认 Walk
+            if (LastMoveInput == Vector2.zero) return;
+            if (IsSprinting) _stateMachine.ChangeState(EntityState.SPRINT);
+            else if (IsRunning) _stateMachine.ChangeState(EntityState.RUN);
+            else _stateMachine.ChangeState(EntityState.WALK);
         }
 
         #endregion

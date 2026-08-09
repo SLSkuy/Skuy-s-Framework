@@ -26,8 +26,8 @@ namespace GamePlay.EntitySystem
         // 持续状态：由 Controller/状态机写入，跨 Tick 保持
         #region 持续状态
         public bool IsGrounded => Controller.isGrounded;
-        public bool IsSprinting;             // Sprint 键是否按住（hold-to-sprint，持续型输入，由 Controller 写入）
-        public bool IsRunning;                // 当前是否处于奔跑模式（walk/run toggle，默认 false=walk）
+        public bool IsSprinting;
+        public bool IsRunning;
         #endregion
 
         public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor)
