@@ -63,6 +63,9 @@ namespace GamePlay.EntitySystem
         {
             _context.StateMachine.RegisterState(new EntityIdleState(_context));
             _context.StateMachine.RegisterState(new EntityWalkState(_context));
+            _context.StateMachine.RegisterState(new EntitySprintState(_context));
+            _context.StateMachine.RegisterState(new EntityDashState(_context));
+            _context.StateMachine.RegisterState(new EntityAirborneState(_context));
         }
 
         #endregion

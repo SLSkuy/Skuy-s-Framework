@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
@@ -8,9 +8,9 @@ namespace GamePlay.EntitySystem
     public class EntityWalkState : EntityLocomotionState
     {
         public override uint StateKey => EntityState.WALK;
-        
+
         public EntityWalkState(EntityContext context) : base(context) { }
-        
+
         #region 状态控制
 
         public override void Enter()
@@ -20,7 +20,15 @@ namespace GamePlay.EntitySystem
 
         protected override void CheckStateChange()
         {
-            if (Context.LastMoveInput == Vector2.zero)
+            if (CheckGroundTransitions()) return;
+
+            if (IsSprinting && LastMoveInput != Vector2.zero)
+            {
+                _stateMachine.ChangeState(EntityState.SPRINT);
+                return;
+            }
+
+            if (LastMoveInput == Vector2.zero)
             {
                 _stateMachine.ChangeState(EntityState.IDLE);
             }

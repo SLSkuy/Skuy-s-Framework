@@ -31,7 +31,6 @@ namespace GamePlay.EntitySystem
         private bool _isDashing;
         
         #region 状态属性
-        public bool IsGrounded => _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion

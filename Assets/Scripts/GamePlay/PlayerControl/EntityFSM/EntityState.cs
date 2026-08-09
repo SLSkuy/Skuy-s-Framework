@@ -9,5 +9,6 @@ namespace GamePlay.EntitySystem
         public const uint WALK = 1;
         public const uint SPRINT = 2;
         public const uint DASH = 3;
+        public const uint AIRBORNE = 4;
     }
 }

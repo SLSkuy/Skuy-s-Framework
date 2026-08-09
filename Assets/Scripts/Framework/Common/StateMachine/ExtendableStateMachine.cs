@@ -34,6 +34,7 @@ namespace Framework.StateMachine
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 更换状态
         /// </summary>

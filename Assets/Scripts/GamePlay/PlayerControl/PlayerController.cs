@@ -25,7 +25,7 @@ namespace GamePlay.EntitySystem
         [AutoEvent("OnJump", nameof(_inputProvider))]
         private void Jump()
         {
-            
+            _character.Jump();
         }
 
         [AutoEvent("OnSprintPressed", nameof(_inputProvider))]

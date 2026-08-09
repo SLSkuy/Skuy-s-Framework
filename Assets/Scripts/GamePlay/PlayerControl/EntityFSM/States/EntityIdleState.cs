@@ -20,9 +20,11 @@ namespace GamePlay.EntitySystem
 
         protected override void CheckStateChange()
         {
-            if (Context.LastMoveInput != Vector2.zero)
+            if (CheckGroundTransitions()) return;
+
+            if (LastMoveInput != Vector2.zero)
             {
-                _stateMachine.ChangeState(EntityState.WALK);
+                _stateMachine.ChangeState(IsSprinting ? EntityState.SPRINT : EntityState.WALK);
             }
         }
 
