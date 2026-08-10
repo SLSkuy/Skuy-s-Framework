@@ -22,21 +22,17 @@ namespace GamePlay.EntitySystem
         public void Init(EntityContext context)
         {
             _context = context;
+            _animator = context.Animator;
         }
 
-        private void SetAnimationParam()
+        private void SetAnimationParam(float deltaTime)
         {
             if (_context == null || !_animator) return;
 
             // 对目标速度做插值过渡，避免档位切换时的跳变
             float smoothTime = _context.Config ? _context.Config.animSpeedSmoothTime : 0.1f;
-            _currentSpeed = Mathf.SmoothDamp(
-                _currentSpeed,
-                _context.locomotionSpeed,
-                ref _speedVelocity,
-                smoothTime,
-                Mathf.Infinity,
-                Time.deltaTime);
+            _currentSpeed = Mathf.SmoothDamp(_currentSpeed, _context.locomotionSpeed,
+                ref _speedVelocity, smoothTime, Mathf.Infinity, deltaTime);
 
             _animator.SetFloat(_speedHash, _currentSpeed);
         }
@@ -48,14 +44,9 @@ namespace GamePlay.EntitySystem
             _speedHash = Animator.StringToHash("Speed");
         }
 
-        private void Start()
-        {
-            _animator = GetComponent<Animator>();
-        }
-
         private void Update()
         {
-            SetAnimationParam();
+            SetAnimationParam(Time.deltaTime);
         }
 
         #endregion
