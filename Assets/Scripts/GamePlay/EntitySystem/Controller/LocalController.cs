@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
-    public class PlayerController : AutoEventMonoBehaviour
+    /// <summary>
+    /// 客户端本地玩家控制器，负责控制客户端对应角色
+    /// </summary>
+    public class LocalController : AutoEventMonoBehaviour
     {
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
