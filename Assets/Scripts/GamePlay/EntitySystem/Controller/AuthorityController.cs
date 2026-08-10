@@ -9,6 +9,8 @@ namespace GamePlay.EntitySystem
     /// 接收客户端上传输入→排队→每 Tick 消费一条→模拟→产出快照。
     /// 算法沿用旧版 ServerPlayerController，模拟入口改为 EntityCharacter.Simulate。
     /// </summary>
+    [RequireComponent(typeof(EntityCharacter))]
+    [RequireComponent(typeof(NetTransformSync))]
     public class AuthorityController : MonoBehaviour
     {
         /// <summary>
@@ -21,7 +23,7 @@ namespace GamePlay.EntitySystem
         }
 
         private EntityCharacter _character;
-        private NetEntityCharacter _netCharacter;
+        private NetTransformSync _transformSync;
         private InputState _previousInput;
 
         // 接收转换后的输入，按 Tick 顺序消费
@@ -36,14 +38,14 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 配置服务器模拟玩家数据源
         /// </summary>
-        public void Init(EntityCharacter character, NetEntityCharacter netCharacter)
+        public void Init(EntityCharacter character, NetTransformSync transformSync)
         {
             IsReady = true;
             _character = character;
-            _netCharacter = netCharacter;
+            _transformSync = transformSync;
             _character.tickDrive = true;
         }
-        
+
         /// <summary>
         /// 接收客户端上传输入
         /// </summary>
@@ -74,9 +76,15 @@ namespace GamePlay.EntitySystem
             _lastProcessedInputIndex = pendingInput.Tick;
         }
 
-        public NetPlayerSnapshot CaptureSnapshot(uint simulationTick)
+        public NetTransformSnapshot CaptureSnapshot(uint simulationTick)
         {
-            return _netCharacter.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
+            return _transformSync.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
+        }
+
+        private void Awake()
+        {
+            _character = GetComponent<EntityCharacter>();
+            _transformSync = GetComponent<NetTransformSync>();
         }
     }
 }

@@ -1,4 +1,5 @@
 using Framework;
+using GamePlay.NetSync;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
@@ -6,6 +7,8 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
+    [RequireComponent(typeof(EntityCharacter))]
+    [RequireComponent(typeof(NetTransformSync))]
     public class LocalController : MonoBehaviour
     {
         /// <summary>
@@ -15,12 +18,12 @@ namespace GamePlay.EntitySystem
         {
             public uint InputTick;
             public InputState Input;
-            public NetPlayerSnapshot Snapshot;
+            public NetTransformSnapshot Snapshot;
         }
         
         private IInputStateProvider _inputProvider;
-        private NetEntityCharacter _netCharacter;
         private EntityCharacter _character;
+        private NetTransformSync _transformSync;
 
         // 预测处理
         private InputState _currentInput;
@@ -37,10 +40,20 @@ namespace GamePlay.EntitySystem
         {
             _isLocalPlay = localPlay;
             _inputProvider = inputProvider;
+            
+            int capacity = Mathf.Max(2, SyncConfig.Instance.maxBufferedInputs);
+            _predictFrames = new PredictFrame[capacity];
+            
+            // 确保没有重复订阅
+            Unsubscribe();
+            Subscribe();
         }
 
         #region 网络同步
 
+        /// <summary>
+        /// 捕获当前输入，由外部统一Tick驱动时调用
+        /// </summary>
         public InputState CaptureInput(uint inputTick, float tickTime)
         {
             InputState input = _inputProvider.GetInputState();
@@ -70,11 +83,14 @@ namespace GamePlay.EntitySystem
             {
                 InputTick = inputTick,
                 Input = _currentInput,
-                Snapshot = _netCharacter.CaptureSnapshot()
+                Snapshot = _transformSync.CaptureSnapshot(inputTick)
             };
         }
 
-        public void OnAuthoritySnapshot(NetPlayerSnapshot snapshot, float tickTime)
+        /// <summary>
+        /// 接受权威状态，由外部统一Tick时调用
+        /// </summary>
+        public void OnAuthoritySnapshot(NetTransformSnapshot snapshot, float tickTime)
         {
             uint authorityTick = snapshot.LastProcessedInputTick;
             if (authorityTick <= _lastProcessedInputTick) return;
@@ -85,10 +101,10 @@ namespace GamePlay.EntitySystem
             int index = (int)(_currentInputTick % (uint)_predictFrames.Length);
 
             // 获取预测快照
-            NetPlayerSnapshot predictSnapshot = _predictFrames[index].Snapshot;
+            NetTransformSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             // 应用快照状态
-            _netCharacter.ApplySnapshot(snapshot);
+            _transformSync.ApplySnapshot(snapshot);
 
             // 重置边沿检测基线为权威 Tick 那一帧的输入（若仍在缓冲内），
             // 否则回退 default，避免回放第一帧边沿检测错误
@@ -100,12 +116,15 @@ namespace GamePlay.EntitySystem
             Reply(tickTime);
 
             // 获取权威修正后的重放快照
-            NetPlayerSnapshot replayedSnapshot = _predictFrames[index].Snapshot;
+            NetTransformSnapshot replayedSnapshot = _predictFrames[index].Snapshot;
 
             // 开始和解
             Reconciliation(predictSnapshot, replayedSnapshot);
         }
-        
+
+        /// <summary>
+        /// 重放
+        /// </summary>
         private void Reply(float tickDeltaTime)
         {
             // 重演服务端未确认 Tick
@@ -121,7 +140,7 @@ namespace GamePlay.EntitySystem
                 NetDriverInput.ApplyTo(_character, frame.Input, ref _previousInput);
                 _character.Simulate(tickDeltaTime);
 
-                frame.Snapshot = _netCharacter.CaptureSnapshot();
+                frame.Snapshot = _transformSync.CaptureSnapshot(inputTick);
                 _predictFrames[index] = frame;
             }
         }
@@ -129,7 +148,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 和解，计算预测状态与权威状态间的差距，进行处理
         /// </summary>
-        private void Reconciliation(NetPlayerSnapshot predictSnapshot, NetPlayerSnapshot replayedSnapshot)
+        private void Reconciliation(NetTransformSnapshot predictSnapshot, NetTransformSnapshot replayedSnapshot)
         {
             // 暂时不使用smoother插值
         }
@@ -140,7 +159,7 @@ namespace GamePlay.EntitySystem
 
         private void Subscribe()
         {
-            if (!_isLocalPlay) return;
+            if (!_isLocalPlay || _inputProvider == null) return;
             
             _inputProvider.OnMove += Move;
             _inputProvider.OnAim += Aim;
@@ -152,7 +171,7 @@ namespace GamePlay.EntitySystem
 
         private void Unsubscribe()
         {
-            if(!_isLocalPlay) return;
+            if(!_isLocalPlay || _inputProvider == null) return;
             
             _inputProvider.OnMove -= Move;
             _inputProvider.OnAim -= Aim;
@@ -175,11 +194,17 @@ namespace GamePlay.EntitySystem
 
         private void Awake()
         {
-            Subscribe();
-            
-            // TODO: 感觉Awake获取不太稳，改成外部注入
             _character = GetComponent<EntityCharacter>();
-            _netCharacter = GetComponent<NetEntityCharacter>();
+            _transformSync = GetComponent<NetTransformSync>();
+        }
+
+        private void Start()
+        {
+            // ===== 测试代码 =====
+            Init(GetComponent<LocalInputProvider>(), true);
+            Cursor.lockState = CursorLockMode.Locked;
+            Global.Get<CameraManager>().SetTarget(transform.Find("orientation"));
+            // ===== 测试代码 =====
         }
 
         private void OnDestroy()

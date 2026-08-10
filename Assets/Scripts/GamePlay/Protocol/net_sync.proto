@@ -28,18 +28,20 @@ message Player_Input {
   bool is_switch_mode_pressed = 11;
 }
 
-// 玩家状态快照
-message Player_Snapshot {
+// 位移状态快照
+message Transform_Snapshot {
   uint32 entityId = 1;
   uint32 snapshotTick = 2;
   uint32 lastProcessedInputTick = 3;
   Vec3 position = 4;
   Vec3 rotation = 5;
+  Vec3 velocity = 6;
+  uint32 movementState = 7;
 }
 
 message World_Snapshot {
   uint32 snapshotTick = 1;
-  repeated Player_Snapshot player_snapshots = 2;
+  repeated Transform_Snapshot transform_snapshots = 2;
 }
 
 // ========== 加入游戏 ==========

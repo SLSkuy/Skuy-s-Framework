@@ -64,34 +64,38 @@ namespace Utils
             };
         }
 
-        public static Player_Snapshot ToPlayerSnapshot(in NetPlayerSnapshot snapshot)
+        public static Transform_Snapshot ToTransformSnapshot(in NetTransformSnapshot snapshot)
         {
-            return new Player_Snapshot
+            return new Transform_Snapshot
             {
                 EntityId = snapshot.EntityId,
                 SnapshotTick = snapshot.SnapshotTick,
                 LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToProto(snapshot.Position),
-                Rotation = ToProto(snapshot.Rotation)
+                Rotation = ToProto(snapshot.Rotation),
+                Velocity = ToProto(snapshot.Velocity),
+                MovementState = snapshot.MovementState
             };
         }
 
-        public static NetPlayerSnapshot ToPlayerSnapshot(Player_Snapshot snapshot)
+        public static NetTransformSnapshot ToTransformSnapshot(Transform_Snapshot snapshot)
         {
-            return new NetPlayerSnapshot
+            return new NetTransformSnapshot
             {
                 EntityId = snapshot.EntityId,
                 SnapshotTick = snapshot.SnapshotTick,
                 LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToUnity(snapshot.Position),
-                Rotation = ToUnity(snapshot.Rotation)
+                Rotation = ToUnity(snapshot.Rotation),
+                Velocity = ToUnity(snapshot.Velocity),
+                MovementState = snapshot.MovementState
             };
         }
 
         /// <summary>
         /// 计算玩家状态的位置差距
         /// </summary>
-        public static float SnapshotPosDistance(NetPlayerSnapshot authority, NetPlayerSnapshot predict)
+        public static float SnapshotPosDistance(NetTransformSnapshot authority, NetTransformSnapshot predict)
         {
             return Vector3.Distance(authority.Position, predict.Position);
         }

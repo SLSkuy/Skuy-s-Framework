@@ -8,15 +8,20 @@ namespace GamePlay.EntitySystem
     [RequireComponent(typeof(CharacterController))]
     public class EntityCharacter : MonoBehaviour
     {
-        [SerializeField] protected EntityConfig config;
-
+        private EntityConfig _config;
         private EntityContext _context;
-
+        
         /// <summary>
         /// 外部驱动开关 true 时 Update 不自动 Simulate，由网络驱动器在 Tick 边界用 TickDeltaTime 驱动。
         /// 单机模式 false（默认）
         /// </summary>
         public bool tickDrive;
+
+        #region 属性
+        public uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
+        public float LocomotionSpeed => _context?.locomotionSpeed ?? 0f;
+        public bool IsGrounded => _context?.IsGrounded ?? false;
+        #endregion
 
         #region 实体控制
 
@@ -92,8 +97,8 @@ namespace GamePlay.EntitySystem
         private void OnAnimatorMove()
         {
             // 网络预测模式下禁用 root motion 位移，避免 Time.deltaTime 污染预测结果
-            if (tickDrive || !config.rootMotion) return;
-
+            if (tickDrive || !_config.rootMotion) return;
+            
             // 开启 root motion 时由动画驱动位移，仍保留重力/跳跃物理
             _context?.Motor.ApplyRootMotion(_context.Animator.deltaPosition, Time.deltaTime);
         }
@@ -110,11 +115,11 @@ namespace GamePlay.EntitySystem
             Transform mesh = transform.Find("mesh");
 
             // 加载实体配置数据实例
-            if (!config) config = EntityConfig.Instance;
+            if (!_config) _config = EntityConfig.Instance;
 
             // 初始化组件：Motor 持有跨状态共享的物理状态，Context 聚合所有宿主数据
-            EntityMotor motor = new EntityMotor(controller, config, orientation, mesh);
-            _context = new EntityContext(config, controller, motor, animator);
+            EntityMotor motor = new EntityMotor(controller, _config, orientation, mesh);
+            _context = new EntityContext(_config, controller, motor, animator);
 
             // 注入上下文到动画控制器，供其读取 locomotionSpeed 作为 Speed 参数来源
             EntityAnimator entityAnimator = GetComponent<EntityAnimator>();
