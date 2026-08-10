@@ -23,5 +23,8 @@ MonoBehaviour:
   aimVerticalSpeed: 20
   minAimPitch: -40
   maxAimPitch: 70
+  meshTurnSpeed: 360
+  rootMotion: 1
+  animSpeedSmoothTime: 0.15
   gravity: 14
   maxFallSpeed: 20

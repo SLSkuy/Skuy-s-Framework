@@ -20,9 +20,11 @@ namespace GamePlay.EntitySystem
         [Min(0f)] public float aimVerticalSpeed = 120f;
         public float minAimPitch = -40f;
         public float maxAimPitch = 70f;
-        
+        [Min(0f)] public float meshTurnSpeed = 360f;   // 非锁定状态下模型转向移动方向的角速度（度/秒）
+
         [Header("动画属性")]
         public bool rootMotion = true;
+        [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 动画 Speed 参数插值平滑时间（秒）
 
         [Header("物理属性")] 
         public float gravity = 12f;

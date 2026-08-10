@@ -45,15 +45,15 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 位移：根据输入方向与速度档位移动，并应用重力与冲刺计时器推进。
+        /// 位移：以模型朝向作为移动方向基准，按速度档位移动，并应用重力与冲刺计时器推进。
         /// 冲刺期间方向锁定，speed 参数不生效。
         /// </summary>
-        public void Move(Vector2 inputDir, float speed, float dt)
+        public void Move(Vector2 inputDir, float speed, float dt, bool isFocus)
         {
             if (!_isDashing)
             {
                 _locomotionSpeed = speed;
-                UpdateLocomotionDir(inputDir);
+                UpdateLocomotionDir(inputDir, isFocus);
             }
 
             ApplyGravity(dt);
@@ -62,7 +62,27 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 视角即刻转换，模型朝向则根据当前 yaw 即刻转向
+        /// 动画驱动位移：以 root motion 的水平速率作为移动速度，沿 mesh 当前朝向施加，
+        /// 使位移跟随模型转向（root 不随转向旋转，直接用 deltaPosition 方向只会朝固定方向移动）。
+        /// 垂直位移由重力/跳跃物理驱动。由 EntityCharacter.OnAnimatorMove 调用，仅当 config.rootMotion 开启时使用。
+        /// </summary>
+        public void ApplyRootMotion(Vector3 deltaPosition, float dt)
+        {
+            ApplyGravity(dt);
+
+            // 取 root motion 的水平速率，沿 mesh 当前朝向施加，位移即可随模型转向
+            Vector3 horizontal = Vector3.ProjectOnPlane(deltaPosition, Vector3.up);
+            Vector3 meshForward = Vector3.ProjectOnPlane(_mesh.forward, Vector3.up);
+            if (meshForward.sqrMagnitude > Mathf.Epsilon) meshForward.Normalize();
+
+            Vector3 motion = meshForward * horizontal.magnitude;
+            motion.y = _verticalVelocity * dt;
+            _controller.Move(motion);
+        }
+
+        /// <summary>
+        /// 视角即刻转换：更新 orientation 的 pitch/yaw。
+        /// 模型朝向不再在此处理，统一交由 UpdateMeshFacing 按 IsFocus 决策。
         /// </summary>
         public void Rotate(Vector2 aimInput, float dt)
         {
@@ -73,7 +93,31 @@ namespace GamePlay.EntitySystem
             _pitch = Mathf.Clamp(_pitch, _config.minAimPitch, _config.maxAimPitch);
 
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-            _mesh.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
+        /// <summary>
+        /// 更新模型朝向：
+        /// 锁定状态(IsFocus)：模型时刻与 orientation 的 yaw 一致。
+        /// 非锁定状态：模型以固定角速度缓慢转向当前移动方向（而非 orientation 方向）。
+        /// </summary>
+        public void UpdateMeshFacing(Vector2 moveInput, bool isFocus, float dt)
+        {
+            if (isFocus)
+            {
+                _mesh.rotation = Quaternion.Euler(0f, _yaw, 0f);
+                return;
+            }
+
+            // 非锁定：无移动输入时保持当前朝向
+            if (moveInput.sqrMagnitude < Mathf.Epsilon) return;
+
+            Vector3 forward = _orientation.forward; forward.y = 0f; forward.Normalize();
+            Vector3 right = _orientation.right; right.y = 0f; right.Normalize();
+            Vector3 desiredDir = forward * moveInput.y + right * moveInput.x;
+            if (desiredDir.sqrMagnitude < Mathf.Epsilon) return;
+
+            Quaternion targetRot = Quaternion.LookRotation(desiredDir, Vector3.up);
+            _mesh.rotation = Quaternion.RotateTowards(_mesh.rotation, targetRot, _config.meshTurnSpeed * dt);
         }
 
         /// <summary>
@@ -106,11 +150,23 @@ namespace GamePlay.EntitySystem
             _dashAccumulator = duration;
         }
 
-        private void UpdateLocomotionDir(Vector2 inputDir)
+        private void UpdateLocomotionDir(Vector2 inputDir, bool isFocus)
         {
-            Vector3 forward = _orientation.forward; forward.y = 0f; forward.Normalize();
-            Vector3 right = _orientation.right; right.y = 0f; right.Normalize();
-            _lastMoveDir = forward * inputDir.y + right * inputDir.x;
+            // 以模型朝向作为移动方向基准，配合模型转动效果更自然
+            Vector3 forward = _mesh.forward; forward.y = 0f; forward.Normalize();
+
+            if (isFocus)
+            {
+                // 锁定：以 mesh 朝向为基准做完整输入映射，允许侧移/后退
+                Vector3 right = _mesh.right; right.y = 0f; right.Normalize();
+                _lastMoveDir = forward * inputDir.y + right * inputDir.x;
+            }
+            else
+            {
+                // 非锁定：以 mesh 朝向为移动方向，幅度由输入决定（无侧移）
+                _lastMoveDir = forward * inputDir.magnitude;
+            }
+
             // 防止斜向移动速度加快
             _lastMoveDir = Vector3.ClampMagnitude(_lastMoveDir, 1f);
         }

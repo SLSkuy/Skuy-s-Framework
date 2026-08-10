@@ -87,9 +87,11 @@ namespace GamePlay.EntitySystem
 
         private void OnAnimatorMove()
         {
-            if (!config.rootMotion) return;
-            
-            
+            if (config == null || !config.rootMotion) return;
+            if (_context == null) return;
+
+            // 开启 root motion 时由动画驱动位移，仍保留重力/跳跃物理
+            _context.Motor.ApplyRootMotion(_context.Animator.deltaPosition, Time.deltaTime);
         }
 
         #endregion
@@ -108,6 +110,10 @@ namespace GamePlay.EntitySystem
             // 初始化组件：Motor 持有跨状态共享的物理状态，Context 聚合所有宿主数据
             EntityMotor motor = new EntityMotor(controller, config, orientation, mesh);
             _context = new EntityContext(config, controller, motor, animator);
+
+            // 注入上下文到动画控制器，供其读取 locomotionSpeed 作为 Speed 参数来源
+            EntityAnimator entityAnimator = GetComponent<EntityAnimator>();
+            if (entityAnimator != null) entityAnimator.Init(_context);
 
             // 初始化状态
             RegisterStates();
