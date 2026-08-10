@@ -13,6 +13,10 @@ namespace GamePlay.EntitySystem
         protected override void Tick(float dt)
         {
             Motor.Rotate(Context.LastAimInput, dt);
+            
+            // 动画驱动位移
+            if (Config.rootMotion) return;
+            
             Motor.Move(Context.LastMoveInput, LocomotionSpeed, dt);
         }
 

@@ -20,6 +20,9 @@ namespace GamePlay.EntitySystem
         [Min(0f)] public float aimVerticalSpeed = 120f;
         public float minAimPitch = -40f;
         public float maxAimPitch = 70f;
+        
+        [Header("动画属性")]
+        public bool rootMotion = true;
 
         [Header("物理属性")] 
         public float gravity = 12f;

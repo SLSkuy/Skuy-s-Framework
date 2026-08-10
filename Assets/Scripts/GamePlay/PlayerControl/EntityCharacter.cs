@@ -85,6 +85,13 @@ namespace GamePlay.EntitySystem
             _context.StateMachine.RegisterState(new EntityAirborneState(_context));
         }
 
+        private void OnAnimatorMove()
+        {
+            if (!config.rootMotion) return;
+            
+            
+        }
+
         #endregion
 
         #region 生命周期
@@ -92,6 +99,7 @@ namespace GamePlay.EntitySystem
         private void Start()
         {
             CharacterController controller = GetComponent<CharacterController>();
+            Animator animator = GetComponent<Animator>();
             Transform orientation = transform.Find("orientation");
             Transform mesh = transform.Find("mesh");
 
@@ -99,7 +107,7 @@ namespace GamePlay.EntitySystem
 
             // 初始化组件：Motor 持有跨状态共享的物理状态，Context 聚合所有宿主数据
             EntityMotor motor = new EntityMotor(controller, config, orientation, mesh);
-            _context = new EntityContext(config, controller, motor);
+            _context = new EntityContext(config, controller, motor, animator);
 
             // 初始化状态
             RegisterStates();

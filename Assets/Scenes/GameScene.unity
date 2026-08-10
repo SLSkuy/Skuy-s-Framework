@@ -172,7 +172,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 285751579}
-  - component: {fileID: 285751580}
   m_Layer: 0
   m_Name: mesh
   m_TagString: Untagged
@@ -196,28 +195,6 @@ Transform:
   - {fileID: 1952010317}
   m_Father: {fileID: 609584178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &285751580
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 285751578}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 495b83a394c5cec429dd0df10492ed56, type: 3}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &501002692
 GameObject:
   m_ObjectHideFlags: 0
@@ -528,10 +505,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 609584178}
+  - component: {fileID: 609584183}
   - component: {fileID: 609584179}
   - component: {fileID: 609584180}
-  - component: {fileID: 609584182}
+  - component: {fileID: 609584184}
   - component: {fileID: 609584181}
+  - component: {fileID: 609584182}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -619,6 +598,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.LocalInputProvider
   currentInputMap: 0
+--- !u!95 &609584183
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609584177}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 495b83a394c5cec429dd0df10492ed56, type: 3}
+  m_Controller: {fileID: 9100000, guid: 614e0ef1039ee114e9b1f270991f1640, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &609584184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609584177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474b691ce61d4df1a9fbe4a43d66f819, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityAnimator
 --- !u!1 &1124255623
 GameObject:
   m_ObjectHideFlags: 0

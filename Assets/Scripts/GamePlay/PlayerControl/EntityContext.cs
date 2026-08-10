@@ -10,6 +10,7 @@ namespace GamePlay.EntitySystem
     {
         public readonly ExtendableStateMachine<uint> StateMachine;
         public readonly CharacterController Controller;
+        public readonly Animator Animator;
         public readonly EntityConfig Config;
         public readonly EntityMotor Motor;
 
@@ -30,14 +31,16 @@ namespace GamePlay.EntitySystem
         public bool IsGrounded => Controller.isGrounded;
         public bool IsSprinting;
         public bool IsRunning;
+        public bool IsFocus;    // 是否专注瞄准某一个位置
         #endregion
 
-        public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor)
+        public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor, Animator animator)
         {
             StateMachine = new ExtendableStateMachine<uint>();
             Controller = controller;
             Motor = motor;
             Config = config;
+            Animator = animator;
         }
 
         /// <summary>
