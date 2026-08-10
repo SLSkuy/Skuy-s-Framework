@@ -14,8 +14,9 @@ namespace GamePlay.NetSync
         private sealed class PlayerEntry
         {
             public GameObject GameObject;
-            public NetPlayerCharacter Character;
-            public ServerPlayerController Controller;
+            public EntityCharacter Character;
+            public NetEntityIdentity Identity;
+            public ServerAuthDriver Driver;
         }
 
         private const string PlayerPrefabPath = "Prefabs/NetPlayerCharacter";
@@ -88,14 +89,14 @@ namespace GamePlay.NetSync
             if (input == null || input.EntityId != clientId) return;
             if (!_players.TryGetValue(clientId, out PlayerEntry player)) return;
 
-            player.Controller.ReceiveInput(input.InputTick, NetSyncUtils.ToInputState(input));
+            player.Driver.ReceiveInput(input.InputTick, NetSyncUtils.ToInputState(input));
         }
 
         private void SimulateTick(uint simulationTick)
         {
             foreach (PlayerEntry player in _players.Values)
             {
-                player.Controller.Simulate(_simulationTicks.TickDeltaTime);
+                player.Driver.Simulate(_simulationTicks.TickDeltaTime);
             }
 
             _snapshotAccumulator += _snapshotTickRate;
@@ -116,7 +117,7 @@ namespace GamePlay.NetSync
 
             foreach (PlayerEntry player in _players.Values)
             {
-                NetPlayerSnapshot snapshot = player.Controller.CaptureSnapshot(simulationTick);
+                NetPlayerSnapshot snapshot = player.Driver.CaptureSnapshot(simulationTick);
                 world.PlayerSnapshots.Add(NetSyncUtils.ToPlayerSnapshot(snapshot));
             }
 
@@ -132,18 +133,19 @@ namespace GamePlay.NetSync
                 Quaternion.identity);
             instance.name = $"ServerPlayer_{clientId}";
 
-            NetPlayerCharacter character = instance.GetComponent<NetPlayerCharacter>();
-            character.Init(clientId, NetEntityRole.Authority);
+            NetEntityIdentity identity = instance.GetComponent<NetEntityIdentity>();
+            identity.Init(clientId, NetEntityRole.Authority);
 
-            NetInputProvider inputProvider = instance.AddComponent<NetInputProvider>();
-            ServerPlayerController controller = instance.AddComponent<ServerPlayerController>();
-            controller.Configure(character, inputProvider);
+            EntityCharacter character = instance.GetComponent<EntityCharacter>();
+            ServerAuthDriver driver = new ServerAuthDriver();
+            driver.Configure(character, identity);
 
             _players.Add(clientId, new PlayerEntry
             {
                 GameObject = instance,
                 Character = character,
-                Controller = controller
+                Identity = identity,
+                Driver = driver
             });
         }
 

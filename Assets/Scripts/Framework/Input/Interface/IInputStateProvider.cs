@@ -72,6 +72,11 @@ namespace Framework
         /// 冲刺按下事件
         /// </summary>
         event Action OnJump;
+
+        /// <summary>
+        /// 行走模式切换
+        /// </summary>
+        event Action OnSwitchModePressed;
         
         /// <summary>
         /// 获取当前的输入状态

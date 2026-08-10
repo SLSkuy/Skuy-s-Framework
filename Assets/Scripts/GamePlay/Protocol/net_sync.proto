@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 package NetSync;
 
@@ -14,12 +14,18 @@ message Vec3 {
 }
 
 // 玩家输入命令
-// TODO: 先保证最小同步原型，只同步位置和旋转
 message Player_Input {
   uint32 entityId = 1;
   uint32 inputTick = 2;
   Vec2 move_input = 3;
   Vec2 aim_input = 4;
+  bool is_primary_attack_pressed = 5;
+  bool is_special_attack_pressed = 6;
+  bool is_special_action_pressed = 7;
+  bool is_interact_pressed = 8;
+  bool is_sprint_pressed = 9;
+  bool is_jump_pressed = 10;
+  bool is_switch_mode_pressed = 11;
 }
 
 // 玩家状态快照

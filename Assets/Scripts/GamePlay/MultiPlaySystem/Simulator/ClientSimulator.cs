@@ -14,7 +14,9 @@ namespace GamePlay.NetSync
         private sealed class RemoteEntry
         {
             public GameObject GameObject;
-            public RemotePlayerController Controller;
+            public EntityCharacter Character;
+            public NetEntityIdentity Identity;
+            public RemoteInterpDriver Driver;
         }
 
         private const string PlayerPrefabPath = "Prefabs/NetPlayerCharacter";
@@ -27,8 +29,9 @@ namespace GamePlay.NetSync
 
         private GameObject _playerPrefab;
         private GameObject _localPlayerObject;
-        private NetPlayerCharacter _localCharacter;
-        private ClientPlayerController _localController;
+        private EntityCharacter _localCharacter;
+        private NetEntityIdentity _localIdentity;
+        private ClientPredictDriver _localController;
         private LocalInputProvider _localInput;
         private uint _inputTick;
         private bool _joinRequested;
@@ -77,6 +80,12 @@ namespace GamePlay.NetSync
 
             TryJoinGame();
             _simulationTicks.Update(deltaTime);
+
+            // 每帧推进所有远端插值（替代旧 RemotePlayerController.Update 自驱）
+            foreach (RemoteEntry remote in _remotePlayers.Values)
+            {
+                remote.Driver.UpdateInterpolation(deltaTime);
+            }
         }
 
         private void TryJoinGame()
@@ -103,7 +112,7 @@ namespace GamePlay.NetSync
             InputState input = _localController.OnInputTick(_inputTick, _simulationTicks.TickDeltaTime);
             _netClient.Send(
                 NetEvent.PLAYER_INPUT,
-                NetSyncUtils.ToPlayerInput(_localCharacter.EntityId, _inputTick, input));
+                NetSyncUtils.ToPlayerInput(_localIdentity.EntityId, _inputTick, input));
         }
 
         private void HandleWorldSnapshot(global::NetSync.World_Snapshot world)
@@ -137,7 +146,7 @@ namespace GamePlay.NetSync
         private void ConsumeSnapshot(global::NetSync.Player_Snapshot message)
         {
             NetPlayerSnapshot snapshot = NetSyncUtils.ToPlayerSnapshot(message);
-            if (_localCharacter != null && snapshot.EntityId == _localCharacter.EntityId)
+            if (_localIdentity != null && snapshot.EntityId == _localIdentity.EntityId)
             {
                 _localController.OnAuthoritySnapshot(snapshot, _simulationTicks.TickDeltaTime);
                 return;
@@ -148,7 +157,7 @@ namespace GamePlay.NetSync
                 remote = SpawnRemotePlayer(snapshot.EntityId, snapshot.Position);
             }
 
-            remote.Controller.AddSnapshot(snapshot);
+            remote.Driver.AddSnapshot(snapshot);
         }
 
         private void SpawnLocalPlayer(uint entityId)
@@ -159,14 +168,17 @@ namespace GamePlay.NetSync
                 Quaternion.identity);
             _localPlayerObject.name = $"LocalPlayer_{entityId}";
 
-            _localCharacter = _localPlayerObject.GetComponent<NetPlayerCharacter>();
-            _localCharacter.Init(entityId, NetEntityRole.Predict);
+            _localIdentity = _localPlayerObject.GetComponent<NetEntityIdentity>();
+            _localIdentity.Init(entityId, NetEntityRole.Predict);
+
+            _localCharacter = _localPlayerObject.GetComponent<EntityCharacter>();
             _localInput = _localPlayerObject.AddComponent<LocalInputProvider>();
-            _localController = _localPlayerObject.AddComponent<ClientPlayerController>();
-            NetworkVisualSmoother visualSmoother =
-                _localPlayerObject.GetComponent<NetworkVisualSmoother>();
+            _localController = new ClientPredictDriver();
+
+            NetworkVisualSmoother visualSmoother = _localPlayerObject.GetComponent<NetworkVisualSmoother>();
             visualSmoother?.BeginFollowing();
-            _localController.Configure(_localCharacter, _localInput, visualSmoother);
+
+            _localController.Configure(_localCharacter, _localIdentity, _localInput, visualSmoother);
         }
 
         private RemoteEntry SpawnRemotePlayer(uint entityId, Vector3 position)
@@ -177,15 +189,19 @@ namespace GamePlay.NetSync
                 Quaternion.identity);
             instance.name = $"RemotePlayer_{entityId}";
 
-            NetPlayerCharacter character = instance.GetComponent<NetPlayerCharacter>();
-            character.Init(entityId, NetEntityRole.Replica);
-            RemotePlayerController controller = instance.AddComponent<RemotePlayerController>();
-            controller.Configure(character);
+            NetEntityIdentity identity = instance.GetComponent<NetEntityIdentity>();
+            identity.Init(entityId, NetEntityRole.Replica);
+
+            EntityCharacter character = instance.GetComponent<EntityCharacter>();
+            RemoteInterpDriver driver = new RemoteInterpDriver();
+            driver.Configure(character, identity);
 
             RemoteEntry entry = new()
             {
                 GameObject = instance,
-                Controller = controller
+                Character = character,
+                Identity = identity,
+                Driver = driver
             };
             _remotePlayers.Add(entityId, entry);
             return entry;
@@ -216,6 +232,7 @@ namespace GamePlay.NetSync
             _remotePlayers.Clear();
             _localPlayerObject = null;
             _localCharacter = null;
+            _localIdentity = null;
             _localController = null;
             _localInput = null;
             _started = false;

@@ -36,6 +36,13 @@ namespace Utils
             {
                 MoveInput = ToUnity(input.MoveInput),
                 AimInput = ToUnity(input.AimInput),
+                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
+                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
+                IsSpecialActionPressed = input.IsSpecialActionPressed,
+                IsInteractPressed = input.IsInteractPressed,
+                IsSprintPressed = input.IsSprintPressed,
+                IsJumpPressed = input.IsJumpPressed,
+                IsSwitchModePressed = input.IsSwitchModePressed,
             };
         }
 
@@ -47,6 +54,13 @@ namespace Utils
                 InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
                 AimInput = ToProto(state.AimInput),
+                IsPrimaryAttackPressed = state.IsPrimaryAttackPressed,
+                IsSpecialAttackPressed = state.IsSpecialAttackPressed,
+                IsSpecialActionPressed = state.IsSpecialActionPressed,
+                IsInteractPressed = state.IsInteractPressed,
+                IsSprintPressed = state.IsSprintPressed,
+                IsJumpPressed = state.IsJumpPressed,
+                IsSwitchModePressed = state.IsSwitchModePressed,
             };
         }
 
