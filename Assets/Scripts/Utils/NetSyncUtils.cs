@@ -64,7 +64,10 @@ namespace Utils
             };
         }
 
-        public static Transform_Snapshot ToTransformSnapshot(in NetPositionSnapshot snapshot)
+        /// <summary>
+        /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
+        /// </summary>
+        public static Transform_Snapshot ToPositionSnapshotMessage(in NetPositionSnapshot snapshot)
         {
             return new Transform_Snapshot
             {
@@ -77,7 +80,10 @@ namespace Utils
             };
         }
 
-        public static NetPositionSnapshot ToTransformSnapshot(Transform_Snapshot snapshot)
+        /// <summary>
+        /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
+        /// </summary>
+        public static NetPositionSnapshot ToNetPositionSnapshot(Transform_Snapshot snapshot)
         {
             return new NetPositionSnapshot
             {

@@ -68,6 +68,9 @@ namespace GamePlay.EntitySystem
         public void OnAuthoritySnapshot(in NetPositionSnapshot snapshot)
         {
             if (_identity != null && _identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
+
+            // 还未初始化快照区，丢弃快照
+            if (_snapshots == null) return;
             
             _snapshots.Add(snapshot);
 

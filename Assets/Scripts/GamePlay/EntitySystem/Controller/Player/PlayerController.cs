@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetPositionSync))]
+    [RequireComponent(typeof(NetEntitySyncRoot))]
     public class PlayerController : EntityControllerBase
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace GamePlay.EntitySystem
         
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
-        private NetPositionSync _positionSync;
+        private NetEntitySyncRoot _syncRoot;
 
         // 预测处理
         private InputState _currentInput;
@@ -87,7 +87,7 @@ namespace GamePlay.EntitySystem
             {
                 InputTick = inputTick,
                 Input = _currentInput,
-                Snapshot = _positionSync.CaptureSnapshot(inputTick)
+                Snapshot = CapturePositionSnapshot(inputTick)
             };
         }
 
@@ -108,7 +108,10 @@ namespace GamePlay.EntitySystem
             NetPositionSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             // 应用快照状态
-            _positionSync.ApplySnapshot(snapshot);
+            if (TryGetPositionSync(out NetPositionSync positionSync))
+            {
+                positionSync.ApplySnapshot(snapshot);
+            }
 
             // 重置边沿检测基线为权威 Tick 那一帧的输入（若仍在缓冲内），
             // 否则回退 default，避免回放第一帧边沿检测错误
@@ -144,7 +147,7 @@ namespace GamePlay.EntitySystem
                 EntityControllerUtils.ApplyTo(Target, frame.Input, ref _previousInput);
                 Target.Simulate(tickDeltaTime);
 
-                frame.Snapshot = _positionSync.CaptureSnapshot(inputTick);
+                frame.Snapshot = CapturePositionSnapshot(inputTick);
                 _predictFrames[index] = frame;
             }
         }
@@ -155,6 +158,19 @@ namespace GamePlay.EntitySystem
         private void Reconciliation(NetPositionSnapshot predictSnapshot, NetPositionSnapshot replayedSnapshot)
         {
             // 暂时不使用smoother插值
+        }
+
+        private NetPositionSnapshot CapturePositionSnapshot(uint inputTick)
+        {
+            if (!TryGetPositionSync(out NetPositionSync positionSync)) return default;
+
+            return positionSync.CaptureSnapshot(inputTick);
+        }
+
+        private bool TryGetPositionSync(out NetPositionSync positionSync)
+        {
+            positionSync = null;
+            return _syncRoot != null && _syncRoot.TryGetModule(ModuleType.Position, out positionSync);
         }
 
         #endregion
@@ -199,8 +215,9 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             _character = GetComponent<EntityCharacter>();
+            _syncRoot = GetComponent<NetEntitySyncRoot>();
+
             Bind(_character);
-            _positionSync = GetComponent<NetPositionSync>();
         }
 
         private void Start()

@@ -10,7 +10,7 @@ namespace GamePlay.EntitySystem
     /// 算法沿用旧版 ServerPlayerController，模拟入口改为 EntityCharacter.Simulate。
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetPositionSync))]
+    [RequireComponent(typeof(NetEntitySyncRoot))]
     public class AuthorityController : EntityControllerBase
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace GamePlay.EntitySystem
         }
 
         private EntityCharacter _character;
-        private NetPositionSync _positionSync;
+        private NetEntitySyncRoot _syncRoot;
         private InputState _previousInput;
 
         // 接收转换后的输入，按 Tick 顺序消费
@@ -39,12 +39,12 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 配置服务器模拟玩家数据源
         /// </summary>
-        public void Init(EntityCharacter character, NetPositionSync positionSync)
+        public void Init(EntityCharacter character, NetEntitySyncRoot syncRoot)
         {
             IsReady = true;
             _character = character;
             Bind(character);
-            _positionSync = positionSync;
+            _syncRoot = syncRoot;
             Target.TickDrive = true;
         }
 
@@ -78,16 +78,25 @@ namespace GamePlay.EntitySystem
             _lastProcessedInputIndex = pendingInput.Tick;
         }
 
-        public NetPositionSnapshot CaptureSnapshot(uint simulationTick)
+        public NetPositionSnapshot CapturePositionSnapshot(uint simulationTick)
         {
-            return _positionSync.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
+            if (!TryGetPositionSync(out NetPositionSync positionSync)) return default;
+
+            return positionSync.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
+        }
+
+        private bool TryGetPositionSync(out NetPositionSync positionSync)
+        {
+            positionSync = null;
+            return _syncRoot != null && _syncRoot.TryGetModule(ModuleType.Position, out positionSync);
         }
 
         private void Awake()
         {
             _character = GetComponent<EntityCharacter>();
+            _syncRoot = GetComponent<NetEntitySyncRoot>();
+
             Bind(_character);
-            _positionSync = GetComponent<NetPositionSync>();
         }
     }
 }

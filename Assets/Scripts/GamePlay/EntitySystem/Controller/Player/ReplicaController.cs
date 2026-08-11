@@ -6,24 +6,24 @@ namespace GamePlay.EntitySystem
     /// 远端玩家插值驱动器。只消费权威快照做渲染插值，不预测。
     /// </summary>
     [RequireComponent(typeof(NetEntityIdentity))]
-    [RequireComponent(typeof(NetPositionSync))]
+    [RequireComponent(typeof(NetEntitySyncRoot))]
     [RequireComponent(typeof(EntityCharacter))]
     public class ReplicaController : EntityControllerBase
     {
         private NetEntityIdentity _identity;
-        private NetPositionSync _positionSync;
+        private NetEntitySyncRoot _syncRoot;
         private EntityCharacter _character;
 
         #region 属性
         public override EntityDriveMode DriveMode => EntityDriveMode.Replica;
         #endregion
 
-        public void Init(NetEntityIdentity identity, NetPositionSync positionSync, EntityCharacter character)
+        public void Init(NetEntityIdentity identity, NetEntitySyncRoot syncRoot, EntityCharacter character)
         {
             _identity = identity;
             _character = character;
             Bind(character);
-            _positionSync = positionSync;
+            _syncRoot = syncRoot;
         }
 
         /// <summary>
@@ -33,8 +33,9 @@ namespace GamePlay.EntitySystem
         {
             if (Target == null || _identity == null || _identity.Role != NetEntityRole.Replica) return;
             if (_identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
+            if (!TryGetPositionSync(out NetPositionSync positionSync)) return;
 
-            _positionSync.OnAuthoritySnapshot(snapshot);
+            positionSync.OnAuthoritySnapshot(snapshot);
         }
 
         /// <summary>
@@ -42,15 +43,24 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void UpdateInterpolation(float deltaTime)
         {
-            if (Target == null || _positionSync == null) return;
-            _positionSync.UpdateInterpolation(deltaTime);
+            if (Target == null) return;
+            if (!TryGetPositionSync(out NetPositionSync positionSync)) return;
+
+            positionSync.UpdateInterpolation(deltaTime);
+        }
+
+        private bool TryGetPositionSync(out NetPositionSync positionSync)
+        {
+            positionSync = null;
+            return _syncRoot != null && _syncRoot.TryGetModule(ModuleType.Position, out positionSync);
         }
 
         private void Awake()
         {
             _identity = GetComponent<NetEntityIdentity>();
-            _positionSync = GetComponent<NetPositionSync>();
+            _syncRoot = GetComponent<NetEntitySyncRoot>();
             _character = GetComponent<EntityCharacter>();
+
             Bind(_character);
         }
     }

@@ -12,4 +12,3 @@ namespace GamePlay.EntitySystem
         uint CurrentState { get; }
     }
 }
-
