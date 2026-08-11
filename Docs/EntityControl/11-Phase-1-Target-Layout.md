@@ -10,11 +10,11 @@ Runtime root:
 
 | Folder | Purpose |
 | --- | --- |
-| `Core/` | Narrow contracts, base lifecycle seams, shared state views, and compatibility adapters. |
-| `Entities/` | `BaseEntity` and derived entity types such as `PlayerEntity`, `RemotePlayerEntity`, `NpcEntity`, `MonsterEntity`, `BossEntity`, `CompanionEntity`, `VehicleEntity`, and `InteractableEntity`. |
-| `Controllers/` | Control-source orchestrators such as player, authority, replica, and AI controllers. |
-| `Modules/` | Attachable ability modules such as movement, animation, interaction, health, camera target, and physics proxy. |
-| `Sync/` | Sync contracts and adapters for role dispatch, state capture, prediction, replay, interpolation, and animation sync. Split into `Core`, `Config`, `Snapshot`, and `Timing`. |
+| `Core/` | Entity-facing contracts, grouped under `Contracts`. |
+| `Entities/` | Entity runtime grouped into `Core`, `Types`, `Config`, and `FSM`. |
+| `Controllers/` | Control-source orchestrators grouped into `Contracts`, `Base`, `Input`, `Player`, `Authority`, `Replica`, and `AI`. |
+| `Modules/` | Attachable ability modules grouped into `Core`, `Movement`, `Animation`, and `Gameplay`. |
+| `Sync/` | Sync contracts and adapters for role dispatch, state capture, prediction, replay, interpolation, and animation sync. Split into `Core`, `Config`, `Snapshot`, `Timing`, `Transform`, `Animation`, and `Prediction`. |
 
 ## Namespace Decision
 
@@ -36,7 +36,9 @@ Existing behavior remains in place until each phase migrates it:
 
 | Folder | Purpose |
 | --- | --- |
-| `Sync/Core/` | `NetEntityRole`, `SyncModuleID`, and sync component contracts. |
+| `Sync/Core/Contracts/` | sync component, snapshot source/receiver, interpolation, and registry contracts. |
+| `Sync/Core/Identity/` | `NetEntityIdentity`, `NetEntityRole`, and role assembler. |
+| `Sync/Core/Registry/` | `SyncModuleID` and sync module registry. |
 | `Sync/Config/` | sync configuration assets. |
 | `Sync/Snapshot/` | snapshot contracts, snapshot data, and snapshot buffering. |
 | `Sync/Timing/` | fixed tick driving utilities. |

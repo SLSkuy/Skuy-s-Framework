@@ -17,6 +17,30 @@ The remaining entity runtime files were moved into the official structure:
 - entity FSM concrete states
 - `NetEntityIdentity`
 
+## Folder Grouping
+
+The runtime root now uses second-level responsibility folders:
+
+- `Core/Contracts`
+- `Controllers/Contracts`
+- `Controllers/Base`
+- `Controllers/Input`
+- `Controllers/Player`
+- `Controllers/Authority`
+- `Controllers/Replica`
+- `Controllers/AI`
+- `Entities/Core`
+- `Entities/Types`
+- `Entities/Config`
+- `Entities/FSM`
+- `Modules/Core`
+- `Modules/Movement`
+- `Modules/Animation`
+- `Modules/Gameplay`
+- `Sync/Core/Contracts`
+- `Sync/Core/Identity`
+- `Sync/Core/Registry`
+
 ## Removed Legacy Paths
 
 The following old runtime folders are no longer official sources:
