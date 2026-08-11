@@ -5,24 +5,17 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 远端玩家插值驱动器。只消费权威快照做渲染插值，不预测。
     /// </summary>
-    [RequireComponent(typeof(NetEntityIdentity))]
-    [RequireComponent(typeof(NetEntitySyncRoot))]
-    [RequireComponent(typeof(EntityCharacter))]
     public class ReplicaController : EntityControllerBase
     {
-        private NetEntityIdentity _identity;
         private NetEntitySyncRoot _syncRoot;
-        private EntityCharacter _character;
 
         #region 属性
         public override EntityDriveMode DriveMode => EntityDriveMode.Replica;
         #endregion
 
-        public void Init(NetEntityIdentity identity, NetEntitySyncRoot syncRoot, EntityCharacter character)
+        public void Init(BaseEntity entity, NetEntitySyncRoot syncRoot)
         {
-            _identity = identity;
-            _character = character;
-            Bind(character);
+            Bind(entity);
             _syncRoot = syncRoot;
         }
 
@@ -31,8 +24,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void AddSnapshot(in NetPositionSnapshot snapshot)
         {
-            if (Target == null || _identity == null || _identity.Role != NetEntityRole.Replica) return;
-            if (_identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
+            if (Target == null || _syncRoot == null || !_syncRoot.IsReplica) return;
+            if (_syncRoot.IsInitialized && snapshot.EntityId != _syncRoot.EntityId) return;
             if (!TryGetPositionSync(out NetPositionSync positionSync)) return;
 
             positionSync.OnAuthoritySnapshot(snapshot);
@@ -57,11 +50,7 @@ namespace GamePlay.EntitySystem
 
         private void Awake()
         {
-            _identity = GetComponent<NetEntityIdentity>();
             _syncRoot = GetComponent<NetEntitySyncRoot>();
-            _character = GetComponent<EntityCharacter>();
-
-            Bind(_character);
         }
     }
 }

@@ -7,8 +7,6 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
-    [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetEntitySyncRoot))]
     public class PlayerController : EntityControllerBase
     {
         /// <summary>
@@ -22,7 +20,6 @@ namespace GamePlay.EntitySystem
         }
         
         private IInputStateProvider _inputProvider;
-        private EntityCharacter _character;
         private NetEntitySyncRoot _syncRoot;
 
         // 预测处理
@@ -40,16 +37,19 @@ namespace GamePlay.EntitySystem
         #endregion
         
         // 初始化本地控制器
-        public void Init(IInputStateProvider inputProvider, bool localPlay)
+        public void Init(BaseEntity entity, NetEntitySyncRoot syncRoot, bool localPlay)
         {
+            Bind(entity);
+            _syncRoot = syncRoot;
             _isLocalPlay = localPlay;
-            _inputProvider = inputProvider;
             
             int capacity = Mathf.Max(2, SyncConfig.Instance.maxBufferedInputs);
             _predictFrames = new PredictFrame[capacity];
-            
-            // 确保没有重复订阅
-            Unsubscribe();
+        }
+
+        public void SetInputSource(IInputStateProvider inputProvider)
+        {
+            _inputProvider = inputProvider;
             Subscribe();
         }
 
@@ -60,6 +60,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public InputState CaptureInput(uint inputTick, float tickTime)
         {
+            if (_inputProvider == null) return default;
+
             InputState input = _inputProvider.GetInputState();
             
             _currentInputTick = inputTick;
@@ -214,16 +216,13 @@ namespace GamePlay.EntitySystem
 
         private void Awake()
         {
-            _character = GetComponent<EntityCharacter>();
             _syncRoot = GetComponent<NetEntitySyncRoot>();
-
-            Bind(_character);
         }
 
         private void Start()
         {
             // ===== 测试代码 =====
-            Init(GetComponent<LocalInputProvider>(), true);
+            SetInputSource(GetComponent<LocalInputProvider>());
             Cursor.lockState = CursorLockMode.Locked;
             Global.Get<CameraManager>().SetTarget(transform.Find("orientation"));
             // ===== 测试代码 =====

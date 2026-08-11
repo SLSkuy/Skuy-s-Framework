@@ -1,25 +1,77 @@
+using System;
 using System.Collections.Generic;
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体网络同步根组件，负责发现、注册、查询和角色分发同步组件。
+    /// 实体网络同步根组件，统一负责身份、角色、同步模块注册、控制器装配和同步调度。
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(NetEntityIdentity))]
     public class NetEntitySyncRoot : MonoBehaviour
     {
+        [SerializeField] private uint entityId;
+        [SerializeField] private NetEntityRole role = NetEntityRole.LocalPlay;
+
         private readonly List<INetSyncComponent> _modules = new();
         private readonly Dictionary<ModuleType, INetSyncComponent> _moduleMap = new();
 
-        private NetEntityIdentity _identity;
-        private EntityCharacter _character;
+        private BaseEntity _entity;
+        private EntityControllerBase _activeController;
         private NetEntityRole _appliedRole;
         private bool _hasAppliedRole;
 
         #region 属性
+        public uint EntityId => entityId;
+        public NetEntityRole Role => role;
+        public bool IsInitialized => entityId != 0;
+        public bool IsAuthority => role == NetEntityRole.Authority;
+        public bool IsPredictingOwner => role == NetEntityRole.Predict;
+        public bool IsReplica => role == NetEntityRole.Replica;
+        public bool IsLocalPlay => role == NetEntityRole.LocalPlay;
         public IReadOnlyList<INetSyncComponent> Modules => _modules;
+        public EntityControllerBase ActiveController => _activeController;
+        #endregion
+
+        #region 事件
+        public event Action<NetEntityRole, NetEntityRole> RoleChanged;
+        #endregion
+
+        #region 身份状态
+        /// <summary>
+        /// 初始化网络实体身份与角色。
+        /// </summary>
+        public void Init(uint id, NetEntityRole newRole)
+        {
+            entityId = id;
+
+            NetEntityRole oldRole = role;
+            role = newRole;
+            if (oldRole != newRole)
+            {
+                RoleChanged?.Invoke(oldRole, newRole);
+            }
+
+            ApplyRole(role);
+        }
+
+        /// <summary>
+        /// 设置网络角色。
+        /// </summary>
+        public void SetRole(NetEntityRole newRole)
+        {
+            if (role == newRole)
+            {
+                ApplyRole(role);
+                return;
+            }
+
+            NetEntityRole oldRole = role;
+            role = newRole;
+            RoleChanged?.Invoke(oldRole, newRole);
+            ApplyRole(role);
+        }
         #endregion
 
         #region 模块注册
@@ -71,50 +123,108 @@ namespace GamePlay.EntitySystem
 
         #region 角色分发
         /// <summary>
-        /// 应用网络角色到所有同步模块。
+        /// 应用网络角色到所有同步模块并装配对应控制器。
         /// </summary>
-        public void ApplyRole(NetEntityRole role)
+        public void ApplyRole(NetEntityRole newRole)
         {
-            if (_hasAppliedRole && _appliedRole == role) return;
+            if (_hasAppliedRole && _appliedRole == newRole && _activeController != null) return;
 
             Refresh();
             foreach (INetSyncComponent component in _modules)
             {
-                component.ConfigureRole(role);
+                component.ConfigureRole(newRole);
             }
 
-            if (_character != null)
+            ConfigureController(newRole);
+
+            if (_entity != null)
             {
-                _character.TickDrive = role != NetEntityRole.LocalPlay;
+                _entity.TickDrive = newRole != NetEntityRole.LocalPlay;
             }
 
-            _appliedRole = role;
+            _appliedRole = newRole;
             _hasAppliedRole = true;
         }
 
-        private void OnRoleChanged(NetEntityRole oldRole, NetEntityRole newRole)
+        private void ConfigureController(NetEntityRole newRole)
         {
-            ApplyRole(newRole);
+            if (_entity == null) return;
+
+            Type controllerType = ResolveControllerType(newRole);
+            if (controllerType == null) return;
+
+            if (_activeController != null && _activeController.GetType() != controllerType)
+            {
+                _activeController.Unbind();
+                _activeController.enabled = false;
+                _activeController = null;
+            }
+
+            if (_activeController == null)
+            {
+                _activeController = GetComponent(controllerType) as EntityControllerBase;
+                if (_activeController == null)
+                {
+                    _activeController = gameObject.AddComponent(controllerType) as EntityControllerBase;
+                }
+            }
+
+            if (_activeController == null) return;
+
+            _activeController.enabled = true;
+            InitializeController(_activeController, newRole);
+        }
+
+        private Type ResolveControllerType(NetEntityRole newRole)
+        {
+            return newRole switch
+            {
+                NetEntityRole.LocalPlay => typeof(PlayerController),
+                NetEntityRole.Predict => typeof(PlayerController),
+                NetEntityRole.Authority => typeof(AuthorityController),
+                NetEntityRole.Replica => typeof(ReplicaController),
+                _ => null
+            };
+        }
+
+        private void InitializeController(EntityControllerBase controller, NetEntityRole newRole)
+        {
+            switch (controller)
+            {
+                case PlayerController playerController:
+                    playerController.Init(_entity, this, newRole == NetEntityRole.LocalPlay);
+                    break;
+
+                case AuthorityController authorityController:
+                    authorityController.Init(_entity, this);
+                    break;
+
+                case ReplicaController replicaController:
+                    replicaController.Init(_entity, this);
+                    break;
+
+                default:
+                    controller.Bind(_entity);
+                    break;
+            }
         }
         #endregion
 
         #region 生命周期
         private void Awake()
         {
-            _identity = GetComponent<NetEntityIdentity>();
-            _character = GetComponent<EntityCharacter>();
+            _entity = GetComponent<BaseEntity>();
             Refresh();
-            _identity.RoleChanged += OnRoleChanged;
         }
 
         private void Start()
         {
-            ApplyRole(_identity.Role);
+            ApplyRole(role);
         }
 
         private void Update()
         {
-            if (_identity == null || _identity.Role == NetEntityRole.LocalPlay) return;
+            if (role == NetEntityRole.LocalPlay) return;
 
             foreach (INetSyncComponent component in _modules)
             {
@@ -123,11 +233,6 @@ namespace GamePlay.EntitySystem
                     updatable.SyncUpdate(Time.deltaTime);
                 }
             }
-        }
-
-        private void OnDestroy()
-        {
-            if (_identity != null) _identity.RoleChanged -= OnRoleChanged;
         }
         #endregion
     }

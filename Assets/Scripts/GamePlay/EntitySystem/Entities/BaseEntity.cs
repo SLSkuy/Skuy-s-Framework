@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     [RequireComponent(typeof(CharacterController))]
     public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateView
     {
-        protected NetEntityIdentity _identity;
+        protected NetEntitySyncRoot _syncRoot;
         protected EntityConfig _config;
         protected EntityContext _context;
         protected CharacterController _characterController;
@@ -17,8 +17,8 @@ namespace GamePlay.EntitySystem
         protected Transform _mesh;
 
         #region 属性
-        public uint EntityId => _identity != null ? _identity.EntityId : 0;
-        public bool HasIdentity => _identity != null && _identity.IsInitialized;
+        public uint EntityId => _syncRoot != null ? _syncRoot.EntityId : 0;
+        public bool HasIdentity => _syncRoot != null && _syncRoot.IsInitialized;
         public bool IsInitialized => _context != null;
 
         public abstract bool TickDrive { get; set; }
@@ -83,7 +83,7 @@ namespace GamePlay.EntitySystem
         {
             if (_characterController == null) _characterController = GetComponent<CharacterController>();
             if (_animator == null) _animator = GetComponent<Animator>();
-            if (_identity == null) _identity = GetComponent<NetEntityIdentity>();
+            if (_syncRoot == null) _syncRoot = GetComponent<NetEntitySyncRoot>();
             if (_orientation == null) _orientation = transform.Find("orientation");
             if (_mesh == null) _mesh = transform.Find("mesh");
         }

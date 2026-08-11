@@ -9,8 +9,6 @@ namespace GamePlay.EntitySystem
     /// 接收客户端上传输入→排队→每 Tick 消费一条→模拟→产出快照。
     /// 算法沿用旧版 ServerPlayerController，模拟入口改为 EntityCharacter.Simulate。
     /// </summary>
-    [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetEntitySyncRoot))]
     public class AuthorityController : EntityControllerBase
     {
         /// <summary>
@@ -22,7 +20,6 @@ namespace GamePlay.EntitySystem
             public InputState State;
         }
 
-        private EntityCharacter _character;
         private NetEntitySyncRoot _syncRoot;
         private InputState _previousInput;
 
@@ -39,11 +36,10 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 配置服务器模拟玩家数据源
         /// </summary>
-        public void Init(EntityCharacter character, NetEntitySyncRoot syncRoot)
+        public void Init(BaseEntity entity, NetEntitySyncRoot syncRoot)
         {
             IsReady = true;
-            _character = character;
-            Bind(character);
+            Bind(entity);
             _syncRoot = syncRoot;
             Target.TickDrive = true;
         }
@@ -93,10 +89,7 @@ namespace GamePlay.EntitySystem
 
         private void Awake()
         {
-            _character = GetComponent<EntityCharacter>();
             _syncRoot = GetComponent<NetEntitySyncRoot>();
-
-            Bind(_character);
         }
     }
 }

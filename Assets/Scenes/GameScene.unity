@@ -841,44 +841,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.LocalInputProvider
   currentInputMap: 0
---- !u!114 &1528371824
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528371814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4a1afe376a480483763f670fc99f28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.PlayerController
---- !u!114 &1528371825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528371814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48b82a3fabc916c4881b134aa29ba552, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetPositionSync
---- !u!114 &1528371826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528371814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 197f883549e5d8840a3f2f4e85176ee9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetEntityIdentity
-  entityId: 0
-  role: 3
 --- !u!114 &1528371827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -891,6 +853,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
+--- !u!114 &1528371828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1528371814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4da1e754ec294f628cdf67d55fe4f1c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetEntitySyncRoot
+  entityId: 0
+  role: 3
 --- !u!1 &1878890648
 GameObject:
   m_ObjectHideFlags: 0
@@ -1209,13 +1185,7 @@ PrefabInstance:
       addedObject: {fileID: 1528371827}
     - targetCorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1528371826}
-    - targetCorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1528371825}
-    - targetCorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1528371824}
+      addedObject: {fileID: 1528371828}
     - targetCorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1528371823}

@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// 位移同步网络组件，用于进行位移相关的网络同步
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(NetEntityIdentity))]
+    [RequireComponent(typeof(NetEntitySyncRoot))]
     [RequireComponent(typeof(EntityCharacter))]
     public class NetPositionSync : MonoBehaviour, INetSyncComponent,
         INetSyncSnapshotSource<NetPositionSnapshot>,
@@ -17,7 +17,7 @@ namespace GamePlay.EntitySystem
     {
         public ModuleType ModuleType => ModuleType.Position;
         
-        private NetEntityIdentity _identity;
+        private NetEntitySyncRoot _syncRoot;
         private EntityCharacter _character;
         private CharacterController _characterController;
         private SnapshotBuffer<NetPositionSnapshot> _snapshots;
@@ -67,7 +67,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void OnAuthoritySnapshot(in NetPositionSnapshot snapshot)
         {
-            if (_identity != null && _identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
+            if (_syncRoot == null || !_syncRoot.IsReplica) return;
+            if (_syncRoot.IsInitialized && snapshot.EntityId != _syncRoot.EntityId) return;
 
             // 还未初始化快照区，丢弃快照
             if (_snapshots == null) return;
@@ -159,7 +160,7 @@ namespace GamePlay.EntitySystem
 
             return new NetPositionSnapshot
             {
-                EntityId = _identity ? _identity.EntityId : 0,
+                EntityId = _syncRoot ? _syncRoot.EntityId : 0,
                 SnapshotTick = snapshotTick,
                 LastProcessedInputTick = lastProcessedInputTick,
                 Position = position,
@@ -210,7 +211,7 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             SyncConfig config = SyncConfig.Instance;
-            if (_identity == null) _identity = GetComponent<NetEntityIdentity>();
+            if (_syncRoot == null) _syncRoot = GetComponent<NetEntitySyncRoot>();
             if (_character == null) _character = GetComponent<EntityCharacter>();
             if (_characterController == null) _characterController = GetComponent<CharacterController>();
             if (_simulationTickInterval <= 0d)
