@@ -14,7 +14,7 @@ Top-level modules under `Assets/Scripts/`:
 - `Core/`, `Debug/` — auxiliary runtime helpers.
 - `Tests/` — currently holds runtime debug panels (e.g. `NetworkTestPanel.cs`); place new EditMode/PlayMode unit tests here or beside their module.
 
-Scenes live in `Assets/Scenes`, with development scenes under `Assets/Scenes/Dev`. Generated protocol classes live in `Assets/Scripts/GamePlay/Protocol/Generated`; avoid hand-editing generated files unless the generator is unavailable. Third-party code is kept in `Assets/ThirdParty`.
+Scenes live in `Assets/Scenes`, with development scenes under `Assets/Scenes/Dev`. Generated protocol classes live in `Assets/Scripts/GamePlay/Protocol/Generated`; avoid hand-editing generated files unless the generator is unavailable. Third-party code is kept in `Assets/ThirdParty`. Design documents live in the root-level `Docs/` folder (not under `Assets/`) — see [Documentation Guidelines](#documentation-guidelines) below.
 
 ## Namespace Conventions
 Namespaces are logical module names — they do **not** strictly mirror the folder path. Use the established names:
@@ -108,6 +108,15 @@ Use the Editor for scene validation and package restoration. Commit `Assets`, `P
 
 ## Testing Guidelines
 The project includes Unity Test Framework. Place edit-mode or play-mode tests near the relevant module or under `Assets/Scripts/Tests`. Name test files and methods after the behavior being verified, for example `SnapshotBufferTests` or `StoresSnapshotsInTickOrder`. Run both EditMode and PlayMode tests before merging gameplay, networking, ECS navigation, or resource-management changes.
+
+## Documentation Guidelines
+Design documents live in the root-level `Docs/` folder (not inside `Assets/`), organized one subfolder per feature. Follow the layout already established by `Docs/EntityControl/`:
+
+- **One folder per feature**, named after the feature (e.g. `Docs/EntityControl/`, `Docs/Navigation/`). Put all docs for that feature inside its folder; do not scatter them across the repo.
+- **Numbered file prefix** for reading order — `00-Index.md`, `01-Design-Baseline.md`, `02-Phase-1-Checklist.md`, … Filenames stay English `kebab-case` (ASCII, hyphen-separated) so they remain git- and cross-platform-friendly.
+- **An index file** `00-Index.md` per feature folder, listing the documents and their reading order; update it whenever a new doc is added.
+- **Write content in Chinese (中文).** Headings, prose, lists, and explanations are all Chinese; keep code symbols, type names, identifiers, and file paths in their original form. New documents must be Chinese. (The pre-existing `Docs/EntityControl/` set was written in English — leave it as-is unless explicitly rewriting it.)
+- **When to write one.** Create a design doc under `Docs/<Feature>/` when a change involves a new subsystem, a cross-module refactor, a protocol addition, or an architecture decision. Link it from that folder's `00-Index.md` and commit the doc alongside the code it describes.
 
 ## Commit & Pull Request Guidelines
 Recent history uses concise Conventional Commit-style messages such as `feat(entity): ...` and `refactor(entity system): ...`; keep using `type(scope): summary`. English and Chinese summaries both appear in history, but the scope and type should stay clear. Pull requests should include a short description, affected scenes or systems, test results, and screenshots or short recordings for UI, animation, scene, or gameplay-visible changes.

@@ -1,0 +1,36 @@
+# EntityControl Documentation Hub
+
+This folder is the main container for the entity control rewrite.
+
+## Documents
+
+- [01-Design-Baseline.md](./01-Design-Baseline.md)
+- [02-Phase-1-Checklist.md](./02-Phase-1-Checklist.md)
+- [03-Phase-2-Entity-Layer.md](./03-Phase-2-Entity-Layer.md)
+- [04-Phase-3-Controller-Layer.md](./04-Phase-3-Controller-Layer.md)
+- [05-Phase-4-Module-Layer.md](./05-Phase-4-Module-Layer.md)
+- [06-Phase-5-Network-Sync.md](./06-Phase-5-Network-Sync.md)
+- [07-Phase-6-Skill-Integration.md](./07-Phase-6-Skill-Integration.md)
+- [08-Phase-7-Cleanup.md](./08-Phase-7-Cleanup.md)
+- [09-Refactor-Task-List.md](./09-Refactor-Task-List.md)
+- [10-Phase-1-Dependency-Audit.md](./10-Phase-1-Dependency-Audit.md)
+- [11-Phase-1-Target-Layout.md](./11-Phase-1-Target-Layout.md)
+- [12-Phase-1-Reusable-Type-Migration.md](./12-Phase-1-Reusable-Type-Migration.md)
+- [13-Phase-1-Boundary-Contracts.md](./13-Phase-1-Boundary-Contracts.md)
+
+## Reading Order
+
+1. Design baseline
+2. Phase 1 checklist
+3. Phase 2 to 7 task docs
+4. Refactor task list
+5. Phase 1 audit, target layout, reusable type migration, and boundary contracts
+
+## Scope
+
+- Entity base types
+- Derived entity types
+- Controller split
+- Module-based abilities
+- Skill integration contract
+- Network sync integration contract

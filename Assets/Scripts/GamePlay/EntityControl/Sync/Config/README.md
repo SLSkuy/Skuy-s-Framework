@@ -1,0 +1,4 @@
+# Config
+
+Sync configuration assets.
+
