@@ -19,6 +19,7 @@ namespace GamePlay.EntitySystem
         
         private NetEntitySyncRoot _syncRoot;
         private EntityCharacter _character;
+        
         private CharacterController _characterController;
         private SnapshotBuffer<NetPositionSnapshot> _snapshots;
         private CapsuleCollider _replicaMovementCollider;
@@ -33,7 +34,6 @@ namespace GamePlay.EntitySystem
         
         #region 属性
         public Vector3 CurrentRenderVelocity { get; private set; }
-        public uint CurrentMovementState { get; private set; }
         #endregion
 
         public void ConfigureRole(NetEntityRole role)
@@ -165,7 +165,6 @@ namespace GamePlay.EntitySystem
                 LastProcessedInputTick = lastProcessedInputTick,
                 Position = position,
                 Velocity = velocity,
-                MovementState = _character ? _character.CurrentState : EntityState.IDLE
             };
         }
 
@@ -180,7 +179,6 @@ namespace GamePlay.EntitySystem
 
             transform.position = snapshot.Position;
             CurrentRenderVelocity = snapshot.Velocity;
-            CurrentMovementState = snapshot.MovementState;
 
             if (wasEnabled) _characterController.enabled = true;
         }
@@ -201,7 +199,6 @@ namespace GamePlay.EntitySystem
 
             // 状态过渡
             CurrentRenderVelocity = Vector3.Lerp(from.Velocity, to.Velocity, t);
-            CurrentMovementState = t < 0.5f ? from.MovementState : to.MovementState;
         }
 
         #endregion

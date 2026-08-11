@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Framework;
 using UnityEngine;
+using Utils;
 
 namespace GamePlay.EntitySystem
 {
@@ -14,24 +14,25 @@ namespace GamePlay.EntitySystem
         [SerializeField] private uint entityId;
         [SerializeField] private NetEntityRole role = NetEntityRole.LocalPlay;
 
+        // 处理所有同步组件
         private readonly List<INetSyncComponent> _modules = new();
         private readonly Dictionary<ModuleType, INetSyncComponent> _moduleMap = new();
 
-        private BaseEntity _entity;
         private EntityControllerBase _activeController;
+        private BaseEntity _entity;
         private NetEntityRole _appliedRole;
         private bool _hasAppliedRole;
 
         #region 属性
         public uint EntityId => entityId;
-        public NetEntityRole Role => role;
         public bool IsInitialized => entityId != 0;
+        
+        // 网络同步身份
+        public NetEntityRole Role => role;
         public bool IsAuthority => role == NetEntityRole.Authority;
         public bool IsPredictingOwner => role == NetEntityRole.Predict;
         public bool IsReplica => role == NetEntityRole.Replica;
         public bool IsLocalPlay => role == NetEntityRole.LocalPlay;
-        public IReadOnlyList<INetSyncComponent> Modules => _modules;
-        public EntityControllerBase ActiveController => _activeController;
         #endregion
 
         #region 事件
@@ -122,10 +123,11 @@ namespace GamePlay.EntitySystem
         #endregion
 
         #region 角色分发
+        
         /// <summary>
         /// 应用网络角色到所有同步模块并装配对应控制器。
         /// </summary>
-        public void ApplyRole(NetEntityRole newRole)
+        private void ApplyRole(NetEntityRole newRole)
         {
             if (_hasAppliedRole && _appliedRole == newRole && _activeController != null) return;
 
@@ -146,6 +148,10 @@ namespace GamePlay.EntitySystem
             _hasAppliedRole = true;
         }
 
+        /// <summary>
+        /// 根据角色类型添加对应的控制器
+        /// </summary>
+        /// <param name="newRole"></param>
         private void ConfigureController(NetEntityRole newRole)
         {
             if (_entity == null) return;
@@ -213,7 +219,8 @@ namespace GamePlay.EntitySystem
         #region 生命周期
         private void Awake()
         {
-            _entity = GetComponent<BaseEntity>();
+            _entity = gameObject.GetOrAddComponent<EntityCharacter>();
+            
             Refresh();
         }
 

@@ -29,19 +29,17 @@ message Player_Input {
 }
 
 // 位移状态快照
-message Transform_Snapshot {
+message Position_Snapshot {
   uint32 entityId = 1;
   uint32 snapshotTick = 2;
   uint32 lastProcessedInputTick = 3;
   Vec3 position = 4;
-  Vec3 rotation = 5;
-  Vec3 velocity = 6;
-  uint32 movementState = 7;
+  Vec3 velocity = 5;
 }
 
 message World_Snapshot {
   uint32 snapshotTick = 1;
-  repeated Transform_Snapshot transform_snapshots = 2;
+  repeated Position_Snapshot position_snapshots = 2;
 }
 
 // ========== 加入游戏 ==========

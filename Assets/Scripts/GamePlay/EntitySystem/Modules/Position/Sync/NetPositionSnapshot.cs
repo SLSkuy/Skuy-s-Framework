@@ -12,6 +12,5 @@ namespace GamePlay.EntitySystem
         public uint LastProcessedInputTick { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 Velocity { get; set; }
-        public uint MovementState { get; set; }
     }
 }

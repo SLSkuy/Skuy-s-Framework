@@ -67,23 +67,22 @@ namespace Utils
         /// <summary>
         /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
         /// </summary>
-        public static Transform_Snapshot ToPositionSnapshotMessage(in NetPositionSnapshot snapshot)
+        public static Position_Snapshot ToPositionSnapshotMessage(in NetPositionSnapshot snapshot)
         {
-            return new Transform_Snapshot
+            return new Position_Snapshot
             {
                 EntityId = snapshot.EntityId,
                 SnapshotTick = snapshot.SnapshotTick,
                 LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToProto(snapshot.Position),
                 Velocity = ToProto(snapshot.Velocity),
-                MovementState = snapshot.MovementState
             };
         }
 
         /// <summary>
         /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
         /// </summary>
-        public static NetPositionSnapshot ToNetPositionSnapshot(Transform_Snapshot snapshot)
+        public static NetPositionSnapshot ToNetPositionSnapshot(Position_Snapshot snapshot)
         {
             return new NetPositionSnapshot
             {
@@ -92,7 +91,6 @@ namespace Utils
                 LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToUnity(snapshot.Position),
                 Velocity = ToUnity(snapshot.Velocity),
-                MovementState = snapshot.MovementState
             };
         }
 
