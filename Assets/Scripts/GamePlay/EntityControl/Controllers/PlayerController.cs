@@ -9,7 +9,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
     [RequireComponent(typeof(NetPositionSync))]
-    public class LocalController : MonoBehaviour
+    public class PlayerController : EntityControllerBase
     {
         /// <summary>
         /// 预测帧状态
@@ -34,6 +34,10 @@ namespace GamePlay.EntitySystem
 
         // 是否为单机
         private bool _isLocalPlay;
+
+        #region 属性
+        public override EntityDriveMode DriveMode => _isLocalPlay ? EntityDriveMode.LocalInput : EntityDriveMode.Prediction;
+        #endregion
         
         // 初始化本地控制器
         public void Init(IInputStateProvider inputProvider, bool localPlay)
@@ -72,8 +76,8 @@ namespace GamePlay.EntitySystem
         private void Predict(uint inputTick, float tickTime)
         {
             // 立刻响应输入
-            NetDriverInput.ApplyTo(_character, _currentInput, ref _previousInput);
-            _character.Simulate(tickTime);
+            NetDriverInput.ApplyTo(Target, _currentInput, ref _previousInput);
+            Target.Simulate(tickTime);
             
             // 防止还未初始化完毕
             if (_predictFrames == null) return;
@@ -137,8 +141,8 @@ namespace GamePlay.EntitySystem
                     break;
 
                 // 更新模拟状态
-                NetDriverInput.ApplyTo(_character, frame.Input, ref _previousInput);
-                _character.Simulate(tickDeltaTime);
+                NetDriverInput.ApplyTo(Target, frame.Input, ref _previousInput);
+                Target.Simulate(tickDeltaTime);
 
                 frame.Snapshot = _positionSync.CaptureSnapshot(inputTick);
                 _predictFrames[index] = frame;
@@ -181,12 +185,12 @@ namespace GamePlay.EntitySystem
             _inputProvider.OnSwitchModePressed -= SwitchModePressed;
         }
         
-        private void Move(Vector2 move) => _character.Move(move);
-        private void Aim(Vector2 aim) => _character.Aim(aim);
-        private void Jump() => _character.Jump();
-        private void SprintPressed() => _character.StartSprint();
-        private void SprintReleased() => _character.StopSprint();
-        private void SwitchModePressed() => _character.ToggleRun();
+        private void Move(Vector2 move) => Target?.Move(move);
+        private void Aim(Vector2 aim) => Target?.Aim(aim);
+        private void Jump() => Target?.Jump();
+        private void SprintPressed() => Target?.StartSprint();
+        private void SprintReleased() => Target?.StopSprint();
+        private void SwitchModePressed() => Target?.ToggleRun();
 
         #endregion
 
@@ -195,6 +199,7 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             _character = GetComponent<EntityCharacter>();
+            Bind(_character);
             _positionSync = GetComponent<NetPositionSync>();
         }
 

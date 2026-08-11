@@ -11,19 +11,19 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 把 InputState 映射到 EntityCharacter，并更新边沿检测基线。
         /// </summary>
-        public static void ApplyTo(EntityCharacter character, in InputState input, ref InputState previousInput)
+        public static void ApplyTo(IEntityIntentReceiver receiver, in InputState input, ref InputState previousInput)
         {
             // 持续型：移动、瞄准、疾跑
-            character.Move(input.MoveInput);
-            character.Aim(input.AimInput);
-            if (input.IsSprintPressed) character.StartSprint();
-            else character.StopSprint();
+            receiver.Move(input.MoveInput);
+            receiver.Aim(input.AimInput);
+            if (input.IsSprintPressed) receiver.StartSprint();
+            else receiver.StopSprint();
 
             // 边沿型：跳跃、切换模式（按下边沿触发）
             if (input.IsJumpPressed && !previousInput.IsJumpPressed)
-                character.Jump();
+                receiver.Jump();
             if (input.IsSwitchModePressed && !previousInput.IsSwitchModePressed)
-                character.ToggleRun();
+                receiver.ToggleRun();
 
             // 攻击/特殊/交互暂不接（对应旧版 IPlayerCharacter 的 TODO 占位）
 

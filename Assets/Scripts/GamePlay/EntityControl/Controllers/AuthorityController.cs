@@ -11,7 +11,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
     [RequireComponent(typeof(NetPositionSync))]
-    public class AuthorityController : MonoBehaviour
+    public class AuthorityController : EntityControllerBase
     {
         /// <summary>
         /// 待处理输入
@@ -32,6 +32,7 @@ namespace GamePlay.EntitySystem
         private uint _lastProcessedInputIndex;
 
         #region 属性
+        public override EntityDriveMode DriveMode => EntityDriveMode.Authority;
         public bool IsReady { get; private set; }
         #endregion
         
@@ -42,8 +43,9 @@ namespace GamePlay.EntitySystem
         {
             IsReady = true;
             _character = character;
+            Bind(character);
             _positionSync = positionSync;
-            _character.tickDrive = true;
+            Target.TickDrive = true;
         }
 
         /// <summary>
@@ -63,14 +65,14 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Simulate(float tickDeltaTime)
         {
-            if (!IsReady || _character == null) return;
+            if (!IsReady || Target == null) return;
             if (_pendingInputs.Count == 0) return;
 
             PendingInput pendingInput = _pendingInputs.Dequeue();
 
             // 写入输入并模拟
-            NetDriverInput.ApplyTo(_character, pendingInput.State, ref _previousInput);
-            _character.Simulate(tickDeltaTime);
+            NetDriverInput.ApplyTo(Target, pendingInput.State, ref _previousInput);
+            Target.Simulate(tickDeltaTime);
 
             // 只有在本次服务端模拟完成后，才能向客户端确认该输入
             _lastProcessedInputIndex = pendingInput.Tick;
@@ -84,6 +86,7 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             _character = GetComponent<EntityCharacter>();
+            Bind(_character);
             _positionSync = GetComponent<NetPositionSync>();
         }
     }

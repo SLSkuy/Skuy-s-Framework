@@ -36,14 +36,16 @@ Phase 2 result: base entity, derived entity shells, compatibility path, and enti
 
 Goal: make controllers route control intent instead of owning heavy gameplay behavior.
 
-- [ ] 3.1 Define shared controller binding contract between controller and entity.
-- [ ] 3.2 Refactor local/player control flow into `PlayerController`.
-- [ ] 3.3 Refactor authority flow into `AuthorityController` with clear simulation ownership.
-- [ ] 3.4 Refactor remote/replica flow into `ReplicaController`.
-- [ ] 3.5 Add AI and vehicle controller shells only where current code needs integration points.
-- [ ] 3.6 Define drive-mode switching rules and validate old controller paths are either migrated or explicitly marked compatibility-only.
+- [x] 3.1 Define shared controller binding contract between controller and entity.
+- [x] 3.2 Refactor local/player control flow into `PlayerController`.
+- [x] 3.3 Refactor authority flow into `AuthorityController` with clear simulation ownership.
+- [x] 3.4 Refactor remote/replica flow into `ReplicaController`.
+- [x] 3.5 Add AI and vehicle controller shells only where current code needs integration points.
+- [x] 3.6 Define drive-mode switching rules and validate old controller paths are either migrated or explicitly marked compatibility-only.
 
 Review gate: player, authority, replica, and AI flows can evolve independently.
+
+Phase 3 result: controller binding, drive modes, direct `PlayerController`/`ReplicaController` replacements, AI/vehicle controller entries, and intent-interface routing are in place. Prediction/replay/interpolation behavior remains in official controller files until module and sync phases.
 
 ## Phase 4: Module Layer
 
