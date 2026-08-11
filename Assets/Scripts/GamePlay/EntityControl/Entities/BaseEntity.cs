@@ -17,12 +17,12 @@ namespace GamePlay.EntitySystem
         protected Transform _mesh;
 
         #region 属性
+        public NetEntityIdentity Identity => _identity;
         public EntityConfig Config => _config;
         public CharacterController CharacterController => _characterController;
         public Animator Animator => _animator;
         public Transform Orientation => _orientation;
         public Transform Mesh => _mesh;
-        public NetEntityIdentity Identity => _identity;
         public uint EntityId => _identity != null ? _identity.EntityId : 0;
         public bool HasIdentity => _identity != null && _identity.IsInitialized;
         public bool IsInitialized => _context != null;

@@ -42,11 +42,6 @@ GameObject:
   - component: {fileID: 4028197484943108775}
   - component: {fileID: 6309289621052532212}
   - component: {fileID: 8705368391808782593}
-  - component: {fileID: 2663979305548462432}
-  - component: {fileID: 6549454998251404435}
-  - component: {fileID: 6549454998251404436}
-  - component: {fileID: 6549454998251404437}
-  - component: {fileID: 6549454998251404438}
   m_Layer: 0
   m_Name: NetPlayer
   m_TagString: Untagged
@@ -118,69 +113,6 @@ CharacterController:
   m_SkinWidth: 0.0001
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.85, z: 0}
---- !u!114 &2663979305548462432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474b691ce61d4df1a9fbe4a43d66f819, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityAnimator
---- !u!114 &6549454998251404435
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
-  tickDrive: 0
---- !u!114 &6549454998251404436
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 197f883549e5d8840a3f2f4e85176ee9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetEntityIdentity
-  entityId: 0
-  role: 3
---- !u!114 &6549454998251404437
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97bb9efda90b0064ebc1514320567157, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetEntityRoleAssembler
---- !u!114 &6549454998251404438
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48b82a3fabc916c4881b134aa29ba552, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetTransformSync
 --- !u!1 &8013709126059864410
 GameObject:
   m_ObjectHideFlags: 0

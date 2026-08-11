@@ -25,10 +25,12 @@ Goal: split `EntityCharacter` into a thin base entity plus derived entity types.
 - [x] 2.1 Extract identity, lifecycle, and common component lookup responsibilities into `BaseEntity`.
 - [x] 2.2 Define derived entity types: `PlayerEntity`, `RemotePlayerEntity`, `NpcEntity`, `MonsterEntity`, `BossEntity`, `CompanionEntity`, `VehicleEntity`, and `InteractableEntity`.
 - [x] 2.3 Move reusable context/config access behind entity-layer APIs.
-- [ ] 2.4 Keep `EntityCharacter` as a compatibility path or migrate usages, depending on scene/prefab references found during inspection.
-- [ ] 2.5 Validate Unity compile and check scene/prefab references for missing scripts.
+- [x] 2.4 Keep `EntityCharacter` as a compatibility path or migrate usages, depending on scene/prefab references found during inspection.
+- [x] 2.5 Validate Unity compile and check scene/prefab references for missing scripts.
 
 Review gate: entity core remains thin; derived types express gameplay role and control style.
+
+Phase 2 result: base entity, derived entity shells, compatibility path, and entity data access boundaries are in place. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
 
 ## Phase 3: Controller Layer
 
