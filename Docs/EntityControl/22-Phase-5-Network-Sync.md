@@ -1,6 +1,6 @@
 # Phase 5 Network Sync
 
-Phase 5 goal: make synchronization an external module layer for state transfer, role dispatch, prediction, interpolation, animation sync, and skill sync.
+Phase 5 goal: make synchronization an external module layer for state transfer, role dispatch, prediction, interpolation, and animation sync.
 
 ## Added
 
@@ -19,11 +19,6 @@ Animation:
 
 - `NetAnimationSnapshot`
 - `NetAnimationSync`
-
-Skill:
-
-- `NetSkillSnapshot`
-- `NetSkillSync`
 
 Transform:
 
@@ -53,12 +48,11 @@ The old class name is not retained as an inheritance compatibility wrapper.
 
 - `Transform`
 - `Animation`
-- `Skill`
 
 ## Deferred
 
 - Move prediction/replay implementation out of `PlayerController` after the next behavior-cleanup pass.
 - Move authority simulation queue ownership out of `AuthorityController` when server simulation is normalized.
-- Connect animation and skill snapshots to protocol messages after skill runtime contracts are complete.
+- Connect animation snapshots to protocol messages after entity sync contracts are stable.
 - Re-add prefab sync components after the new entity/controller/sync assembly path is ready.
 - Run Unity Editor compile validation after Unity is available.

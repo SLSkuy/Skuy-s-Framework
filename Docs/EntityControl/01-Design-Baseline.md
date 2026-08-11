@@ -1,6 +1,6 @@
 # EntityControl Design Baseline
 
-This is the long-term baseline for entity control, skill integration, and network sync.
+This is the long-term baseline for entity control and network sync.
 
 ## Goal
 
@@ -10,9 +10,8 @@ Split the current entity stack into:
 - controller layer
 - ability module layer
 - sync layer
-- skill entry layer
 
-The system should stay extensible for animation, combat, interaction, vehicles, AI, and networking.
+The current refactor focuses on entity structure, modular ability assembly, and network synchronization.
 
 ## Core Principle
 
@@ -20,7 +19,6 @@ The system should stay extensible for animation, combat, interaction, vehicles, 
 - Controllers only own control sources and intent routing.
 - Modules own concrete abilities.
 - Sync owns cross-peer state flow.
-- Skills plug into the entity, not into the base entity core.
 
 ## Recommended Entity Types
 
@@ -37,7 +35,6 @@ The system should stay extensible for animation, combat, interaction, vehicles, 
 
 - `MovementModule`
 - `AnimationModule`
-- `SkillModule`
 - `HealthModule`
 - `InteractionModule`
 - `InventoryModule`
@@ -55,4 +52,4 @@ The system should stay extensible for animation, combat, interaction, vehicles, 
 
 Sync should be an external capability layer, not a property of the entity core.
 
-Position sync, animation sync, and skill sync should all be modular and independently evolvable.
+Transform sync and animation sync should be modular and independently evolvable.

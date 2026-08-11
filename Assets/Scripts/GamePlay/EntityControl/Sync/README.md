@@ -11,4 +11,3 @@ Target location for sync-facing contracts and adapters.
 - `Transform/` - transform snapshot capture, receive, and interpolation runtime.
 - `Prediction/` - prediction and replay entry contracts.
 - `Animation/` - animation snapshot data and sync entry.
-- `Skill/` - skill snapshot data and sync entry.

@@ -9,7 +9,7 @@ Build the foundation only. Do not rewrite gameplay behavior yet.
 - create the `EntityControl` document structure
 - move reusable base types
 - define entity/controller/module boundaries
-- reserve sync and skill entry points
+- reserve sync entry points
 
 ## Not Done Yet
 
@@ -49,4 +49,3 @@ Build the foundation only. Do not rewrite gameplay behavior yet.
 - base types are organized
 - responsibilities are clear
 - later phases can proceed without redesigning the core again
-

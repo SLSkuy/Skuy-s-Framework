@@ -1,7 +1,7 @@
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体能力模块接口，用于装配移动、动画、交互、技能等能力。
+    /// 实体能力模块接口，用于装配移动、动画、交互、生命值等能力。
     /// </summary>
     public interface IEntityModule
     {
@@ -26,4 +26,3 @@ namespace GamePlay.EntitySystem
         void Unbind();
     }
 }
-

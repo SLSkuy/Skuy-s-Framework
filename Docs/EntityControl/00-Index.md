@@ -10,7 +10,6 @@ This folder is the main container for the entity control rewrite.
 - [04-Phase-3-Controller-Layer.md](./04-Phase-3-Controller-Layer.md)
 - [05-Phase-4-Module-Layer.md](./05-Phase-4-Module-Layer.md)
 - [06-Phase-5-Network-Sync.md](./06-Phase-5-Network-Sync.md)
-- [07-Phase-6-Skill-Integration.md](./07-Phase-6-Skill-Integration.md)
 - [08-Phase-7-Cleanup.md](./08-Phase-7-Cleanup.md)
 - [09-Refactor-Task-List.md](./09-Refactor-Task-List.md)
 - [10-Phase-1-Dependency-Audit.md](./10-Phase-1-Dependency-Audit.md)
@@ -31,7 +30,7 @@ This folder is the main container for the entity control rewrite.
 
 1. Design baseline
 2. Phase 1 checklist
-3. Phase 2 to 7 task docs
+3. Phase 2 to 6 task docs
 4. Refactor task list
 5. Phase 1 audit, target layout, reusable type migration, boundary contracts, and results
 
@@ -41,5 +40,4 @@ This folder is the main container for the entity control rewrite.
 - Derived entity types
 - Controller split
 - Module-based abilities
-- Skill integration contract
 - Network sync integration contract

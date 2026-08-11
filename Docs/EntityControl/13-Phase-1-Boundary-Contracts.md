@@ -37,16 +37,6 @@ Location:
 | --- | --- |
 | `IEntityModule` | Defines entity module binding and enable/disable behavior. |
 
-## Skill Entry Contract
-
-Location:
-
-`Assets/Scripts/GamePlay/EntityControl/Skills`
-
-| Contract | Purpose |
-| --- | --- |
-| `IEntitySkillEntry` | Allows skill systems to bind to entities without depending on controllers. |
-
 ## Sync Entry Contracts
 
 Location:

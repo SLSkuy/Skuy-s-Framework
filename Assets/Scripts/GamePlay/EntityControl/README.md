@@ -9,9 +9,8 @@ The namespace remains `GamePlay.EntitySystem` unless a later reviewed step expli
 - `Core/` - narrow contracts, base lifecycle seams, shared entity state views.
 - `Entities/` - `BaseEntity` and derived entity types such as player, remote player, NPC, monster, vehicle, and interactable entities.
 - `Controllers/` - control-source orchestrators that route input or authority intent into entity contracts.
-- `Modules/` - attachable entity capability modules such as movement, animation, interaction, health, camera target, skill entry, and physics proxy.
-- `Sync/` - sync-facing contracts and adapters for state capture, role dispatch, prediction, replay, interpolation, animation sync, and skill sync.
-- `Skills/` - skill-facing entity contracts, skill config/runtime separation, and skill state machine entry points.
+- `Modules/` - attachable entity capability modules such as movement, animation, interaction, health, camera target, and physics proxy.
+- `Sync/` - sync-facing contracts and adapters for state capture, role dispatch, prediction, replay, interpolation, and animation sync.
 
 ## Migration Notes
 

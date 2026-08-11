@@ -12,10 +12,9 @@ Make sync an external modular layer for state transfer, prediction, interpolatio
 - role dispatch flow
 - prediction and replay entry
 - animation sync entry
-- skill sync entry
 
 ## Success Criteria
 
 - sync modules are pluggable
 - position sync is not a monolith
-- animation and skill states can enter sync without changing entity core
+- animation state can enter sync without changing entity core

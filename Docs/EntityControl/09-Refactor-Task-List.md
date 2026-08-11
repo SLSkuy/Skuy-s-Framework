@@ -11,7 +11,7 @@ Goal: organize reusable base types and reserve extension points without changing
 - [x] 1.1 Inspect current entity, controller, module, and sync dependencies; record direct coupling paths before editing.
 - [x] 1.2 Create or confirm the target folder layout for `EntityControl`, entity modules, controllers, and sync entry points.
 - [x] 1.3 Move immediately reusable types into their target locations only when namespace and Unity meta impact are clear.
-- [x] 1.4 Define minimal contracts for entity, controller, module, skill entry, and sync entry boundaries.
+- [x] 1.4 Define minimal contracts for entity, controller, module, and sync entry boundaries.
 - [x] 1.5 Run compile validation and update this checklist with Phase 1 results.
 
 Review gate: Phase 1 should not rewrite movement, FSM, protocol, snapshots, or gameplay behavior.
@@ -54,7 +54,7 @@ Goal: convert entity abilities into attachable modules.
 - [x] 4.1 Define base module lifecycle and entity binding contract.
 - [x] 4.2 Extract movement behavior into `MovementModule`.
 - [x] 4.3 Extract animation behavior into detachable `AnimationModule`.
-- [x] 4.4 Add `InteractionModule`, `HealthModule`, `CameraTargetModule`, `SkillModule`, and `PhysicsProxyModule` contracts or minimal implementations.
+- [x] 4.4 Add `InteractionModule`, `HealthModule`, `CameraTargetModule`, and `PhysicsProxyModule` contracts or minimal implementations.
 - [x] 4.5 Ensure modules can be enabled or disabled by entity role.
 - [x] 4.6 Validate that animation reads entity state and does not drive entity core state directly.
 
@@ -70,35 +70,22 @@ Goal: make sync an external modular layer for state transfer, prediction, interp
 - [x] 5.2 Split transform sync from `NetPositionSync` into focused sync data and runtime components.
 - [x] 5.3 Define role dispatch flow for authority, replica, and local prediction.
 - [x] 5.4 Add prediction and replay entry points without rewriting the snapshot algorithm.
-- [x] 5.5 Add animation sync and skill sync entry contracts.
+- [x] 5.5 Add animation sync entry contracts.
 - [x] 5.6 Validate sync modules are pluggable and entity core stays independent of sync details.
 
-Review gate: position sync is no longer a monolith; animation and skill state can join sync without entity core changes.
+Review gate: position sync is no longer a monolith; animation state can join sync without entity core changes.
 
-Phase 5 result: sync registry, role dispatch, transform sync replacement, prediction/replay contracts, and animation/skill sync entries are in place. `NetPositionSync` was directly replaced by `NetTransformSync`; no inheritance wrapper is kept. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
+Phase 5 result: sync registry, role dispatch, transform sync replacement, prediction/replay contracts, and animation sync entry are in place. `NetPositionSync` was directly replaced by `NetTransformSync`; no inheritance wrapper is kept. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
 
-## Phase 6: Skill Integration
+## Phase 6: Cleanup
 
-Goal: integrate skills as a first-class entity capability.
+Goal: remove old coupling paths and stabilize the entity/control/sync structure.
 
-- [ ] 6.1 Define skill-facing entity contract.
-- [ ] 6.2 Define skill configuration and runtime instance separation.
-- [ ] 6.3 Add skill state machine contract.
-- [ ] 6.4 Connect skill execution to animation through module contracts.
-- [ ] 6.5 Connect skill state to sync through sync entry contracts.
-- [ ] 6.6 Validate skills do not depend on controller internals.
-
-Review gate: skills attach cleanly to entities and can run locally or through networking.
-
-## Phase 7: Cleanup
-
-Goal: remove old coupling paths and stabilize the new structure.
-
-- [ ] 7.1 Remove migrated controller paths and unused compatibility code.
-- [ ] 7.2 Remove old entity coupling after references are migrated.
-- [ ] 7.3 Remove old sync coupling after module sync is validated.
-- [ ] 7.4 Unify namespaces and file layout with repository conventions.
-- [ ] 7.5 Add focused EditMode or PlayMode tests for high-risk behavior.
-- [ ] 7.6 Run final compile/test validation and document remaining risks.
+- [ ] 6.1 Remove migrated controller paths and unused compatibility code.
+- [ ] 6.2 Remove old entity coupling after references are migrated.
+- [ ] 6.3 Remove old sync coupling after module sync is validated.
+- [ ] 6.4 Unify namespaces and file layout with repository conventions.
+- [ ] 6.5 Add focused EditMode or PlayMode tests for high-risk behavior.
+- [ ] 6.6 Run final compile/test validation and document remaining risks.
 
 Review gate: old flow is no longer the official flow; future expansion should not require another core rewrite.

@@ -16,7 +16,6 @@ Types:
 - `InteractionModule`
 - `HealthModule`
 - `CameraTargetModule`
-- `SkillModule`
 - `PhysicsProxyModule`
 
 ## Direct Replacements
@@ -50,13 +49,11 @@ This lets entity roles enable, disable, or swap abilities without adding behavio
 
 `AnimationModule` reads `IEntityControlTarget.LocomotionSpeed` and optional `EntityConfig.animSpeedSmoothTime`; it updates Animator parameters but does not own state changes.
 
-`SkillModule` implements `IEntitySkillEntry` and binds skills to an entity target rather than to a concrete controller.
-
 `InteractionModule`, `HealthModule`, `CameraTargetModule`, and `PhysicsProxyModule` currently provide stable attachment points for the later gameplay and sync phases.
 
 ## Deferred
 
 - Wire modules onto prefabs after component composition is rebuilt.
 - Move remaining behavior out of heavy controllers after sync boundaries are ready.
-- Expand health, interaction, camera target, skill, and physics proxy behavior when their owning phases need concrete logic.
+- Expand health, interaction, camera target, and physics proxy behavior when their owning phases need concrete logic.
 - Run Unity Editor compile validation after Unity is available.

@@ -16,5 +16,4 @@ Target location for attachable entity capability modules.
 - `InteractionModule`
 - `HealthModule`
 - `CameraTargetModule`
-- `SkillModule`
 - `PhysicsProxyModule`

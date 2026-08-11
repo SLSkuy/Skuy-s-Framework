@@ -9,7 +9,7 @@ Phase 1 goal: build the foundation only and avoid gameplay behavior rewrites.
 - Split the sync folder into `Core`, `Config`, `Snapshot`, and `Timing`.
 - Moved reusable sync base types while preserving namespaces and `.meta` GUIDs.
 - Kept `NetSyncUtils` in `Assets/Scripts/Utils` because stateless global helpers remain outside the EntityControl runtime layout.
-- Added minimal boundary contracts for entity intent, simulation, state view, controller binding, modules, skill entry, and sync snapshot capture/apply.
+- Added minimal boundary contracts for entity intent, simulation, state view, controller binding, modules, and sync snapshot capture/apply.
 
 ## Runtime Behavior
 

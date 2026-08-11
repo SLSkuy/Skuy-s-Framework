@@ -3,7 +3,6 @@
     public enum SyncModuleID
     {
         Transform,
-        Animation,
-        Skill
+        Animation
     }
 }

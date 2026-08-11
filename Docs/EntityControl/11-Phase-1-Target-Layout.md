@@ -12,10 +12,9 @@ Runtime root:
 | --- | --- |
 | `Core/` | Narrow contracts, base lifecycle seams, shared state views, and compatibility adapters. |
 | `Entities/` | `BaseEntity` and derived entity types such as `PlayerEntity`, `RemotePlayerEntity`, `NpcEntity`, `MonsterEntity`, `BossEntity`, `CompanionEntity`, `VehicleEntity`, and `InteractableEntity`. |
-| `Controllers/` | Control-source orchestrators such as player, authority, replica, AI, and vehicle controllers. |
-| `Modules/` | Attachable ability modules such as movement, animation, interaction, health, camera target, skill entry, and physics proxy. |
-| `Sync/` | Sync contracts and adapters for role dispatch, state capture, prediction, replay, interpolation, animation sync, and skill sync. Split into `Core`, `Config`, `Snapshot`, and `Timing`. |
-| `Skills/` | Skill-facing entity contracts, skill configuration/runtime separation, and skill state machine entry points. |
+| `Controllers/` | Control-source orchestrators such as player, authority, replica, and AI controllers. |
+| `Modules/` | Attachable ability modules such as movement, animation, interaction, health, camera target, and physics proxy. |
+| `Sync/` | Sync contracts and adapters for role dispatch, state capture, prediction, replay, interpolation, and animation sync. Split into `Core`, `Config`, `Snapshot`, and `Timing`. |
 
 ## Namespace Decision
 
@@ -30,8 +29,6 @@ Reason: the project currently compiles into one `Assembly-CSharp` assembly and e
 Existing behavior remains in place until each phase migrates it:
 
 - `Assets/Scripts/GamePlay/EntitySystem/Character`
-- `Assets/Scripts/GamePlay/EntitySystem/Controller`
-- `Assets/Scripts/GamePlay/EntitySystem/SubModule`
 - `Assets/Scripts/GamePlay/EntitySystem/FSM`
 - `Assets/Scripts/GamePlay/MultiPlaySystem/Component`
 
