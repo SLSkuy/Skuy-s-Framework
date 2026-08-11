@@ -13,3 +13,8 @@ Target location for `BaseEntity` and derived entity types.
 - `CompanionEntity`
 - `VehicleEntity`
 - `InteractableEntity`
+
+## Access APIs
+
+- `TryGetConfig(out EntityConfig config)`
+- `TryGetContext(out EntityContext context)`

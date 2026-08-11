@@ -18,7 +18,6 @@ namespace GamePlay.EntitySystem
 
         #region 属性
         public EntityConfig Config => _config;
-        public EntityContext Context => _context;
         public CharacterController CharacterController => _characterController;
         public Animator Animator => _animator;
         public Transform Orientation => _orientation;
@@ -26,11 +25,48 @@ namespace GamePlay.EntitySystem
         public NetEntityIdentity Identity => _identity;
         public uint EntityId => _identity != null ? _identity.EntityId : 0;
         public bool HasIdentity => _identity != null && _identity.IsInitialized;
+        public bool IsInitialized => _context != null;
 
         public abstract bool TickDrive { get; set; }
         public abstract uint CurrentState { get; }
         public abstract float LocomotionSpeed { get; }
         public abstract bool IsGrounded { get; }
+        #endregion
+
+        #region 实体数据
+        /// <summary>
+        /// 尝试获取实体配置。
+        /// </summary>
+        public bool TryGetConfig(out EntityConfig config)
+        {
+            config = _config;
+            return config != null;
+        }
+
+        /// <summary>
+        /// 尝试获取实体运行上下文，兼容旧状态机与动画路径。
+        /// </summary>
+        public bool TryGetContext(out EntityContext context)
+        {
+            context = _context;
+            return context != null;
+        }
+
+        /// <summary>
+        /// 设置实体运行上下文。
+        /// </summary>
+        protected void SetContext(EntityContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// 清理实体运行上下文。
+        /// </summary>
+        protected void ClearContext()
+        {
+            _context = null;
+        }
         #endregion
 
         #region 实体控制
@@ -78,4 +114,3 @@ namespace GamePlay.EntitySystem
         #endregion
     }
 }
-

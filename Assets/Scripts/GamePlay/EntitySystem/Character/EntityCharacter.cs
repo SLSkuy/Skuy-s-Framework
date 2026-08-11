@@ -115,7 +115,7 @@ namespace GamePlay.EntitySystem
 
             // 初始化组件：Motor 持有跨状态共享的物理状态，Context 聚合所有宿主数据
             EntityMotor motor = new EntityMotor(_characterController, _config, _orientation, _mesh);
-            _context = new EntityContext(_config, _characterController, motor, _animator);
+            SetContext(new EntityContext(_config, _characterController, motor, _animator));
 
             // 注入上下文到动画控制器，供其读取 locomotionSpeed 作为 Speed 参数来源
             EntityAnimator entityAnimator = GetComponent<EntityAnimator>();

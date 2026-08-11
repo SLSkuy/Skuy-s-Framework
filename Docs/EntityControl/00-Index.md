@@ -20,6 +20,7 @@ This folder is the main container for the entity control rewrite.
 - [14-Phase-1-Results.md](./14-Phase-1-Results.md)
 - [15-Phase-2-Base-Entity.md](./15-Phase-2-Base-Entity.md)
 - [16-Phase-2-Derived-Entities.md](./16-Phase-2-Derived-Entities.md)
+- [17-Phase-2-Entity-Data-Access.md](./17-Phase-2-Entity-Data-Access.md)
 
 ## Reading Order
 
