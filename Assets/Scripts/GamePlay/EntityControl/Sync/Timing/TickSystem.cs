@@ -8,16 +8,19 @@ namespace GamePlay.NetSync
     /// </summary>
     public class TickSystem
     {
-        /// <summary>每 Tick 触发，参数为当前 Tick 序号</summary>
-        public event Action<uint> OnTick;
+        private readonly int _maxTicksPerFrame;
+        private float _accumulator;
 
+        #region 属性
         public bool IsRunning { get; private set; }
         public uint CurrentTick { get; private set; }
-        public float TickDeltaTime { get; private set; }
-        public int TickRate { get; private set; }
-        
-        private float _accumulator;
-        private readonly int _maxTicksPerFrame;
+        public float TickDeltaTime { get; }
+        public int TickRate { get; }
+        #endregion
+
+        #region 事件
+        public event Action<uint> OnTick;
+        #endregion
 
         /// <param name="tickRate">每秒 Tick 数</param>
         /// <param name="maxTicksPerFrame">单帧最大追赶 Tick 数，防止螺旋</param>

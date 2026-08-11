@@ -5,5 +5,5 @@ Sync roles, sync module ids, and sync component contracts.
 ## Contracts
 
 - `INetSyncComponent`
-- `INetSyncStateSource<TSnapshot>`
-- `INetSyncStateReceiver<TSnapshot>`
+- `INetSyncSnapSource<TSnapshot>`
+- `INetSyncSnapshotReceiver<TSnapshot>`

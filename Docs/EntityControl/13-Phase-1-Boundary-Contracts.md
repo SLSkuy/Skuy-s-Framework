@@ -55,8 +55,8 @@ Location:
 
 | Contract | Purpose |
 | --- | --- |
-| `INetSyncStateSource<TSnapshot>` | Captures snapshots from an entity or module. |
-| `INetSyncStateReceiver<TSnapshot>` | Applies snapshots to an entity or module. |
+| `INetSyncSnapSource<TSnapshot>` | Captures snapshots from an entity or module. |
+| `INetSyncSnapshotReceiver<TSnapshot>` | Applies snapshots to an entity or module. |
 
 Existing `INetSyncComponent` remains the role-configuration contract for current sync components.
 
@@ -73,4 +73,3 @@ The following classes do not implement the new contracts yet:
 - `EntityAnimator`
 
 Reason: Phase 1 reserves boundaries first. Implementing these contracts will happen in reviewed follow-up steps after compatibility impact is checked.
-

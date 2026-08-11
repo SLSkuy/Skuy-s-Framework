@@ -17,6 +17,7 @@ This folder is the main container for the entity control rewrite.
 - [11-Phase-1-Target-Layout.md](./11-Phase-1-Target-Layout.md)
 - [12-Phase-1-Reusable-Type-Migration.md](./12-Phase-1-Reusable-Type-Migration.md)
 - [13-Phase-1-Boundary-Contracts.md](./13-Phase-1-Boundary-Contracts.md)
+- [14-Phase-1-Results.md](./14-Phase-1-Results.md)
 
 ## Reading Order
 
@@ -24,7 +25,7 @@ This folder is the main container for the entity control rewrite.
 2. Phase 1 checklist
 3. Phase 2 to 7 task docs
 4. Refactor task list
-5. Phase 1 audit, target layout, reusable type migration, and boundary contracts
+5. Phase 1 audit, target layout, reusable type migration, boundary contracts, and results
 
 ## Scope
 

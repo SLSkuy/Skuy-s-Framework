@@ -12,9 +12,11 @@ Goal: organize reusable base types and reserve extension points without changing
 - [x] 1.2 Create or confirm the target folder layout for `EntityControl`, entity modules, controllers, and sync entry points.
 - [x] 1.3 Move immediately reusable types into their target locations only when namespace and Unity meta impact are clear.
 - [x] 1.4 Define minimal contracts for entity, controller, module, skill entry, and sync entry boundaries.
-- [ ] 1.5 Run compile validation and update this checklist with Phase 1 results.
+- [x] 1.5 Run compile validation and update this checklist with Phase 1 results.
 
 Review gate: Phase 1 should not rewrite movement, FSM, protocol, snapshots, or gameplay behavior.
+
+Phase 1 result: foundation layout and contracts are complete. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
 
 ## Phase 2: Entity Layer
 
