@@ -8,7 +8,7 @@ Make sync an external modular layer for state transfer, prediction, interpolatio
 
 - sync module registry
 - sync data interface
-- transform sync split
+- transform sync split from old position sync
 - role dispatch flow
 - prediction and replay entry
 - animation sync entry
@@ -19,4 +19,3 @@ Make sync an external modular layer for state transfer, prediction, interpolatio
 - sync modules are pluggable
 - position sync is not a monolith
 - animation and skill states can enter sync without changing entity core
-

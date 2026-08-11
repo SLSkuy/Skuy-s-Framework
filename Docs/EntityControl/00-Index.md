@@ -25,6 +25,7 @@ This folder is the main container for the entity control rewrite.
 - [19-Phase-2-Results.md](./19-Phase-2-Results.md)
 - [20-Phase-3-Controller-Layer.md](./20-Phase-3-Controller-Layer.md)
 - [21-Phase-4-Module-Layer.md](./21-Phase-4-Module-Layer.md)
+- [22-Phase-5-Network-Sync.md](./22-Phase-5-Network-Sync.md)
 
 ## Reading Order
 

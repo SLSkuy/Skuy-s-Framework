@@ -10,9 +10,12 @@ namespace GamePlay.EntitySystem
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetEntityIdentity))]
     [RequireComponent(typeof(EntityCharacter))]
-    public class NetPositionSync : MonoBehaviour, INetSyncComponent
+    public class NetTransformSync : MonoBehaviour, INetSyncComponent,
+        INetSyncSnapSource<NetTransformSnapshot>,
+        INetSyncSnapshotReceiver<NetTransformSnapshot>,
+        INetInterpolatedSync<NetTransformSnapshot>
     {
-        public SyncModuleID ModuleId => SyncModuleID.PositionSync;
+        public SyncModuleID ModuleId => SyncModuleID.Transform;
         
         private NetEntityIdentity _identity;
         private EntityCharacter _character;

@@ -2,6 +2,8 @@
 {
     public enum SyncModuleID
     {
-        PositionSync
+        Transform,
+        Animation,
+        Skill
     }
 }

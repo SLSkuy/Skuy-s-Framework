@@ -7,3 +7,7 @@ Sync roles, sync module ids, and sync component contracts.
 - `INetSyncComponent`
 - `INetSyncSnapSource<TSnapshot>`
 - `INetSyncSnapshotReceiver<TSnapshot>`
+- `INetInterpolatedSync<TSnapshot>`
+- `INetSyncModuleRegistry`
+- `NetSyncModuleRegistry`
+- `NetEntityRoleAssembler`

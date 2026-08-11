@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetPositionSync))]
+    [RequireComponent(typeof(NetTransformSync))]
     public class PlayerController : EntityControllerBase
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace GamePlay.EntitySystem
         
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
-        private NetPositionSync _positionSync;
+        private NetTransformSync _transformSync;
 
         // 预测处理
         private InputState _currentInput;
@@ -87,7 +87,7 @@ namespace GamePlay.EntitySystem
             {
                 InputTick = inputTick,
                 Input = _currentInput,
-                Snapshot = _positionSync.CaptureSnapshot(inputTick)
+                Snapshot = _transformSync.CaptureSnapshot(inputTick)
             };
         }
 
@@ -108,7 +108,7 @@ namespace GamePlay.EntitySystem
             NetTransformSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             // 应用快照状态
-            _positionSync.ApplySnapshot(snapshot);
+            _transformSync.ApplySnapshot(snapshot);
 
             // 重置边沿检测基线为权威 Tick 那一帧的输入（若仍在缓冲内），
             // 否则回退 default，避免回放第一帧边沿检测错误
@@ -144,7 +144,7 @@ namespace GamePlay.EntitySystem
                 NetDriverInput.ApplyTo(Target, frame.Input, ref _previousInput);
                 Target.Simulate(tickDeltaTime);
 
-                frame.Snapshot = _positionSync.CaptureSnapshot(inputTick);
+                frame.Snapshot = _transformSync.CaptureSnapshot(inputTick);
                 _predictFrames[index] = frame;
             }
         }
@@ -200,7 +200,7 @@ namespace GamePlay.EntitySystem
         {
             _character = GetComponent<EntityCharacter>();
             Bind(_character);
-            _positionSync = GetComponent<NetPositionSync>();
+            _transformSync = GetComponent<NetTransformSync>();
         }
 
         private void Start()

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
@@ -8,10 +7,11 @@ namespace GamePlay.EntitySystem
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetEntityIdentity))]
+    [RequireComponent(typeof(NetSyncModuleRegistry))]
     public class NetEntityRoleAssembler : MonoBehaviour
     {
-        private readonly List<INetSyncComponent> _syncComponents = new();
         private NetEntityIdentity _identity;
+        private NetSyncModuleRegistry _registry;
         private EntityCharacter _character;
         private NetEntityRole _appliedRole;
         private bool _hasAppliedRole;
@@ -20,8 +20,8 @@ namespace GamePlay.EntitySystem
         {
             if (_hasAppliedRole && _appliedRole == role) return;
 
-            RefreshComponents();
-            foreach (INetSyncComponent component in _syncComponents)
+            _registry.Refresh();
+            foreach (INetSyncComponent component in _registry.Modules)
             {
                 component.ConfigureRole(role);
             }
@@ -35,19 +35,6 @@ namespace GamePlay.EntitySystem
             _hasAppliedRole = true;
         }
 
-        private void RefreshComponents()
-        {
-            _syncComponents.Clear();
-            MonoBehaviour[] behaviours = GetComponentsInChildren<MonoBehaviour>(true);
-            foreach (MonoBehaviour behaviour in behaviours)
-            {
-                if (behaviour is INetSyncComponent syncComponent)
-                {
-                    _syncComponents.Add(syncComponent);
-                }
-            }
-        }
-
         private void OnRoleChanged(NetEntityRole oldRole, NetEntityRole newRole)
         {
             ApplyRole(newRole);
@@ -58,6 +45,7 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             _identity = GetComponent<NetEntityIdentity>();
+            _registry = GetComponent<NetSyncModuleRegistry>();
             _character = GetComponent<EntityCharacter>();
             _identity.RoleChanged += OnRoleChanged;
         }

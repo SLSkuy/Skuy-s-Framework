@@ -66,14 +66,16 @@ Phase 4 result: module lifecycle, movement/animation wrappers, role-enabled modu
 
 Goal: make sync an external modular layer for state transfer, prediction, interpolation, and replay.
 
-- [ ] 5.1 Define sync module registry and module lookup rules.
-- [ ] 5.2 Split transform sync from `NetPositionSync` into focused sync data and runtime components.
-- [ ] 5.3 Define role dispatch flow for authority, replica, and local prediction.
-- [ ] 5.4 Add prediction and replay entry points without rewriting the snapshot algorithm.
-- [ ] 5.5 Add animation sync and skill sync entry contracts.
-- [ ] 5.6 Validate sync modules are pluggable and entity core stays independent of sync details.
+- [x] 5.1 Define sync module registry and module lookup rules.
+- [x] 5.2 Split transform sync from `NetPositionSync` into focused sync data and runtime components.
+- [x] 5.3 Define role dispatch flow for authority, replica, and local prediction.
+- [x] 5.4 Add prediction and replay entry points without rewriting the snapshot algorithm.
+- [x] 5.5 Add animation sync and skill sync entry contracts.
+- [x] 5.6 Validate sync modules are pluggable and entity core stays independent of sync details.
 
 Review gate: position sync is no longer a monolith; animation and skill state can join sync without entity core changes.
+
+Phase 5 result: sync registry, role dispatch, transform sync replacement, prediction/replay contracts, and animation/skill sync entries are in place. `NetPositionSync` was directly replaced by `NetTransformSync`; no inheritance wrapper is kept. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
 
 ## Phase 6: Skill Integration
 
