@@ -28,7 +28,7 @@ namespace GamePlay.EntitySystem
 
             if (_character != null)
             {
-                _character.tickDrive = role != NetEntityRole.LocalPlay;
+                _character.TickDrive = role != NetEntityRole.LocalPlay;
             }
 
             _appliedRole = role;
