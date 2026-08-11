@@ -6,19 +6,19 @@ namespace GamePlay.EntitySystem
     /// 远端玩家插值驱动器。只消费权威快照做渲染插值，不预测。
     /// </summary>
     [RequireComponent(typeof(NetEntityIdentity))]
-    [RequireComponent(typeof(NetTransformSync))]
+    [RequireComponent(typeof(NetPositionSync))]
     [RequireComponent(typeof(EntityCharacter))]
     public class RemoteController : MonoBehaviour
     {
         private NetEntityIdentity _identity;
-        private NetTransformSync _transformSync;
+        private NetPositionSync _positionSync;
         private EntityCharacter _character;
 
-        public void Init(NetEntityIdentity identity, NetTransformSync transformSync, EntityCharacter character)
+        public void Init(NetEntityIdentity identity, NetPositionSync positionSync, EntityCharacter character)
         {
             _identity = identity;
             _character = character;
-            _transformSync = transformSync;
+            _positionSync = positionSync;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace GamePlay.EntitySystem
             if (_character == null || _identity == null || _identity.Role != NetEntityRole.Replica) return;
             if (_identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
 
-            _transformSync.OnAuthoritySnapshot(snapshot);
+            _positionSync.OnAuthoritySnapshot(snapshot);
         }
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void UpdateInterpolation(float deltaTime)
         {
-            if (!_character || _transformSync == null) return;
-            _transformSync.UpdateInterpolation(deltaTime);
+            if (!_character || _positionSync == null) return;
+            _positionSync.UpdateInterpolation(deltaTime);
         }
 
         private void Awake()
         {
             _identity = GetComponent<NetEntityIdentity>();
-            _transformSync = GetComponent<NetTransformSync>();
+            _positionSync = GetComponent<NetPositionSync>();
             _character = GetComponent<EntityCharacter>();
         }
     }

@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetTransformSync))]
+    [RequireComponent(typeof(NetPositionSync))]
     public class LocalController : MonoBehaviour
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace GamePlay.EntitySystem
         
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
-        private NetTransformSync _transformSync;
+        private NetPositionSync _positionSync;
 
         // 预测处理
         private InputState _currentInput;
@@ -83,7 +83,7 @@ namespace GamePlay.EntitySystem
             {
                 InputTick = inputTick,
                 Input = _currentInput,
-                Snapshot = _transformSync.CaptureSnapshot(inputTick)
+                Snapshot = _positionSync.CaptureSnapshot(inputTick)
             };
         }
 
@@ -104,7 +104,7 @@ namespace GamePlay.EntitySystem
             NetTransformSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             // 应用快照状态
-            _transformSync.ApplySnapshot(snapshot);
+            _positionSync.ApplySnapshot(snapshot);
 
             // 重置边沿检测基线为权威 Tick 那一帧的输入（若仍在缓冲内），
             // 否则回退 default，避免回放第一帧边沿检测错误
@@ -140,7 +140,7 @@ namespace GamePlay.EntitySystem
                 NetDriverInput.ApplyTo(_character, frame.Input, ref _previousInput);
                 _character.Simulate(tickDeltaTime);
 
-                frame.Snapshot = _transformSync.CaptureSnapshot(inputTick);
+                frame.Snapshot = _positionSync.CaptureSnapshot(inputTick);
                 _predictFrames[index] = frame;
             }
         }
@@ -195,7 +195,7 @@ namespace GamePlay.EntitySystem
         private void Awake()
         {
             _character = GetComponent<EntityCharacter>();
-            _transformSync = GetComponent<NetTransformSync>();
+            _positionSync = GetComponent<NetPositionSync>();
         }
 
         private void Start()
