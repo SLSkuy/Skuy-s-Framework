@@ -15,7 +15,7 @@ namespace GamePlay.EntitySystem
         INetSyncSnapshotReceiver<NetPositionSnapshot>,
         INetSyncUpdatable
     {
-        public SyncModuleID ModuleId => SyncModuleID.Position;
+        public ModuleType ModuleType => ModuleType.Position;
         
         private NetEntityIdentity _identity;
         private EntityCharacter _character;

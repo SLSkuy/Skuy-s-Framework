@@ -12,7 +12,7 @@ namespace GamePlay.EntitySystem
 
         #region 状态属性
         protected EntityConfig Config => Context.Config;
-        protected MovementModule Motor => Context.Motor;
+        protected MovementModule Movement => Context.Movement;
         protected Vector2 LastMoveInput => Context.LastMoveInput;
         protected Vector2 LastAimInput => Context.LastAimInput;
         protected float LocomotionSpeed => Context.locomotionSpeed;

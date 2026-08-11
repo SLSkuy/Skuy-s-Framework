@@ -20,7 +20,7 @@ namespace GamePlay.EntitySystem
             // 空中二段跳（不切状态，Motor 内部判定 jumpCount 上限）
             if (JumpRequest)
             {
-                Motor.Jump(Config.jumpSpeed, Config.jumpCount);
+                Movement.Jump(Config.jumpSpeed, Config.jumpCount);
             }
 
             // 落地：默认回 walk/run，静止回 IDLE（不含 sprint）

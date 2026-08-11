@@ -9,10 +9,10 @@ namespace GamePlay.EntitySystem
     public class EntityContext
     {
         public readonly ExtendableStateMachine<uint> StateMachine;
-        public readonly CharacterController Controller;
-        public readonly Animator Animator;
         public readonly EntityConfig Config;
-        public readonly MovementModule Motor;
+        
+        public readonly MovementModule Movement;
+        public readonly AnimationModule Animation;
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
@@ -26,20 +26,19 @@ namespace GamePlay.EntitySystem
         // 持续状态：由 Controller/状态机写入，跨 Tick 保持
         #region 持续状态
         public float locomotionSpeed;
-        
-        public bool IsGrounded => Controller.isGrounded;
+
+        public bool IsGrounded => Movement.IsGrounded;
         public bool IsSprinting;
         public bool IsRunning;
         public bool IsFocus;    // 是否专注瞄准某一个位置
         #endregion
 
-        public EntityContext(EntityConfig config, CharacterController controller, MovementModule motor, Animator animator)
+        public EntityContext(EntityConfig config, MovementModule movement, AnimationModule animation)
         {
             StateMachine = new ExtendableStateMachine<uint>();
-            Controller = controller;
-            Motor = motor;
+            Movement = movement;
             Config = config;
-            Animator = animator;
+            Animation = animation;
         }
 
         /// <summary>

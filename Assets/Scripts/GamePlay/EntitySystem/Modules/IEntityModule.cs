@@ -13,7 +13,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 绑定实体目标。
         /// </summary>
-        void Bind(IEntityControlTarget target);
+        void Bind(BaseEntity target);
 
         /// <summary>
         /// 设置启用状态。

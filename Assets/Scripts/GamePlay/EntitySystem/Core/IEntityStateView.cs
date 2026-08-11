@@ -10,16 +10,6 @@ namespace GamePlay.EntitySystem
         /// 当前状态编号。
         /// </summary>
         uint CurrentState { get; }
-
-        /// <summary>
-        /// 当前移动速度。
-        /// </summary>
-        float LocomotionSpeed { get; }
-
-        /// <summary>
-        /// 是否接触地面。
-        /// </summary>
-        bool IsGrounded { get; }
     }
 }
 

@@ -7,21 +7,25 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class AnimationModule : EntityModuleBase
     {
+        private EntityConfig _config;
         private Animator _animator;
-        private EntityContext _context;
 
         private float _currentSpeed;
         private float _speedVelocity;
         private int _speedHash;
 
+        #region 属性
+        public Vector3 DeltaPosition => _animator.deltaPosition;
+        #endregion
+
         #region 动画能力
         /// <summary>
         /// 初始化动画模块上下文。
         /// </summary>
-        public void Init(EntityContext context)
+        public void Init(EntityConfig config, Animator animator)
         {
-            _context = context;
-            _animator = context.Animator;
+            _config = config;
+            _animator = animator;
         }
 
         /// <summary>
@@ -39,18 +43,8 @@ namespace GamePlay.EntitySystem
         {
             if (!IsEnabled || !_animator) return;
 
-            float smoothTime = 0.1f;
-            float locomotionSpeed = 0f;
-            if (_context != null)
-            {
-                smoothTime = _context.Config ? _context.Config.animSpeedSmoothTime : smoothTime;
-                locomotionSpeed = _context.locomotionSpeed;
-            }
-            else if (Target is BaseEntity entity && entity.TryGetConfig(out EntityConfig config) && config != null)
-            {
-                smoothTime = config.animSpeedSmoothTime;
-                locomotionSpeed = Target.LocomotionSpeed;
-            }
+            float smoothTime = _config.animSpeedSmoothTime;
+            float locomotionSpeed = Target.LocomotionSpeed;
 
             _currentSpeed = Mathf.SmoothDamp(_currentSpeed, locomotionSpeed,
                 ref _speedVelocity, smoothTime, Mathf.Infinity, deltaTime);

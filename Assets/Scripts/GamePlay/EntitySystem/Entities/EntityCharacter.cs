@@ -12,7 +12,6 @@ namespace GamePlay.EntitySystem
         public override bool TickDrive { get; set; }
         public override uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         public override float LocomotionSpeed => _context?.locomotionSpeed ?? 0f;
-        public override bool IsGrounded => _context?.IsGrounded ?? false;
         #endregion
 
         #region 实体控制
@@ -79,7 +78,7 @@ namespace GamePlay.EntitySystem
         {
             if (TickDrive || !_config.rootMotion) return;
 
-            _context?.Motor.ApplyRootMotion(_context.Animator.deltaPosition, Time.deltaTime);
+            _context?.Movement.ApplyRootMotion(_context.Animation.DeltaPosition, Time.deltaTime);
         }
         #endregion
 
@@ -88,16 +87,19 @@ namespace GamePlay.EntitySystem
         {
             InitBaseEntity();
 
+            // 初始化移动组件
             MovementModule movementModule = GetComponent<MovementModule>();
             if (movementModule == null) movementModule = gameObject.AddComponent<MovementModule>();
             movementModule.Init(_characterController, _config, _orientation, _mesh);
             movementModule.Bind(this);
-            SetContext(new EntityContext(_config, _characterController, movementModule, _animator));
 
+            // 初始化动画组件
             AnimationModule animationModule = GetComponent<AnimationModule>();
             if (animationModule == null) animationModule = gameObject.AddComponent<AnimationModule>();
             animationModule.Bind(this);
-            animationModule.Init(_context);
+            animationModule.Init(_config, _animator);
+            
+            SetContext(new EntityContext(_config, movementModule, animationModule));
 
             RegisterStates();
             _context.StateMachine.ChangeState(EntityState.IDLE);

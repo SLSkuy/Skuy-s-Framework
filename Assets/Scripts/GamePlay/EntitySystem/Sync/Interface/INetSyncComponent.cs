@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 同步组件ID
         /// </summary>
-        SyncModuleID ModuleId { get; }
+        ModuleType ModuleType { get; }
         
         /// <summary>
         /// 根据网络角色配置同步组件行为

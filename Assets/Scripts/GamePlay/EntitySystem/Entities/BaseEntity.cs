@@ -17,12 +17,6 @@ namespace GamePlay.EntitySystem
         protected Transform _mesh;
 
         #region 属性
-        public NetEntityIdentity Identity => _identity;
-        public EntityConfig Config => _config;
-        public CharacterController CharacterController => _characterController;
-        public Animator Animator => _animator;
-        public Transform Orientation => _orientation;
-        public Transform Mesh => _mesh;
         public uint EntityId => _identity != null ? _identity.EntityId : 0;
         public bool HasIdentity => _identity != null && _identity.IsInitialized;
         public bool IsInitialized => _context != null;
@@ -30,7 +24,6 @@ namespace GamePlay.EntitySystem
         public abstract bool TickDrive { get; set; }
         public abstract uint CurrentState { get; }
         public abstract float LocomotionSpeed { get; }
-        public abstract bool IsGrounded { get; }
         #endregion
 
         #region 实体数据
@@ -40,7 +33,7 @@ namespace GamePlay.EntitySystem
         public bool TryGetConfig(out EntityConfig config)
         {
             config = _config;
-            return config != null;
+            return config;
         }
 
         /// <summary>

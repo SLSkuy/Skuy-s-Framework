@@ -11,7 +11,7 @@ namespace GamePlay.EntitySystem
     public class NetEntitySyncRoot : MonoBehaviour
     {
         private readonly List<INetSyncComponent> _modules = new();
-        private readonly Dictionary<SyncModuleID, INetSyncComponent> _moduleMap = new();
+        private readonly Dictionary<ModuleType, INetSyncComponent> _moduleMap = new();
 
         private NetEntityIdentity _identity;
         private EntityCharacter _character;
@@ -38,31 +38,31 @@ namespace GamePlay.EntitySystem
                 if (behaviour is not INetSyncComponent syncComponent) continue;
 
                 _modules.Add(syncComponent);
-                _moduleMap[syncComponent.ModuleId] = syncComponent;
+                _moduleMap[syncComponent.ModuleType] = syncComponent;
             }
         }
 
         /// <summary>
         /// 查询指定同步模块。
         /// </summary>
-        public bool TryGetModule(SyncModuleID moduleId, out INetSyncComponent component)
+        public bool TryGetModule(ModuleType moduleType, out INetSyncComponent component)
         {
             if (_moduleMap.Count == 0)
             {
                 Refresh();
             }
 
-            return _moduleMap.TryGetValue(moduleId, out component);
+            return _moduleMap.TryGetValue(moduleType, out component);
         }
 
         /// <summary>
         /// 查询指定类型的同步模块。
         /// </summary>
-        public bool TryGetModule<TModule>(SyncModuleID moduleId, out TModule module)
+        public bool TryGetModule<TModule>(ModuleType moduleType, out TModule module)
             where TModule : class, INetSyncComponent
         {
             module = null;
-            if (!TryGetModule(moduleId, out INetSyncComponent component)) return false;
+            if (!TryGetModule(moduleType, out INetSyncComponent component)) return false;
 
             module = component as TModule;
             return module != null;

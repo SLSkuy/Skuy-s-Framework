@@ -1,6 +1,6 @@
 ﻿namespace GamePlay.EntitySystem
 {
-    public enum SyncModuleID
+    public enum ModuleType
     {
         Position,
     }
