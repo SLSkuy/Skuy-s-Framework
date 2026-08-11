@@ -40,25 +40,27 @@ Goal: make controllers route control intent instead of owning heavy gameplay beh
 - [x] 3.2 Refactor local/player control flow into `PlayerController`.
 - [x] 3.3 Refactor authority flow into `AuthorityController` with clear simulation ownership.
 - [x] 3.4 Refactor remote/replica flow into `ReplicaController`.
-- [x] 3.5 Add AI and vehicle controller shells only where current code needs integration points.
+- [x] 3.5 Add AI controller shell only where current code needs an integration point.
 - [x] 3.6 Define drive-mode switching rules and validate old controller paths are either migrated or explicitly marked compatibility-only.
 
 Review gate: player, authority, replica, and AI flows can evolve independently.
 
-Phase 3 result: controller binding, drive modes, direct `PlayerController`/`ReplicaController` replacements, AI/vehicle controller entries, and intent-interface routing are in place. Prediction/replay/interpolation behavior remains in official controller files until module and sync phases.
+Phase 3 result: controller binding, drive modes, direct `PlayerController`/`ReplicaController` replacements, AI controller entry, and intent-interface routing are in place. No vehicle controller is required. Prediction/replay/interpolation behavior remains in official controller files until module and sync phases.
 
 ## Phase 4: Module Layer
 
 Goal: convert entity abilities into attachable modules.
 
-- [ ] 4.1 Define base module lifecycle and entity binding contract.
-- [ ] 4.2 Extract movement behavior into `MovementModule`.
-- [ ] 4.3 Extract animation behavior into detachable `AnimationModule`.
-- [ ] 4.4 Add `InteractionModule`, `HealthModule`, `CameraTargetModule`, `SkillModule`, and `PhysicsProxyModule` contracts or minimal implementations.
-- [ ] 4.5 Ensure modules can be enabled or disabled by entity role.
-- [ ] 4.6 Validate that animation reads entity state and does not drive entity core state directly.
+- [x] 4.1 Define base module lifecycle and entity binding contract.
+- [x] 4.2 Extract movement behavior into `MovementModule`.
+- [x] 4.3 Extract animation behavior into detachable `AnimationModule`.
+- [x] 4.4 Add `InteractionModule`, `HealthModule`, `CameraTargetModule`, `SkillModule`, and `PhysicsProxyModule` contracts or minimal implementations.
+- [x] 4.5 Ensure modules can be enabled or disabled by entity role.
+- [x] 4.6 Validate that animation reads entity state and does not drive entity core state directly.
 
 Review gate: abilities are assembled by modules; entity core does not grow new gameplay responsibilities.
+
+Phase 4 result: module lifecycle, movement/animation wrappers, role-enabled module toggling, and capability module entry points are in place. Reusable `EntityMotor` and `EntityAnimator` implementations were moved directly under `EntityControl/Modules`. Unity Editor compile validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.
 
 ## Phase 5: Network Sync
 

@@ -11,6 +11,6 @@ Target location for control-source orchestrators.
 - `EntityDriveMode`
 - `EntityControllerBase`
 - `PlayerController`
+- `AuthorityController`
 - `ReplicaController`
 - `AIController`
-- `VehicleController`

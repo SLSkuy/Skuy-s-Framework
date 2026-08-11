@@ -15,7 +15,6 @@ Types:
 - `PlayerController`
 - `ReplicaController`
 - `AIController`
-- `VehicleController`
 
 ## Controller Binding
 
@@ -45,7 +44,6 @@ Reusable old controller implementations were moved into `EntityControl/Controlle
 - `Authority`
 - `Replica`
 - `AI`
-- `Vehicle`
 
 Mapping:
 
@@ -55,7 +53,6 @@ Mapping:
 | `AuthorityController` | `Authority` |
 | `ReplicaController` | `Replica` |
 | `AIController` | `AI` |
-| `VehicleController` | `Vehicle` |
 
 ## Input Intent Routing
 

@@ -50,11 +50,9 @@ The system should stay extensible for animation, combat, interaction, vehicles, 
 - `AuthorityController`
 - `ReplicaController`
 - `AIController`
-- `VehicleController`
 
 ## Network Sync Position
 
 Sync should be an external capability layer, not a property of the entity core.
 
 Position sync, animation sync, and skill sync should all be modular and independently evolvable.
-

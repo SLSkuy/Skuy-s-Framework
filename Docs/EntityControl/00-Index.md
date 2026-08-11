@@ -24,6 +24,7 @@ This folder is the main container for the entity control rewrite.
 - [18-Phase-2-EntityCharacter-Compatibility.md](./18-Phase-2-EntityCharacter-Compatibility.md)
 - [19-Phase-2-Results.md](./19-Phase-2-Results.md)
 - [20-Phase-3-Controller-Layer.md](./20-Phase-3-Controller-Layer.md)
+- [21-Phase-4-Module-Layer.md](./21-Phase-4-Module-Layer.md)
 
 ## Reading Order
 
