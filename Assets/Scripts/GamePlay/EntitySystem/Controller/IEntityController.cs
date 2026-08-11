@@ -8,12 +8,12 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 当前绑定的实体目标。
         /// </summary>
-        IEntityControlTarget Target { get; }
+        BaseEntity Target { get; }
 
         /// <summary>
         /// 绑定实体目标。
         /// </summary>
-        void Bind(IEntityControlTarget target);
+        void Bind(BaseEntity target);
 
         /// <summary>
         /// 解绑实体目标。

@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     /// 实体基础抽象类，负责实体通用组件缓存与控制目标边界。
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public abstract class BaseEntity : MonoBehaviour, IEntityControlTarget
+    public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateView
     {
         protected NetEntityIdentity _identity;
         protected EntityConfig _config;
