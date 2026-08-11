@@ -18,6 +18,7 @@ This folder is the main container for the entity control rewrite.
 - [12-Phase-1-Reusable-Type-Migration.md](./12-Phase-1-Reusable-Type-Migration.md)
 - [13-Phase-1-Boundary-Contracts.md](./13-Phase-1-Boundary-Contracts.md)
 - [14-Phase-1-Results.md](./14-Phase-1-Results.md)
+- [15-Phase-2-Base-Entity.md](./15-Phase-2-Base-Entity.md)
 
 ## Reading Order
 
