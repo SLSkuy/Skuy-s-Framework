@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,19 +10,22 @@ namespace Framework.Editor
 {
     /// <summary>
     /// Protobuf .proto 文件编译器工具窗口
-    /// 识别项目中的 .proto 文件，并使用 protoc 生成 C# 协议文件
     /// </summary>
     public class ProtoCompilerWindow : EditorWindow
     {
         private string protocPath = "Protocol/protoc.exe";
         private string outputPath = "Assets/Scripts/GamePlay/Protocol/Generated";
         private string searchPath = "Assets";
+
         private Vector2 scrollPosition;
-        private List<ProtoFileInfo> protoFiles = new();
+
+        private readonly List<ProtoFileInfo> protoFiles = new();
+
         private bool selectAll = true;
+        private bool showOutput;
+
         private string lastError = "";
         private string lastOutput = "";
-        private bool showOutput;
 
         private class ProtoFileInfo
         {
@@ -33,151 +37,240 @@ namespace Framework.Editor
         public static void ShowWindow()
         {
             var window = GetWindow<ProtoCompilerWindow>("Proto Compiler");
-            window.minSize = new Vector2(480, 400);
+            window.minSize = new Vector2(520, 600);
         }
 
         private void OnEnable()
         {
+            protocPath = EditorPrefs.GetString("ProtoCompiler.ProtocPath", protocPath);
+            outputPath = EditorPrefs.GetString("ProtoCompiler.OutputPath", outputPath);
+            searchPath = EditorPrefs.GetString("ProtoCompiler.SearchPath", searchPath);
             RefreshProtoFiles();
+        }
+
+        private void OnDisable()
+        {
+            EditorPrefs.SetString("ProtoCompiler.ProtocPath", protocPath);
+            EditorPrefs.SetString("ProtoCompiler.OutputPath", outputPath);
+            EditorPrefs.SetString("ProtoCompiler.SearchPath", searchPath);
         }
 
         private void OnGUI()
         {
-            using (new EditorGUILayout.VerticalScope())
-            {
-                // 标题
-                GUILayout.Label("Protobuf Compiler", EditorStyles.boldLabel);
-                GUILayout.Space(5);
+            EditorGUILayout.BeginVertical();
 
-                // protoc 路径配置
-                EditorGUILayout.LabelField("Protoc Configuration", EditorStyles.boldLabel);
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    protocPath = EditorGUILayout.TextField("Protoc Path", protocPath);
-                    if (GUILayout.Button("Browse", GUILayout.Width(60)))
-                    {
-                        string selectedPath = EditorUtility.OpenFilePanel("Select protoc executable", "", "exe");
-                        if (!string.IsNullOrEmpty(selectedPath))
-                        {
-                            protocPath = selectedPath;
-                        }
-                    }
-                }
+            DrawHeader();
+            DrawProtocConfig();
+
+            DrawProtoFiles();
+
+            GUILayout.FlexibleSpace();
+
+            DrawCompileButton();
+            DrawOutput();
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawHeader()
+        {
+            GUILayout.Space(5);
+
+            GUILayout.Label("Protobuf Compiler", EditorStyles.largeLabel);
+            EditorGUILayout.LabelField("Generate C# protocol classes from .proto files", EditorStyles.miniLabel);
+
+            GUILayout.Space(10);
+        }
+
+        private void DrawSection(string title, Action content, params GUILayoutOption[] options)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox, options);
+
+            GUILayout.Label(title, EditorStyles.boldLabel);
+            GUILayout.Space(5);
+
+            content?.Invoke();
+
+            EditorGUILayout.EndVertical();
+            GUILayout.Space(8);
+        }
+
+        private void DrawProtocConfig()
+        {
+            DrawSection("⚙ Protoc Configuration", () =>
+            {
+                DrawPathField("Protoc Path", ref protocPath, true);
+
+                GUILayout.Space(5);
 
                 if (string.IsNullOrEmpty(protocPath))
                 {
-                    EditorGUILayout.HelpBox("请设置 protoc 可执行文件路径，或确保 protoc 已在系统 PATH 中", MessageType.Info);
+                    EditorGUILayout.HelpBox("请设置 protoc 路径，或者加入系统 PATH", MessageType.Info);
                 }
 
                 GUILayout.Space(5);
 
-                // 搜索路径
-                using (new EditorGUILayout.HorizontalScope())
+                EditorGUILayout.BeginHorizontal();
+
+                searchPath = EditorGUILayout.TextField("Search Path", searchPath);
+
+                if (GUILayout.Button("Refresh", GUILayout.Width(70)))
                 {
-                    searchPath = EditorGUILayout.TextField("Search Path", searchPath);
-                    if (GUILayout.Button("Refresh", GUILayout.Width(60)))
+                    RefreshProtoFiles();
+                }
+
+                EditorGUILayout.EndHorizontal();
+
+                GUILayout.Space(5);
+
+                DrawPathField("Output Path", ref outputPath, false);
+            });
+        }
+
+        private void DrawPathField(string label, ref string value, bool file)
+        {
+            EditorGUILayout.LabelField(label);
+
+            EditorGUILayout.BeginHorizontal();
+
+            value = EditorGUILayout.TextField(value);
+
+            if (GUILayout.Button("Browse", GUILayout.Width(70)))
+            {
+                if (file)
+                {
+                    string path = EditorUtility.OpenFilePanel("Select protoc", "", "exe");
+
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        RefreshProtoFiles();
+                        value = path;
                     }
                 }
-
-                GUILayout.Space(5);
-
-                // 输出路径
-                using (new EditorGUILayout.HorizontalScope())
+                else
                 {
-                    outputPath = EditorGUILayout.TextField("Output Path", outputPath);
-                    if (GUILayout.Button("Browse", GUILayout.Width(60)))
+                    string path = EditorUtility.OpenFolderPanel("Select output directory", "Assets", "");
+
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        string selectedPath = EditorUtility.OpenFolderPanel("Select output directory", "Assets", "");
-                        if (!string.IsNullOrEmpty(selectedPath))
+                        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+
+                        if (path.StartsWith(projectRoot))
                         {
-                            string projectPath = Directory.GetParent(Application.dataPath).FullName;
-                            if (selectedPath.StartsWith(projectPath))
-                            {
-                                outputPath = selectedPath.Substring(projectPath.Length + 1);
-                            }
-                            else
-                            {
-                                EditorUtility.DisplayDialog("Error", "请选择项目内的目录", "OK");
-                            }
+                            value = path.Substring(projectRoot.Length + 1);
+                        }
+                        else
+                        {
+                            EditorUtility.DisplayDialog("Error", "请选择项目内部目录", "OK");
                         }
                     }
                 }
+            }
 
-                GUILayout.Space(10);
+            EditorGUILayout.EndHorizontal();
+        }
+        
+        private void DrawProtoFiles()
+        {
+            DrawSection($"📄 Proto Files ({protoFiles.Count})", () =>
+            {
+                if (protoFiles.Count == 0)
+                {
+                    EditorGUILayout.HelpBox("未找到 .proto 文件", MessageType.Warning);
+                    return;
+                }
 
-                // Proto 文件列表
-                EditorGUILayout.LabelField($"Found Proto Files ({protoFiles.Count})", EditorStyles.boldLabel);
+                selectAll = protoFiles.TrueForAll(x => x.selected);
+
+                EditorGUI.BeginChangeCheck();
+
+                selectAll = EditorGUILayout.Toggle("Select All", selectAll);
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    foreach (var file in protoFiles)
+                    {
+                        file.selected = selectAll;
+                    }
+                }
+
                 GUILayout.Space(5);
 
-                if (protoFiles.Count > 0)
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        EditorGUI.BeginChangeCheck();
-                        selectAll = EditorGUILayout.Toggle("Select All", selectAll);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            foreach (var f in protoFiles)
-                            {
-                                f.selected = selectAll;
-                            }
-                        }
-                    }
+                    scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.ExpandHeight(true));
 
-                    GUILayout.Space(5);
-
-                    scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(150));
                     foreach (var file in protoFiles)
                     {
                         file.selected = EditorGUILayout.ToggleLeft(file.relativePath, file.selected);
                     }
+
                     EditorGUILayout.EndScrollView();
                 }
-                else
+            }, GUILayout.ExpandHeight(true));
+        }
+
+        private void DrawCompileButton()
+        {
+            int count = 0;
+
+            foreach (var file in protoFiles)
+            {
+                if (file.selected)
                 {
-                    EditorGUILayout.HelpBox("未找到 .proto 文件", MessageType.Warning);
-                }
-
-                GUILayout.Space(10);
-
-                // 编译按钮
-                GUI.enabled = protoFiles.Count > 0;
-                if (GUILayout.Button("Compile Proto Files", GUILayout.Height(35)))
-                {
-                    CompileSelectedFiles();
-                }
-                GUI.enabled = true;
-
-                GUILayout.Space(10);
-
-                // 输出日志区域
-                if (showOutput && (!string.IsNullOrEmpty(lastOutput) || !string.IsNullOrEmpty(lastError)))
-                {
-                    EditorGUILayout.LabelField("Output", EditorStyles.boldLabel);
-
-                    if (!string.IsNullOrEmpty(lastError))
-                    {
-                        EditorGUILayout.HelpBox(lastError, MessageType.Error);
-                    }
-
-                    if (!string.IsNullOrEmpty(lastOutput))
-                    {
-                        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
-                        {
-                            EditorGUILayout.LabelField(lastOutput, EditorStyles.wordWrappedLabel);
-                        }
-                    }
-
-                    if (GUILayout.Button("Clear Output"))
-                    {
-                        lastOutput = "";
-                        lastError = "";
-                        showOutput = false;
-                    }
+                    count++;
                 }
             }
+
+            GUI.enabled = count > 0;
+
+            Color oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = new Color(0.35f, 0.8f, 0.35f);
+
+            if (GUILayout.Button($"▶ Compile ({count}) Files", GUILayout.Height(40)))
+            {
+                CompileSelectedFiles();
+            }
+
+            GUI.backgroundColor = oldColor;
+            GUI.enabled = true;
+
+            GUILayout.Space(5);
+        }
+
+        private void DrawOutput()
+        {
+            if (!string.IsNullOrEmpty(lastOutput) || !string.IsNullOrEmpty(lastError))
+            {
+                showOutput = EditorGUILayout.Foldout(showOutput, "📤 Output Log", true);
+            }
+
+            if (!showOutput)
+            {
+                return;
+            }
+
+            DrawSection("Compilation Result", () =>
+            {
+                if (!string.IsNullOrEmpty(lastError))
+                {
+                    EditorGUILayout.HelpBox(lastError, MessageType.Error);
+                }
+
+                if (!string.IsNullOrEmpty(lastOutput))
+                {
+                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    {
+                        EditorGUILayout.LabelField(lastOutput, EditorStyles.wordWrappedLabel);
+                    }
+                }
+
+                if (GUILayout.Button("Clear Output"))
+                {
+                    lastOutput = "";
+                    lastError = "";
+                    showOutput = false;
+                }
+            });
         }
 
         private void RefreshProtoFiles()
@@ -190,6 +283,8 @@ namespace Framework.Editor
             }
 
             string[] files = Directory.GetFiles(searchPath, "*.proto", SearchOption.AllDirectories);
+            Array.Sort(files);
+
             foreach (string filePath in files)
             {
                 protoFiles.Add(new ProtoFileInfo
@@ -199,12 +294,15 @@ namespace Framework.Editor
                 });
             }
 
+            selectAll = true;
+
             Repaint();
         }
 
         private void CompileSelectedFiles()
         {
             List<string> selectedFiles = new();
+
             foreach (var file in protoFiles)
             {
                 if (file.selected)
@@ -219,58 +317,53 @@ namespace Framework.Editor
                 return;
             }
 
-            // 确保输出目录存在
             if (!Directory.Exists(outputPath))
             {
                 Directory.CreateDirectory(outputPath);
             }
 
-            // 确定 protoc 路径
             string protoc = GetProtocPath();
+
             if (string.IsNullOrEmpty(protoc))
             {
-                EditorUtility.DisplayDialog("Error", "未找到 protoc，请在设置中指定路径或将 protoc 添加到系统 PATH", "OK");
+                EditorUtility.DisplayDialog("Error", "未找到 protoc", "OK");
                 return;
             }
 
-            StringBuilder allOutput = new StringBuilder();
-            StringBuilder allErrors = new StringBuilder();
-            bool hasErrors = false;
+            StringBuilder output = new();
+            StringBuilder errors = new();
 
-            // 获取项目根目录
+            bool hasError = false;
+
             string projectRoot = Directory.GetParent(Application.dataPath).FullName;
 
-            // 获取 include 目录 (protoc 需要 google/protobuf 的 .proto 导入)
             string includePath = Path.Combine(Path.GetDirectoryName(protoc), "include");
+
             if (!Directory.Exists(includePath))
             {
                 includePath = Path.Combine(projectRoot, "Assets/Plugins/Protobuf/include");
             }
 
-            EditorUtility.DisplayProgressBar("Compiling Proto", "Compiling...", 0f);
+            EditorUtility.DisplayProgressBar("Compile Proto", "Starting...", 0);
 
             try
             {
                 for (int i = 0; i < selectedFiles.Count; i++)
                 {
                     string protoFile = selectedFiles[i];
-                    float progress = (float)i / selectedFiles.Count;
 
                     EditorUtility.DisplayProgressBar(
-                        "Compiling Proto",
-                        $"Compiling {Path.GetFileName(protoFile)}... ({i + 1}/{selectedFiles.Count})",
-                        progress
-                    );
+                        "Compile Proto",
+                        $"Compiling {Path.GetFileName(protoFile)}",
+                        (float)i / selectedFiles.Count);
 
-                    // 为每个 .proto 文件单独调用 protoc
                     string protoAbsolutePath = Path.Combine(projectRoot, protoFile);
                     string outputAbsolutePath = Path.Combine(projectRoot, outputPath);
-                    string protoDir = Path.GetDirectoryName(protoAbsolutePath);
 
-                    // 构建参数
-                    StringBuilder args = new StringBuilder();
+                    StringBuilder args = new();
+
                     args.Append($"--csharp_out=\"{outputAbsolutePath}\" ");
-                    args.Append($"--proto_path=\"{protoDir}\" ");
+                    args.Append($"--proto_path=\"{Path.GetDirectoryName(protoAbsolutePath)}\" ");
 
                     if (Directory.Exists(includePath))
                     {
@@ -279,7 +372,7 @@ namespace Framework.Editor
 
                     args.Append($"\"{protoAbsolutePath}\"");
 
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    ProcessStartInfo info = new()
                     {
                         FileName = protoc,
                         Arguments = args.ToString(),
@@ -291,27 +384,27 @@ namespace Framework.Editor
                         StandardErrorEncoding = Encoding.UTF8
                     };
 
-                    using (Process process = Process.Start(startInfo))
+                    using (Process process = Process.Start(info))
                     {
                         string stdout = process.StandardOutput.ReadToEnd();
                         string stderr = process.StandardError.ReadToEnd();
+
                         process.WaitForExit();
 
                         if (process.ExitCode != 0 || !string.IsNullOrEmpty(stderr))
                         {
-                            hasErrors = true;
-                            allErrors.AppendLine($"[{Path.GetFileName(protoFile)}]");
-                            allErrors.AppendLine(stderr);
+                            hasError = true;
+                            errors.AppendLine($"[{Path.GetFileName(protoFile)}]");
+                            errors.AppendLine(stderr);
                         }
 
                         if (!string.IsNullOrEmpty(stdout))
                         {
-                            allOutput.AppendLine(stdout);
+                            output.AppendLine(stdout);
                         }
                     }
                 }
 
-                // 刷新 AssetDatabase
                 AssetDatabase.Refresh();
             }
             finally
@@ -321,38 +414,34 @@ namespace Framework.Editor
 
             showOutput = true;
 
-            if (hasErrors)
+            if (hasError)
             {
-                lastError = allErrors.ToString();
-                lastOutput = allOutput.ToString();
-                EditorUtility.DisplayDialog("Compilation Finished",
-                    $"编译完成，有错误。\n\n成功: {selectedFiles.Count} 个文件已处理\n输出目录: {outputPath}",
-                    "OK");
+                lastError = errors.ToString();
+                lastOutput = output.ToString();
             }
             else
             {
                 lastError = "";
-                lastOutput = allOutput.Length > 0 ? allOutput.ToString() : "所有文件编译成功！";
-                EditorUtility.DisplayDialog("Compilation Finished",
-                    $"编译成功！\n\n已处理: {selectedFiles.Count} 个 .proto 文件\n输出目录: {outputPath}",
-                    "OK");
+                lastOutput = output.Length > 0 ? output.ToString() : "所有 Proto 文件编译成功!";
             }
-        }
 
+            EditorUtility.DisplayDialog("Compilation Finished", hasError ? 
+                $"编译完成，但存在错误\n\n处理文件: {selectedFiles.Count}" : $"编译成功!\n\n处理文件: {selectedFiles.Count}", "OK");
+        }
+        
         private string GetProtocPath()
         {
-            // 优先使用用户设置的路径
             if (!string.IsNullOrEmpty(protocPath) && File.Exists(protocPath))
             {
                 return protocPath;
             }
 
-            // 尝试在常见位置查找
             string[] commonPaths =
             {
                 Path.Combine(Application.dataPath, "../Tools/protoc.exe"),
+
 #if UNITY_EDITOR_WIN
-                @"C:\protoc\bin\protoc.exe",
+                @"C:\protoc\bin\protoc.exe"
 #endif
             };
 
@@ -364,10 +453,9 @@ namespace Framework.Editor
                 }
             }
 
-            // 尝试系统 PATH
             try
             {
-                ProcessStartInfo whichInfo = new ProcessStartInfo
+                ProcessStartInfo info = new()
                 {
                     FileName = "where",
                     Arguments = "protoc",
@@ -376,19 +464,19 @@ namespace Framework.Editor
                     RedirectStandardOutput = true
                 };
 
-                using (Process proc = Process.Start(whichInfo))
+                using Process process = Process.Start(info);
+                string result = process.StandardOutput.ReadToEnd();
+
+                process.WaitForExit();
+
+                if (process.ExitCode == 0 && !string.IsNullOrEmpty(result))
                 {
-                    string result = proc.StandardOutput.ReadToEnd().Trim();
-                    proc.WaitForExit();
-                    if (proc.ExitCode == 0 && !string.IsNullOrEmpty(result))
-                    {
-                        return result.Split('\n')[0].Trim();
-                    }
+                    return result.Split('\n')[0].Trim();
                 }
             }
             catch
             {
-                // 忽略异常
+                // ignored
             }
 
             return null;
