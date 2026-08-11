@@ -33,7 +33,7 @@ namespace GamePlay.EntitySystem
         public bool TryGetConfig(out EntityConfig config)
         {
             config = _config;
-            return config;
+            return config != null;
         }
 
         /// <summary>

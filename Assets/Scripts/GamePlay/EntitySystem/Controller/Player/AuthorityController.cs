@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using Framework;
-using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 服务端权威驱动器（普通 C# 类，由 ServerSimulator 持有）。
+    /// 服务端权威驱动器
     /// 接收客户端上传输入→排队→每 Tick 消费一条→模拟→产出快照。
     /// 算法沿用旧版 ServerPlayerController，模拟入口改为 EntityCharacter.Simulate。
     /// </summary>
