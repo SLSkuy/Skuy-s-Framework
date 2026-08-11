@@ -10,17 +10,17 @@ namespace GamePlay.EntitySystem
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetEntityIdentity))]
     [RequireComponent(typeof(EntityCharacter))]
-    public class NetTransformSync : MonoBehaviour, INetSyncComponent,
-        INetSyncSnapSource<NetTransformSnapshot>,
-        INetSyncSnapshotReceiver<NetTransformSnapshot>,
-        INetInterpolatedSync<NetTransformSnapshot>
+    public class NetPositionSync : MonoBehaviour, INetSyncComponent,
+        INetSyncSnapshotSource<NetPositionSnapshot>,
+        INetSyncSnapshotReceiver<NetPositionSnapshot>,
+        INetSyncUpdatable
     {
-        public SyncModuleID ModuleId => SyncModuleID.Transform;
+        public SyncModuleID ModuleId => SyncModuleID.Position;
         
         private NetEntityIdentity _identity;
         private EntityCharacter _character;
         private CharacterController _characterController;
-        private SnapshotBuffer<NetTransformSnapshot> _snapshots;
+        private SnapshotBuffer<NetPositionSnapshot> _snapshots;
         private CapsuleCollider _replicaMovementCollider;
 
         private Vector3 _lastCapturedPosition;
@@ -53,7 +53,7 @@ namespace GamePlay.EntitySystem
                 _interpolationDelayTicks = Mathf.Max(1, config.interpolationDelayTicks);
 
                 int capacity = Mathf.Max(8, _interpolationDelayTicks * 4);
-                _snapshots = new SnapshotBuffer<NetTransformSnapshot>(capacity);
+                _snapshots = new SnapshotBuffer<NetPositionSnapshot>(capacity);
             }
             else
             {
@@ -65,7 +65,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 接收远程获取到的快照信息，仅Replica角色使用
         /// </summary>
-        public void OnAuthoritySnapshot(in NetTransformSnapshot snapshot)
+        public void OnAuthoritySnapshot(in NetPositionSnapshot snapshot)
         {
             if (_identity != null && _identity.IsInitialized && snapshot.EntityId != _identity.EntityId) return;
             
@@ -93,10 +93,18 @@ namespace GamePlay.EntitySystem
             _renderServerTime = Math.Min(_renderServerTime + deltaTime, targetRenderTime);
 
             if (_snapshots.TrySample(_renderServerTime, _simulationTickInterval,
-                    out NetTransformSnapshot from, out NetTransformSnapshot to, out float t))
+                    out NetPositionSnapshot from, out NetPositionSnapshot to, out float t))
             {
                 ApplyInterpolatedSnapshot(from, to, t);
             }
+        }
+
+        /// <summary>
+        /// 由同步根组件驱动同步帧。
+        /// </summary>
+        public void SyncUpdate(float deltaTime)
+        {
+            UpdateInterpolation(deltaTime);
         }
 
         /// <summary>
@@ -129,7 +137,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获当前快照
         /// </summary>
-        public NetTransformSnapshot CaptureSnapshot(uint snapshotTick = 0, uint lastProcessedInputTick = 0)
+        public NetPositionSnapshot CaptureSnapshot(uint snapshotTick = 0, uint lastProcessedInputTick = 0)
         {
             Vector3 position = transform.position;
             Vector3 velocity = Vector3.zero;
@@ -146,13 +154,12 @@ namespace GamePlay.EntitySystem
             _lastCapturedTick = snapshotTick;
             _hasCapturedSnapshot = true;
 
-            return new NetTransformSnapshot
+            return new NetPositionSnapshot
             {
                 EntityId = _identity ? _identity.EntityId : 0,
                 SnapshotTick = snapshotTick,
                 LastProcessedInputTick = lastProcessedInputTick,
                 Position = position,
-                Rotation = transform.eulerAngles,
                 Velocity = velocity,
                 MovementState = _character ? _character.CurrentState : EntityState.IDLE
             };
@@ -161,13 +168,13 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 应用快照
         /// </summary>
-        public void ApplySnapshot(in NetTransformSnapshot snapshot)
+        public void ApplySnapshot(in NetPositionSnapshot snapshot)
         {
             // 去除CC影响
             bool wasEnabled = _characterController != null && _characterController.enabled;
             if (wasEnabled) _characterController.enabled = false;
 
-            transform.SetPositionAndRotation(snapshot.Position, Quaternion.Euler(snapshot.Rotation));
+            transform.position = snapshot.Position;
             CurrentRenderVelocity = snapshot.Velocity;
             CurrentMovementState = snapshot.MovementState;
 
@@ -177,16 +184,14 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 插值过渡快照
         /// </summary>
-        public void ApplyInterpolatedSnapshot(in NetTransformSnapshot from, in NetTransformSnapshot to, float t)
+        public void ApplyInterpolatedSnapshot(in NetPositionSnapshot from, in NetPositionSnapshot to, float t)
         {
             Vector3 position = Vector3.Lerp(from.Position, to.Position, t);
-            Quaternion rotation = Quaternion.Slerp(Quaternion.Euler(from.Rotation), Quaternion.Euler(to.Rotation), t);
-            
             // 去除CC影响
             bool wasEnabled = _characterController != null && _characterController.enabled;
             if (wasEnabled) _characterController.enabled = false;
             
-            transform.SetPositionAndRotation(position, rotation);
+            transform.position = position;
             
             if (wasEnabled) _characterController.enabled = true;
 

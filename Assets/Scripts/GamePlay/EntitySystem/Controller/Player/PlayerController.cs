@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// 客户端本地玩家控制器，负责控制客户端对应角色
     /// </summary>
     [RequireComponent(typeof(EntityCharacter))]
-    [RequireComponent(typeof(NetTransformSync))]
+    [RequireComponent(typeof(NetPositionSync))]
     public class PlayerController : EntityControllerBase
     {
         /// <summary>
@@ -18,12 +18,12 @@ namespace GamePlay.EntitySystem
         {
             public uint InputTick;
             public InputState Input;
-            public NetTransformSnapshot Snapshot;
+            public NetPositionSnapshot Snapshot;
         }
         
         private IInputStateProvider _inputProvider;
         private EntityCharacter _character;
-        private NetTransformSync _transformSync;
+        private NetPositionSync _positionSync;
 
         // 预测处理
         private InputState _currentInput;
@@ -87,14 +87,14 @@ namespace GamePlay.EntitySystem
             {
                 InputTick = inputTick,
                 Input = _currentInput,
-                Snapshot = _transformSync.CaptureSnapshot(inputTick)
+                Snapshot = _positionSync.CaptureSnapshot(inputTick)
             };
         }
 
         /// <summary>
         /// 接受权威状态，由外部统一Tick时调用
         /// </summary>
-        public void OnAuthoritySnapshot(NetTransformSnapshot snapshot, float tickTime)
+        public void OnAuthoritySnapshot(NetPositionSnapshot snapshot, float tickTime)
         {
             uint authorityTick = snapshot.LastProcessedInputTick;
             if (authorityTick <= _lastProcessedInputTick) return;
@@ -105,10 +105,10 @@ namespace GamePlay.EntitySystem
             int index = (int)(_currentInputTick % (uint)_predictFrames.Length);
 
             // 获取预测快照
-            NetTransformSnapshot predictSnapshot = _predictFrames[index].Snapshot;
+            NetPositionSnapshot predictSnapshot = _predictFrames[index].Snapshot;
 
             // 应用快照状态
-            _transformSync.ApplySnapshot(snapshot);
+            _positionSync.ApplySnapshot(snapshot);
 
             // 重置边沿检测基线为权威 Tick 那一帧的输入（若仍在缓冲内），
             // 否则回退 default，避免回放第一帧边沿检测错误
@@ -120,7 +120,7 @@ namespace GamePlay.EntitySystem
             Reply(tickTime);
 
             // 获取权威修正后的重放快照
-            NetTransformSnapshot replayedSnapshot = _predictFrames[index].Snapshot;
+            NetPositionSnapshot replayedSnapshot = _predictFrames[index].Snapshot;
 
             // 开始和解
             Reconciliation(predictSnapshot, replayedSnapshot);
@@ -144,7 +144,7 @@ namespace GamePlay.EntitySystem
                 EntityControllerUtils.ApplyTo(Target, frame.Input, ref _previousInput);
                 Target.Simulate(tickDeltaTime);
 
-                frame.Snapshot = _transformSync.CaptureSnapshot(inputTick);
+                frame.Snapshot = _positionSync.CaptureSnapshot(inputTick);
                 _predictFrames[index] = frame;
             }
         }
@@ -152,7 +152,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 和解，计算预测状态与权威状态间的差距，进行处理
         /// </summary>
-        private void Reconciliation(NetTransformSnapshot predictSnapshot, NetTransformSnapshot replayedSnapshot)
+        private void Reconciliation(NetPositionSnapshot predictSnapshot, NetPositionSnapshot replayedSnapshot)
         {
             // 暂时不使用smoother插值
         }
@@ -200,7 +200,7 @@ namespace GamePlay.EntitySystem
         {
             _character = GetComponent<EntityCharacter>();
             Bind(_character);
-            _transformSync = GetComponent<NetTransformSync>();
+            _positionSync = GetComponent<NetPositionSync>();
         }
 
         private void Start()

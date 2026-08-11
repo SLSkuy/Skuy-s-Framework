@@ -12,7 +12,7 @@ namespace GamePlay.EntitySystem
         public readonly CharacterController Controller;
         public readonly Animator Animator;
         public readonly EntityConfig Config;
-        public readonly EntityMotor Motor;
+        public readonly MovementModule Motor;
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
@@ -20,7 +20,6 @@ namespace GamePlay.EntitySystem
         // 瞬时状态需要每Tick结束重置
         #region 瞬时状态
         public bool RunToggleRequest;         
-        public bool DashRequest;
         public bool JumpRequest;
         #endregion
 
@@ -34,7 +33,7 @@ namespace GamePlay.EntitySystem
         public bool IsFocus;    // 是否专注瞄准某一个位置
         #endregion
 
-        public EntityContext(EntityConfig config, CharacterController controller, EntityMotor motor, Animator animator)
+        public EntityContext(EntityConfig config, CharacterController controller, MovementModule motor, Animator animator)
         {
             StateMachine = new ExtendableStateMachine<uint>();
             Controller = controller;
@@ -50,7 +49,6 @@ namespace GamePlay.EntitySystem
         public void ResetFrameFlags()
         {
             RunToggleRequest = false;
-            DashRequest = false;
             JumpRequest = false;
         }
     }
