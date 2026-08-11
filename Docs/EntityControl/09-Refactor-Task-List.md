@@ -81,11 +81,13 @@ Phase 5 result: sync registry, role dispatch, transform sync replacement, predic
 
 Goal: remove old coupling paths and stabilize the entity/control/sync structure.
 
-- [ ] 6.1 Remove migrated controller paths and unused compatibility code.
-- [ ] 6.2 Remove old entity coupling after references are migrated.
-- [ ] 6.3 Remove old sync coupling after module sync is validated.
-- [ ] 6.4 Unify namespaces and file layout with repository conventions.
-- [ ] 6.5 Add focused EditMode or PlayMode tests for high-risk behavior.
-- [ ] 6.6 Run final compile/test validation and document remaining risks.
+- [x] 6.1 Remove migrated controller paths and unused compatibility code.
+- [x] 6.2 Remove old entity coupling after references are migrated.
+- [x] 6.3 Remove old sync coupling after module sync is validated.
+- [x] 6.4 Unify namespaces and file layout with repository conventions.
+- [x] 6.5 Add focused EditMode or PlayMode tests for high-risk behavior.
+- [x] 6.6 Run final compile/test validation and document remaining risks.
 
 Review gate: old flow is no longer the official flow; future expansion should not require another core rewrite.
+
+Phase 6 result: migrated the remaining entity core, entity config, FSM, and network identity files into `EntityControl`; removed empty legacy runtime folders; confirmed runtime references no longer point to old controller/submodule/sync paths. Unity Editor compile/test validation is still required because no Unity/dotnet/msbuild/csc executable is available in the command environment.

@@ -45,4 +45,4 @@ Existing behavior remains in place until each phase migrates it:
 
 ## Deferred Cleanup
 
-`Assets/Scripts/GamePlay/EntitySystem/EntityControl` is currently empty and is not the target folder. It should be left untouched during Phase 1 and cleaned in Phase 7 after Unity references and meta state are checked.
+`Assets/Scripts/GamePlay/EntitySystem/EntityControl` is not the target folder. Cleanup removes it after Unity references and meta state are checked.

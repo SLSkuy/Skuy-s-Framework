@@ -11,8 +11,11 @@ Target location for `BaseEntity` and derived entity types.
 - `MonsterEntity`
 - `BossEntity`
 - `CompanionEntity`
-- `VehicleEntity`
 - `InteractableEntity`
+- `EntityCharacter`
+- `EntityContext`
+- `EntityConfig`
+- entity FSM state types
 
 ## Access APIs
 

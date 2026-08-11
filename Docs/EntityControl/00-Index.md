@@ -10,7 +10,7 @@ This folder is the main container for the entity control rewrite.
 - [04-Phase-3-Controller-Layer.md](./04-Phase-3-Controller-Layer.md)
 - [05-Phase-4-Module-Layer.md](./05-Phase-4-Module-Layer.md)
 - [06-Phase-5-Network-Sync.md](./06-Phase-5-Network-Sync.md)
-- [08-Phase-7-Cleanup.md](./08-Phase-7-Cleanup.md)
+- [08-Phase-6-Cleanup.md](./08-Phase-6-Cleanup.md)
 - [09-Refactor-Task-List.md](./09-Refactor-Task-List.md)
 - [10-Phase-1-Dependency-Audit.md](./10-Phase-1-Dependency-Audit.md)
 - [11-Phase-1-Target-Layout.md](./11-Phase-1-Target-Layout.md)
@@ -25,6 +25,7 @@ This folder is the main container for the entity control rewrite.
 - [20-Phase-3-Controller-Layer.md](./20-Phase-3-Controller-Layer.md)
 - [21-Phase-4-Module-Layer.md](./21-Phase-4-Module-Layer.md)
 - [22-Phase-5-Network-Sync.md](./22-Phase-5-Network-Sync.md)
+- [24-Phase-6-Cleanup-Results.md](./24-Phase-6-Cleanup-Results.md)
 
 ## Reading Order
 
