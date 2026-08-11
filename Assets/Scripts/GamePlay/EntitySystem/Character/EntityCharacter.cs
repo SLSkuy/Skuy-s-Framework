@@ -8,8 +8,18 @@ namespace GamePlay.EntitySystem
     [RequireComponent(typeof(CharacterController))]
     public class EntityCharacter : BaseEntity
     {
+        /// <summary>
+        /// 外部驱动开关 true 时 Update 不自动 Simulate，由网络驱动器在 Tick 边界用 TickDeltaTime 驱动。
+        /// 单机模式 false（默认）。
+        /// </summary>
+        public bool tickDrive;
+
         #region 属性
-        public override bool TickDrive { get; set; }
+        public override bool TickDrive
+        {
+            get => tickDrive;
+            set => tickDrive = value;
+        }
         public override uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         public override float LocomotionSpeed => _context?.locomotionSpeed ?? 0f;
         public override bool IsGrounded => _context?.IsGrounded ?? false;
