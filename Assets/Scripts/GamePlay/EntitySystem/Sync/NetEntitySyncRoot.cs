@@ -15,10 +15,15 @@ namespace GamePlay.EntitySystem
         [SerializeField] private uint entityId;
         [SerializeField] private NetEntityRole role = NetEntityRole.LocalPlay;
 
+        private static readonly Dictionary<ModuleType, Func<EntityModuleBase, INetSyncComponent>> SyncComponentFactories = new()
+        {
+            { ModuleType.Position, module => new NetPositionSync((MovementModule)module) },
+        };
+
         // 实体角色能力组件
         private readonly List<EntityModuleBase> _entityModules = new();
         private readonly Dictionary<ModuleType, EntityModuleBase> _entityModuleMap = new();
-        
+
         // 能力网络同步组件
         private readonly List<INetSyncComponent> _syncComponents = new();
         private readonly Dictionary<ModuleType, INetSyncComponent> _syncComponentMap = new();
@@ -43,7 +48,7 @@ namespace GamePlay.EntitySystem
         #region 事件
         public event Action<NetEntityRole, NetEntityRole> RoleChanged;
         #endregion
-        
+
         /// <summary>
         /// 初始化网络实体身份与角色。
         /// </summary>
@@ -69,7 +74,7 @@ namespace GamePlay.EntitySystem
             RoleChanged?.Invoke(oldRole, newRole);
             ApplyRole(role);
         }
-        
+
         /// <summary>
         /// 应用网络角色到所有模块和控制器。
         /// </summary>
@@ -77,7 +82,6 @@ namespace GamePlay.EntitySystem
         {
             if (_hasAppliedRole && _appliedRole == newRole && _activeController != null) return;
 
-            // 获取实体能力列表并生成对应的同步组件
             Refresh();
             foreach (INetSyncComponent component in _syncComponents)
             {
@@ -103,7 +107,7 @@ namespace GamePlay.EntitySystem
             CollectEntityModules();
             InitSyncModules();
         }
-        
+
         /// <summary>
         /// 收集实体能力模块。
         /// </summary>
@@ -122,15 +126,59 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 根据实体能力模块，创建并配置同步模块
+        /// 根据实体能力模块，创建并配置同步模块。
         /// </summary>
         private void InitSyncModules()
         {
-            // TODO 创建并绑定组件
+            _syncComponents.Clear();
+            _syncComponentMap.Clear();
+
+            foreach (EntityModuleBase module in _entityModules)
+            {
+                TryAddSyncComponent(module);
+            }
         }
-        
+
         /// <summary>
-        /// 获取模块
+        /// 尝试创建并登记同步组件。
+        /// </summary>
+        private void TryAddSyncComponent(EntityModuleBase module)
+        {
+            if (module == null || _syncComponentMap.ContainsKey(module.ModuleType)) return;
+
+            INetSyncComponent syncComponent = CreateSyncComponent(module);
+            if (syncComponent == null)
+            {
+                Debug.LogWarning($"[{nameof(NetEntitySyncRoot)}] {name} 上的 {module.GetType().Name} 没有对应的同步组件。", this);
+                return;
+            }
+
+            syncComponent.Bind(this);
+            _syncComponents.Add(syncComponent);
+            _syncComponentMap[module.ModuleType] = syncComponent;
+        }
+
+        /// <summary>
+        /// 创建与能力模块对应的同步组件。
+        /// </summary>
+        private INetSyncComponent CreateSyncComponent(EntityModuleBase module)
+        {
+            if (!SyncComponentFactories.TryGetValue(module.ModuleType, out Func<EntityModuleBase, INetSyncComponent> factory))
+                return null;
+
+            try
+            {
+                return factory(module);
+            }
+            catch (InvalidCastException)
+            {
+                Debug.LogError($"[{nameof(NetEntitySyncRoot)}] {name} 的 {module.ModuleType} 同步工厂类型不匹配：{module.GetType().Name}。", this);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取同步模块。
         /// </summary>
         public bool TryGetModule<T>(ModuleType moduleType, out T component)
             where T : class, INetSyncComponent
@@ -151,7 +199,7 @@ namespace GamePlay.EntitySystem
             component = typedComponent;
             return true;
         }
-        
+
         /// <summary>
         /// 按角色装配控制器。
         /// </summary>
@@ -203,23 +251,20 @@ namespace GamePlay.EntitySystem
                 case PlayerController playerController:
                     playerController.Init(_entity, this, newRole == NetEntityRole.LocalPlay);
                     break;
-
                 case AuthorityController authorityController:
                     authorityController.Init(_entity, this);
                     break;
-
                 case ReplicaController replicaController:
                     replicaController.Init(_entity, this);
                     break;
-
                 default:
                     controller.Bind(_entity);
                     break;
             }
         }
-        
+
         #region 生命周期
-        
+
         private void Awake()
         {
             _entity = gameObject.GetOrAddComponent<EntityCharacter>();
@@ -233,7 +278,6 @@ namespace GamePlay.EntitySystem
 
         private void Update()
         {
-            // 单机游玩不需要创建同步组件
             if (role == NetEntityRole.LocalPlay) return;
 
             foreach (INetSyncComponent component in _syncComponents)
@@ -241,7 +285,7 @@ namespace GamePlay.EntitySystem
                 component.Update(Time.deltaTime);
             }
         }
-        
+
         #endregion
     }
 }
