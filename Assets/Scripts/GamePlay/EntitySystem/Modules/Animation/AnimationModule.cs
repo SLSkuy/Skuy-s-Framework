@@ -15,6 +15,7 @@ namespace GamePlay.EntitySystem
         private int _speedHash;
 
         #region 属性
+        public override ModuleType ModuleType => ModuleType.Animation;
         public Vector3 DeltaPosition => _animator.deltaPosition;
         #endregion
 

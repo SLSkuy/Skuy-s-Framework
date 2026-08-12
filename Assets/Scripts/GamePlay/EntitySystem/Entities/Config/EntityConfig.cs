@@ -12,8 +12,6 @@ namespace GamePlay.EntitySystem
         public float sprintSpeed = 8f;
         public int jumpCount = 2;
         public float jumpSpeed = 12f;
-        public float dashSpeed = 20f;
-        public float dashDuration = 0.3f;
 
         [Header("旋转属性")]
         [Min(0f)] public float aimHorizontalSpeed = 180f;
@@ -27,6 +25,8 @@ namespace GamePlay.EntitySystem
         [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 动画 Speed 参数插值平滑时间（秒）
 
         [Header("物理属性")] 
+        public float radius = 0.2f;
+        public float height = 1.7f;
         public float gravity = 12f;
         public float maxFallSpeed = 20f;
     }

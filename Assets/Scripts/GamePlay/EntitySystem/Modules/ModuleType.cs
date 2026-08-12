@@ -3,5 +3,7 @@
     public enum ModuleType
     {
         Position,
+        Rotation,
+        Animation,
     }
 }

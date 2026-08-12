@@ -27,6 +27,8 @@ namespace GamePlay.EntitySystem
         private bool _isDashing;
 
         #region 状态属性
+        public override ModuleType ModuleType => ModuleType.Position;
+        public Vector3 Position => transform.position;
         public bool IsGrounded => _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
@@ -36,17 +38,55 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 初始化移动模块运行时依赖。
         /// </summary>
-        public void Init(CharacterController controller, EntityConfig config, Transform orientation, Transform mesh)
+        public void Init(EntityConfig config, Transform orientation, Transform mesh)
         {
-            _controller = controller;
+            _locomotionSpeed = _config.walkSpeed;
             _config = config;
             _orientation = orientation;
             _mesh = mesh;
-            _locomotionSpeed = _config.walkSpeed;
         }
         #endregion
 
+        #region 网络同步
+        
+        /// <summary>
+        /// 添加碰撞体或驱动器
+        /// </summary>
+        public void SetReplicaMode(bool isReplica)
+        {
+            if (isReplica)
+            {
+                CapsuleCollider collider = gameObject.AddComponent<CapsuleCollider>();
+                collider.height = _config.height;
+                collider.radius = _config.radius;
+                collider.center = new Vector3(0, _config.height, 0);
+            }
+            else
+            {
+                _controller = gameObject.AddComponent<CharacterController>();
+                _controller.height = _config.height;
+                _controller.radius = _config.radius;
+                _controller.center = new Vector3(0, _config.height, 0);
+            }
+        }
+
+        /// <summary>
+        /// 直接设置实体位置，用于权威快照或插值快照应用。
+        /// </summary>
+        public void Teleport(Vector3 position)
+        {
+            bool wasEnabled = _controller != null && _controller.enabled;
+            if (wasEnabled) _controller.enabled = false;
+
+            transform.position = position;
+
+            if (wasEnabled) _controller.enabled = true;
+        }
+        
+        #endregion
+
         #region 移动能力
+        
         /// <summary>
         /// 位移：以模型朝向作为移动方向基准，并应用重力与冲刺计时器推进。
         /// </summary>
@@ -201,6 +241,7 @@ namespace GamePlay.EntitySystem
                 _isDashing = false;
             }
         }
+        
         #endregion
     }
 }

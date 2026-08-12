@@ -6,12 +6,17 @@ namespace GamePlay.EntitySystem
     public interface IEntitySimulation
     {
         /// <summary>
-        /// 是否由外部 Tick 驱动模拟。
+        /// 是否由外部 Tick 驱动模拟
         /// </summary>
         bool TickDrive { get; set; }
 
         /// <summary>
-        /// 推进实体模拟。
+        /// 初始化实体，初始化完成后才能进行模拟
+        /// </summary>
+        void Init();
+        
+        /// <summary>
+        /// 推进实体模拟
         /// </summary>
         void Simulate(float deltaTime);
     }

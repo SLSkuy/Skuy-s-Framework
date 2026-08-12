@@ -6,6 +6,11 @@ namespace GamePlay.EntitySystem
     public interface IEntityModule
     {
         /// <summary>
+        /// 组件类型
+        /// </summary>
+        ModuleType ModuleType { get; }
+        
+        /// <summary>
         /// 模块是否启用。
         /// </summary>
         bool IsEnabled { get; }

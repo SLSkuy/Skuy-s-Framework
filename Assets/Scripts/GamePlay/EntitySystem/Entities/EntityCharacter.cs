@@ -1,11 +1,11 @@
 using UnityEngine;
+using Utils;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
     /// 实体角色基类，装配状态机并暴露输入写入接口。
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
     public class EntityCharacter : BaseEntity
     {
         #region 属性
@@ -56,6 +56,27 @@ namespace GamePlay.EntitySystem
         #endregion
 
         #region 模拟入口
+
+        protected override void InitComponents()
+        {
+            base.InitComponents();
+            
+            // 初始化移动组件
+            MovementModule movementModule = gameObject.GetOrAddComponent<MovementModule>();
+            movementModule.Init(_config, _orientation, _mesh);
+            movementModule.Bind(this);
+
+            // 初始化动画组件
+            AnimationModule animationModule = gameObject.GetOrAddComponent<AnimationModule>();
+            animationModule.Bind(this);
+            animationModule.Init(_config, _animator);
+            
+            SetContext(new EntityContext(_config, movementModule, animationModule));
+            
+            RegisterStates();
+            _context.StateMachine.ChangeState(EntityState.IDLE);
+        }
+
         /// <summary>
         /// 推进状态机一帧，并清除瞬时输入标记。
         /// </summary>
@@ -80,35 +101,16 @@ namespace GamePlay.EntitySystem
 
             _context?.Movement.ApplyRootMotion(_context.Animation.DeltaPosition, Time.deltaTime);
         }
+        
         #endregion
 
         #region 生命周期
-        private void Start()
-        {
-            InitBaseEntity();
-
-            // 初始化移动组件
-            MovementModule movementModule = GetComponent<MovementModule>();
-            if (movementModule == null) movementModule = gameObject.AddComponent<MovementModule>();
-            movementModule.Init(_characterController, _config, _orientation, _mesh);
-            movementModule.Bind(this);
-
-            // 初始化动画组件
-            AnimationModule animationModule = GetComponent<AnimationModule>();
-            if (animationModule == null) animationModule = gameObject.AddComponent<AnimationModule>();
-            animationModule.Bind(this);
-            animationModule.Init(_config, _animator);
-            
-            SetContext(new EntityContext(_config, movementModule, animationModule));
-
-            RegisterStates();
-            _context.StateMachine.ChangeState(EntityState.IDLE);
-        }
-
+        
         private void Update()
         {
             if (!TickDrive) Simulate(Time.deltaTime);
         }
+        
         #endregion
     }
 }

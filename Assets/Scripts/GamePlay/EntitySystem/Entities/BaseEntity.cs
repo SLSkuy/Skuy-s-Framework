@@ -5,13 +5,11 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体基础抽象类，负责实体通用组件缓存与控制目标边界。
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
     public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateView
     {
         protected NetEntitySyncRoot _syncRoot;
         protected EntityConfig _config;
         protected EntityContext _context;
-        protected CharacterController _characterController;
         protected Animator _animator;
         protected Transform _orientation;
         protected Transform _mesh;
@@ -72,38 +70,33 @@ namespace GamePlay.EntitySystem
         #endregion
 
         #region 模拟入口
+
+        public virtual void Init()
+        {
+            InitComponents();
+            InitConfig();
+        }
+        
         public abstract void Simulate(float deltaTime);
         #endregion
-
-        #region 生命周期
+        
         /// <summary>
         /// 缓存实体通用组件与默认子节点。
         /// </summary>
-        protected virtual void CacheCommonComponents()
+        protected virtual void InitComponents()
         {
-            if (_characterController == null) _characterController = GetComponent<CharacterController>();
-            if (_animator == null) _animator = GetComponent<Animator>();
-            if (_syncRoot == null) _syncRoot = GetComponent<NetEntitySyncRoot>();
-            if (_orientation == null) _orientation = transform.Find("orientation");
-            if (_mesh == null) _mesh = transform.Find("mesh");
+            if (!_animator) _animator = GetComponent<Animator>();
+            if (!_syncRoot) _syncRoot = GetComponent<NetEntitySyncRoot>();
+            if (!_orientation) _orientation = transform.Find("orientation");
+            if (!_mesh) _mesh = transform.Find("mesh");
         }
 
         /// <summary>
         /// 加载实体默认配置。
         /// </summary>
-        protected virtual void LoadDefaultConfig()
+        protected virtual void InitConfig()
         {
             if (_config == null) _config = EntityConfig.Instance;
         }
-
-        /// <summary>
-        /// 初始化基础实体数据，派生类可在装配自身逻辑前调用。
-        /// </summary>
-        protected virtual void InitBaseEntity()
-        {
-            CacheCommonComponents();
-            LoadDefaultConfig();
-        }
-        #endregion
     }
 }

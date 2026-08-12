@@ -11,12 +11,12 @@ namespace GamePlay.EntitySystem
         private bool _isEnabled = true;
 
         #region 属性
+        public abstract ModuleType ModuleType { get; }
         public BaseEntity Target => _target;
         public bool HasTarget => _target != null;
         public bool IsEnabled => _isEnabled;
         #endregion
-
-        #region 模块绑定
+        
         /// <summary>
         /// 绑定实体目标。
         /// </summary>
@@ -60,7 +60,6 @@ namespace GamePlay.EntitySystem
         /// 解绑完成回调。
         /// </summary>
         protected virtual void OnUnbound(BaseEntity oldTarget) { }
-        #endregion
     }
 }
 
