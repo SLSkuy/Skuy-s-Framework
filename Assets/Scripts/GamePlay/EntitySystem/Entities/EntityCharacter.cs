@@ -8,8 +8,9 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityCharacter : BaseEntity
     {
+        private EntitySimulation _simulation;
+
         #region 属性
-        public override bool TickDrive { get; set; }
         public override uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
 
@@ -63,19 +64,38 @@ namespace GamePlay.EntitySystem
             movementModule.Init(_config);
             movementModule.Bind(this);
 
-            SetContext(new EntityContext(_config, movementModule));
+            RotationModule rotationModule = gameObject.GetOrAddComponent<RotationModule>();
+            rotationModule.Init(_config);
+            rotationModule.Bind(this);
+
+            SetContext(new EntityContext(_config, movementModule, rotationModule));
 
             RegisterStates();
             _context.StateMachine.ChangeState(EntityState.IDLE);
+            _simulation = new EntitySimulation(_context);
         }
 
         /// <summary>
-        /// 推进状态机一帧，并清理瞬时输入标记。
+        /// 使用完整命令推进一次固定 Tick 模拟。
         /// </summary>
-        public override void Simulate(float deltaTime)
+        public override void Step(uint tick, float deltaTime, in EntityInputCommand command)
         {
-            _context.StateMachine.Update(deltaTime);
-            _context.ResetFrameFlags();
+            _simulation?.Step(tick, deltaTime, command);
+        }
+
+        public override EntitySimulationState CaptureSimulationState()
+        {
+            return _simulation != null ? _simulation.CaptureSimulationState() : default;
+        }
+
+        public override EntityRollbackState CaptureRollbackState()
+        {
+            return _simulation != null ? _simulation.CaptureRollbackState() : default;
+        }
+
+        public override void RestoreRollbackState(in EntityRollbackState state)
+        {
+            _simulation?.RestoreRollbackState(state);
         }
 
         private void RegisterStates()
@@ -88,12 +108,5 @@ namespace GamePlay.EntitySystem
         }
         #endregion
 
-        #region 生命周期
-        private void Update()
-        {
-            if (!IsInitialized) return;
-            if (!TickDrive) Simulate(Time.deltaTime);
-        }
-        #endregion
     }
 }

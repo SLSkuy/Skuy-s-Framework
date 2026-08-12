@@ -24,6 +24,7 @@ namespace GamePlay.EntitySystem
         public override ModuleType ModuleType => ModuleType.Position;
         
         public Vector3 Position => transform.position;
+        public Vector3 LinearVelocity { get; private set; }
         public bool IsGrounded => _controller != null && _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
@@ -63,7 +64,7 @@ namespace GamePlay.EntitySystem
                 _controller = gameObject.GetOrAddComponent<CharacterController>();
                 _controller.height = _config.height;
                 _controller.radius = _config.radius;
-                _controller.skinWidth = 0f;
+                _controller.skinWidth = 0.0001f;
                 _controller.minMoveDistance = 0f;
                 _controller.center = new Vector3(0, _config.height / 2, 0);
             }
@@ -80,6 +81,40 @@ namespace GamePlay.EntitySystem
             transform.position = position;
 
             if (wasEnabled) _controller.enabled = true;
+        }
+
+        /// <summary>
+        /// 捕获移动模块完整回滚状态。
+        /// </summary>
+        public MovementRollbackState CaptureRollbackState()
+        {
+            return new MovementRollbackState
+            {
+                LastMoveDirection = _lastMoveDir,
+                LinearVelocity = LinearVelocity,
+                DashDirection = _dashDir,
+                LocomotionSpeed = _locomotionSpeed,
+                VerticalVelocity = _verticalVelocity,
+                DashRemainingTime = _dashAccumulator,
+                JumpCount = _jumpCount,
+                IsDashing = _isDashing
+            };
+        }
+
+        /// <summary>
+        /// 恢复位置和全部移动内部状态。
+        /// </summary>
+        public void RestoreRollbackState(Vector3 position, in MovementRollbackState state)
+        {
+            Teleport(position);
+            _lastMoveDir = state.LastMoveDirection;
+            LinearVelocity = state.LinearVelocity;
+            _dashDir = state.DashDirection;
+            _locomotionSpeed = state.LocomotionSpeed;
+            _verticalVelocity = state.VerticalVelocity;
+            _dashAccumulator = state.DashRemainingTime;
+            _jumpCount = state.JumpCount;
+            _isDashing = state.IsDashing;
         }
         
         #endregion
@@ -151,6 +186,7 @@ namespace GamePlay.EntitySystem
             Vector3 moveDir = _isDashing ? _dashDir : _lastMoveDir;
             Vector3 velocity = new Vector3(moveDir.x, 0f, moveDir.z) * _locomotionSpeed;
             velocity.y = _verticalVelocity;
+            LinearVelocity = velocity;
             _controller.Move(velocity * dt);
         }
 

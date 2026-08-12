@@ -1,0 +1,92 @@
+using System.Collections.Generic;
+using Framework;
+
+namespace GamePlay.EntitySystem
+{
+    /// <summary>
+    /// 服务端权威驱动器
+    /// 接收客户端上传输入→排队→每 Tick 消费一条→模拟→产出快照。
+    /// 阶段 1 兼容入口，命令统一通过 EntitySimulation.Step 执行。
+    /// </summary>
+    public class AuthorityController : EntityControllerBase
+    {
+        /// <summary>
+        /// 待处理输入
+        /// </summary>
+        private struct PendingInput
+        {
+            public uint Tick;
+            public InputState State;
+        }
+
+        private NetworkObjectIdentity _syncRoot;
+        private readonly EntityInputCommandBuilder _commandBuilder = new();
+
+        // 接收转换后的输入，按 Tick 顺序消费
+        private readonly Queue<PendingInput> _pendingInputs = new();
+        private uint _latestReceivedInputTick;
+        private uint _lastProcessedInputIndex;
+
+        #region 属性
+        public override EntityDriveMode DriveMode => EntityDriveMode.Authority;
+        public bool IsReady { get; private set; }
+        #endregion
+        
+        /// <summary>
+        /// 配置服务器模拟玩家数据源
+        /// </summary>
+        public void Init(BaseEntity entity, NetworkObjectIdentity syncRoot)
+        {
+            IsReady = true;
+            Bind(entity);
+            _syncRoot = syncRoot;
+        }
+
+        /// <summary>
+        /// 接收客户端上传输入
+        /// </summary>
+        public void ReceiveInput(uint inputTick, InputState inputState)
+        {
+            if (!IsReady || inputTick <= _latestReceivedInputTick) return;
+
+            _latestReceivedInputTick = inputTick;
+            _pendingInputs.Enqueue(new PendingInput { Tick = inputTick, State = inputState });
+        }
+        
+        /// <summary>
+        /// 使用 Tick 间隔模拟，每个 Tick 只消费一条输入，
+        /// 确保确认 Tick 与客户端预测/重放的模拟步数一一对应。
+        /// </summary>
+        public void Simulate(float tickDeltaTime)
+        {
+            if (!IsReady || Target == null) return;
+            if (_pendingInputs.Count == 0) return;
+
+            PendingInput pendingInput = _pendingInputs.Dequeue();
+
+            EntityInputCommand command = _commandBuilder.Build(pendingInput.Tick, pendingInput.State);
+            Target.Step(pendingInput.Tick, tickDeltaTime, command);
+
+            // 只有在本次服务端模拟完成后，才能向客户端确认该输入
+            _lastProcessedInputIndex = pendingInput.Tick;
+        }
+
+        public NetPositionSnapshot CapturePositionSnapshot(uint simulationTick)
+        {
+            if (!TryGetPositionSync(out NetPositionSync positionSync)) return default;
+
+            return positionSync.CaptureSnapshot(simulationTick, _lastProcessedInputIndex);
+        }
+
+        private bool TryGetPositionSync(out NetPositionSync positionSync)
+        {
+            positionSync = null;
+            return _syncRoot != null && _syncRoot.TryGetModule(ModuleType.Position, out positionSync);
+        }
+
+        private void Awake()
+        {
+            _syncRoot = GetComponent<NetworkObjectIdentity>();
+        }
+    }
+}

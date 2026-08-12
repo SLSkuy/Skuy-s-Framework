@@ -1,6 +1,8 @@
 using UnityEngine;
 using Framework;
 using UIFramework;
+using GamePlay.EntitySystem;
+using GamePlay.NetSync;
 
 namespace Core
 {
@@ -16,6 +18,7 @@ namespace Core
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
+        public EntitySimulationSystem EntitySimulationMgr { get; private set; }
         #endregion
 
         #region 游戏状态
@@ -58,6 +61,9 @@ namespace Core
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             UIMgr = SystemMgr.RegisterSystem<UIManager>();
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
+            SystemMgr.RegisterSystem<NetworkTimeSystem>();
+            EntitySimulationMgr = SystemMgr.RegisterSystem<EntitySimulationSystem>();
+            SystemMgr.RegisterSystem<EntityReplicationSystem>();
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();

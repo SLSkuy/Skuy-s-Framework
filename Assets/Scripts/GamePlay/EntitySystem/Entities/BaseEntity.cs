@@ -5,9 +5,9 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体基础抽象类，负责实体通用数据与控制目标边界。
     /// </summary>
-    public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateView
+    public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateStore, IEntityStateView
     {
-        protected NetEntitySyncRoot _syncRoot;
+        protected NetworkObjectIdentity _syncRoot;
         protected EntityConfig _config;
         protected EntityContext _context;
 
@@ -16,7 +16,6 @@ namespace GamePlay.EntitySystem
         public bool HasIdentity => _syncRoot != null && _syncRoot.IsInitialized;
         public bool IsInitialized => _context != null;
 
-        public abstract bool TickDrive { get; set; }
         public abstract uint CurrentState { get; }
         #endregion
 
@@ -73,7 +72,13 @@ namespace GamePlay.EntitySystem
             InitComponents();
         }
         
-        public abstract void Simulate(float deltaTime);
+        public abstract void Step(uint tick, float deltaTime, in EntityInputCommand command);
+
+        public abstract EntitySimulationState CaptureSimulationState();
+
+        public abstract EntityRollbackState CaptureRollbackState();
+
+        public abstract void RestoreRollbackState(in EntityRollbackState state);
         
         #endregion
         
@@ -82,7 +87,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitComponents()
         {
-            if (!_syncRoot) _syncRoot = GetComponent<NetEntitySyncRoot>();
+            if (!_syncRoot) _syncRoot = GetComponent<NetworkObjectIdentity>();
         }
 
         /// <summary>

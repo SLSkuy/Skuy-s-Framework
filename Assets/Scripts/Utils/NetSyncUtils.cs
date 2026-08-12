@@ -30,6 +30,20 @@ namespace Utils
             return value == null ? Vector3.zero : new Vector3(value.X, value.Y, value.Z);
         }
 
+        public static Quat ToProto(Quaternion value)
+        {
+            value.Normalize();
+            return new Quat { X = value.x, Y = value.y, Z = value.z, W = value.w };
+        }
+
+        public static Quaternion ToUnity(Quat value)
+        {
+            if (value == null) return Quaternion.identity;
+            Quaternion rotation = new(value.X, value.Y, value.Z, value.W);
+            float magnitude = Mathf.Sqrt(rotation.x * rotation.x + rotation.y * rotation.y + rotation.z * rotation.z + rotation.w * rotation.w);
+            return magnitude > Mathf.Epsilon ? new Quaternion(rotation.x / magnitude, rotation.y / magnitude, rotation.z / magnitude, rotation.w / magnitude) : Quaternion.identity;
+        }
+
         public static InputState ToInputState(Player_Input input)
         {
             return new InputState
@@ -64,42 +78,36 @@ namespace Utils
             };
         }
 
-        /// <summary>
-        /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
-        /// </summary>
-        public static Position_Snapshot ToPositionSnapshotMessage(in NetPositionSnapshot snapshot)
+        public static Transform_Snapshot ToTransformSnapshotMessage(
+            in EntitySimulationState state,
+            uint entityId,
+            uint ownerClientId,
+            uint snapshotTick,
+            uint lastProcessedInputTick)
         {
-            return new Position_Snapshot
+            return new Transform_Snapshot
             {
-                EntityId = snapshot.EntityId,
-                SnapshotTick = snapshot.SnapshotTick,
-                LastProcessedInputTick = snapshot.LastProcessedInputTick,
-                Position = ToProto(snapshot.Position),
-                Velocity = ToProto(snapshot.Velocity),
+                EntityId = entityId,
+                SnapshotTick = snapshotTick,
+                LastProcessedInputTick = lastProcessedInputTick,
+                Position = ToProto(state.Position),
+                Rotation = ToProto(state.Rotation),
+                LinearVelocity = ToProto(state.LinearVelocity),
+                AngularVelocity = ToProto(state.AngularVelocity),
+                OwnerClientId = ownerClientId
             };
         }
 
-        /// <summary>
-        /// 当前协议仍复用 Transform_Snapshot，但运行时只读写 Position / Velocity / MovementState，不处理 Rotation。
-        /// </summary>
-        public static NetPositionSnapshot ToNetPositionSnapshot(Position_Snapshot snapshot)
+        public static EntitySimulationState ToSimulationState(Transform_Snapshot snapshot)
         {
-            return new NetPositionSnapshot
+            return new EntitySimulationState
             {
-                EntityId = snapshot.EntityId,
-                SnapshotTick = snapshot.SnapshotTick,
-                LastProcessedInputTick = snapshot.LastProcessedInputTick,
                 Position = ToUnity(snapshot.Position),
-                Velocity = ToUnity(snapshot.Velocity),
+                Rotation = ToUnity(snapshot.Rotation),
+                LinearVelocity = ToUnity(snapshot.LinearVelocity),
+                AngularVelocity = ToUnity(snapshot.AngularVelocity)
             };
         }
 
-        /// <summary>
-        /// 计算玩家状态的位置差距
-        /// </summary>
-        public static float SnapshotPosDistance(NetPositionSnapshot authority, NetPositionSnapshot predict)
-        {
-            return Vector3.Distance(authority.Position, predict.Position);
-        }
     }
 }

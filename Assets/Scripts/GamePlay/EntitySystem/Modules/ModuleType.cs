@@ -1,4 +1,4 @@
-﻿namespace GamePlay.EntitySystem
+namespace GamePlay.EntitySystem
 {
     public enum ModuleType
     {
