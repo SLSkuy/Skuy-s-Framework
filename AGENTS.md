@@ -1,12 +1,12 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This is a Unity project. Runtime source lives in `Assets/Scripts`, with the scene entry points `Launch.cs` and `MainEntry.cs` placed directly under `Assets/Scripts/` (both in the global namespace, no `namespace` declaration). The whole `Assets/Scripts` tree compiles into the default `Assembly-CSharp` — there are currently no `.asmdef` files, so treat all runtime code as one assembly and respect module boundaries by namespace discipline rather than assembly references.
+This is a Unity project. Runtime source lives in `Assets/Scripts`, with the scene entry points `Launch.cs` and `MainEntry.cs` placed directly under `Assets/Scripts/` (both in the global namespace, no `namespace` declaration). Runtime code may be split into multiple `.asmdef` assemblies by responsibility. Preserve explicit dependency direction and keep pure simulation/core assemblies independent from Unity scene glue, gameplay hosts, transports, and test assemblies.
 
 Top-level modules under `Assets/Scripts/`:
 
 - `Framework/` — reusable core framework. `Common/` (singleton, state machine, subsystem base), `SubSystems/` (Camera, DataProxy, ObjectPool, Resource, SceneControl, States, Timer, UI), `Input/`, `Navigation/` (A* over ECS), `Event/`.
-- `GamePlay/` — gameplay code. `EntitySystem/` (Character, Config, Controller, FSM, SubModule), `MultiPlaySystem/` (Component, Config, Interface, Snapshot), `Protocol/Generated/` (Protobuf-generated, do not hand-edit), `Proxy/`.
+- `GamePlay/` — gameplay code. `EntitySystem/` (legacy entity hosts and compatibility code), `EntitySimulationCore/` (new pure command/state/simulation contracts and core Tick utilities), `MultiPlaySystem/` (Component, Config, Interface, Snapshot), `Protocol/Generated/` (Protobuf-generated, do not hand-edit), `Proxy/`.
 - `Network/` — networking. `Client/`, `Server/`, `Transport/` (`Kcp/`, `Tcp/`), `Config/`, `Interface/`, `Protocol/`.
 - `Events/` — cross-module event enums (e.g. `NetEvent`).
 - `Utils/` — stateless static helpers (`MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`, plus `DataStruct/KDTree`).
@@ -43,7 +43,9 @@ Before writing framework-facing code, match these established patterns:
 - **Event bus.** Dispatch cross-module events with `EventBus.Get<TEvent>().Dispatch(data)`; use `event Action<T>` for direct subscriptions within a class.
 - **Data proxies.** `IDataProxy` instances are registered through `DataProxyManager` and accessed via `Global.GetDataProxy<T>()` / `Global.TryGetDataProxy<T>()`.
 - **Network transport.** `NetClient` and `NetServer` are both `SubSystemBase`; transports implement `IClientTransport` / `IServerTransport` with KCP and TCP variants under `Network/Transport/`. Messages use Google.Protobuf; generated messages live in `GamePlay/Protocol/Generated/`.
-- **Keep MonoBehaviour scene glue separate from reusable services.** MonoBehaviours (`EntityCharacter`, `UIController`, `NetEntityIdentity`) wire Unity lifecycle to framework services; they should not contain reusable logic that belongs in a `SubSystemBase`.
+- **Keep MonoBehaviour scene glue separate from reusable services.** MonoBehaviours (`EntityCharacter`, `UIController`, `NetEntityIdentity`) wire Unity lifecycle to framework services; they should not contain reusable logic that belongs in a `SubSystemBase` or a pure core assembly.
+
+- **New-code migration rule.** After a module has an approved destination under a new responsibility folder or assembly, add new code only at that destination. Do not expand legacy `EntitySystem/Sync`, controller-role implementations, or compatibility files with new synchronization behavior. Compatibility shims must be temporary, explicitly documented, and covered by a migration/removal task.
 
 ## Coding Style & Naming Conventions
 Use C# with 4-space indentation and braces on their own line. **Line endings are CRLF (`\r\n`)** across the repository — keep new and edited text files (`.cs`, `.md`, `.json`, `.asmdef`, `.txt`, shader files, etc.) in CRLF, and do not convert existing files to LF. A `.gitattributes` with `* text=auto eol=crlf` is the recommended way to enforce this repo-wide. Public types and methods use `PascalCase`; local variables and parameters use `camelCase`. The codebase uses Chinese XML doc summaries and inline comments — match that when extending existing files, and **do not arbitrarily delete existing comments**. When refactoring, preserve and update comments in place; remove only what is clearly obsolete, and keep comment banners (e.g. `// ========== 心跳 ==========`) with the field group they describe.
@@ -74,6 +76,21 @@ The codebase distinguishes private backing fields from serialized/public fields:
 - **Unity lifecycle:** `Awake`, `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnEnable`, `OnDisable`, `OnDestroy`, `OnAnimatorMove`.
 - **Framework-internal non-overridable hooks:** underscore prefix — `_Init()`, `_Destroy()` (declared non-virtual on `SubSystemBase`). Do not add new underscore-prefixed public API casually; reserve it for base-class lifecycle seams.
 - **Async methods:** `Async` suffix — `LoadResourceAsync`, `LoadAsync`.
+- **Multi-line parameter lists:** when a declaration or call is too long for one line, wrap at the line-length limit and keep multiple parameters per line — do **not** put one parameter per line. Indent continuation lines by one level (4 spaces) or align after the opening paren, matching the surrounding file.
+
+  ```csharp
+  // 不推荐：每个参数独占一行
+  public static void Step(
+      IEntitySimulation simulation,
+      EntityInputCommandBuilder commandBuilder,
+      uint tick,
+      float deltaTime,
+      in InputState input)
+
+  // 推荐：到达行宽上限再换行，一行尽量多放参数
+  public static void Step(IEntitySimulation simulation, EntityInputCommandBuilder commandBuilder,
+      uint tick, float deltaTime, in InputState input)
+  ```
 
 ### Member declaration order
 Within a class or struct, declare members top-to-bottom in this fixed order. Wrap each group in a `#region` where indicated, and group functionally related fields together inside a group.
@@ -123,4 +140,4 @@ Design documents live in the root-level `Docs/` folder (not inside `Assets/`), o
 Recent history uses concise Conventional Commit-style messages such as `feat(entity): ...` and `refactor(entity system): ...`; keep using `type(scope): summary`. English and Chinese summaries both appear in history, but the scope and type should stay clear. Pull requests should include a short description, affected scenes or systems, test results, and screenshots or short recordings for UI, animation, scene, or gameplay-visible changes.
 
 ## Agent-Specific Instructions
-Before editing, inspect the owning module and preserve its existing patterns — namespace, region layout, member declaration order, comment language, and field-naming flavor (`_camelCase` private vs `camelCase` serialized). Do not delete or strip existing comments when refactoring; update them in place. Conversely, delete old/superseded code outright when refactoring — do not leave it commented out or unused; keep files clean, and retain old code only when explicitly asked to keep it for compatibility. Do not rewrite generated protocol files (`GamePlay/Protocol/Generated/`) or third-party packages unless explicitly requested. Do not introduce `.asmdef` files to split the assembly without explicit approval — the project intentionally ships as a single `Assembly-CSharp`. Preserve CRLF line endings when editing or creating files; do not normalize to LF, and ensure newly written files are saved as CRLF. When changing scripts, let Unity recompile and check the console for errors before considering the task complete.
+Before editing, inspect the owning module and preserve its existing patterns — namespace, region layout, member declaration order, comment language, and field-naming flavor (`_camelCase` private vs `camelCase` serialized). Do not delete or strip existing comments when refactoring; update them in place. Conversely, delete old/superseded code outright when refactoring — do not leave it commented out or unused; keep files clean, and retain old code only when explicitly asked to keep it for compatibility. Do not rewrite generated protocol files (`GamePlay/Protocol/Generated/`) or third-party packages unless explicitly requested. Do not introduce `.asmdef` files without documenting the module boundary and dependency direction. The project no longer requires a single `Assembly-CSharp`; preserve intentional assembly boundaries and keep pure simulation/core code independent from Unity scene glue and transports. Preserve CRLF line endings when editing or creating files; do not normalize to LF, and ensure newly written files are saved as CRLF. When changing scripts, let Unity recompile and check the console for errors before considering the task complete.
