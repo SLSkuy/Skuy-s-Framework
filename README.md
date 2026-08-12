@@ -1,7 +1,5 @@
 <div align="center">
 
-# Skuy's Framework
-
 **游戏开发框架**
 
 [![Unity](https://img.shields.io/badge/Unity-6000.5.6f1-57b9d3.svg?logo=unity&style=flat-square)](https://unity.com/)
@@ -24,7 +22,7 @@ Skuy's Framework 是一套围绕 **多人游戏** 构建的 Unity 原生开发�
 ```
 Skuy's Framework/
 ├── Assets/
-│   ├── Animations/              # Animator Controller + FBX 动画（Rifle/Sword 两套战斗动作）
+│   ├── Animations/              # Animator Controller + FBX 动画
 │   ├── Art/                     # 美术资源（Meshes / Materials / Textures）
 │   ├── Configs/                 # 全局配置 ScriptableObject（ResourceConfig / UIConfig）
 │   ├── InputActions/            # 新 Input System .inputactions 资产
@@ -38,11 +36,11 @@ Skuy's Framework/
 │   │       ├── Network/SyncTest.unity
 │   │       ├── Network/TransportTest.unity
 │   │       └── Navigation/Navigation.unity
-│   └── Scripts/                 # ✅ 全部运行时代码（单 Assembly-CSharp 程序集）
+│   └── Scripts/                 # 
 │       ├── Framework/           # 核心框架层
 │       │   ├── Global.cs        # 服务定位器入口
 │       │   ├── Common/          # Singleton / StateMachine / SubSystemManager
-│       │   ├── SubSystems/      # 9 大子系统（Camera/Resource/UI/...）
+│       │   ├── SubSystems/      # 子系统（Camera/Resource/UI/...）
 │       │   ├── Input/           # InputProvider 体系 + InputState struct
 │       │   ├── Navigation/      # AStarECS（Authoring/Components/Systems）
 │       │   └── Event/           # EventBus<T>
@@ -73,11 +71,11 @@ Skuy's Framework/
 │       ├── Tests/               # 运行时调试面板 & 单元测试
 │       ├── Launch.cs            # 场景入口（全局命名空间）
 │       └── MainEntry.cs         # 主入口（全局命名空间）
-├── Docs/                        # ✅ 设计文档
-│   └── EntityControl/           # 实体控制系统设计（00-Index.md + 3 篇分章）
+├── Docs/                        # 设计文档
+│   └── EntityControl/           
 ├── Packages/                    # UPM manifest.json（含 HybridCLR / unity-mcp）
 ├── ProjectSettings/             # Unity 项目设置
-└── AGENTS.md                    # 📐 本仓库编码规范与架构约定（必读）
+└── AGENTS.md
 ```
 ---
 
@@ -100,25 +98,14 @@ Skuy's Framework/
 
 ---
 
-## 设计文档
-
-架构设计文档存放于 **[Docs/](./Docs/)** 目录，采用「一功能一文件夹 + 编号前缀 + 中文内容」组织：
-
-```
-Docs/
-└── EntityControl/
-    ├── 00-Index.md                          # 阅读索引
-    ├── 01-Level-1-Net-Sync-Change.md        # 网络同步改造方案
-    ├── 02-Level-1-Priority-Issues.md        # 优先级问题清单
-    └── 03-Identity-SyncRoot-Controller-Convergence.md  # 身份/根组件/控制器合并
-```
-
-> 新增设计文档时，请在对应功能文件夹的 `00-Index.md` 中登记
-
----
-
 ## 使用的第三方库
 
+Unity MCP: https://github.com/CoplayDev/unity-mcp
+
+HybridCLR: https://github.com/focus-creative-games/hybridclr
+
 KCP C#版: https://github.com/KumoKyaku/kcp
+
+Protobuf: https://github.com/protocolbuffers/protobuf
 
 UnityURPToonLitShader: https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample
