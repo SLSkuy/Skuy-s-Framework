@@ -16,6 +16,7 @@ namespace GamePlay.EntitySystem
 
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
+        
         public Vector3 DeltaPosition => _animator.deltaPosition;
         #endregion
 

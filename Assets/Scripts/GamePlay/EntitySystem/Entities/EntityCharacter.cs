@@ -108,6 +108,8 @@ namespace GamePlay.EntitySystem
         
         private void Update()
         {
+            if (!IsInitialized) return;
+            
             if (!TickDrive) Simulate(Time.deltaTime);
         }
         

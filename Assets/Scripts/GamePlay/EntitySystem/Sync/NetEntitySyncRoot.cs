@@ -17,7 +17,7 @@ namespace GamePlay.EntitySystem
 
         // 实体角色能力组件
         private readonly List<EntityModuleBase> _entityModules = new();
-        private readonly Dictionary<Type, EntityModuleBase> _entityModuleMap = new();
+        private readonly Dictionary<ModuleType, EntityModuleBase> _entityModuleMap = new();
         
         // 能力网络同步组件
         private readonly List<INetSyncComponent> _syncComponents = new();
@@ -35,7 +35,7 @@ namespace GamePlay.EntitySystem
         // 网络同步身份
         public NetEntityRole Role => role;
         public bool IsAuthority => role == NetEntityRole.Authority;
-        public bool IsPredictingOwner => role == NetEntityRole.Predict;
+        public bool IsPredict => role == NetEntityRole.Predict;
         public bool IsReplica => role == NetEntityRole.Replica;
         public bool IsLocalPlay => role == NetEntityRole.LocalPlay;
         #endregion
@@ -117,7 +117,7 @@ namespace GamePlay.EntitySystem
             {
                 if (module == null) continue;
                 _entityModules.Add(module);
-                _entityModuleMap[module.GetType()] = module;
+                _entityModuleMap[module.ModuleType] = module;
             }
         }
 
@@ -157,28 +157,28 @@ namespace GamePlay.EntitySystem
         /// </summary>
         private void ConfigureController(NetEntityRole newRole)
         {
-            if (_entity == null) return;
+            if (!_entity) return;
 
             Type controllerType = ResolveControllerType(newRole);
             if (controllerType == null) return;
 
-            if (_activeController != null && _activeController.GetType() != controllerType)
+            if (_activeController && _activeController.GetType() != controllerType)
             {
                 _activeController.Unbind();
                 _activeController.enabled = false;
                 _activeController = null;
             }
 
-            if (_activeController == null)
+            if (!_activeController)
             {
-                _activeController = GetComponent(controllerType) as EntityControllerBase;
-                if (_activeController == null)
+                _activeController = gameObject.GetComponent(controllerType) as EntityControllerBase;
+                if (!_activeController)
                 {
                     _activeController = gameObject.AddComponent(controllerType) as EntityControllerBase;
                 }
             }
 
-            if (_activeController == null) return;
+            if (!_activeController) return;
 
             _activeController.enabled = true;
             InitializeController(_activeController, newRole);
@@ -233,6 +233,7 @@ namespace GamePlay.EntitySystem
 
         private void Update()
         {
+            // 单机游玩不需要创建同步组件
             if (role == NetEntityRole.LocalPlay) return;
 
             foreach (INetSyncComponent component in _syncComponents)

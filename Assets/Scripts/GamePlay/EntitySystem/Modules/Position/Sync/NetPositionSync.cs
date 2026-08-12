@@ -25,6 +25,7 @@ namespace GamePlay.EntitySystem
 
         #region 属性
         public ModuleType ModuleType => ModuleType.Position;
+        
         public Vector3 CurrentRenderVelocity { get; private set; }
         #endregion
 
@@ -123,7 +124,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void OnAuthoritySnapshot(in NetPositionSnapshot snapshot)
         {
-            if (_syncRoot == null || !_syncRoot.IsReplica) return;
+            if (!_syncRoot || !_syncRoot.IsReplica) return;
             if (_syncRoot.IsInitialized && snapshot.EntityId != _syncRoot.EntityId) return;
             if (_snapshots == null) return;
 
@@ -137,10 +138,11 @@ namespace GamePlay.EntitySystem
         }
         
         /// <summary>
-        /// 插值更新。
+        /// 插值更新。仅 Replica 使用。
         /// </summary>
         public void UpdateInterpolation(float deltaTime)
         {
+            if (!_syncRoot || !_syncRoot.IsReplica) return;
             if (!_hasRenderTick || _snapshots == null || _snapshots.Count < 2) return;
 
             float bufferedTickSpan = _snapshots.LatestTick - _snapshots.OldestTick;
@@ -158,10 +160,9 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 应用插值快照。
         /// </summary>
-        public void ApplyInterpolatedSnapshot(in NetPositionSnapshot from, in NetPositionSnapshot to, float t)
+        private void ApplyInterpolatedSnapshot(in NetPositionSnapshot from, in NetPositionSnapshot to, float t)
         {
             if (!_movementModule) return;
-
             Vector3 position = Vector3.Lerp(from.Position, to.Position, t);
             _movementModule.Teleport(position);
             CurrentRenderVelocity = Vector3.Lerp(from.Velocity, to.Velocity, t);

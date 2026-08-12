@@ -29,17 +29,6 @@ namespace GamePlay.EntitySystem
             positionSync.OnAuthoritySnapshot(snapshot);
         }
 
-        /// <summary>
-        /// 每帧推进插值
-        /// </summary>
-        public void UpdateInterpolation(float deltaTime)
-        {
-            if (Target == null) return;
-            if (!TryGetPositionSync(out NetPositionSync positionSync)) return;
-
-            positionSync.UpdateInterpolation(deltaTime);
-        }
-
         private bool TryGetPositionSync(out NetPositionSync positionSync)
         {
             positionSync = null;

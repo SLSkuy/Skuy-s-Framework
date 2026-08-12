@@ -73,8 +73,8 @@ namespace GamePlay.EntitySystem
 
         public virtual void Init()
         {
-            InitComponents();
             InitConfig();
+            InitComponents();
         }
         
         public abstract void Simulate(float deltaTime);

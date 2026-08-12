@@ -28,8 +28,9 @@ namespace GamePlay.EntitySystem
 
         #region 状态属性
         public override ModuleType ModuleType => ModuleType.Position;
+        
         public Vector3 Position => transform.position;
-        public bool IsGrounded => _controller.isGrounded;
+        public bool IsGrounded => _controller != null && _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion
@@ -40,10 +41,10 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Init(EntityConfig config, Transform orientation, Transform mesh)
         {
-            _locomotionSpeed = _config.walkSpeed;
             _config = config;
             _orientation = orientation;
             _mesh = mesh;
+            _locomotionSpeed = _config.walkSpeed;
         }
         #endregion
 
@@ -67,6 +68,8 @@ namespace GamePlay.EntitySystem
                 _controller.height = _config.height;
                 _controller.radius = _config.radius;
                 _controller.center = new Vector3(0, _config.height, 0);
+                
+                Debug.LogWarning(_controller);
             }
         }
 
@@ -75,7 +78,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Teleport(Vector3 position)
         {
-            bool wasEnabled = _controller != null && _controller.enabled;
+            bool wasEnabled = _controller && _controller.enabled;
             if (wasEnabled) _controller.enabled = false;
 
             transform.position = position;
@@ -92,6 +95,9 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Move(Vector2 inputDir, float speed, float dt, bool isFocus)
         {
+            // 快照模式，不进行模拟
+            if (!_controller) return;
+            
             if (!_isDashing)
             {
                 _locomotionSpeed = speed;
