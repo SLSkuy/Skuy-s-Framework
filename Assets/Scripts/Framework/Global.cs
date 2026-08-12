@@ -19,7 +19,7 @@ namespace Framework
         /// <summary>
         /// 由 SubSystemBase 内部调用，外部不应直接使用
         /// </summary>
-        internal static void Register(ISubSystem system)
+        public static void Register(ISubSystem system)
         {
             SubSystems[system.GetType()] = system;
         }
@@ -27,7 +27,7 @@ namespace Framework
         /// <summary>
         /// 由 SubSystemBase 内部调用，外部不应直接使用
         /// </summary>
-        internal static void Unregister(Type type)
+        public static void Unregister(Type type)
         {
             SubSystems.Remove(type);
         }
@@ -35,7 +35,7 @@ namespace Framework
         /// <summary>
         /// 注册网络处理器
         /// </summary>
-        internal static void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
+        public static void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
         {
             if (TryGet<NetClient>(out var client))
             {
@@ -46,7 +46,7 @@ namespace Framework
         /// <summary>
         /// 注册网络处理器
         /// </summary>
-        internal static void RegNetHandler<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
+        public static void RegNetHandler<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
         {
             if (TryGet<NetServer>(out var server))
             {
@@ -57,7 +57,7 @@ namespace Framework
         /// <summary>
         /// 注销网络处理器
         /// </summary>
-        internal static void UnRegNetHandler(NetEvent eventId)
+        public static void UnRegNetHandler(NetEvent eventId)
         {
             if (TryGet<NetClient>(out var client))
             {

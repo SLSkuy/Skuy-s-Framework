@@ -1,3 +1,4 @@
+using Core;
 using Framework;
 using GamePlay.NetSync;
 using UnityEngine;
@@ -222,7 +223,7 @@ namespace GamePlay.EntitySystem
         private void Start()
         {
             // ===== 测试代码 =====
-            SetInputSource(GetComponent<LocalInputProvider>());
+            SetInputSource(GameCore.Instance.LocalInput);
             Cursor.lockState = CursorLockMode.Locked;
             Global.Get<CameraManager>().SetTarget(transform.Find("orientation"));
             // ===== 测试代码 =====

@@ -23,9 +23,16 @@ namespace Core
         public bool IsPaused => GameStateMgr.IsPaused();
         #endregion
 
+        #region 本地输入
+        public IInputStateProvider LocalInput { get; private set; }
+        #endregion
+
         private void InitializeGameCore()
         {
             Application.targetFrameRate = 60;
+
+            // 注册本地输入
+            LocalInput = gameObject.AddComponent<LocalInputProvider>();
 
             InitSubSystems();
             InitDataProxy();
