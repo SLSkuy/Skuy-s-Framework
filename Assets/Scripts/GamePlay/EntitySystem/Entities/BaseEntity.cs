@@ -3,16 +3,13 @@ using UnityEngine;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体基础抽象类，负责实体通用组件缓存与控制目标边界。
+    /// 实体基础抽象类，负责实体通用数据与控制目标边界。
     /// </summary>
     public abstract class BaseEntity : MonoBehaviour, IEntityIntentReceiver, IEntitySimulation, IEntityStateView
     {
         protected NetEntitySyncRoot _syncRoot;
         protected EntityConfig _config;
         protected EntityContext _context;
-        protected Animator _animator;
-        protected Transform _orientation;
-        protected Transform _mesh;
 
         #region 属性
         public uint EntityId => _syncRoot != null ? _syncRoot.EntityId : 0;
@@ -35,7 +32,7 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 尝试获取实体运行上下文，兼容旧状态机与动画路径。
+        /// 尝试获取实体运行上下文。
         /// </summary>
         public bool TryGetContext(out EntityContext context)
         {
@@ -78,6 +75,7 @@ namespace GamePlay.EntitySystem
         }
         
         public abstract void Simulate(float deltaTime);
+        
         #endregion
         
         /// <summary>
@@ -85,10 +83,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitComponents()
         {
-            if (!_animator) _animator = GetComponent<Animator>();
             if (!_syncRoot) _syncRoot = GetComponent<NetEntitySyncRoot>();
-            if (!_orientation) _orientation = transform.Find("orientation");
-            if (!_mesh) _mesh = transform.Find("mesh");
         }
 
         /// <summary>

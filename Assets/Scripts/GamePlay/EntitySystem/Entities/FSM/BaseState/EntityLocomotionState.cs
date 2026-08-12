@@ -12,13 +12,7 @@ namespace GamePlay.EntitySystem
 
         protected override void Tick(float dt)
         {
-            Movement.Rotate(Context.LastAimInput, dt);
-            Movement.UpdateMeshFacing(Context.LastMoveInput, Context.IsFocus, dt);
-
-            // 动画驱动位移
-            if (Config.rootMotion) return;
-
-            Movement.Move(Context.LastMoveInput, LocomotionSpeed, dt, Context.IsFocus);
+            Movement.Move(Context.LastMoveInput, LocomotionSpeed, dt);
         }
 
         /// <summary>

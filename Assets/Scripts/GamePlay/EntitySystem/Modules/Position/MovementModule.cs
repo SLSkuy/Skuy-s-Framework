@@ -3,23 +3,16 @@ using UnityEngine;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体移动能力模块，封装位移、朝向、重力、跳跃和冲刺等底层运动逻辑。
-    /// 不持有状态机引用，不做状态切换决策，决策权由状态层负责。
+    /// 实体位置移动能力模块，只负责位置模拟与位置同步落点。
     /// </summary>
     public class MovementModule : EntityModuleBase
     {
         private CharacterController _controller;
         private EntityConfig _config;
-        private Transform _orientation;
-        private Transform _mesh;
-
-        private float _yaw;
-        private float _pitch;
 
         private Vector3 _lastMoveDir;
         private float _locomotionSpeed;
         private float _verticalVelocity;
-
         private int _jumpCount;
 
         private Vector3 _dashDir;
@@ -37,13 +30,11 @@ namespace GamePlay.EntitySystem
 
         #region 初始化
         /// <summary>
-        /// 初始化移动模块运行时依赖。
+        /// 初始化移动模块运行时配置。
         /// </summary>
-        public void Init(EntityConfig config, Transform orientation, Transform mesh)
+        public void Init(EntityConfig config)
         {
             _config = config;
-            _orientation = orientation;
-            _mesh = mesh;
             _locomotionSpeed = _config.walkSpeed;
         }
         #endregion
@@ -68,8 +59,6 @@ namespace GamePlay.EntitySystem
                 _controller.height = _config.height;
                 _controller.radius = _config.radius;
                 _controller.center = new Vector3(0, _config.height, 0);
-                
-                Debug.LogWarning(_controller);
             }
         }
 
@@ -93,7 +82,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 位移：以模型朝向作为移动方向基准，并应用重力与冲刺计时器推进。
         /// </summary>
-        public void Move(Vector2 inputDir, float speed, float dt, bool isFocus)
+        public void Move(Vector2 inputDir, float speed, float dt)
         {
             // 快照模式，不进行模拟
             if (!_controller) return;
@@ -101,64 +90,12 @@ namespace GamePlay.EntitySystem
             if (!_isDashing)
             {
                 _locomotionSpeed = speed;
-                UpdateLocomotionDir(inputDir, isFocus);
+                UpdateLocomotionDir(inputDir);
             }
 
             ApplyGravity(dt);
             ApplyMovement(dt);
             TickDash(dt);
-        }
-
-        /// <summary>
-        /// 动画驱动位移：以 root motion 的水平速率作为移动速度，沿 mesh 当前朝向施加。
-        /// </summary>
-        public void ApplyRootMotion(Vector3 deltaPosition, float dt)
-        {
-            ApplyGravity(dt);
-
-            Vector3 horizontal = Vector3.ProjectOnPlane(deltaPosition, Vector3.up);
-            Vector3 meshForward = Vector3.ProjectOnPlane(_mesh.forward, Vector3.up);
-            if (meshForward.sqrMagnitude > Mathf.Epsilon) meshForward.Normalize();
-
-            Vector3 motion = meshForward * horizontal.magnitude;
-            motion.y = _verticalVelocity * dt;
-            _controller.Move(motion);
-        }
-
-        /// <summary>
-        /// 视角即时转换：更新 orientation 的 pitch/yaw。
-        /// </summary>
-        public void Rotate(Vector2 aimInput, float dt)
-        {
-            if (aimInput.sqrMagnitude < Mathf.Epsilon) return;
-
-            _yaw += aimInput.x * _config.aimHorizontalSpeed * dt;
-            _pitch -= aimInput.y * _config.aimVerticalSpeed * dt;
-            _pitch = Mathf.Clamp(_pitch, _config.minAimPitch, _config.maxAimPitch);
-
-            _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-        }
-
-        /// <summary>
-        /// 更新模型朝向。
-        /// </summary>
-        public void UpdateMeshFacing(Vector2 moveInput, bool isFocus, float dt)
-        {
-            if (isFocus)
-            {
-                _mesh.rotation = Quaternion.Euler(0f, _yaw, 0f);
-                return;
-            }
-
-            if (moveInput.sqrMagnitude < Mathf.Epsilon) return;
-
-            Vector3 forward = _orientation.forward; forward.y = 0f; forward.Normalize();
-            Vector3 right = _orientation.right; right.y = 0f; right.Normalize();
-            Vector3 desiredDir = forward * moveInput.y + right * moveInput.x;
-            if (desiredDir.sqrMagnitude < Mathf.Epsilon) return;
-
-            Quaternion targetRot = Quaternion.LookRotation(desiredDir, Vector3.up);
-            _mesh.rotation = Quaternion.RotateTowards(_mesh.rotation, targetRot, _config.meshTurnSpeed * dt);
         }
 
         /// <summary>
@@ -174,36 +111,9 @@ namespace GamePlay.EntitySystem
             return true;
         }
 
-        /// <summary>
-        /// 开始冲刺。
-        /// </summary>
-        public void StartDash(Vector2 inputDir, float speed, float duration)
+        private void UpdateLocomotionDir(Vector2 inputDir)
         {
-            Vector3 forward = _orientation.forward; forward.y = 0f; forward.Normalize();
-            Vector3 right = _orientation.right; right.y = 0f; right.Normalize();
-            Vector3 dashDir = forward * inputDir.y + right * inputDir.x;
-            if (dashDir.sqrMagnitude < Mathf.Epsilon) dashDir = forward;
-
-            _dashDir = Vector3.ClampMagnitude(dashDir, 1f);
-            _isDashing = true;
-            _locomotionSpeed = speed;
-            _dashAccumulator = duration;
-        }
-
-        private void UpdateLocomotionDir(Vector2 inputDir, bool isFocus)
-        {
-            Vector3 forward = _mesh.forward; forward.y = 0f; forward.Normalize();
-
-            if (isFocus)
-            {
-                Vector3 right = _mesh.right; right.y = 0f; right.Normalize();
-                _lastMoveDir = forward * inputDir.y + right * inputDir.x;
-            }
-            else
-            {
-                _lastMoveDir = forward * inputDir.magnitude;
-            }
-
+            _lastMoveDir = new Vector3(inputDir.x, 0f, inputDir.y);
             _lastMoveDir = Vector3.ClampMagnitude(_lastMoveDir, 1f);
         }
 
@@ -247,7 +157,6 @@ namespace GamePlay.EntitySystem
                 _isDashing = false;
             }
         }
-        
         #endregion
     }
 }

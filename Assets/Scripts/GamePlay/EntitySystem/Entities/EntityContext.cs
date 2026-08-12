@@ -1,10 +1,10 @@
-using UnityEngine;
 using Framework.StateMachine;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体状态机上下文，聚合状态运行所需的全部宿主数据。
+    /// 实体状态机上下文，保存移动相关状态。
     /// </summary>
     public class EntityContext
     {
@@ -12,7 +12,6 @@ namespace GamePlay.EntitySystem
         public readonly EntityConfig Config;
         
         public readonly MovementModule Movement;
-        public readonly AnimationModule Animation;
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
@@ -33,12 +32,11 @@ namespace GamePlay.EntitySystem
         public bool IsFocus;    // 是否专注瞄准某一个位置
         #endregion
 
-        public EntityContext(EntityConfig config, MovementModule movement, AnimationModule animation)
+        public EntityContext(EntityConfig config, MovementModule movement)
         {
             StateMachine = new ExtendableStateMachine<uint>();
             Movement = movement;
             Config = config;
-            Animation = animation;
         }
 
         /// <summary>

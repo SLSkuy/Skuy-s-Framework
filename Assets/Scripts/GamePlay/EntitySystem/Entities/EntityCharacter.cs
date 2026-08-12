@@ -56,29 +56,22 @@ namespace GamePlay.EntitySystem
         #endregion
 
         #region 模拟入口
-
         protected override void InitComponents()
         {
             base.InitComponents();
-            
-            // 初始化移动组件
+
             MovementModule movementModule = gameObject.GetOrAddComponent<MovementModule>();
-            movementModule.Init(_config, _orientation, _mesh);
+            movementModule.Init(_config);
             movementModule.Bind(this);
 
-            // 初始化动画组件
-            AnimationModule animationModule = gameObject.GetOrAddComponent<AnimationModule>();
-            animationModule.Bind(this);
-            animationModule.Init(_config, _animator);
-            
-            SetContext(new EntityContext(_config, movementModule, animationModule));
-            
+            SetContext(new EntityContext(_config, movementModule));
+
             RegisterStates();
             _context.StateMachine.ChangeState(EntityState.IDLE);
         }
 
         /// <summary>
-        /// 推进状态机一帧，并清除瞬时输入标记。
+        /// 推进状态机一帧，并清理瞬时输入标记。
         /// </summary>
         public override void Simulate(float deltaTime)
         {
@@ -94,25 +87,14 @@ namespace GamePlay.EntitySystem
             _context.StateMachine.RegisterState(new EntitySprintState(_context));
             _context.StateMachine.RegisterState(new EntityAirborneState(_context));
         }
-
-        private void OnAnimatorMove()
-        {
-            if (TickDrive || !_config.rootMotion) return;
-
-            _context?.Movement.ApplyRootMotion(_context.Animation.DeltaPosition, Time.deltaTime);
-        }
-        
         #endregion
 
         #region 生命周期
-        
         private void Update()
         {
             if (!IsInitialized) return;
-            
             if (!TickDrive) Simulate(Time.deltaTime);
         }
-        
         #endregion
     }
 }
