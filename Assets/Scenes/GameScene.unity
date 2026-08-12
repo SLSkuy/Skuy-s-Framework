@@ -828,7 +828,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
   m_PrefabInstance: {fileID: 6266278882144238770}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1528371828
+--- !u!114 &1528371829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1528371814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
+--- !u!114 &1528371833
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -842,18 +854,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.NetEntitySyncRoot
   entityId: 0
   role: 3
---- !u!114 &1528371829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528371814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
 --- !u!1 &1878890648
 GameObject:
   m_ObjectHideFlags: 0
@@ -1172,7 +1172,7 @@ PrefabInstance:
       addedObject: {fileID: 1528371829}
     - targetCorrespondingSourceObject: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1528371828}
+      addedObject: {fileID: 1528371833}
   m_SourcePrefab: {fileID: 100100000, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

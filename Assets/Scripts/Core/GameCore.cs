@@ -24,7 +24,7 @@ namespace Core
         #endregion
 
         #region 本地输入
-        public IInputStateProvider LocalInput { get; private set; }
+        public LocalInputProvider LocalInput { get; private set; }
         #endregion
 
         private void InitializeGameCore()

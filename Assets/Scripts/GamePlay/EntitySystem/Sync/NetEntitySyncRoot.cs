@@ -9,6 +9,7 @@ namespace GamePlay.EntitySystem
     /// 实体网络同步根组件，统一负责身份、角色、同步模块注册、控制器装配和同步调度。
     /// </summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(EntityCharacter))]
     public class NetEntitySyncRoot : MonoBehaviour
     {
         [SerializeField] private uint entityId;
