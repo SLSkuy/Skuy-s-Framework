@@ -11,7 +11,6 @@ namespace GamePlay.EntitySystem
         #region 属性
         public override bool TickDrive { get; set; }
         public override uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
-        public override float LocomotionSpeed => _context?.locomotionSpeed ?? 0f;
         #endregion
 
         #region 实体控制

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Utils;
 
 namespace GamePlay.EntitySystem
 {
@@ -48,17 +49,23 @@ namespace GamePlay.EntitySystem
         {
             if (isReplica)
             {
-                CapsuleCollider collider = gameObject.AddComponent<CapsuleCollider>();
+                // 保险措施
+                _controller = GetComponent<CharacterController>();
+                if (_controller) _controller.enabled = true;
+                
+                CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
                 collider.height = _config.height;
                 collider.radius = _config.radius;
-                collider.center = new Vector3(0, _config.height, 0);
+                collider.center = new Vector3(0, _config.height / 2, 0);
             }
             else
             {
-                _controller = gameObject.AddComponent<CharacterController>();
+                _controller = gameObject.GetOrAddComponent<CharacterController>();
                 _controller.height = _config.height;
                 _controller.radius = _config.radius;
-                _controller.center = new Vector3(0, _config.height, 0);
+                _controller.skinWidth = 0f;
+                _controller.minMoveDistance = 0f;
+                _controller.center = new Vector3(0, _config.height / 2, 0);
             }
         }
 

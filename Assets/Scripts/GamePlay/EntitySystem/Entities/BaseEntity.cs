@@ -18,7 +18,6 @@ namespace GamePlay.EntitySystem
 
         public abstract bool TickDrive { get; set; }
         public abstract uint CurrentState { get; }
-        public abstract float LocomotionSpeed { get; }
         #endregion
 
         #region 实体数据
