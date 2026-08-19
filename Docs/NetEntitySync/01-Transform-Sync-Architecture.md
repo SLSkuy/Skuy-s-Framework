@@ -779,9 +779,10 @@ rotationSnapThresholdDegrees
 - `TestSimulator` 已收敛为网络生命周期测试夹具，不再引用不存在的角色控制器或实现第二套同步算法。
 - 阶段 2 已完成：`EntityReplicationSystem` 统一使用 `NetworkTickSystem`；客户端拥有实体每 Tick 只采样并通过 KCP 发送 `PLAYER_INPUT`，本阶段不执行本地预测；服务端校验所有权、Tick 窗口和输入数值后排队，每服务端 Tick 最多消费一条命令并推进权威实体，按配置频率广播 `WORLD_SNAPSHOT`；客户端按快照直接应用本地与远端实体的 Position/Rotation。
 - 阶段 2 丢包与乱序处理：服务端未取到当前可执行命令时使用空输入推进，不沿用上一条移动输入，避免输入丢失后持续移动；客户端按实体记录最近应用的 `SnapshotTick` 并丢弃旧快照；客户端输入 Tick 以最近服务端快照 Tick 为锚点，避免客户端与服务端启动时间不同导致全部输入落在校验窗口外。
+- 阶段 3 已完成：新增 `GamePlay.NetSync.SnapshotInterpolator` 和 `TransformSnapshot`，Replica 实体按服务端 Tick 缓冲完整 Transform 快照；渲染时间固定落后 `interpolationDelayTicks`，Position 使用 `Vector3.Lerp`，Rotation 使用最短路径 `Quaternion.Slerp`，速度字段同步插值。首个快照直接定位，缓冲不足时保持最近显示状态，重复/乱序快照由 `SnapshotBuffer` 排序覆盖，旧快照由实体 Tick 门禁丢弃。
 - 阶段 2 测试入口：`Assets/Scenes/Dev/Network/SyncTest.unity` 挂载 `SyncTestPanel`，运行后可选择“开启服务端”或“开启客户端”。真实端到端测试使用两个独立进程加载同一场景，一个选择服务端，另一个选择客户端；客户端完成 TCP/KCP 握手后自动发送 `GAME_JOIN_REQUEST`，服务端创建 `NetPlayer` 权威实例，客户端收到世界快照后创建本地和远端实例。
-- 验证结果：Unity Console 无 C# 编译错误或警告；`SyncTest` Play Mode 面板与子系统初始化冒烟通过；EditMode 测试 10/10 通过。KCP 双进程下的人工操控与 Position/Rotation 可视验收由测试面板执行。
-- 后续工作：输入批次与每连接速率限制、客户端预测与 Reconcile/Rollback/Replay、远端快照插值、`GameScene` 中旧同步组件的迁移，以及网络实体工厂与对象池的完整生命周期测试。
+- 验证结果：Unity Console 无 C# 编译错误或警告；`SyncTest` Play Mode 面板与子系统初始化冒烟通过；EditMode 测试 10/10 通过。KCP 双进程下的 Position/Rotation 插值可视验收由测试面板执行。
+- 后续工作：输入批次与每连接速率限制、客户端预测与 Reconcile/Rollback/Replay、`GameScene` 中旧同步组件的迁移，以及网络实体工厂与对象池的完整生命周期测试。
 
 ### 当前模块目录布局
 

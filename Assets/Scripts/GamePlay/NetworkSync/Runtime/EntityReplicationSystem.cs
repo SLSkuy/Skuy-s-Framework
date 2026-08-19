@@ -24,6 +24,7 @@ namespace GamePlay.NetSync
             public uint OwnerClientId;
             public uint LastAppliedSnapshotTick;
             public uint NextInputTick;
+            public SnapshotInterpolator Interpolator;
         }
 
         private readonly Dictionary<uint, EntityEntry> _entities = new();
@@ -65,7 +66,11 @@ namespace GamePlay.NetSync
                 Identity = identity,
                 OwnerClientId = ownerClientId,
                 Commands = new EntityCommandQueue<InputState>(historyCapacity),
-                CommandBuilder = new EntityInputCommandBuilder()
+                CommandBuilder = new EntityInputCommandBuilder(),
+                Interpolator = new SnapshotInterpolator(
+                    SyncConfig.Instance.simulationTickRate,
+                    SyncConfig.Instance.interpolationDelayTicks,
+                    Mathf.Max(8, SyncConfig.Instance.interpolationDelayTicks * 4))
             });
             return true;
         }
@@ -180,9 +185,14 @@ namespace GamePlay.NetSync
 
                 EntitySimulationState state = NetSyncUtils.ToSimulationState(snapshot);
                 if (!state.IsFinite()) continue;
-                if (entry.Identity.Role == EntitySimulationMode.Predict || entry.Identity.Role == EntitySimulationMode.Replica)
+                if (entry.Identity.Role == EntitySimulationMode.Predict)
                 {
                     ApplyTransformState(entry.Entity, state);
+                    entry.LastAppliedSnapshotTick = snapshot.SnapshotTick;
+                }
+                else if (entry.Identity.Role == EntitySimulationMode.Replica)
+                {
+                    entry.Interpolator.Add(snapshot.SnapshotTick, state);
                     entry.LastAppliedSnapshotTick = snapshot.SnapshotTick;
                 }
             }
@@ -191,6 +201,7 @@ namespace GamePlay.NetSync
         public override void Update(float deltaTime)
         {
             BindNetworkHandlers();
+            UpdateReplicaInterpolation(deltaTime);
         }
 
         public override void Destroy()
@@ -247,6 +258,16 @@ namespace GamePlay.NetSync
         private void HandleWorldSnapshot(global::NetSync.World_Snapshot world)
         {
             ApplyWorldSnapshot(world, _client?.ClientId ?? 0);
+        }
+
+        private void UpdateReplicaInterpolation(float deltaTime)
+        {
+            foreach (EntityEntry entry in _entities.Values)
+            {
+                if (entry.Identity.Role != EntitySimulationMode.Replica) continue;
+                if (!entry.Interpolator.TrySample(deltaTime, out EntitySimulationState state)) continue;
+                ApplyTransformState(entry.Entity, state);
+            }
         }
 
         private static void ApplyTransformState(BaseEntity entity, in EntitySimulationState state)
