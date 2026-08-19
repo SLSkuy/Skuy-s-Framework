@@ -23,8 +23,11 @@ namespace GamePlay.NetSync
             public EntityInputCommandBuilder CommandBuilder;
             public uint OwnerClientId;
             public uint LastAppliedSnapshotTick;
+            public uint LastConfirmedInputTick;
             public uint NextInputTick;
             public SnapshotInterpolator Interpolator;
+            public EntityPredictionHistory PredictionHistory;
+            public readonly List<EntityPredictionFrame> ReplayFrames = new();
         }
 
         private readonly Dictionary<uint, EntityEntry> _entities = new();
@@ -70,7 +73,9 @@ namespace GamePlay.NetSync
                 Interpolator = new SnapshotInterpolator(
                     SyncConfig.Instance.simulationTickRate,
                     SyncConfig.Instance.interpolationDelayTicks,
-                    Mathf.Max(8, SyncConfig.Instance.interpolationDelayTicks * 4))
+                    Mathf.Max(8, SyncConfig.Instance.interpolationDelayTicks * 4)),
+                PredictionHistory = new EntityPredictionHistory(
+                    Mathf.Max(2, SyncConfig.Instance.predictionHistorySize))
             });
             return true;
         }
@@ -127,7 +132,7 @@ namespace GamePlay.NetSync
                         SimulateAuthorityTick(entry, tick, deltaTime);
                         break;
                     case EntitySimulationMode.Predict:
-                        SendOwnedInput(entry, tick);
+                        PredictOwnedTick(entry, tick, deltaTime);
                         break;
                 }
             }
@@ -183,11 +188,17 @@ namespace GamePlay.NetSync
 
                 if (snapshot.SnapshotTick <= entry.LastAppliedSnapshotTick) continue;
 
+                if (entry.NextInputTick == 0 && snapshot.SnapshotTick > 0)
+                {
+                    entry.NextInputTick = snapshot.SnapshotTick;
+                }
+
                 EntitySimulationState state = NetSyncUtils.ToSimulationState(snapshot);
                 if (!state.IsFinite()) continue;
                 if (entry.Identity.Role == EntitySimulationMode.Predict)
                 {
-                    ApplyTransformState(entry.Entity, state);
+                    ReconcilePredictedEntity(entry, snapshot, state, tickDeltaTime: SyncConfig.Instance.simulationTickRate > 0 ?
+                        1f / SyncConfig.Instance.simulationTickRate : 0f);
                     entry.LastAppliedSnapshotTick = snapshot.SnapshotTick;
                 }
                 else if (entry.Identity.Role == EntitySimulationMode.Replica)
@@ -236,17 +247,78 @@ namespace GamePlay.NetSync
             entry.Entity.Step(tick, deltaTime, command);
         }
 
-        private void SendOwnedInput(EntityEntry entry, uint tick)
+        private void PredictOwnedTick(EntityEntry entry, uint tick, float deltaTime)
         {
-            if (_client == null || !_client.HasFastChannel || entry.OwnerClientId != _client.ClientId) return;
+            if (_client == null || entry.OwnerClientId != _client.ClientId) return;
 
             PlayerController controller = entry.Entity.GetComponent<PlayerController>();
             if (controller == null) return;
 
-            uint inputTick = Math.Max(entry.NextInputTick, entry.LastAppliedSnapshotTick);
+            uint inputTick = Math.Max(entry.NextInputTick, entry.LastConfirmedInputTick + 1);
+            if (inputTick == 0) inputTick = Math.Max(1u, tick);
             entry.NextInputTick = inputTick + 1;
             InputState input = controller.SampleInput();
-            _client.Send(NetEvent.PLAYER_INPUT, NetSyncUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input));
+            EntityInputCommand command = entry.CommandBuilder.Build(inputTick, input);
+            entry.Entity.Step(inputTick, deltaTime, command);
+            entry.PredictionHistory.Add(new EntityPredictionFrame
+            {
+                Tick = inputTick,
+                Command = command,
+                State = entry.Entity.CaptureRollbackState()
+            });
+            if (_client.HasFastChannel)
+            {
+                _client.Send(NetEvent.PLAYER_INPUT, NetSyncUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input));
+            }
+        }
+
+        private static void ReconcilePredictedEntity(EntityEntry entry,
+            global::NetSync.Transform_Snapshot snapshot,
+            in EntitySimulationState authoritativeState,
+            float tickDeltaTime)
+        {
+            uint confirmedTick = snapshot.LastProcessedInputTick;
+            if (confirmedTick == 0)
+            {
+                if (entry.PredictionHistory.Count == 0) ApplyTransformState(entry.Entity, authoritativeState);
+                return;
+            }
+
+            entry.LastConfirmedInputTick = Math.Max(entry.LastConfirmedInputTick, confirmedTick);
+            if (!entry.PredictionHistory.TryGet(confirmedTick, out EntityPredictionFrame confirmedFrame))
+            {
+                ApplyTransformState(entry.Entity, authoritativeState);
+                entry.PredictionHistory.Clear();
+                entry.NextInputTick = Math.Max(entry.NextInputTick, confirmedTick + 1);
+                return;
+            }
+
+            EntitySimulationState predictedState = confirmedFrame.State.TransformState;
+            SyncConfig config = SyncConfig.Instance;
+            float positionError = Vector3.Distance(predictedState.Position, authoritativeState.Position);
+            float rotationError = Quaternion.Angle(predictedState.Rotation, authoritativeState.Rotation);
+            entry.PredictionHistory.CopyAfter(confirmedTick, entry.ReplayFrames);
+
+            if (positionError <= config.positionReconcileThreshold &&
+                rotationError <= config.rotationReconcileThresholdDegrees)
+            {
+                entry.PredictionHistory.RemoveThrough(confirmedTick);
+                return;
+            }
+
+            EntityRollbackState rollbackState = confirmedFrame.State;
+            rollbackState.TransformState = authoritativeState;
+            entry.Entity.RestoreRollbackState(rollbackState);
+
+            for (int i = 0; i < entry.ReplayFrames.Count; i++)
+            {
+                EntityPredictionFrame frame = entry.ReplayFrames[i];
+                entry.Entity.Step(frame.Tick, tickDeltaTime, frame.Command);
+                frame.State = entry.Entity.CaptureRollbackState();
+                entry.PredictionHistory.Add(frame);
+            }
+
+            entry.PredictionHistory.RemoveThrough(confirmedTick);
         }
 
         private void BroadcastSnapshots(uint tick)
