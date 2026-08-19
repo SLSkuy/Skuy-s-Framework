@@ -20,6 +20,7 @@ namespace GamePlay.EntitySystem
         private BaseEntity _entity;
         private EntityReplicationSystem _replicationSystem;
         private PlayerController _playerController;
+        private NetworkObjectComponentActivator _componentActivator;
 
         #region 属性
         public uint NetworkObjectId => networkObjectId;
@@ -67,6 +68,7 @@ namespace GamePlay.EntitySystem
                 RoleChanged?.Invoke(oldRole, newRole);
             }
 
+            _componentActivator?.Refresh(role);
             ConfigureMovementMode();
             ConfigurePlayerController();
             RegisterReplication();
@@ -109,6 +111,8 @@ namespace GamePlay.EntitySystem
         {
             _entity = gameObject.GetOrAddComponent<EntityCharacter>();
             _entity.Init();
+            _componentActivator = new NetworkObjectComponentActivator(this);
+            _componentActivator.Refresh(role);
         }
 
         private void Start()

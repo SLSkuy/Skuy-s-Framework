@@ -782,10 +782,11 @@ rotationSnapThresholdDegrees
 - 阶段 3 已完成：新增 `GamePlay.NetSync.SnapshotInterpolator` 和 `TransformSnapshot`，Replica 实体按服务端 Tick 缓冲完整 Transform 快照；渲染时间固定落后 `interpolationDelayTicks`，Position 使用 `Vector3.Lerp`，Rotation 使用最短路径 `Quaternion.Slerp`，速度字段同步插值。首个快照直接定位，缓冲不足时保持最近显示状态，重复/乱序快照由 `SnapshotBuffer` 排序覆盖，旧快照由实体 Tick 门禁丢弃。
 - 阶段 4 已完成：Predict 实体每个网络 Tick 采样输入、构建命令、立即执行本地 `Step` 并保存 `EntityPredictionFrame`；服务端快照使用 `LastProcessedInputTick` 查找确认帧，按 Position/Rotation 阈值决定是否校正；超阈值时恢复确认帧的完整 `EntityRollbackState`，写入权威 Transform 后按原命令顺序重放未确认帧；确认历史缺失时执行硬校正并清空历史。断开 KCP 后本地 Tick 仍继续预测，恢复连接后通过确认 Tick 收敛。
 - 阶段 5 已完成：删除 `NetworkSync/Compatibility` 下的 Authority/Replica Controller、旧 Position Snapshot/Sync 和三组旧同步接口；`NetworkObjectIdentity` 不再扫描同步模块、动态创建网络角色 Controller 或逐帧驱动兼容组件，只保留身份元数据、PlayerController 装配和 `EntityReplicationSystem` 注册；`GameScene.unity` 的 NetPlayer 实例已将旧 `NetEntitySyncRoot` 序列化标识迁移为 `NetworkObjectIdentity` 字段，消除 Missing Script 风险。
+- 阶段 6 已完成：新增 `NetworkObjectCapabilityId`、`NetworkObjectSyncChannelId`、`INetworkObjectCapability`、五类基础能力组件和 `NetworkObjectComponentActivator`；`NetworkObjectIdentity` 按 Local、Predicted、Authoritative、Interpolated 四种模式激活 Transform、Simulation、Snapshot、Prediction、Interpolation 能力矩阵，不改变现有复制算法与 TestSimulator 职责。
 - 阶段 2 测试入口：`Assets/Scenes/Dev/Network/SyncTest.unity` 挂载 `SyncTestPanel`，运行后可选择“开启服务端”或“开启客户端”。真实端到端测试使用两个独立进程加载同一场景，一个选择服务端，另一个选择客户端；客户端完成 TCP/KCP 握手后自动发送 `GAME_JOIN_REQUEST`，服务端创建 `NetPlayer` 权威实例，客户端收到世界快照后创建本地和远端实例。
 - 验证结果：Unity Console 无 C# 编译错误或警告；`SyncTest` Play Mode 面板与子系统初始化冒烟通过；EditMode 测试 10/10 通过。KCP 双进程下的 Position/Rotation 插值可视验收由测试面板执行。
 - 验证补充：新增 `EntityPredictionHistoryTests` 覆盖确认帧裁剪、重复 Tick 覆盖和重放帧复制。Unity MCP 当前不可用（HTTP 502），本机 batchmode 因已有编辑器锁/许可证连接失败，需在 Unity Editor 恢复后执行编译、EditMode 和双进程 PlayMode 验收。
-- 后续工作：输入批次与每连接速率限制、网络实体工厂与对象池的完整生命周期测试，以及阶段 6 的多能力组件标识激活。
+- 后续工作：输入批次与每连接速率限制、网络实体工厂与对象池的完整生命周期测试。
 
 ### 当前模块目录布局
 
