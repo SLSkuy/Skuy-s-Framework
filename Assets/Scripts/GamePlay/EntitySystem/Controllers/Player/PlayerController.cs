@@ -84,6 +84,12 @@ namespace GamePlay.EntitySystem
             }
         }
 
+        private void OnDisable()
+        {
+            _simulationSystem?.UnregisterLocal(this);
+            _simulationSystem = null;
+        }
+
         private void OnDestroy()
         {
             _simulationSystem?.UnregisterLocal(this);

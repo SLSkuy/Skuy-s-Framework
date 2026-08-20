@@ -72,7 +72,11 @@ namespace GamePlay.NetSync
                 new Vector3((clientId - 1u) * 2f, 1f, 0f),
                 Quaternion.identity);
             instance.name = $"ServerPlayer_{clientId}";
-            NetworkObjectIdentity identity = instance.AddComponent<NetworkObjectIdentity>();
+            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
+            if (identity == null)
+            {
+                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
+            }
             identity.Init(clientId, EntitySimulationMode.Authority, clientId);
             _players.Add(clientId, instance);
         }

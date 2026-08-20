@@ -6,9 +6,10 @@ namespace GamePlay.NetSync
     public enum NetworkObjectCapabilityId
     {
         Transform = 1,
-        Simulation = 2,
-        Snapshot = 3,
-        Prediction = 4,
-        Interpolation = 5
+        InputCommand = 2,
+        Simulation = 3,
+        Snapshot = 4,
+        Prediction = 5,
+        Interpolation = 6
     }
 }

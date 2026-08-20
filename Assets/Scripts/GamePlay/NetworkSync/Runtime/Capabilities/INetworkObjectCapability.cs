@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GamePlay.EntitySystem;
 
 namespace GamePlay.NetSync
@@ -9,7 +10,9 @@ namespace GamePlay.NetSync
     {
         NetworkObjectCapabilityId CapabilityId { get; }
         NetworkObjectSyncChannelId ChannelId { get; }
+        IReadOnlyList<NetworkObjectCapabilityId> RequiredCapabilities { get; }
         bool IsActive { get; }
+        bool SupportsMode(EntitySimulationMode mode);
         void Activate(NetworkObjectIdentity identity, EntitySimulationMode mode);
         void Deactivate();
     }

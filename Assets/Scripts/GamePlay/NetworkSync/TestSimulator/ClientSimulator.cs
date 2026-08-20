@@ -70,17 +70,21 @@ namespace GamePlay.NetSync
             if (response == null || !response.Accepted) _joinRequested = false;
         }
 
-        private BaseEntity SpawnPlayer(uint entityId, uint ownerClientId, bool isOwned)
+        private NetworkObjectIdentity SpawnPlayer(uint entityId, uint ownerClientId, bool isOwned)
         {
             if (_players.TryGetValue(entityId, out GameObject existing))
-                return existing.GetComponent<BaseEntity>();
+                return existing.GetComponent<NetworkObjectIdentity>();
 
             GameObject instance = UnityEngine.Object.Instantiate(_playerPrefab, Vector3.up, Quaternion.identity);
             instance.name = isOwned ? $"LocalPlayer_{entityId}" : $"RemotePlayer_{entityId}";
-            NetworkObjectIdentity identity = instance.AddComponent<NetworkObjectIdentity>();
+            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
+            if (identity == null)
+            {
+                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
+            }
             identity.Init(entityId, isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica, ownerClientId);
             _players.Add(entityId, instance);
-            return instance.GetComponent<BaseEntity>();
+            return identity;
         }
     }
 }

@@ -6,7 +6,7 @@ This is a Unity project. Runtime source lives in `Assets/Scripts`, with the scen
 Top-level modules under `Assets/Scripts/`:
 
 - `Framework/` — reusable core framework. `Common/` (singleton, state machine, subsystem base), `SubSystems/` (Camera, DataProxy, ObjectPool, Resource, SceneControl, States, Timer, UI), `Input/`, `Navigation/` (A* over ECS), `Event/`.
-- `GamePlay/` — gameplay code. `EntitySystem/` (legacy entity hosts and compatibility code), `EntitySimulationCore/` (new pure command/state/simulation contracts and core Tick utilities), `MultiPlaySystem/` (Component, Config, Interface, Snapshot), `Protocol/Generated/` (Protobuf-generated, do not hand-edit), `Proxy/`.
+- `GamePlay/` — gameplay code. `EntitySystem/` (entity hosts, modules, controllers and simulation adapters), `EntitySimulationCore/` (pure command/state/simulation contracts and core Tick utilities), `NetworkSync/` (Config, Runtime capabilities, Snapshot interpolation and TestSimulator drivers), `Protocol/Generated/` (Protobuf-generated, do not hand-edit), `Proxy/`.
 - `Network/` — networking. `Client/`, `Server/`, `Transport/` (`Kcp/`, `Tcp/`), `Config/`, `Interface/`, `Protocol/`.
 - `Events/` — cross-module event enums (e.g. `NetEvent`).
 - `Utils/` — stateless static helpers (`MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`, plus `DataStruct/KDTree`).
@@ -27,7 +27,8 @@ Namespaces are logical module names — they do **not** strictly mirror the fold
 | `Network` | Client/server networking, transports, message processing | `NetClient.cs`, `NetServer.cs` |
 | `Events` | Cross-module event enums | `NetEvent.cs` |
 | `EventProcess` | Event bus (`EventBus.Get<T>()`) | — |
-| `GamePlay.EntitySystem` | Entity character, FSM states, network identity | `EntityCharacter.cs`, `EntityBaseState.cs`, `NetEntityIdentity.cs` |
+| `GamePlay.EntitySystem` | Entity character, FSM states, network identity | `EntityCharacter.cs`, `EntityBaseState.cs`, `NetworkObjectIdentity.cs` |
+| `GamePlay.NetSync` | Network capabilities, replication, prediction and interpolation | `EntityReplicationSystem.cs`, `NetworkTransformCapability.cs` |
 | `Utils` | Stateless static helpers | `MathUtils.cs` |
 | `NetConnect` | Low-level connection primitives | — |
 | *(global)* | Scene entry points only | `Launch.cs`, `MainEntry.cs` |
@@ -43,7 +44,7 @@ Before writing framework-facing code, match these established patterns:
 - **Event bus.** Dispatch cross-module events with `EventBus.Get<TEvent>().Dispatch(data)`; use `event Action<T>` for direct subscriptions within a class.
 - **Data proxies.** `IDataProxy` instances are registered through `DataProxyManager` and accessed via `Global.GetDataProxy<T>()` / `Global.TryGetDataProxy<T>()`.
 - **Network transport.** `NetClient` and `NetServer` are both `SubSystemBase`; transports implement `IClientTransport` / `IServerTransport` with KCP and TCP variants under `Network/Transport/`. Messages use Google.Protobuf; generated messages live in `GamePlay/Protocol/Generated/`.
-- **Keep MonoBehaviour scene glue separate from reusable services.** MonoBehaviours (`EntityCharacter`, `UIController`, `NetEntityIdentity`) wire Unity lifecycle to framework services; they should not contain reusable logic that belongs in a `SubSystemBase` or a pure core assembly.
+- **Keep MonoBehaviour scene glue separate from reusable services.** MonoBehaviours (`EntityCharacter`, `UIController`, `NetworkObjectIdentity`) wire Unity lifecycle to framework services; they should not contain reusable logic that belongs in a `SubSystemBase` or a pure core assembly.
 
 - **New-code migration rule.** After a module has an approved destination under a new responsibility folder or assembly, add new code only at that destination. Do not expand legacy `EntitySystem/Sync`, controller-role implementations, or compatibility files with new synchronization behavior. Compatibility shims must be temporary, explicitly documented, and covered by a migration/removal task.
 
@@ -61,7 +62,7 @@ Use C# with 4-space indentation and braces on their own line. **Line endings are
 - **Managers/coordinators:** `Manager` suffix — `GameStateManager`, `UIManager`, `ResourceManager`, `DataProxyManager`, `SystemManager`.
 - **Static helpers:** `Utils` suffix, `static class` — `MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`.
 - **Concrete states:** `State` suffix — `EntityIdleState`, `LoadingState`, `GamingState`.
-- **Network components:** `Net` prefix for network-facing MonoBehaviours — `NetEntityIdentity`; client/server entry points are `NetClient` / `NetServer`.
+- **Network components:** use the established network-facing names such as `NetworkObjectIdentity` and `NetworkTransformCapability`; client/server entry points remain `NetClient` / `NetServer`.
 
 ### Fields & properties
 The codebase distinguishes private backing fields from serialized/public fields:
@@ -107,7 +108,7 @@ Within a class or struct, declare members top-to-bottom in this fixed order. Wra
    - **MonoBehaviour / Unity lifecycle** (`Awake`, `Start`, `OnEnable`, `OnDisable`, `Update`, `FixedUpdate`, `LateUpdate`, `OnDestroy`, `OnAnimatorMove`, …) → `#region 生命周期` (or `#region Unity生命周期`).
    - **`SubSystemBase` overrides** (`Init`, `Destroy`, `BindEvents`, `Update`, `FixedUpdate`, `LateUpdate`) → `#region 子系统生命周期` (or `#region SubSystem生命周期`). A class uses at most one of these two regions — `SubSystemBase` is a plain C# class, not a MonoBehaviour, so its overrides are framework-driven, not Unity-driven.
 
-Reference implementation: [NetEntityIdentity.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/MultiPlaySystem/Component/NetEntityIdentity.cs) (serialized fields → `#region 属性` → `#region 事件` → methods, with no method regions) is the model to follow. [EntityCharacter.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/EntitySystem/Character/EntityCharacter.cs) still carries legacy feature-named regions (`#region 实体控制`, `#region 模拟入口`); do not replicate those in new code — only its `#region 属性` and `#region 生命周期` match the current rule.
+Reference implementation: [NetworkObjectIdentity.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/NetworkSync/Runtime/NetworkObjectIdentity.cs) (serialized fields → `#region 属性` → `#region 事件` → methods → `#region 生命周期`) is the model to follow. [EntityCharacter.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/EntitySystem/Entities/EntityCharacter.cs) still carries legacy feature-named regions (`#region 实体控制`, `#region 模拟入口`); do not replicate those in new code — only its `#region 属性` matches the current rule.
 
 ### File organization
 - One primary type per file; file name matches the type.
