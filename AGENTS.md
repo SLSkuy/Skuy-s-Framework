@@ -1,6 +1,6 @@
 # 仓库指引
 
-这是一个 Unity Framework / Entity / Network / Simulation 项目。本文件是 **Agent 行为宪法** —— 它告诉 Agent *如何工作* 以及 *必须 / 不可做什么*。项目设计细节（架构、命名空间、代码风格、测试、文档、git）位于 [`.agents/rules/`](.agents/rules/) 并在下方引用。**不要让本文件成为代码库的第二份事实来源** —— 具体的模块清单、命名空间、类名会随重构漂移；以实际代码为准。
+这是一个 Unity 项目。本文件是 **Agent 行为宪法** —— 它告诉 Agent *如何工作* 以及 *必须 / 不可做什么*。项目设计细节（架构、命名空间、代码风格、文档）位于 [`.agents/rules/`](.agents/rules/) 并在下方引用。**不要让本文件成为代码库的第二份事实来源** —— 具体的模块清单、命名空间、类名会随重构漂移；以实际代码为准。
 
 ## 1. Agent 工作流
 
@@ -16,17 +16,21 @@
 
 ### 规划（Plan）
 
-明确说明：改哪些文件、新增哪些类型、影响哪些接口/调用点、是否引入跨模块依赖、是否需要同步更新文档、测试与 `CHANGELOG.md`。
+明确说明：改哪些文件、新增哪些类型、影响哪些接口/调用点、是否引入跨模块依赖、是否需要同步更新文档与测试。
 
-**确认关卡：** 计划涉及跨模块重构时，先向用户说明迁移边界与收益并获得确认，再进入实现 —— 见「范围控制」。
+**确认关卡：** 满足以下任一条件时，计划必须先向用户说明迁移边界与收益并获得确认，再进入实现：修改两个及以上运行时模块的公共接口；修改 `.asmdef` 或程序集依赖；修改协议或序列化格式；改变生命周期调用顺序；移动已有类型且需要迁移调用点。仅修改多个目录中的实现细节不触发确认 —— 见「范围控制」。
 
 ### 实现（Implement）
 
 遵循所属模块的现有架构。复用已有的接口与组件。不要修改无关代码。不要保留被取代的旧实现（见「修改约束」）。不要修改生成 / 第三方文件。
 
+### 验证（Verify）
+
+按任务风险执行最小必要验证：文档改动检查路径与链接；C# 或配置改动执行可用的编译、静态检查或 Unity Console 检查；涉及行为变化时运行相关测试。Unity 不可连接或验证条件不具备时，必须在汇报中明确标记未验证及风险。
+
 ### 汇报（Report）
 
-总结：改了什么、为什么改、以及任何未验证或存在风险的部分。若架构或对外行为有变，说明 `Docs/Architecture/` 与 `CHANGELOG.md` 是否已同步，或哪些部分待用户处理。
+总结：改了什么、为什么改、验证了什么、以及任何未验证或存在风险的部分。若架构或对外行为有变，说明 `Docs/Architecture/` 是否已同步，或哪些部分待用户处理。
 
 ## 2. 修改原则
 
@@ -78,7 +82,9 @@
 
 ## 6. 文档
 
-当改动涉及新子系统、跨模块重构、协议新增或架构决策时，在 `Docs/<Feature>/` 下创建/更新设计文档。每篇文档必须**自包含**（脱离对话历史即可理解）并说明：数据来源、所属模块、要改动的文件、接口/调用链影响、改动后预期行为。详情：[.agents/rules/Documentation.md](.agents/rules/Documentation.md)。
+当改动涉及新子系统、跨模块重构、协议新增或架构决策时，在 `Docs/Plan/<Feature>/` 下创建/更新设计文档。普通功能文档使用最小模板；架构、协议和跨模块文档使用完整模板。详情：[.agents/rules/Documentation.md](.agents/rules/Documentation.md)。
+
+**模块文档同步：** 新增顶层模块目录（或有独立 `.asmdef` 的新模块）时，必须同步在 `Docs/Architecture/` 下创建对应模块文档（职责、目录结构、核心抽象、依赖方向），并更新 [Docs/README.md](Docs/README.md) 索引；对既有模块的职责、核心抽象或依赖方向有实质变更时，同步更新其对应文档。
 
 ## 7. 规则文件索引
 
@@ -88,4 +94,4 @@
 | C# 代码风格、成员顺序、region | [.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md) |
 | 文档布局与自包含要求 | [.agents/rules/Documentation.md](.agents/rules/Documentation.md) |
 
-按功能划分的设计文档位于 `Docs/` 下（见 [Docs/README.md](Docs/README.md) 索引）。模块架构文档在 `Docs/Architecture/`（framework / entity / simulation / networking）；按功能组织的设计文档放在以功能名命名的子文件夹下（如 `Docs/EntityControl/`），每个文件夹配一个 `00-Index.md`。
+按功能划分的设计文档位于 `Docs/Plan/` 下（见 [Docs/README.md](Docs/README.md) 索引）。模块架构文档在 `Docs/Architecture/`（framework / entity / simulation / networking）。`Docs/Plan/` 中的文档直接使用功能或用途命名，不使用数字前缀。

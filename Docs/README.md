@@ -7,6 +7,7 @@
 ```
 Docs/
 ├── README.md            # 本索引
+├── Plan/                 # 功能设计与实施计划（按功能分目录）
 └── Architecture/        # 模块架构文档（按模块划分）
     ├── framework.md     # Framework 核心框架
     ├── entity.md        # EntitySystem 实体系统
@@ -25,7 +26,7 @@ Docs/
 
 ## 功能设计文档
 
-按功能划分的设计文档放在以功能名命名的子文件夹下（如 `Docs/EntityControl/`、`Docs/Navigation/`），每个文件夹配一个 `00-Index.md`。布局与自包含要求见 [.agents/rules/Documentation.md](../.agents/rules/Documentation.md)。
+功能设计与实施计划统一放在 `Docs/Plan/<Feature>/`，文档直接使用功能或用途命名。模块事实文档放在 `Docs/Architecture/`。布局与文档级别要求见 [.agents/rules/Documentation.md](../.agents/rules/Documentation.md)。
 
 ## 注意
 
