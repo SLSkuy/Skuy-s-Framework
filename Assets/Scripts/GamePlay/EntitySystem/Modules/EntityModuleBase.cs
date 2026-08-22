@@ -7,12 +7,12 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public abstract class EntityModuleBase : MonoBehaviour, IEntityModule
     {
-        private BaseEntity _target;
+        private EntitySimulationObject _target;
         private bool _isEnabled = true;
 
         #region 属性
         public abstract ModuleType ModuleType { get; }
-        public BaseEntity Target => _target;
+        public EntitySimulationObject Target => _target;
         public bool HasTarget => _target != null;
         public bool IsEnabled => _isEnabled;
         #endregion
@@ -20,7 +20,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 绑定实体目标。
         /// </summary>
-        public virtual void Bind(BaseEntity target)
+        public virtual void Bind(EntitySimulationObject target)
         {
             _target = target;
             OnBound(target);
@@ -41,7 +41,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public virtual void Unbind()
         {
-            BaseEntity oldTarget = _target;
+            EntitySimulationObject oldTarget = _target;
             _target = null;
             OnUnbound(oldTarget);
         }
@@ -49,7 +49,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 绑定完成回调。
         /// </summary>
-        protected virtual void OnBound(BaseEntity target) { }
+        protected virtual void OnBound(EntitySimulationObject target) { }
 
         /// <summary>
         /// 启用状态变化回调。
@@ -59,7 +59,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 解绑完成回调。
         /// </summary>
-        protected virtual void OnUnbound(BaseEntity oldTarget) { }
+        protected virtual void OnUnbound(EntitySimulationObject oldTarget) { }
     }
 }
 

@@ -21,7 +21,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 初始化玩家控制器。
         /// </summary>
-        public void Init(BaseEntity entity, NetworkObjectIdentity syncRoot, bool localPlay)
+        public void Init(EntitySimulationObject entity, NetworkObjectIdentity syncRoot, bool localPlay)
         {
             Bind(entity);
             _isLocalPlay = localPlay;

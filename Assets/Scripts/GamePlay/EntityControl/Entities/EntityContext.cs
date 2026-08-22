@@ -6,11 +6,8 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体状态机上下文，保存移动相关状态。
     /// </summary>
-    public class EntityContext
+    public class EntityContext : EntityObjectContext<EntityConfig>
     {
-        public readonly ExtendableStateMachine<uint> StateMachine;
-        public readonly EntityConfig Config;
-        
         public readonly MovementModule Movement;
         public readonly RotationModule Rotation;
 
@@ -35,11 +32,10 @@ namespace GamePlay.EntitySystem
         #endregion
 
         public EntityContext(EntityConfig config, MovementModule movement, RotationModule rotation)
+            : base(config)
         {
-            StateMachine = new ExtendableStateMachine<uint>();
             Movement = movement;
             Rotation = rotation;
-            Config = config;
         }
 
         /// <summary>

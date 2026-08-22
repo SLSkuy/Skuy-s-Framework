@@ -6,26 +6,28 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体角色基类，装配状态机并暴露输入写入接口。
     /// </summary>
-    public class EntityCharacter : BaseEntity
+    public class EntityCharacter : EntitySimulationObject, IEntityIntentReceiver
     {
-        private EntitySimulation _simulation;
+        private MovementModule _movementModule;
+        private RotationModule _rotationModule;
+        protected EntitySimulation _simulation;
 
         #region 属性
         public override uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
 
         #region 实体控制
-        public override void Move(Vector2 dir)
+        public void Move(Vector2 dir)
         {
             _context.LastMoveInput = dir;
         }
 
-        public override void Aim(Vector2 dir)
+        public void Aim(Vector2 dir)
         {
             _context.LastAimInput = dir;
         }
 
-        public override void Jump()
+        public void Jump()
         {
             _context.JumpRequest = true;
         }
@@ -33,7 +35,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 按下 Sprint 键，进入疾跑意图。
         /// </summary>
-        public override void StartSprint()
+        public void StartSprint()
         {
             _context.IsSprinting = true;
         }
@@ -41,7 +43,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 松开 Sprint 键，退出疾跑意图。
         /// </summary>
-        public override void StopSprint()
+        public void StopSprint()
         {
             _context.IsSprinting = false;
         }
@@ -49,7 +51,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 切换奔跑模式。
         /// </summary>
-        public override void ToggleRun()
+        public void ToggleRun()
         {
             _context.RunToggleRequest = true;
         }
@@ -60,15 +62,18 @@ namespace GamePlay.EntitySystem
         {
             base.InitComponents();
 
-            MovementModule movementModule = gameObject.GetOrAddComponent<MovementModule>();
-            movementModule.Init(_config);
-            movementModule.Bind(this);
+            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
+            _movementModule.Init(_config);
+            _movementModule.Bind(this);
 
-            RotationModule rotationModule = gameObject.GetOrAddComponent<RotationModule>();
-            rotationModule.Init(_config);
-            rotationModule.Bind(this);
+            _rotationModule = gameObject.GetOrAddComponent<RotationModule>();
+            _rotationModule.Init(_config);
+            _rotationModule.Bind(this);
+        }
 
-            SetContext(new EntityContext(_config, movementModule, rotationModule));
+        protected override void InitContext()
+        {
+            SetContext(new EntityContext(_config, _movementModule, _rotationModule));
 
             RegisterStates();
             _context.StateMachine.ChangeState(EntityState.IDLE);
@@ -98,7 +103,10 @@ namespace GamePlay.EntitySystem
             _simulation?.RestoreRollbackState(state);
         }
 
-        private void RegisterStates()
+        /// <summary>
+        /// 注册角色默认状态。子类可追加或替换角色专属状态。
+        /// </summary>
+        protected virtual void RegisterStates()
         {
             _context.StateMachine.RegisterState(new EntityIdleState(_context));
             _context.StateMachine.RegisterState(new EntityWalkState(_context));

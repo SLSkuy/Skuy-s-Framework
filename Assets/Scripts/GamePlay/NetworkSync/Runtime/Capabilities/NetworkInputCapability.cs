@@ -72,11 +72,11 @@ namespace GamePlay.NetSync
                 return;
             }
 
-            BaseEntity entity = GetComponent<BaseEntity>();
+            EntitySimulationObject entity = GetComponent<EntitySimulationObject>();
             if (entity == null || _controller == null)
             {
                 throw new InvalidOperationException(
-                    $"网络对象 {name} 的 InputCommand 能力在 {mode} 模式下需要 BaseEntity 和 PlayerController。 ");
+                    $"网络对象 {name} 的 InputCommand 能力在 {mode} 模式下需要 EntitySimulationObject 和 PlayerController。 ");
             }
 
             _controller.enabled = true;

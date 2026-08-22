@@ -14,7 +14,7 @@ namespace GamePlay.NetSync
             NetworkObjectCapabilityId.Transform
         };
 
-        private BaseEntity _entity;
+        private EntitySimulationObject _entity;
 
         #region 属性
         public override NetworkObjectCapabilityId CapabilityId => NetworkObjectCapabilityId.Simulation;
@@ -51,10 +51,10 @@ namespace GamePlay.NetSync
 
         protected override void OnActivated(EntitySimulationMode mode)
         {
-            _entity = GetComponent<BaseEntity>();
+            _entity = GetComponent<EntitySimulationObject>();
             if (_entity == null)
             {
-                throw new InvalidOperationException($"网络对象 {name} 声明了 Simulation 能力，但缺少 BaseEntity。 ");
+                    throw new InvalidOperationException($"网络对象 {name} 声明了 Simulation 能力，但缺少 EntitySimulationObject。 ");
             }
 
             if (!_entity.IsInitialized) _entity.Init();

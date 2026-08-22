@@ -32,7 +32,7 @@ namespace GamePlay.NetSync
         /// </summary>
         public EntitySimulationState CaptureState()
         {
-            BaseEntity entity = GetComponent<BaseEntity>();
+            EntitySimulationObject entity = GetComponent<EntitySimulationObject>();
             if (entity != null && entity.IsInitialized) return entity.CaptureSimulationState();
 
             return new EntitySimulationState

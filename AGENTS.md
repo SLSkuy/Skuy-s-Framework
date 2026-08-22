@@ -1,148 +1,91 @@
-# Repository Guidelines
+# 仓库指引
 
-## Project Structure & Module Organization
-This is a Unity project. Runtime source lives in `Assets/Scripts`, with the scene entry points `Launch.cs` and `MainEntry.cs` placed directly under `Assets/Scripts/` (both in the global namespace, no `namespace` declaration). Runtime code may be split into multiple `.asmdef` assemblies by responsibility. Preserve explicit dependency direction and keep pure simulation/core assemblies independent from Unity scene glue, gameplay hosts, transports, and test assemblies.
+这是一个 Unity Framework / Entity / Network / Simulation 项目。本文件是 **Agent 行为宪法** —— 它告诉 Agent *如何工作* 以及 *必须 / 不可做什么*。项目设计细节（架构、命名空间、代码风格、测试、文档、git）位于 [`.agents/rules/`](.agents/rules/) 并在下方引用。**不要让本文件成为代码库的第二份事实来源** —— 具体的模块清单、命名空间、类名会随重构漂移；以实际代码为准。
 
-Top-level modules under `Assets/Scripts/`:
+## 1. Agent 工作流
 
-- `Framework/` — reusable core framework. `Common/` (singleton, state machine, subsystem base), `SubSystems/` (Camera, DataProxy, ObjectPool, Resource, SceneControl, States, Timer, UI), `Input/`, `Navigation/` (A* over ECS), `Event/`.
-- `GamePlay/` — gameplay code. `EntitySystem/` (entity hosts, modules, controllers and simulation adapters), `EntitySimulationCore/` (pure command/state/simulation contracts and core Tick utilities), `NetworkSync/` (Config, Runtime capabilities, Snapshot interpolation and TestSimulator drivers), `Protocol/Generated/` (Protobuf-generated, do not hand-edit), `Proxy/`.
-- `Network/` — networking. `Client/`, `Server/`, `Transport/` (`Kcp/`, `Tcp/`), `Config/`, `Interface/`, `Protocol/`.
-- `Events/` — cross-module event enums (e.g. `NetEvent`).
-- `Utils/` — stateless static helpers (`MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`, plus `DataStruct/KDTree`).
-- `Editor/` — editor-only tooling (`Protobuf/`, `UIFramework/`). Editor scripts must sit under an `Editor/` folder so Unity excludes them from builds.
-- `Core/`, `Debug/` — auxiliary runtime helpers.
-- `Tests/` — currently holds runtime debug panels (e.g. `NetworkTestPanel.cs`); place new EditMode/PlayMode unit tests here or beside their module.
+每个任务都遵循这个循环。
 
-Scenes live in `Assets/Scenes`, with development scenes under `Assets/Scenes/Dev`. Generated protocol classes live in `Assets/Scripts/GamePlay/Protocol/Generated`; avoid hand-editing generated files unless the generator is unavailable. Third-party code is kept in `Assets/ThirdParty`. Design documents live in the root-level `Docs/` folder (not under `Assets/`) — see [Documentation Guidelines](#documentation-guidelines) below.
+### 澄清（Clarify）
 
-## Namespace Conventions
-Namespaces are logical module names — they do **not** strictly mirror the folder path. Use the established names:
+任务目标、范围或术语有歧义时：先向用户确认，或明确列出本次将采用的假设后再继续；不要在错误方向上完成整轮工作流。
 
-| Namespace | Used for | Example |
-| --- | --- | --- |
-| `Framework` | Core framework services, singletons, subsystem base, `Global` locator | `Global.cs`, `MonoSingleton.cs`, `SubSystemBase.cs`, `GameStateManager.cs` |
-| `Framework.Core` | UI controller base and shared UI core | `UIController.cs` |
-| `Framework.StateMachine` | Generic state machine (`IState`, `EnumStateBase<T>`) | `IState.cs`, `EnumStateBase.cs` |
-| `Network` | Client/server networking, transports, message processing | `NetClient.cs`, `NetServer.cs` |
-| `Events` | Cross-module event enums | `NetEvent.cs` |
-| `EventProcess` | Event bus (`EventBus.Get<T>()`) | — |
-| `GamePlay.EntitySystem` | Entity character, FSM states, network identity | `EntityCharacter.cs`, `EntityBaseState.cs`, `NetworkObjectIdentity.cs` |
-| `GamePlay.NetSync` | Network capabilities, replication, prediction and interpolation | `EntityReplicationSystem.cs`, `NetworkTransformCapability.cs` |
-| `Utils` | Stateless static helpers | `MathUtils.cs` |
-| `NetConnect` | Low-level connection primitives | — |
-| *(global)* | Scene entry points only | `Launch.cs`, `MainEntry.cs` |
+### 理解（Understand）
 
-Only `Launch` and `MainEntry` may live in the global namespace; everything else must declare a module namespace. When adding a subsystem, reuse the owning module's namespace rather than inventing a new one.
+改动代码前：阅读相关文件、定位所属模块、查找已有的类似实现、确认依赖方向与生命周期。不确定时**先搜索代码** —— 不要凭空创造新的抽象。
 
-## Architecture & Patterns
-Before writing framework-facing code, match these established patterns:
+### 规划（Plan）
 
-- **Service locator + subsystems.** Framework services extend `SubSystemBase` and self-register into the static `Global` locator (see `Framework/Common/SubSystemManager/`). Business code retrieves them via `Global.Get<T>()` / `Global.TryGet<T>(out var s)`. Lifecycle is driven by the non-overridable `_Init()` / `_Destroy()` hooks; subclasses override the virtual `Init()` / `Destroy()` / `BindEvents()` / `Update()` / `FixedUpdate()` / `LateUpdate()` instead. Each subsystem exposes a unique `SubSystemPriority`.
-- **MonoBehaviour singletons.** Derive from `MonoSingleton<T>`; access via `Instance`, override `Init()` / `Destroy()`, and call `ShutDown()` on application quit.
-- **State machines.** States implement `IState` (or extend `EnumStateBase<TEnum>` / `ExtendableStateBase`). `Update()` calls `Tick()` then `CheckStateChange()`; override those rather than `Update`. Concrete states use the `...State` suffix (e.g. `EntityIdleState`, `MainMenuState`).
-- **Event bus.** Dispatch cross-module events with `EventBus.Get<TEvent>().Dispatch(data)`; use `event Action<T>` for direct subscriptions within a class.
-- **Data proxies.** `IDataProxy` instances are registered through `DataProxyManager` and accessed via `Global.GetDataProxy<T>()` / `Global.TryGetDataProxy<T>()`.
-- **Network transport.** `NetClient` and `NetServer` are both `SubSystemBase`; transports implement `IClientTransport` / `IServerTransport` with KCP and TCP variants under `Network/Transport/`. Messages use Google.Protobuf; generated messages live in `GamePlay/Protocol/Generated/`.
-- **Keep MonoBehaviour scene glue separate from reusable services.** MonoBehaviours (`EntityCharacter`, `UIController`, `NetworkObjectIdentity`) wire Unity lifecycle to framework services; they should not contain reusable logic that belongs in a `SubSystemBase` or a pure core assembly.
+明确说明：改哪些文件、新增哪些类型、影响哪些接口/调用点、是否引入跨模块依赖、是否需要同步更新文档、测试与 `CHANGELOG.md`。
 
-- **New-code migration rule.** After a module has an approved destination under a new responsibility folder or assembly, add new code only at that destination. Do not expand legacy `EntitySystem/Sync`, controller-role implementations, or compatibility files with new synchronization behavior. Compatibility shims must be temporary, explicitly documented, and covered by a migration/removal task.
+**确认关卡：** 计划涉及跨模块重构时，先向用户说明迁移边界与收益并获得确认，再进入实现 —— 见「范围控制」。
 
-## Coding Style & Naming Conventions
-Use C# with 4-space indentation and braces on their own line. **Line endings are CRLF (`\r\n`)** across the repository — keep new and edited text files (`.cs`, `.md`, `.json`, `.asmdef`, `.txt`, shader files, etc.) in CRLF, and do not convert existing files to LF. A `.gitattributes` with `* text=auto eol=crlf` is the recommended way to enforce this repo-wide. Public types and methods use `PascalCase`; local variables and parameters use `camelCase`. The codebase uses Chinese XML doc summaries and inline comments — match that when extending existing files, and **do not arbitrarily delete existing comments**. When refactoring, preserve and update comments in place; remove only what is clearly obsolete, and keep comment banners (e.g. `// ========== 心跳 ==========`) with the field group they describe.
+### 实现（Implement）
 
-**Comments are preserved, but dead code is removed.** When refactoring, delete the old implementation outright — do not leave it commented out, `#if false`'d, or sitting unused. Keep the file tidy and let the new code stand on its own. Retain old code only when explicitly told to keep it for backward compatibility, in which case mark the seam clearly (e.g. an `// 旧实现，保留兼容` banner) so the intent is visible.
+遵循所属模块的现有架构。复用已有的接口与组件。不要修改无关代码。不要保留被取代的旧实现（见「修改约束」）。不要修改生成 / 第三方文件。
 
-**No `EnsureXXX()` or lazy self-healing guards.** Do not write over-protective methods like `EnsureInitialized()`, `EnsureConfig()`, `EnsureSubSystem()` that lazily create or re-initialize state on access. They hide real bugs — silent re-init masks cases where the framework lifecycle was skipped or called out of order — and break the deterministic init timing that `SubSystemBase._Init()` / `Init()` provides (init runs once at registration, `Destroy()` once at teardown). Access members assuming init already ran; if it didn't, let it fail loudly (a clear `NullReferenceException` or an explicit `throw` with a descriptive message) rather than silently self-healing. If you must validate state, throw with a descriptive message — do not auto-fix.
+### 汇报（Report）
 
-### Types
-- **Classes/structs/enums:** `PascalCase`. File name matches the primary type name; one primary type per file.
-- **Interfaces:** `I` prefix — `IState`, `ISubSystem`, `IUIController`, `IClientTransport`, `IDataProxy`.
-- **Abstract bases:** `Base` suffix — `SubSystemBase`, `EnumStateBase`, `EntityBaseState`, `ExtendableStateBase`. Generic bases keep the type parameter — `MonoSingleton<T>`, `UIController<T>`, `EnumStateBase<TEnum>`.
-- **Managers/coordinators:** `Manager` suffix — `GameStateManager`, `UIManager`, `ResourceManager`, `DataProxyManager`, `SystemManager`.
-- **Static helpers:** `Utils` suffix, `static class` — `MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`.
-- **Concrete states:** `State` suffix — `EntityIdleState`, `LoadingState`, `GamingState`.
-- **Network components:** use the established network-facing names such as `NetworkObjectIdentity` and `NetworkTransformCapability`; client/server entry points remain `NetClient` / `NetServer`.
+总结：改了什么、为什么改、以及任何未验证或存在风险的部分。若架构或对外行为有变，说明 `Docs/Architecture/` 与 `CHANGELOG.md` 是否已同步，或哪些部分待用户处理。
 
-### Fields & properties
-The codebase distinguishes private backing fields from serialized/public fields:
+## 2. 修改原则
 
-- **Private fields:** `_camelCase` — `_config`, `_context`, `_instance`, `_clientId`, `_fsm`, `_lastRtt`. Private static fields also `_camelCase` (`_applicationIsQuitting`).
-- **`[SerializeField] private` fields:** `camelCase` **without** underscore — `animIn`, `uiControllerID`, `isVisible`, `entityId`, `role`. (Underscore is dropped so the Inspector name stays clean.)
-- **Public fields:** `camelCase` — `public bool tickDrive;`. Prefer properties over public fields where logic is involved.
-- **`protected readonly` fields:** `PascalCase` — `protected readonly EntityContext Context;`.
-- **Private `static readonly` collections/locks:** `PascalCase` — `Lock`, `SubSystems`.
-- **Properties:** `PascalCase` — `Instance`, `Priority`, `CurrentState`, `EntityId`, `RTT`, `IsRunning`. Prefer expression-body for trivial getters (`public uint EntityId => entityId;`).
+1. 复用已有抽象；不重复创建已有能力 —— 不确定先搜索代码。
+2. 不为局部需求破坏既有模块边界。
 
-### Methods
-- **Public & protected virtual:** `PascalCase` — `Move`, `Show`, `ChangeState`, `Init`, `Destroy`, `OnShow`, `Tick`, `CheckStateChange`.
-- **Unity lifecycle:** `Awake`, `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnEnable`, `OnDisable`, `OnDestroy`, `OnAnimatorMove`.
-- **Framework-internal non-overridable hooks:** underscore prefix — `_Init()`, `_Destroy()` (declared non-virtual on `SubSystemBase`). Do not add new underscore-prefixed public API casually; reserve it for base-class lifecycle seams.
-- **Async methods:** `Async` suffix — `LoadResourceAsync`, `LoadAsync`.
-- **Multi-line parameter lists:** when a declaration or call is too long for one line, wrap at the line-length limit and keep multiple parameters per line — do **not** put one parameter per line. Indent continuation lines by one level (4 spaces) or align after the opening paren, matching the surrounding file.
+**不要根据通用最佳实践重构项目现有架构。** 当前代码及其约定优先于通用习惯。当任务涉及既有架构时，以仓库为事实来源 —— 见下方「仓库即事实」。
 
-  ```csharp
-  // 不推荐：每个参数独占一行
-  public static void Step(
-      IEntitySimulation simulation,
-      EntityInputCommandBuilder commandBuilder,
-      uint tick,
-      float deltaTime,
-      in InputState input)
+## 3. 架构规则
 
-  // 推荐：到达行宽上限再换行，一行尽量多放参数
-  public static void Step(IEntitySimulation simulation, EntityInputCommandBuilder commandBuilder,
-      uint tick, float deltaTime, in InputState input)
-  ```
+- **模块边界。** 改动前确认所属模块；不要跨越既有边界添加职责。详情：[.agents/rules/Architecture.md](.agents/rules/Architecture.md)。
+- **依赖方向。** 运行时代码可按职责拆分为多个 `.asmdef` 程序集。保持显式依赖方向；让纯 simulation/core 程序集独立于 Unity 场景胶水、gameplay 宿主、transport 与测试程序集。未记录边界与方向前，不要引入 `.asmdef` 文件。
+- **场景胶水 vs 核心。** MonoBehaviour（`EntityCharacter`、`UIController`、`NetworkObjectIdentity` 等）只负责把 Unity 生命周期桥接到框架服务。可复用逻辑属于 `SubSystemBase` 或纯核心程序集，不属于场景胶水。
+- **新代码迁移。** 一旦某模块有了批准的新目标文件夹/程序集，新代码只放在那里。不要在遗留/兼容文件里扩展新行为；兼容垫片必须是临时的、有文档记录、并由一个移除任务跟踪。
+- **生命周期。** 框架生命周期由 `SubSystemBase._Init()` / `Init()` / `Destroy()` 驱动。**不要**用 `EnsureXXX()`、懒初始化、自动 self-healing 掩盖生命周期错误 —— 让缺失初始化大声失败，使生命周期 bug 暴露出来。
 
-### Member declaration order
-Within a class or struct, declare members top-to-bottom in this fixed order. Wrap each group in a `#region` where indicated, and group functionally related fields together inside a group.
+## 4. 编码规则
 
-1. **Serialized fields** — all `[SerializeField]` (and any `public` Inspector-facing) fields first, using `[Header]` / `[Tooltip]` to group and describe them. `camelCase` without underscore.
-2. **Class-typed reference fields** — private references to other class/instance types, e.g. `_config`, `_context`, `_fsm`, `_messageProcessor` (`_camelCase`).
-3. **Primitive / value fields** — `int`, `float`, `bool`, enums, etc., e.g. `_clientId`, `_token`, `_tryReconnect`. Group fields that serve one feature together; a comment banner like `// ========== 网络心跳 ==========` (as in `NetClient`) is the established way to label a sub-group.
-4. **Properties** — wrap in `#region 属性`. Prefer expression-body for trivial getters (`public uint EntityId => entityId;`).
-5. **Events** — wrap in `#region 事件` (`public event Action<T> ...`, `event Action<IUIController>`).
-6. **Methods** — declare in order, public API first, then private helpers. **Do not wrap methods or method groups in `#region`**; `#region` is reserved for `属性`, `事件`, `生命周期`, and `子系统生命周期` (see item 7).
-7. **Lifecycle methods** — wrap in a lifecycle `#region` and place at the **end of the file**. Use the region matching the class's base:
-   - **MonoBehaviour / Unity lifecycle** (`Awake`, `Start`, `OnEnable`, `OnDisable`, `Update`, `FixedUpdate`, `LateUpdate`, `OnDestroy`, `OnAnimatorMove`, …) → `#region 生命周期` (or `#region Unity生命周期`).
-   - **`SubSystemBase` overrides** (`Init`, `Destroy`, `BindEvents`, `Update`, `FixedUpdate`, `LateUpdate`) → `#region 子系统生命周期` (or `#region SubSystem生命周期`). A class uses at most one of these two regions — `SubSystemBase` is a plain C# class, not a MonoBehaviour, so its overrides are framework-driven, not Unity-driven.
+只列高层要点；完整细节见 [.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md)。
 
-Reference implementation: [NetworkObjectIdentity.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/NetworkSync/Runtime/NetworkObjectIdentity.cs) (serialized fields → `#region 属性` → `#region 事件` → methods → `#region 生命周期`) is the model to follow. [EntityCharacter.cs](file:///d:/Project/Unity_Project/Skuy's%20Framework/Assets/Scripts/GamePlay/EntitySystem/Entities/EntityCharacter.cs) still carries legacy feature-named regions (`#region 实体控制`, `#region 模拟入口`); do not replicate those in new code — only its `#region 属性` matches the current rule.
+- **CRLF** 行尾贯穿全仓库；绝不归一为 LF。
+- **命名空间：** 只有 `Launch` 和 `MainEntry` 可以是全局命名空间；其他都必须声明模块命名空间（见 Architecture.md 表格）。
+- **命名：** 类型/方法/属性用 `PascalCase`；私有字段 `_camelCase`；带 `[SerializeField]` 的序列化字段 `camelCase`（无下划线）；接口 `I` 前缀；抽象基类 `Base` 后缀；`Manager`/`Utils`/`State` 后缀。
+- **成员顺序：** 序列化字段 → 类类型引用 → 基础值类型 → `#region 属性` → `#region 事件` → 方法 → `#region 生命周期` / `#region 子系统生命周期`（置于末尾）。
+- **`#region`：** 只用 `属性`、`事件`、`生命周期`、`子系统生命周期`。不要给普通方法加 `#region`。
 
-### File organization
-- One primary type per file; file name matches the type.
-- Apply the member order above; do not interleave fields, properties, and methods out of order. **Only four `#region` labels are used: `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`.** Use `#region 生命周期` for MonoBehaviour Unity lifecycle methods and `#region 子系统生命周期` for `SubSystemBase` overrides; a class has at most one of these two, placed at the end of the file. Do not wrap regular methods or any other member group in `#region`. When editing legacy files that already contain extra feature-named regions (e.g. `#region 实体控制`, `#region 模拟入口`), leave them in place rather than deleting, but do not introduce new ones.
-- Add `/// <summary>` XML docs (Chinese is fine) on public types, public methods, and non-obvious protected virtuals.
-- Use Unity attributes for Inspector-facing fields: `[Header]`, `[Tooltip]`, `[SerializeField]`; use `[RequireComponent]` / `[DisallowMultipleComponent]` on MonoBehaviours that depend on a sibling component or must be unique.
-- Use `var` or explicit types as the surrounding file does; both appear. Keep expression-body members where the file already uses them.
+## 5. 修改约束
 
-## Build, Test, and Development Commands
-Open the project with Unity Hub or the Unity Editor version configured for this workspace. For command-line checks, use Unity batch mode:
+### 禁止
 
-```powershell
-Unity.exe -batchmode -quit -projectPath . -runTests -testPlatform EditMode -testResults TestResults.xml
-Unity.exe -batchmode -quit -projectPath . -runTests -testPlatform PlayMode -testResults PlayModeResults.xml
-Unity.exe -batchmode -quit -projectPath . -buildTarget Win64
-```
+- 修改生成的协议文件（`GamePlay/Protocol/Generated/`）或第三方包，除非被明确要求。
+- 进行无关重构（见「范围控制」）。
+- 添加 `EnsureXXX()` 式的懒 self-healing 守卫（见「生命周期」）。
+- 引入投机性抽象（"更符合最佳实践"不是替换现有设计的理由）。
+- 在搜索已有抽象之前就创建新抽象。
 
-Use the Editor for scene validation and package restoration. Commit `Assets`, `Packages`, and `ProjectSettings`; do not commit generated local folders such as `Library`, `Temp`, `Logs`, `obj`, or `UserSettings`.
+### 注释与死代码
 
-## Testing Guidelines
-The project includes Unity Test Framework. Place edit-mode or play-mode tests near the relevant module or under `Assets/Scripts/Tests`. Name test files and methods after the behavior being verified, for example `SnapshotBufferTests` or `StoresSnapshotsInTickOrder`. Run both EditMode and PlayMode tests before merging gameplay, networking, ECS navigation, or resource-management changes.
+- **注释：** 保留既有注释，原地更新，不要随意删除；让注释横幅与其字段组保持绑定。
+- **死代码：** 直接删除被取代的旧实现 —— 不要留作注释、`#if false` 包裹或闲置。只有被明确要求保留兼容时才保留旧代码，并标注 `// 旧实现，保留兼容` 横幅。
 
-## Documentation Guidelines
-Design documents live in the root-level `Docs/` folder (not inside `Assets/`), organized one subfolder per feature. Follow the layout already established by `Docs/EntityControl/`:
+### 范围控制（Scope Control）
 
-- **One folder per feature**, named after the feature (e.g. `Docs/EntityControl/`, `Docs/Navigation/`). Put all docs for that feature inside its folder; do not scatter them across the repo.
-- **Numbered file prefix** for reading order — `00-Index.md`, `01-Design-Baseline.md`, `02-Phase-1-Checklist.md`, … Filenames stay English `kebab-case` (ASCII, hyphen-separated) so they remain git- and cross-platform-friendly.
-- **An index file** `00-Index.md` per feature folder, listing the documents and their reading order; update it whenever a new doc is added.
-- **Write content in Chinese (中文).** Headings, prose, lists, and explanations are all Chinese; keep code symbols, type names, identifiers, and file paths in their original form. New documents must be Chinese. (The pre-existing `Docs/EntityControl/` set was written in English — leave it as-is unless explicitly rewriting it.)
-- **Make documents self-contained and complete.** Each design doc must carry its full context so it can be understood with zero prior conversation history. Concretely state: (1) **data sources** — where data is read from (e.g. a config file path, a `ScriptableObject` directory, a specific protobuf message, a subsystem fetched via `Global.Get<T>()`); (2) **modules involved** — which namespace/folder/class owns the behavior today and where the new code should live (give the exact folder and namespace); (3) **required changes** — which files to add or modify, which interfaces to implement, which call sites to update, and the expected post-change behavior. Do not write thin or vague docs that only sketch an idea — spell out 数据从哪来 / 模块在哪 / 改动哪些地方 explicitly. This ensures that switching to a fresh conversation (with no shared prior context) still yields correct, unambiguous implementation rather than misidentification.
-- **When to write one.** Create a design doc under `Docs/<Feature>/` when a change involves a new subsystem, a cross-module refactor, a protocol addition, or an architecture decision. Link it from that folder's `00-Index.md` and commit the doc alongside the code it describes.
+优先做**最小必要改动**。不要为满足局部需求而主动重构无关代码。跨模块重构仅在以下情况才合理：当前架构无法满足需求；现有抽象明显阻碍正确实现；任务明确要求重构；或迁移边界与收益已清楚说明。触发时按「规划」的确认关卡先获得用户确认。
 
-## Commit & Pull Request Guidelines
-Recent history uses concise Conventional Commit-style messages such as `feat(entity): ...` and `refactor(entity system): ...`; keep using `type(scope): summary`. English and Chinese summaries both appear in history, but the scope and type should stay clear. Pull requests should include a short description, affected scenes or systems, test results, and screenshots or short recordings for UI, animation, scene, or gameplay-visible changes.
+### 仓库即事实（Repository Truth）
 
-## Agent-Specific Instructions
-Before editing, inspect the owning module and preserve its existing patterns — namespace, region layout, member declaration order, comment language, and field-naming flavor (`_camelCase` private vs `camelCase` serialized). Do not delete or strip existing comments when refactoring; update them in place. Conversely, delete old/superseded code outright when refactoring — do not leave it commented out or unused; keep files clean, and retain old code only when explicitly asked to keep it for compatibility. Do not add `EnsureXXX()`-style lazy self-healing guards; rely on the framework lifecycle (`_Init()` / `Init()` / `Destroy()`) and let missing init fail loudly rather than silently re-initializing — over-protection hides bugs and breaks init timing. Do not rewrite generated protocol files (`GamePlay/Protocol/Generated/`) or third-party packages unless explicitly requested. Do not introduce `.asmdef` files without documenting the module boundary and dependency direction. The project no longer requires a single `Assembly-CSharp`; preserve intentional assembly boundaries and keep pure simulation/core code independent from Unity scene glue and transports. Preserve CRLF line endings when editing or creating files; do not normalize to LF, and ensure newly written files are saved as CRLF. When changing scripts, let Unity recompile and check the console for errors before considering the task complete.
+当任务涉及既有架构时，**仓库是事实来源**。不要凭通用 Unity/ECS/网络经验猜测项目设计。对类型的职责、生命周期或调用关系不确定时，先搜索代码。不要因为"更符合最佳实践"而替换现有设计。
+
+## 6. 文档
+
+当改动涉及新子系统、跨模块重构、协议新增或架构决策时，在 `Docs/<Feature>/` 下创建/更新设计文档。每篇文档必须**自包含**（脱离对话历史即可理解）并说明：数据来源、所属模块、要改动的文件、接口/调用链影响、改动后预期行为。详情：[.agents/rules/Documentation.md](.agents/rules/Documentation.md)。
+
+## 7. 规则文件索引
+
+| 主题 | 文件 |
+| --- | --- |
+| 架构、模块、命名空间、模式 | [.agents/rules/Architecture.md](.agents/rules/Architecture.md) |
+| C# 代码风格、成员顺序、region | [.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md) |
+| 文档布局与自包含要求 | [.agents/rules/Documentation.md](.agents/rules/Documentation.md) |
+
+按功能划分的设计文档位于 `Docs/` 下（见 [Docs/README.md](Docs/README.md) 索引）。模块架构文档在 `Docs/Architecture/`（framework / entity / simulation / networking）；按功能组织的设计文档放在以功能名命名的子文件夹下（如 `Docs/EntityControl/`），每个文件夹配一个 `00-Index.md`。

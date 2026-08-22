@@ -10,7 +10,7 @@ namespace GamePlay.EntitySystem
     /// 通用网络对象身份，负责元数据、能力激活和复制系统注册。
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class NetworkObjectIdentity : MonoBehaviour
+    public sealed class NetworkObjectIdentity : MonoBehaviour, IEntityObjectIdentity
     {
         [SerializeField] private uint networkObjectId;
         [SerializeField] private uint ownerClientId;
