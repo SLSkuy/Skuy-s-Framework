@@ -24,7 +24,7 @@ namespace GamePlay.MultiPlaySystem
         /// </summary>
         public EntitySimulationState CaptureState()
         {
-            EntitySimulationObject entity = GetComponent<EntitySimulationObject>();
+            EntityCharacter entity = GetComponent<EntityCharacter>();
             if (entity != null && entity.IsInitialized) return entity.CaptureSimulationState();
 
             return new EntitySimulationState
@@ -51,12 +51,10 @@ namespace GamePlay.MultiPlaySystem
         }
 
         /// <summary>
-        /// 按模拟角色启用或关闭碰撞驱动。
+        /// 记录表现根节点的本地姿态，供预测校正使用。
         /// </summary>
         public void ApplyRole(EntitySimulationMode mode)
         {
-            CharacterController controller = GetComponent<CharacterController>();
-            if (controller != null) controller.enabled = mode != EntitySimulationMode.Replica;
             if (presentationRoot == null) return;
             _presentationLocalPosition = presentationRoot.localPosition;
             _presentationLocalRotation = presentationRoot.localRotation;

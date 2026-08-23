@@ -8,3 +8,4 @@ Archived plans are historical evidence for exploration and design. Verify their 
 
 | Archived | Feature | Design | Tasks |
 | --- | --- | --- | --- |
+| 2026-08-23 | Entity and MultiPlay consolidation | [2026-08-23-EntityMultiPlayConsolidation/entity-multiplay-consolidation-design.md](2026-08-23-EntityMultiPlayConsolidation/entity-multiplay-consolidation-design.md) | [2026-08-23-EntityMultiPlayConsolidation/entity-multiplay-consolidation-tasks.md](2026-08-23-EntityMultiPlayConsolidation/entity-multiplay-consolidation-tasks.md) |

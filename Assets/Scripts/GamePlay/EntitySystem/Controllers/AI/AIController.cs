@@ -8,9 +8,5 @@ namespace GamePlay.EntitySystem
     [DisallowMultipleComponent]
     public class AIController : EntityControllerBase
     {
-        #region 属性
-        public override EntityDriveMode DriveMode => EntityDriveMode.AI;
-        #endregion
     }
 }
-

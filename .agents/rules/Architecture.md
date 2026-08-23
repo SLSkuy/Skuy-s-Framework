@@ -9,7 +9,7 @@ This is a Unity project. Runtime code lives under `Assets/Scripts`; scene entry 
 Top-level modules under `Assets/Scripts/`:
 
 - `Framework/` — reusable core framework: `Common/`, `SubSystems/`, `Input/`, ECS-based `Navigation/`, and `Event/`.
-- `GamePlay/` — gameplay code: `EntitySystem/`, pure `EntitySimulationCore/`, `NetworkSync/`, generated `Protocol/Generated/`, and `Proxy/`.
+- `GamePlay/` — gameplay code: `EntitySystem/`, `MultiPlaySystem/`, generated `Protocol/Generated/`, and `Proxy/`.
 - `Network/` — networking: `Client/`, `Server/`, `Transport/` (`Kcp/`, `Tcp/`), `Config/`, `Interface/`, and `Protocol/`.
 - `Events/` — cross-module event enums such as `NetEvent`.
 - `Utils/` — stateless utilities such as `MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`, and `DataStruct/KDTree`.
@@ -34,8 +34,8 @@ Namespaces represent logical modules and do **not** strictly mirror folder paths
 | `Network`                | Client/server networking and message handling          | `NetClient.cs`, `NetServer.cs`                                             |
 | `Events`                 | Cross-module event enums                               | `NetEvent.cs`                                                              |
 | `EventProcess`           | Event bus (`EventBus.Get<T>()`)                        | —                                                                          |
-| `GamePlay.EntitySystem`  | Entity characters, FSM states, network identity        | `EntityCharacter.cs`, `EntityBaseState.cs`, `NetworkObjectIdentity.cs`     |
-| `GamePlay.NetSync`       | Character replication, prediction, interpolation       | `CharacterReplicationSystem.cs`, `CharacterPresentationAdapter.cs`         |
+| `GamePlay.EntitySystem`  | Entity characters, FSM states, simulation              | `EntityCharacter.cs`, `EntityBaseState.cs`                                 |
+| `GamePlay.MultiPlaySystem` | Character replication, prediction, interpolation     | `CharacterReplicationSystem.cs`, `NetworkObjectIdentity.cs`              |
 | `Utils`                  | Stateless utilities                                    | `MathUtils.cs`                                                             |
 | `NetConnect`             | Low-level connection primitives                        | —                                                                          |
 | *(global)*               | Scene entry points only                                | `Launch.cs`, `MainEntry.cs`                                                |

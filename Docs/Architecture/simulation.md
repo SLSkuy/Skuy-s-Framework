@@ -21,22 +21,24 @@ NetworkTimeSystem.Tick
         |
         v
 CharacterReplicationSystem.AdvanceTick
-  LocalPlay -> local input -> EntitySimulation.Step
-  Predict   -> local input -> EntitySimulation.Step -> history/reconciliation
-  Authority -> validated queue -> EntitySimulation.Step
-  Replica   -> no simulation -> snapshot interpolation/presentation
+  LocalPlay -> PlayerController.SampleInput -> EntityCharacter.Step
+  Predict   -> local input -> EntityCharacter.Step -> history/reconciliation
+  Authority -> validated queue -> EntityCharacter.Step
+  Replica   -> no Step -> snapshot interpolation/presentation
 ```
 
-There is one role-aware scheduler. `EntitySimulationSystem` was removed after its only LocalPlay call chain moved into `CharacterReplicationSystem`.
+`GameCore` registers `NetworkTimeSystem` and `CharacterReplicationSystem`. LocalPlay does not require `MultiPlayManager`, `NetClient`, or `NetServer`. Scene identities with `EntitySimulationMode.LocalPlay` register even when `NetworkObjectId` is 0.
+
+Replica never calls `EntitySimulation.Step`. `MovementModule.SetReplicaMode` is the only place that disables the driving `CharacterController` for Replica.
 
 ## Prediction Contract
 
-The owning client builds a command for each local tick, applies it immediately through `EntitySimulation.Step`, records rollback state, and sends `NetSync.Player_Input`. When `NetSync.Character_Snapshot` confirms an input tick, the client either removes confirmed history or restores the authoritative state and replays later commands through the same `Step` method.
+The owning client builds a command for each local tick, applies it immediately through `EntityCharacter.Step`, records rollback state, and sends `NetSync.Player_Input`. When `NetSync.Character_Snapshot` confirms an input tick, the client either removes confirmed history or restores the authoritative state and replays later commands through the same `Step` method.
 
 ## Snapshot Contract
 
-The server captures authority state into `NetSync.Character_Snapshot` messages batched by `NetSync.World_Snapshot`. A non-owning client stores snapshots in `SnapshotBuffer` and applies interpolated state through `CharacterPresentationAdapter`; it never calls `EntitySimulation.Step` for a Replica.
+The server captures authority state into `NetSync.Character_Snapshot` messages batched by `NetSync.World_Snapshot`. A non-owning client stores snapshots in MultiPlay `SnapshotBuffer<CharacterSnapshot>` and applies interpolated state through `CharacterPresentationAdapter`; it never calls `Step` for a Replica.
 
 ## Assembly and Protocol Boundary
 
-The obsolete `GamePlay.EntitySimulationCore.asmdef` is removed. No replacement gameplay assembly definition is introduced. Generated Protocol files are not hand-edited, and the generated protobuf namespace remains `NetSync` for compatibility.
+No gameplay `.asmdef` is introduced. Generated Protocol files are not hand-edited, and the generated protobuf namespace remains `NetSync`.

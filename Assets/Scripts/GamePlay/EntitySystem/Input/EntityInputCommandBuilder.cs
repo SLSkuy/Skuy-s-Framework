@@ -29,14 +29,6 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 将边沿检测基线恢复到指定输入状态。
-        /// </summary>
-        public void RestoreBaseline(in InputState input)
-        {
-            _previousHeldButtons = GetHeldButtons(input);
-        }
-
-        /// <summary>
         /// 清空边沿检测基线。
         /// </summary>
         public void Reset()

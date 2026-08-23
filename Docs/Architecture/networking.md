@@ -6,30 +6,42 @@
 
 ## MultiPlaySystem Responsibility
 
-`Assets/Scripts/GamePlay/MultiPlaySystem/` is the game-specific synchronization runtime for the third-person ARPG prototype. It contains:
+`Assets/Scripts/GamePlay/MultiPlaySystem/` is the game-specific synchronization runtime. Logical layout:
 
-- `NetworkTimeSystem` and `NetworkTickSystem` for the shared fixed tick.
-- `NetworkObjectIdentity` and `EntitySimulationMode` for scene identity and role metadata.
-- `CharacterReplicationSystem` and `CharacterReplicationEntry` for explicit character registration.
-- Input validation/buffering, prediction history coordination, snapshot interpolation, and presentation adapters.
-- The local client/server test simulator.
+```text
+MultiPlaySystem/
+├── Config/           # SyncConfig
+├── Time/             # NetworkTimeSystem, NetworkTickSystem
+├── Identity/         # NetworkObjectIdentity, EntitySimulationMode
+├── Replication/      # CharacterReplicationSystem, CharacterReplicationEntry
+├── Input/            # CharacterInputBuffer, CharacterInputValidator
+├── Prediction/       # CharacterPredictionController
+├── Interpolation/    # IEntitySnapshot, SnapshotBuffer, CharacterSnapshot, CharacterSnapshotInterpolator
+├── Presentation/     # CharacterPresentationAdapter
+└── TestSimulator/    # MultiPlayManager, ClientSimulator, ServerSimulator, TestPlayerSpawner
+```
+
+- `NetworkTimeSystem` broadcasts the shared fixed tick without requiring a net session.
+- `NetworkObjectIdentity` implements `IEntityObjectIdentity` and registers with `CharacterReplicationSystem`.
+- `EntitySimulationMode` is Authority, Predict, Replica, LocalPlay.
+- Replica collision: `MovementModule.SetReplicaMode(true)` disables `CharacterController` and adds a capsule collider. `CharacterPresentationAdapter.ApplyRole` does not toggle the controller.
 
 ## Role Flow
 
 ```text
-Network transport events
+NetworkTimeSystem.Tick
         |
         v
-CharacterReplicationSystem
-  input -> validate -> authority queue -> EntitySystem.EntitySimulation.Step
-  snapshot -> predict reconciliation or replica interpolation
+CharacterReplicationSystem.AdvanceTick
+  LocalPlay / Predict / Authority -> EntityCharacter.Step
+  Replica -> interpolation only
 ```
 
-Authority, Predict, and LocalPlay share the EntitySystem simulation path. Replica is presentation-only.
+Register APIs: `Register` and `RegisterLocalPlay`. LocalPlay ticks when `NetClient` and `NetServer` are both null.
 
 ## Protocol and Proxy Boundaries
 
-Protocol remains under `Assets/Scripts/GamePlay/Protocol/Generated/`; generated classes keep the `NetSync` namespace and must not be edited manually. Proxy remains under `Assets/Scripts/GamePlay/Proxy/` and is not merged into MultiPlaySystem.
+Protocol remains under `Assets/Scripts/GamePlay/Protocol/Generated/`; generated classes keep the `NetSync` namespace. Proxy remains under `Assets/Scripts/GamePlay/Proxy/`.
 
 ## Dependency Direction
 
@@ -43,4 +55,4 @@ MultiPlaySystem (role-aware gameplay sync)
 EntitySystem (consumed simulation/state contracts)
 ```
 
-In code terms, MultiPlaySystem consumes EntitySystem and Network services. EntitySystem has no dependency on MultiPlaySystem.
+EntitySystem has no dependency on MultiPlaySystem.

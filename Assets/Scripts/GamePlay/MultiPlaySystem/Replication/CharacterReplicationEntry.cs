@@ -13,7 +13,7 @@ namespace GamePlay.MultiPlaySystem
 
         #region Properties
         public NetworkObjectIdentity Identity { get; private set; }
-        public EntitySimulationObject Simulation { get; private set; }
+        public EntityCharacter Simulation { get; private set; }
         public PlayerController PlayerController { get; private set; }
         public AIController AIController { get; private set; }
         public CharacterPresentationAdapter Presentation { get; private set; }
@@ -32,13 +32,13 @@ namespace GamePlay.MultiPlaySystem
             if (identity == null) return false;
 
             Identity = identity;
-            Simulation = identity.GetComponent<EntitySimulationObject>();
+            Simulation = identity.GetComponent<EntityCharacter>();
             Presentation = identity.GetComponent<CharacterPresentationAdapter>();
             PlayerController = identity.GetComponent<PlayerController>();
             AIController = identity.GetComponent<AIController>();
             if (Simulation == null || Presentation == null)
             {
-                Debug.LogError($"网络对象 {identity.name} 缺少 EntitySimulationObject 或 CharacterPresentationAdapter，无法注册角色复制。");
+                Debug.LogError($"网络对象 {identity.name} 缺少 EntityCharacter 或 CharacterPresentationAdapter，无法注册角色复制。");
                 return false;
             }
 
@@ -89,7 +89,7 @@ namespace GamePlay.MultiPlaySystem
             if (PlayerController != null)
             {
                 PlayerController.enabled = requiresLocalInput;
-                if (requiresLocalInput) PlayerController.Init(Simulation, role == EntitySimulationMode.LocalPlay);
+                if (requiresLocalInput) PlayerController.Init(Simulation);
             }
 
             if (AIController != null) AIController.enabled = role == EntitySimulationMode.Authority && OwnerClientId == 0;

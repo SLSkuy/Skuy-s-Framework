@@ -91,7 +91,7 @@ namespace GamePlay.MultiPlaySystem
         private void OnEnable()
         {
             // Prefab 默认 LocalPlay 且 Id 为 0；网络生成对象必须等 Init 后再注册，避免先按实例 Id 挂上 LocalPlay。
-            if (networkObjectId == 0) return;
+            if (networkObjectId == 0 && role != EntitySimulationMode.LocalPlay) return;
             RegisterReplication();
         }
 

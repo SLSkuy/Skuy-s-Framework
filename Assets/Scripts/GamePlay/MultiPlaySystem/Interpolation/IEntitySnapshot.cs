@@ -1,4 +1,4 @@
-namespace GamePlay.EntitySystem
+namespace GamePlay.MultiPlaySystem
 {
     public interface IEntitySnapshot
     {

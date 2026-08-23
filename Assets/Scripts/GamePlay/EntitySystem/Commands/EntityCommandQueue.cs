@@ -60,26 +60,6 @@ namespace GamePlay.EntitySystem
             return true;
         }
 
-        [Obsolete("Use TryDequeueExecutable with the server tick.")]
-        public bool TryDequeue(out uint tick, out TCommand command)
-        {
-            if (_commands.Count == 0)
-            {
-                tick = 0;
-                command = default;
-                return false;
-            }
-
-            using IEnumerator<KeyValuePair<uint, TCommand>> enumerator = _commands.GetEnumerator();
-            enumerator.MoveNext();
-            KeyValuePair<uint, TCommand> item = enumerator.Current;
-            _commands.Remove(item.Key);
-            LastProcessedTick = item.Key;
-            tick = item.Key;
-            command = item.Value;
-            return true;
-        }
-
         public void Clear()
         {
             _commands.Clear();

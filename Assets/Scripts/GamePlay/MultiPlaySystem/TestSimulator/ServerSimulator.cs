@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Events;
 using Network;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace GamePlay.MultiPlaySystem
 {
@@ -11,8 +12,6 @@ namespace GamePlay.MultiPlaySystem
     /// </summary>
     public sealed class ServerSimulator : IDisposable
     {
-        private const string PlayerPrefabPath = "NetPlayer";
-
         private readonly Dictionary<uint, GameObject> _players = new();
         private readonly NetServer _netServer;
         private GameObject _playerPrefab;
@@ -30,9 +29,7 @@ namespace GamePlay.MultiPlaySystem
         public void Start()
         {
             if (IsRunning) return;
-            _playerPrefab = Resources.Load<GameObject>(PlayerPrefabPath);
-            if (_playerPrefab == null) throw new InvalidOperationException($"缺少 Resources Prefab：{PlayerPrefabPath}");
-
+            _playerPrefab = TestPlayerSpawner.LoadPrefab();
             _netServer.RegNetHandler<global::NetSync.Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleJoinRequest);
             _netServer.OnClientRemoved += HandleClientRemoved;
             IsRunning = true;
@@ -49,7 +46,7 @@ namespace GamePlay.MultiPlaySystem
             _netServer.OnClientRemoved -= HandleClientRemoved;
             foreach (GameObject player in _players.Values)
             {
-                if (player != null) UnityEngine.Object.Destroy(player);
+                if (player != null) Object.Destroy(player);
             }
             _players.Clear();
             IsRunning = false;
@@ -65,24 +62,20 @@ namespace GamePlay.MultiPlaySystem
 
         private void SpawnPlayer(uint clientId)
         {
-            GameObject instance = UnityEngine.Object.Instantiate(
+            NetworkObjectIdentity identity = TestPlayerSpawner.Spawn(
                 _playerPrefab,
                 new Vector3((clientId - 1u) * 2f, 1f, 0f),
-                Quaternion.identity);
-            instance.name = $"ServerPlayer_{clientId}";
-            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
-            if (identity == null)
-            {
-                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
-            }
-            identity.Init(clientId, EntitySimulationMode.Authority, clientId);
-            _players.Add(clientId, instance);
+                $"ServerPlayer_{clientId}",
+                clientId,
+                EntitySimulationMode.Authority,
+                clientId);
+            _players.Add(clientId, identity.gameObject);
         }
 
         private void HandleClientRemoved(uint clientId)
         {
             if (!_players.Remove(clientId, out GameObject player)) return;
-            if (player != null) UnityEngine.Object.Destroy(player);
+            if (player != null) Object.Destroy(player);
         }
     }
 }

@@ -4,33 +4,36 @@
 
 ## Responsibility
 
-EntitySystem contains entity objects, configuration, input-to-command conversion, movement modules, state machine states, rollback/simulation data, player input, and the inactive AI controller extension point. It does not own network identity, snapshot transport, prediction policy, or network time.
+EntitySystem contains the scene character `EntityCharacter`, `EntityConfig`, input-to-command conversion, movement modules, locomotion states, rollback/simulation data, `PlayerController`, and the inactive `AIController` stub. It does not own network identity, snapshot buffering, snapshot transport, interpolation, or network time.
+
+There is no generic `EntityObject` hierarchy. The only simulated scene type is `EntityCharacter`.
 
 ## Structure
 
 ```text
 EntitySystem/
-├── Config/             # EntityConfig and EntityObjectConfig
-├── Entities/           # EntityCharacter and EntityObject hierarchy
+├── Config/             # EntityConfig
+├── Entities/           # EntityCharacter, EntityContext, IEntityObjectIdentity
 ├── Commands/           # EntityInputCommand and EntityCommandQueue
-├── Contracts/          # IEntitySimulation and state contracts
+├── Contracts/          # IEntitySimulation and IEntityStateStore
 ├── Prediction/         # EntityPredictionHistory and frames
-├── Snapshots/          # SnapshotBuffer and entity snapshot contract
-├── State/              # Simulation and rollback state data
-├── Controllers/        # PlayerController and future AIController hook
+├── State/              # EntitySimulationState, EntityRollbackState, MovementRollbackState
+├── Controllers/        # PlayerController and AIController stub
 ├── Input/              # EntityInputCommandBuilder
-├── Modules/            # Movement and rotation modules
+├── Modules/            # MovementModule and RotationModule
 ├── Simulation/         # EntitySimulation
 └── StateMachine/       # Locomotion state machine
 ```
 
 ## Core Abstractions
 
-- `EntitySimulation` implements the shared `IEntitySimulation.Step` path used by LocalPlay, server authority, client prediction, and prediction replay.
+- `EntityCharacter` is the scene MonoBehaviour. It owns `EntityContext` and `EntitySimulation`, and exposes `Init`, `Step`, `CaptureSimulationState`, `CaptureRollbackState`, and `RestoreRollbackState`.
+- `EntitySimulation` implements `IEntitySimulation` / `IEntityStateStore` and is the shared `Step` path used by LocalPlay, authority, prediction, and replay.
 - `EntityInputCommandBuilder` converts sampled `InputState` into a fixed-tick `EntityInputCommand`.
-- `EntityCommandQueue`, `EntityPredictionHistory`, and `SnapshotBuffer` are data primitives; they do not encode a generic replication protocol.
-- `PlayerController` samples local input and exposes it to the role-aware scheduler. It does not register or own a simulation system.
-- `AIController` remains a disabled future extension point. No AI behavior or command policy is active in the prototype.
+- `EntityCommandQueue` and `EntityPredictionHistory` are data primitives; they do not encode a generic replication protocol. Replica snapshot buffering lives in MultiPlay `Interpolation/`.
+- `PlayerController` samples local input. Role selection lives on `NetworkObjectIdentity`.
+- `AIController` is an empty stub. No AI command policy is active.
+- Dash fields on `MovementRollbackState` / `MovementModule` and `IsFocus` on `EntityContext` / `EntityRollbackState` are retained for later gameplay.
 
 ## Dependency Direction
 
@@ -46,4 +49,4 @@ MultiPlaySystem consumes EntitySystem contracts and state. EntitySystem does not
 
 ## Lifecycle
 
-Unity scene objects bind to EntitySystem components during replication entry setup. The fixed tick is emitted by `MultiPlaySystem.NetworkTimeSystem`; `EntitySystem` supplies the simulation implementation but does not subscribe to the network clock directly.
+`CharacterReplicationEntry.ApplyRole` calls `EntityCharacter.Init()`. The fixed tick is emitted by `MultiPlaySystem.NetworkTimeSystem`; EntitySystem does not subscribe to the network clock.

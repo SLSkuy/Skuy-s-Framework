@@ -4,6 +4,7 @@ using Events;
 using Framework;
 using Network;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace GamePlay.MultiPlaySystem
 {
@@ -12,8 +13,6 @@ namespace GamePlay.MultiPlaySystem
     /// </summary>
     public sealed class ClientSimulator : IDisposable
     {
-        private const string PlayerPrefabPath = "NetPlayer";
-
         private readonly Dictionary<uint, GameObject> _players = new();
         private readonly NetClient _netClient;
         private CharacterReplicationSystem _replicationSystem;
@@ -34,9 +33,7 @@ namespace GamePlay.MultiPlaySystem
         public void Start()
         {
             if (IsRunning) return;
-            _playerPrefab = Resources.Load<GameObject>(PlayerPrefabPath);
-            if (_playerPrefab == null) throw new InvalidOperationException($"缺少 Resources Prefab：{PlayerPrefabPath}");
-
+            _playerPrefab = TestPlayerSpawner.LoadPrefab();
             _replicationSystem = Global.Get<CharacterReplicationSystem>();
             _replicationSystem?.SetClientEntityFactory(SpawnPlayer);
             _netClient.RegNetHandler<global::NetSync.Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleJoinResponse);
@@ -58,7 +55,7 @@ namespace GamePlay.MultiPlaySystem
             _replicationSystem?.SetClientEntityFactory(null);
             foreach (GameObject player in _players.Values)
             {
-                if (player != null) UnityEngine.Object.Destroy(player);
+                if (player != null) Object.Destroy(player);
             }
             _players.Clear();
             IsRunning = false;
@@ -74,15 +71,11 @@ namespace GamePlay.MultiPlaySystem
             if (_players.TryGetValue(entityId, out GameObject existing))
                 return existing.GetComponent<NetworkObjectIdentity>();
 
-            GameObject instance = UnityEngine.Object.Instantiate(_playerPrefab, Vector3.up, Quaternion.identity);
-            instance.name = isOwned ? $"LocalPlayer_{entityId}" : $"RemotePlayer_{entityId}";
-            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
-            if (identity == null)
-            {
-                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
-            }
-            identity.Init(entityId, isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica, ownerClientId);
-            _players.Add(entityId, instance);
+            string objectName = isOwned ? $"LocalPlayer_{entityId}" : $"RemotePlayer_{entityId}";
+            EntitySimulationMode role = isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica;
+            NetworkObjectIdentity identity = TestPlayerSpawner.Spawn(
+                _playerPrefab, Vector3.up, objectName, entityId, role, ownerClientId);
+            _players.Add(entityId, identity.gameObject);
             return identity;
         }
     }

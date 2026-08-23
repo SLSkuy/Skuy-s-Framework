@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace GamePlay.EntitySystem
+namespace GamePlay.MultiPlaySystem
 {
     public sealed class SnapshotBuffer<T> where T : struct, IEntitySnapshot
     {

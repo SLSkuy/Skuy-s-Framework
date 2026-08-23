@@ -52,7 +52,7 @@ namespace GamePlay.EntitySystem
             {
                 // 保险措施
                 _controller = GetComponent<CharacterController>();
-                if (_controller) _controller.enabled = true;
+                if (_controller != null) _controller.enabled = false;
                 
                 CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
                 collider.height = _config.height;

@@ -30,9 +30,8 @@ namespace GamePlay.MultiPlaySystem
         #endregion
 
         /// <summary>
-        /// 注册角色及其所有者。
+        /// 注册角色及其所有者。LocalPlay 允许 NetworkObjectId 为 0。
         /// </summary>
-        [Obsolete("Obsolete")]
         public bool Register(NetworkObjectIdentity identity, uint ownerClientId = 0)
         {
             if (identity == null || (identity.EntityId == 0 && !identity.IsLocalPlay)) return false;
@@ -58,6 +57,14 @@ namespace GamePlay.MultiPlaySystem
             entry.ApplyRole(identity.Role);
             _characters.Add(registrationId, entry);
             return true;
+        }
+
+        /// <summary>
+        /// 注册离线 LocalPlay 角色。
+        /// </summary>
+        public bool RegisterLocalPlay(NetworkObjectIdentity identity)
+        {
+            return Register(identity, 0);
         }
 
         /// <summary>
