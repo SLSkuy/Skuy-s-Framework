@@ -1,97 +1,97 @@
-# 仓库指引
+# Repository Guide
 
-这是一个 Unity 项目。本文件是 **Agent 行为宪法** —— 它告诉 Agent *如何工作* 以及 *必须 / 不可做什么*。项目设计细节（架构、命名空间、代码风格、文档）位于 [`.agents/rules/`](.agents/rules/) 并在下方引用。**不要让本文件成为代码库的第二份事实来源** —— 具体的模块清单、命名空间、类名会随重构漂移；以实际代码为准。
+This is a Unity project. This file is the **Agent behavior constitution**: it defines how an Agent works and what it must or must not do. Project details (architecture, namespaces, coding style, and documentation) live in [`.agents/rules/`](.agents/rules/). **Do not make this file a second source of truth** for module lists, namespaces, or type names; those drift during refactoring, so use the actual code as the authority.
 
-## 1. Agent 工作流
+## 1. Agent Workflow
 
-每个任务都遵循这个循环。
+Every task follows this cycle.
 
-### 澄清（Clarify）
+### Clarify
 
-任务目标、范围或术语有歧义时：先向用户确认，或明确列出本次将采用的假设后再继续（所列假设需在「规划」的说明中体现）；不要在错误方向上完成整轮工作流。
+When the goal, scope, or terminology is ambiguous, ask the user or state explicit assumptions before continuing. Include those assumptions in the planning explanation; do not complete a full cycle in the wrong direction.
 
-### 理解（Understand）
+### Understand
 
-改动代码前：阅读相关文件、定位所属模块、查找已有的类似实现、确认依赖方向与生命周期。不确定时**先搜索代码** —— 不要凭空创造新的抽象。
+Before changing code, read the relevant files, locate the owning module, find similar implementations, and confirm dependency direction and lifecycle. When uncertain, search the code first; do not invent abstractions.
 
-### 规划（Plan）
+### Plan
 
-明确说明：改哪些文件、新增哪些类型、影响哪些接口/调用点、是否引入跨模块依赖、是否需要同步更新文档与测试。
+State which files will change, which types will be added, affected interfaces/call sites, cross-module dependencies, and whether documentation or tests must be updated.
 
-**确认关卡：** 满足以下任一条件时，计划必须先向用户说明迁移边界与收益并获得确认，再进入实现：修改两个及以上运行时模块的公共接口；修改 `.asmdef` 或程序集依赖；修改协议或序列化格式；改变生命周期调用顺序；移动已有类型且需要迁移调用点。仅修改多个目录中的实现细节不触发确认 —— 见「范围控制」。
+**Confirmation gate:** Before implementation, explain migration boundaries and benefits and obtain confirmation when any of these apply: changing public interfaces in two or more runtime modules; changing `.asmdef` files or assembly dependencies; changing protocols or serialization formats; changing lifecycle order; or moving existing types and migrating call sites. Editing implementation details across multiple directories alone does not trigger the gate; see **Scope Control**.
 
-### 实现（Implement）
+### Implement
 
-遵循所属模块的现有架构。复用已有的接口与组件。不要修改无关代码。不要保留被取代的旧实现（见「修改约束」）。不要修改生成 / 第三方文件。
+Follow the owning module's existing architecture. Reuse existing interfaces and components. Do not change unrelated code, keep replaced implementations, or modify generated/third-party files.
 
-### 验证（Verify）
+### Verify
 
-按任务风险执行最小必要验证：文档改动检查路径与链接；C# 或配置改动执行可用的编译、静态检查或 Unity Console 检查；涉及行为变化时，若存在相关测试则运行。Unity 不可连接或验证条件不具备时，必须在汇报中明确标记未验证及风险。
+Run the minimum verification appropriate to the risk: check paths and links for documentation changes; run available compilation, static checks, or Unity Console checks for C# or configuration changes; run related tests when behavior changes and tests exist. If Unity or another verification condition is unavailable, report the unverified risk explicitly.
 
-### 汇报（Report）
+### Report
 
-总结：改了什么、为什么改、验证了什么、以及任何未验证或存在风险的部分。若架构或对外行为有变，说明 `Docs/Architecture/` 是否已同步，或哪些部分待用户处理。
+Summarize what changed, why, what was verified, and any unverified risk. For architecture or externally visible behavior changes, state whether `Docs/Architecture/` is synchronized and what remains for the user.
 
-## 2. 修改原则
+## 2. Change Principles
 
-1. 复用已有抽象；不重复创建已有能力 —— 不确定先搜索代码。
-2. 不为局部需求破坏既有模块边界。
+1. Reuse existing abstractions; search before creating new capabilities.
+2. Do not break module boundaries for local requirements.
 
-**不要根据通用最佳实践重构项目现有架构。** 当前代码及其约定优先于通用习惯。当任务涉及既有架构时，以仓库为事实来源 —— 见下方「仓库即事实」。
+Do not refactor the existing architecture merely to follow generic best practices. The repository and its conventions take priority; see **Repository Truth**.
 
-## 3. 架构规则
+## 3. Architecture Rules
 
-- **模块边界。** 改动前确认所属模块；不要跨越既有边界添加职责。详情：[.agents/rules/Architecture.md](.agents/rules/Architecture.md)。
-- **依赖方向。** 运行时代码可按职责拆分为多个 `.asmdef` 程序集。保持显式依赖方向；让纯 simulation/core 程序集独立于 Unity 场景胶水、gameplay 宿主、transport 与测试程序集。未记录边界与方向前，不要引入 `.asmdef` 文件。
-- **场景胶水 vs 核心。** MonoBehaviour（`EntityCharacter`、`UIController`、`NetworkObjectIdentity` 等）只负责把 Unity 生命周期桥接到框架服务。可复用逻辑属于 `SubSystemBase` 或纯核心程序集，不属于场景胶水。
-- **新代码迁移。** 一旦某模块有了批准的新目标文件夹/程序集，新代码只放在那里。不要在遗留/兼容文件里扩展新行为；兼容垫片必须是临时的、有文档记录、并由一个移除任务跟踪。
-- **生命周期。** 框架生命周期由 `SubSystemBase._Init()` / `Init()` / `Destroy()` 驱动。**不要**用 `EnsureXXX()`、懒初始化、自动 self-healing 掩盖生命周期错误 —— 让缺失初始化大声失败，使生命周期 bug 暴露出来。
+- **Module boundaries:** identify the owning module before editing and do not add responsibilities across boundaries. See [`.agents/rules/Architecture.md`](.agents/rules/Architecture.md).
+- **Dependency direction:** keep assembly dependencies explicit. Pure simulation/core assemblies must remain independent from Unity scene glue, gameplay hosts, transport, and test assemblies. Do not add `.asmdef` files before recording the boundary and direction.
+- **Scene glue vs. core:** MonoBehaviours such as `EntityCharacter`, `UIController`, and `NetworkObjectIdentity` bridge Unity lifecycle to framework services. Reusable logic belongs in `SubSystemBase` or a pure core assembly, not in scene glue.
+- **New-code migration:** once a module has an approved target folder/assembly, put new code there. Do not extend legacy/compatibility files with new behavior. Compatibility shims must be temporary, documented, and tracked by a removal task.
+- **Lifecycle:** framework lifecycle is driven by `SubSystemBase._Init()` / `Init()` / `Destroy()`. Do not use `EnsureXXX()`, lazy initialization, or automatic self-healing to hide lifecycle errors; missing initialization should fail loudly.
 
-## 4. 编码规则
+## 4. Coding Rules
 
-只列高层要点；完整细节见 [.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md)。
+Only high-level points are listed here; see [`.agents/rules/CodingStyle.md`](.agents/rules/CodingStyle.md) for details.
 
-- **CRLF** 行尾贯穿全仓库；绝不归一为 LF。
-- **命名空间：** 只有 `Launch` 和 `MainEntry` 可以是全局命名空间；其他都必须声明模块命名空间（见 Architecture.md 表格）。
-- **命名：** 类型/方法/属性用 `PascalCase`；私有字段 `_camelCase`；带 `[SerializeField]` 的序列化字段 `camelCase`（无下划线）；接口 `I` 前缀；抽象基类 `Base` 后缀；`Manager`/`Utils`/`State` 后缀。
-- **成员顺序：** 序列化字段 → 类类型引用 → 基础值类型 → `#region 属性` → `#region 事件` → 方法 → `#region 生命周期` / `#region 子系统生命周期`（置于末尾）。
-- **`#region`：** 只用 `属性`、`事件`、`生命周期`、`子系统生命周期`。不要给普通方法加 `#region`。
+- **CRLF:** preserve CRLF line endings across the repository; never normalize to LF.
+- **Namespaces:** only `Launch` and `MainEntry` may use the global namespace. All other types must declare a module namespace (see `Architecture.md`).
+- **Naming:** types/methods/properties use `PascalCase`; private fields use `_camelCase`; `[SerializeField]` fields use `camelCase` without an underscore; interfaces use the `I` prefix; abstract bases use the `Base` suffix; managers, utilities, and states use `Manager`, `Utils`, and `State` suffixes.
+- **Member order:** serialized fields -> class references -> primitive values -> `#region Properties` -> `#region Events` -> methods -> lifecycle regions at the end.
+- **Regions:** use only `Properties`, `Events`, `Lifecycle`, and `Subsystem Lifecycle` regions. Do not region ordinary methods.
 
-## 5. 修改约束
+## 5. Change Constraints
 
-### 禁止
+### Forbidden
 
-- 修改生成的协议文件（`GamePlay/Protocol/Generated/`）或第三方包，除非被明确要求。
-- 进行无关重构（见「范围控制」）。
-- 添加 `EnsureXXX()` 式的懒 self-healing 守卫（见「生命周期」）。
-- 引入投机性抽象（"更符合最佳实践"不是替换现有设计的理由）。
-- 在搜索已有抽象之前就创建新抽象。
+- Do not modify generated protocol files under `GamePlay/Protocol/Generated/` or third-party packages unless explicitly requested.
+- Do not perform unrelated refactors.
+- Do not add `EnsureXXX()` lazy self-healing guards.
+- Do not introduce speculative abstractions because they appear more "best practice" compliant.
+- Do not create an abstraction before searching for an existing one.
 
-### 注释与死代码
+### Comments and Dead Code
 
-- **注释：** 保留既有注释，原地更新，不要随意删除；让注释横幅与其字段组保持绑定。
-- **死代码：** 直接删除被取代的旧实现 —— 不要留作注释、`#if false` 包裹或闲置。只有被明确要求保留兼容时才保留旧代码，并标注 `// 旧实现，保留兼容` 横幅。
+- Preserve existing comments and update them in place; keep banner comments attached to their field groups.
+- Delete replaced implementations. Do not leave them as comments, `#if false`, or unused code. Keep compatibility code only when explicitly requested and label it `// Legacy implementation retained for compatibility`.
 
-### 范围控制（Scope Control）
+### Scope Control
 
-优先做**最小必要改动**。不要为满足局部需求而主动重构无关代码。跨模块重构仅在以下情况才合理：当前架构无法满足需求；现有抽象明显阻碍正确实现；任务明确要求重构；或迁移边界与收益已清楚说明。触发时按「规划」的确认关卡先获得用户确认。
+Prefer the smallest necessary change. Do not refactor unrelated code for a local requirement. Cross-module refactoring is justified only when the current architecture cannot satisfy the requirement, an existing abstraction clearly blocks correctness, the task explicitly requests it, or migration boundaries and benefits are clear. Use the confirmation gate before implementation when triggered.
 
-### 仓库即事实（Repository Truth）
+### Repository Truth
 
-当任务涉及既有架构时，**仓库是事实来源**。不要凭通用 Unity/ECS/网络经验猜测项目设计。对类型的职责、生命周期或调用关系不确定时，先搜索代码。不要因为"更符合最佳实践"而替换现有设计。
+For existing architecture, the repository is the source of truth. Do not guess from generic Unity/ECS/network experience. Search code when responsibilities, lifecycle, or call relationships are unclear. Do not replace the current design merely because another design is more conventional.
 
-## 6. 文档
+## 6. Documentation
 
-当改动涉及新子系统、跨模块重构、协议新增或架构决策时，在 `Docs/Plan/<Feature>/` 下创建/更新设计文档。普通功能文档使用最小模板；架构、协议和跨模块文档使用完整模板。详情：[.agents/rules/Documentation.md](.agents/rules/Documentation.md)。
+When a change adds a subsystem, crosses module boundaries, adds a protocol, or records an architectural decision, create or update a document under `Docs/Plan/<Feature>/`. Use the minimal template for ordinary features and the full template for architecture, protocol, and cross-module work. See [`.agents/rules/Documentation.md`](.agents/rules/Documentation.md).
 
-**模块文档同步：** 新增顶层模块目录（或有独立 `.asmdef` 的新模块）时，必须同步在 `Docs/Architecture/` 下创建对应模块文档（职责、目录结构、核心抽象、依赖方向），并更新 [Docs/README.md](Docs/README.md) 索引；对既有模块的职责、核心抽象或依赖方向有实质变更时，同步更新其对应文档。
+**Architecture synchronization:** when adding a top-level module directory or an independent `.asmdef` module, create its module document under `Docs/Architecture/` (responsibility, structure, core abstractions, dependency direction) and update [Docs/README.md](Docs/README.md). For substantial changes to an existing module's responsibility, core abstractions, or dependency direction, update its architecture document.
 
-## 7. 规则文件索引
+## 7. Rule Index
 
-| 主题 | 文件 |
+| Topic | File |
 | --- | --- |
-| 架构、模块、命名空间、模式 | [.agents/rules/Architecture.md](.agents/rules/Architecture.md) |
-| C# 代码风格、成员顺序、region | [.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md) |
-| 文档布局与自包含要求 | [.agents/rules/Documentation.md](.agents/rules/Documentation.md) |
+| Architecture, modules, namespaces, patterns | [`.agents/rules/Architecture.md`](.agents/rules/Architecture.md) |
+| C# style, member order, regions | [`.agents/rules/CodingStyle.md`](.agents/rules/CodingStyle.md) |
+| Documentation layout and self-contained requirements | [`.agents/rules/Documentation.md`](.agents/rules/Documentation.md) |
 
-按功能划分的设计文档位于 `Docs/Plan/` 下（见 [Docs/README.md](Docs/README.md) 索引）。模块架构文档在 `Docs/Architecture/`（framework / entity / simulation / networking）。`Docs/Plan/` 中的文档直接使用功能或用途命名，不使用数字前缀。
+Feature design documents live under `Docs/Plan/` (see [Docs/README.md](Docs/README.md)). Module architecture documents live under `Docs/Architecture/` (`framework`, `entity`, `simulation`, `networking`). Plan documents use direct feature/purpose names without numeric prefixes.

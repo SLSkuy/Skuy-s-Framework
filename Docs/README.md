@@ -1,33 +1,33 @@
-# Docs 索引
+# Documentation Index
 
-本目录存放按功能/模块组织的设计文档。规范性文件（规则）位于 [`.agents/rules/`](../.agents/rules/)，本目录只放**模块设计文档**与**功能设计文档**。
+This directory contains module and feature design documents. Normative rules live in [`.agents/rules/`](../.agents/rules/); `Docs/` contains only module and feature documentation.
 
-## 目录结构
+## Layout
 
-```
+```text
 Docs/
-├── README.md            # 本索引
-├── Plan/                 # 功能设计与实施计划（按功能分目录）
-└── Architecture/        # 模块架构文档（按模块划分）
-    ├── framework.md     # Framework 核心框架
-    ├── entity.md        # EntitySystem 实体系统
-    ├── simulation.md    # EntitySimulationCore + NetworkSync 模拟与网络同步
-    └── networking.md    # Network 网络层
+├── README.md
+├── Plan/                 # Feature designs and implementation plans
+└── Architecture/        # Module architecture documents
+    ├── framework.md
+    ├── entity.md
+    ├── simulation.md
+    └── networking.md
 ```
 
-## 模块架构文档
+## Module Architecture
 
-| 模块 | 文档 |
+| Module | Document |
 | --- | --- |
-| Framework 核心框架 | [Architecture/framework.md](Architecture/framework.md) |
-| EntitySystem 实体系统 | [Architecture/entity.md](Architecture/entity.md) |
-| 模拟核心与网络同步 | [Architecture/simulation.md](Architecture/simulation.md) |
-| Network 网络层 | [Architecture/networking.md](Architecture/networking.md) |
+| Framework core | [Architecture/framework.md](Architecture/framework.md) |
+| EntitySystem | [Architecture/entity.md](Architecture/entity.md) |
+| Simulation core and network synchronization | [Architecture/simulation.md](Architecture/simulation.md) |
+| Network layer | [Architecture/networking.md](Architecture/networking.md) |
 
-## 功能设计文档
+## Feature Plans
 
-功能设计与实施计划统一放在 `Docs/Plan/<Feature>/`，文档直接使用功能或用途命名。模块事实文档放在 `Docs/Architecture/`。布局与文档级别要求见 [.agents/rules/Documentation.md](../.agents/rules/Documentation.md)。
+Feature designs and implementation plans live under `Docs/Plan/<Feature>/`. Documents use direct feature/purpose names without numeric prefixes. Module facts remain under `Docs/Architecture/`. See [`.agents/rules/Documentation.md`](../.agents/rules/Documentation.md) for layout and document levels.
 
-## 注意
+## Note
 
-模块清单、命名空间、类名会随重构漂移。文档描述的是**写作时**的架构，行动前始终以实际代码为准 —— 见 [AGENTS.md](../AGENTS.md) 的「仓库即事实」。
+Module lists, namespaces, and type names drift during refactoring. These documents describe the architecture at writing time; always verify against the actual code before acting. See [AGENTS.md](../AGENTS.md) and its Repository Truth rule.

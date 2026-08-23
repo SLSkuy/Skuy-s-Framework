@@ -1,94 +1,83 @@
-# 模拟核心与网络同步
+# Simulation Core and Network Synchronization
 
-本文档描述 `Assets/Scripts/GamePlay/EntitySimulationCore/`（纯模拟核心）与 `Assets/Scripts/GamePlay/NetworkSync/`（网络同步）两个模块。属于模块设计文档 —— 行为规则见 [AGENTS.md](../../AGENTS.md)。
+This document describes `Assets/Scripts/GamePlay/EntitySimulationCore/` and `Assets/Scripts/GamePlay/NetworkSync/`. It is a module reference; behavior rules are in [AGENTS.md](../../AGENTS.md).
 
-> **注意：** 以下内容为写作时的架构快照，类名与子目录会随重构漂移；以实际代码为准。
+> **Note:** This is an architecture snapshot. Names and subdirectories may drift; verify against the actual code.
 
-## 职责划分
+## Responsibilities
 
-- **`EntitySimulationCore/`**：纯 C# 模拟核心。定义命令、状态、模拟契约与核心 Tick 工具，**不依赖** UnityEngine。是「服务端权威 + 客户端预测 + 远端插值」架构的纯逻辑基底。
-- **`NetworkSync/`**：网络同步层。基于 EntitySimulationCore 的模拟契约，实现权威模拟、客户端预测、远端插值与快照同步。依赖 EntitySimulationCore 与 EntitySystem。
+- **`EntitySimulationCore/`** is pure C# and defines commands, state, simulation contracts, and fixed-tick utilities. It has no `UnityEngine` dependency and is the base for server authority, client prediction, and remote interpolation.
+- **`NetworkSync/`** implements authority simulation, client prediction, remote interpolation, and snapshot synchronization on top of EntitySimulationCore and EntitySystem.
 
 ## EntitySimulationCore
 
-### 程序集
+### Assembly
 
-`GamePlay.EntitySimulationCore.asmdef`：独立程序集，**无引用**、`noEngineReferences: false` —— 即不依赖 Unity 引擎，是纯 C# 核心。
+`GamePlay.EntitySimulationCore.asmdef` is an independent assembly with no engine reference (`noEngineReferences: false` in the current snapshot); it is pure C#.
 
-### 目录结构
+### Directory Structure
 
-```
+```text
 EntitySimulationCore/
 ├── GamePlay.EntitySimulationCore.asmdef
-├── Contracts/               # IEntitySimulation
-├── Commands/                # EntityInputCommand
-├── Simulation/              # EntitySimulation / EntitySimulationSystem
-└── (state 相关)
+├── Contracts/
+├── Commands/
+├── Simulation/
+└── state-related types
 ```
 
-### 核心契约
+### Core Contracts
 
-- **`IEntitySimulation`**（`Contracts/`）：模拟入口。`Step(uint tick, float deltaTime, in EntityInputCommand command)` 驱动单实体固定 Tick 模拟。
-- **`EntityInputCommand`**（`Commands/`）：每 Tick 输入命令，含 move/aim 输入与 held/pressed 按键状态。由 EntitySystem 的 `EntityInputCommandBuilder` 从 `InputState` 构建。
-- **`EntitySimulation`**（`Simulation/`）：`IEntitySimulation.Step` 的具体实现 —— 应用输入、更新旋转/状态机、重置 Tick 标志。
-- **`EntitySimulationSystem`**（`Simulation/`）：注册本地模拟入口，挂钩 `NetworkTimeSystem.Tick`，构建命令并调用 `Simulation.Step`。
+- **`IEntitySimulation`** exposes `Step(uint tick, float deltaTime, in EntityInputCommand command)` for one fixed-tick simulation.
+- **`EntityInputCommand`** contains movement/aim input and held/pressed key state. `EntityInputCommandBuilder` builds it from `InputState` in EntitySystem.
+- **`EntitySimulation`** applies input, updates rotation/state, and resets tick flags.
+- **`EntitySimulationSystem`** registers local simulation entries, listens to `NetworkTimeSystem.Tick`, builds commands, and calls `Simulation.Step`.
 
 ## NetworkSync
 
-### 目录结构
-
-```
+```text
 NetworkSync/
-├── Config/                  # 同步配置
-├── Runtime/                 # 运行时能力与编排
+├── Config/
+├── Runtime/
 │   ├── EntityReplicationSystem.cs
 │   ├── EntitySimulationMode.cs
-│   └── Capabilities/        # NetworkTransformCapability / NetworkPredictionCapability / NetworkInterpolationCapability
-└── Snapshot/                # SnapshotInterpolator 等快照插值
+│   └── Capabilities/
+└── Snapshot/
 ```
 
-### 模拟角色
+### Simulation Modes
 
-**`EntitySimulationMode`**（`Runtime/`）定义同步中的模拟角色：
+`EntitySimulationMode` defines the active role:
 
-- `Authority` —— 服务端权威模拟。
-- `Predict` —— 客户端预测（本地拥有输入）。
-- `Replica` —— 远端插值（仅接收快照）。
-- `LocalPlay` —— 单机本地。
+- `Authority`: server-authoritative simulation.
+- `Predict`: client prediction for the input owner.
+- `Replica`: remote snapshot interpolation.
+- `LocalPlay`: local single-player simulation.
 
-### 编排
+### Orchestration and Capabilities
 
-**`EntityReplicationSystem`**（`Runtime/`）：网络同步编排器。根据激活的 capability 推进权威模拟或拥有方预测：
+`EntityReplicationSystem` advances authority or owner prediction through `entry.Simulation.Step(...)`; prediction additionally records rollback state.
 
-- 权威路径与预测路径都调用 `entry.Simulation.Step(...)`（依赖 EntitySimulationCore）。
-- 预测路径额外记录回滚状态。
+Capabilities are role-specific synchronization components:
 
-### 能力（Capabilities）
+- `NetworkPredictionCapability`: `Predict`, requiring input command, simulation, and snapshot support.
+- `NetworkInterpolationCapability`: `Replica`, requiring transform and snapshot support.
+- `NetworkTransformCapability`: transform synchronization.
 
-能力是按角色启用的同步组件，声明对 `InputCommand` / `Simulation` / `Snapshot` / `Transform` 的依赖：
+`SnapshotInterpolator` stores server snapshots and samples interpolated `EntitySimulationState` for remote replicas.
 
-- **`NetworkPredictionCapability`**：仅支持 `EntitySimulationMode.Predict`，依赖 `InputCommand` / `Simulation` / `Snapshot`。
-- **`NetworkInterpolationCapability`**：仅支持 `EntitySimulationMode.Replica`，依赖 `Transform` / `Snapshot`。
-- **`NetworkTransformCapability`**：Transform 同步能力。
+## Dependency Direction
 
-### 快照插值
-
-**`SnapshotInterpolator`**（`Snapshot/`）：为远端 replica 实现快照插值。添加服务端快照、采样插值后的 `EntitySimulationState`。
-
-## 依赖方向
-
-```
-EntitySimulationCore（纯 C#，无 UnityEngine）
+```text
+EntitySimulationCore (pure C#, no UnityEngine)
         ↑
-NetworkSync（依赖 EntitySimulationCore + EntitySystem）
+NetworkSync (EntitySimulationCore + EntitySystem)
         ↑
-Network（传输层，见 networking.md）
+Network (transport layer; see networking.md)
 ```
 
-- EntitySimulationCore 不依赖任何上层。
-- NetworkSync 依赖 EntitySimulationCore（模拟契约）与 EntitySystem（实体宿主）。
-- NetworkSync 不直接依赖 Network 传输层；网络消息经 Network 收发后，由 NetworkSync 侧消费。
+EntitySimulationCore has no upper-layer dependency. NetworkSync depends on EntitySimulationCore and EntitySystem, but does not directly depend on Network transport; it consumes messages after Network receives them.
 
-## 架构理念
+## Design Principle
 
-整体遵循「初始化失败 → 暴露错误 → 修复生命周期」而非 self-healing —— 见 [AGENTS.md](../../AGENTS.md)「生命周期」。模拟核心保持纯 C# 以便服务端/客户端/测试复用，Unity 胶水留在 EntitySystem。
+Prefer “fail initialization loudly, expose the lifecycle error, then fix it” over self-healing. Keep the simulation core pure C# so server, client, and tests can reuse it; keep Unity glue in EntitySystem. See [AGENTS.md](../../AGENTS.md).

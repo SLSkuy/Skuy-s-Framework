@@ -1,62 +1,62 @@
-# 文档
+# Documentation
 
-设计文档位于根目录的 `Docs/` 文件夹（不在 `Assets/` 内）。行为规则（何时写、自包含要求）见 [AGENTS.md](../../AGENTS.md)。
+Design documents live under the root `Docs/` directory, outside `Assets/`. Workflow rules are defined in [AGENTS.md](../../AGENTS.md).
 
-## 布局
+## Layout
 
-计划文档按功能放在 `Docs/Plan/<Feature>/`。模块事实文档放在 `Docs/Architecture/`：
+Plan documents are grouped by feature under `Docs/Plan/<Feature>/`. Module facts belong under `Docs/Architecture/`:
 
-- **一个功能一个文件夹**，以功能命名（如 `Docs/Plan/EntityControl/`、`Docs/Plan/Navigation/`）。该功能的所有计划文档放在其文件夹内；不要散落全仓库。
-- **计划文档命名** —— `Docs/Plan/` 中的文档直接使用功能或用途命名，例如 `movement-design.md`、`network-sync-plan.md`，不使用数字前缀或 `00-Index.md`。
-- **文件名**保持英文 `kebab-case`（ASCII、连字符分隔），以保持 git 与跨平台友好。
-- **内容用中文（中文）。** 标题、正文、列表、说明全部中文；代码符号、类型名、标识符、文件路径保持原样。新文档必须中文。
+- **One feature per folder:** use a descriptive name such as `Docs/Plan/EntityControl/` or `Docs/Plan/Navigation/`; keep that feature's plan documents together.
+- **Direct names:** name plan documents after the feature or purpose, such as `movement-design.md` or `network-sync-plan.md`; do not use numeric prefixes or `00-Index.md`.
+- **File names:** use English `kebab-case` (ASCII and hyphens) for Git and cross-platform compatibility.
+- **Language:** write new documentation in English. Keep code symbols, type names, identifiers, and paths unchanged.
 
-## 文档级别
+## Document Levels
 
-普通功能文档至少说明：目标、涉及文件、预期行为、验证方式。
+An ordinary feature document must state at least: goal, affected files, expected behavior, and verification method.
 
-架构、协议和跨模块文档必须自带完整上下文，使其可脱离任何对话历史被理解，并额外说明：
+Architecture, protocol, and cross-module documents must be self-contained and understandable without conversation history. They must additionally state:
 
-1. **数据来源** —— 数据从哪读（如配置文件路径、`ScriptableObject` 目录、某个 protobuf 消息、经 `Global.Get<T>()` 取得的子系统）。
-2. **涉及模块** —— 当前行为归属哪个命名空间/文件夹/类，新代码应落在哪（给出确切文件夹与命名空间）。
-3. **需要改动** —— 新增/修改哪些文件、实现哪些接口、更新哪些调用点、改动后预期行为。
-4. **接口/调用链变化** —— 什么会破坏、代码库各处需更新什么。
-5. **改动后预期行为** —— 改动后的可观察结果。
+1. **Data source:** where data is read from, such as a config path, `ScriptableObject` directory, protobuf message, or subsystem obtained through `Global.Get<T>()`.
+2. **Modules involved:** current namespace/folder/types and the exact destination for new code.
+3. **Required changes:** files, interfaces, call sites, and expected behavior after the change.
+4. **Interface/call-chain changes:** what breaks and what must be updated elsewhere.
+5. **Expected result:** observable behavior after the change.
 
-不要写只勾勒想法的稀薄模糊文档。普通功能文档可保持简短；完整文档要明确说清数据从哪来、模块在哪、改动哪些地方，确保换到新对话时仍能产出正确、无歧义的实现。
+Do not write vague documents that only sketch an idea. Ordinary feature documents may be short; full documents must make data sources, module ownership, and changes explicit so a new conversation can implement them without guesswork.
 
-## 最小模板
+## Minimal Template
 
 ```markdown
-# <功能名称>
+# <Feature Name>
 
-## 目标
+## Goal
 
-## 涉及文件
+## Affected Files
 
-## 预期行为
+## Expected Behavior
 
-## 验证方式
+## Verification
 ```
 
-## 完整模板
+## Full Template
 
-架构、协议和跨模块文档在最小模板基础上扩展为完整模板，章节与上述 5 点要求一一对应：
+Architecture, protocol, and cross-module documents extend the minimal template with the following sections:
 
 ```markdown
-# <功能/架构名称>
+# <Feature/Architecture Name>
 
-## 背景与目标
+## Background and Goal
 
-## 数据来源
+## Data Source
 
-## 涉及模块
+## Modules Involved
 
-## 需要改动
+## Required Changes
 
-## 接口/调用链变化
+## Interface/Call-Chain Changes
 
-## 改动后预期行为
+## Expected Behavior After Change
 
-## 验证方式
+## Verification
 ```
