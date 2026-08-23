@@ -1,68 +1,49 @@
 # EntitySystem
 
-This document describes `Assets/Scripts/GamePlay/EntitySystem/`. It is a module reference; behavior rules are in [AGENTS.md](../../AGENTS.md).
-
-> **Note:** This is an architecture snapshot. Names and subdirectories may drift; verify against the actual code.
+`Assets/Scripts/GamePlay/EntitySystem/` owns the entity domain and shared fixed-step simulation. It is independent from role-aware network synchronization.
 
 ## Responsibility
 
-EntitySystem owns the lifecycle, input, modular capabilities, and state-machine-driven simulation of local/single-player entities. It bridges Unity object lifecycle to fixed-tick simulation but does **not** own network synchronization; that belongs to `GamePlay/NetworkSync/` as an explicit character replication runtime (see [simulation.md](simulation.md)).
+EntitySystem contains entity objects, configuration, input-to-command conversion, movement modules, state machine states, rollback/simulation data, player input, and the inactive AI controller extension point. It does not own network identity, snapshot transport, prediction policy, or network time.
 
-## Directory Structure
+## Structure
 
 ```text
 EntitySystem/
-├── Controllers/             # Entity controllers
-├── Input/                   # Input construction (`EntityInputCommandBuilder`)
-├── Modules/                 # Entity capability MonoBehaviour components
-│   ├── EntityModuleBase.cs
-│   └── Position/            # MovementModule and position capabilities
-├── Simulation/              # Local simulation drivers
-├── StateMachine/            # Entity state machine
-│   ├── BaseState/
-│   └── EntityState/
-└── Contracts/               # Entity contracts
+├── Config/             # EntityConfig and EntityObjectConfig
+├── Entities/           # EntityCharacter and EntityObject hierarchy
+├── Commands/           # EntityInputCommand and EntityCommandQueue
+├── Contracts/          # IEntitySimulation and state contracts
+├── Prediction/         # EntityPredictionHistory and frames
+├── Snapshots/          # SnapshotBuffer and entity snapshot contract
+├── State/              # Simulation and rollback state data
+├── Controllers/        # PlayerController and future AIController hook
+├── Input/              # EntityInputCommandBuilder
+├── Modules/            # Movement and rotation modules
+├── Simulation/         # EntitySimulation
+└── StateMachine/       # Locomotion state machine
 ```
 
 ## Core Abstractions
 
-### Entity Host
-
-- **`EntityCharacter`** is scene glue. It bridges Unity lifecycle to framework services and simulation systems; reusable business logic belongs in `SubSystemBase` or a pure core assembly.
-
-### State Machine
-
-- **`EntityBaseState`** in `StateMachine/BaseState/` owns `EntityContext` and exposes configuration, movement, input, speed, ground, sprint, run, and jump context.
-- Concrete states in `StateMachine/EntityState/` (for example `EntityIdleState`) transition between `SPRINT`, `RUN`, and `WALK` based on input.
-- `EntitySimulation` advances the state machine on every tick.
-
-### Entity Modules
-
-- **`EntityModuleBase`** is the base `MonoBehaviour` for capability modules attached to an entity GameObject.
-- **`MovementModule`** in `Modules/Position/` owns entity position simulation and synchronization landing.
-
-## Simulation Driver
-
-EntitySystem uses fixed ticks rather than Unity `Update` directly:
-
-- **`EntitySimulationSystem`** subscribes to `NetworkTimeSystem.Tick`, builds input, and calls `SimulateTick` for each local entity.
-- **`EntitySimulation`** sets the current tick, records movement/aim input, updates rotation, and calls `StateMachine.Update(...)`.
-- **`EntityInputCommandBuilder`** converts `InputState` into `EntityInputCommand`, including held keys and press edges.
-
-The pure contracts and `Step` implementation are in `GamePlay/EntitySimulationCore/` (see [simulation.md](simulation.md)). EntitySystem depends on EntitySimulationCore; the reverse dependency is forbidden.
+- `EntitySimulation` implements the shared `IEntitySimulation.Step` path used by LocalPlay, server authority, client prediction, and prediction replay.
+- `EntityInputCommandBuilder` converts sampled `InputState` into a fixed-tick `EntityInputCommand`.
+- `EntityCommandQueue`, `EntityPredictionHistory`, and `SnapshotBuffer` are data primitives; they do not encode a generic replication protocol.
+- `PlayerController` samples local input and exposes it to the role-aware scheduler. It does not register or own a simulation system.
+- `AIController` remains a disabled future extension point. No AI behavior or command policy is active in the prototype.
 
 ## Dependency Direction
 
 ```text
-EntitySimulationCore (pure C#, no UnityEngine)
+EntitySystem (entity domain and simulation)
         ↑
-EntitySystem (Unity lifecycle glue)
+MultiPlaySystem (role-aware synchronization and network scene glue)
         ↑
-NetworkSync (depends on EntitySystem + EntitySimulationCore)
+Network (transport and message dispatch)
 ```
 
-EntitySystem depends on Framework and EntitySimulationCore, but not on NetworkSync.
+MultiPlaySystem consumes EntitySystem contracts and state. EntitySystem does not reference MultiPlaySystem.
 
-## Assembly
+## Lifecycle
 
-EntitySystem currently compiles into the default `Assembly-CSharp`. `GamePlay.EntitySimulationCore` has an independent `.asmdef` with no engine reference. Document boundaries and direction before adding another `.asmdef`; see [AGENTS.md](../../AGENTS.md).
+Unity scene objects bind to EntitySystem components during replication entry setup. The fixed tick is emitted by `MultiPlaySystem.NetworkTimeSystem`; `EntitySystem` supplies the simulation implementation but does not subscribe to the network clock directly.

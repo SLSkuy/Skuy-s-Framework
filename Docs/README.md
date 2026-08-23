@@ -22,7 +22,7 @@ Docs/
 | --- | --- |
 | Framework core | [Architecture/framework.md](Architecture/framework.md) |
 | EntitySystem | [Architecture/entity.md](Architecture/entity.md) |
-| Simulation core and network synchronization | [Architecture/simulation.md](Architecture/simulation.md) |
+| Entity simulation and MultiPlaySystem | [Architecture/simulation.md](Architecture/simulation.md) |
 | Network layer | [Architecture/networking.md](Architecture/networking.md) |
 
 ## Feature Plans

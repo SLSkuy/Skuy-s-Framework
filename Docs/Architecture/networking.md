@@ -1,67 +1,46 @@
-# Network Layer
+# Network Layer and MultiPlaySystem
 
-This document describes `Assets/Scripts/Network/`. It is a module reference; behavior rules are in [AGENTS.md](../../AGENTS.md).
+## Network Responsibility
 
-> **Note:** This is an architecture snapshot. Names and subdirectories may drift; verify against the actual code.
+`Assets/Scripts/Network/` owns transport-independent client/server entry points, KCP/TCP transport abstractions, protobuf serialization, and message dispatch. It does not own gameplay entity simulation or replication policy.
 
-## Responsibility
+## MultiPlaySystem Responsibility
 
-Network provides transport-independent client/server entry points, transport abstractions (KCP/TCP), message serialization, and dispatch. It is exposed as `SubSystemBase` services through `Global`. Network handles byte transport and message dispatch; gameplay synchronization belongs to `GamePlay/NetworkSync/` as character replication (see [simulation.md](simulation.md)).
+`Assets/Scripts/GamePlay/MultiPlaySystem/` is the game-specific synchronization runtime for the third-person ARPG prototype. It contains:
 
-## Directory Structure
+- `NetworkTimeSystem` and `NetworkTickSystem` for the shared fixed tick.
+- `NetworkObjectIdentity` and `EntitySimulationMode` for scene identity and role metadata.
+- `CharacterReplicationSystem` and `CharacterReplicationEntry` for explicit character registration.
+- Input validation/buffering, prediction history coordination, snapshot interpolation, and presentation adapters.
+- The local client/server test simulator.
 
-```text
-Network/
-├── Client/                  # NetClient
-├── Server/                  # NetServer
-├── Transport/
-│   ├── Kcp/
-│   └── Tcp/
-├── Config/
-├── Interface/
-├── Protocol/                # .proto definitions
-└── MessageProcessor.cs
-```
-
-## Core Abstractions
-
-### Client and Server Entry Points
-
-- **`NetClient`** in `Client/` is a `SubSystemBase` client entry point with `NetWorkManager` priority.
-- **`NetServer`** in `Server/` is the equivalent server entry point.
-- Retrieve both through `Global.Get<NetClient>()` / `Global.Get<NetServer>()`; lifecycle is driven by `SubSystemBase._Init()` / `_Destroy()`.
-
-### Transport Abstractions
-
-- **`IClientTransport`** defines transport type, running state, connection/disconnection/data callbacks, `StartClient`, `Send`, `Update`, and `Stop`.
-- **`IServerTransport`** defines server connection management, receive, broadcast, send, and update operations.
-- `KcpClientTransport` / `KcpServerTransport` use `TransportType.KCP`; TCP variants use `TransportType.TCP`.
-
-### Serialization and Dispatch
-
-Messages use **Google.Protobuf**. `.proto` definitions live under `Protocol/`; generated messages live under `GamePlay/Protocol/Generated/` and must not be edited manually.
-
-`MessageProcessor` dispatches client messages by `NetEvent` and registers Protobuf `IMessage` handlers. The normal path is:
+## Role Flow
 
 ```text
-NetUtils.Proto2Bytes -> transport send
-transport receive -> NetUtils.Bytes2Proto -> MessageProcessor
+Network transport events
+        |
+        v
+CharacterReplicationSystem
+  input -> validate -> authority queue -> EntitySystem.EntitySimulation.Step
+  snapshot -> predict reconciliation or replica interpolation
 ```
 
-The server handles special events such as `RELIABLE_CONNECT_REQUEST`.
+Authority, Predict, and LocalPlay share the EntitySystem simulation path. Replica is presentation-only.
+
+## Protocol and Proxy Boundaries
+
+Protocol remains under `Assets/Scripts/GamePlay/Protocol/Generated/`; generated classes keep the `NetSync` namespace and must not be edited manually. Proxy remains under `Assets/Scripts/GamePlay/Proxy/` and is not merged into MultiPlaySystem.
 
 ## Dependency Direction
 
 ```text
-Framework (Global / SubSystemBase / NetUtils)
-        ↑
-Network (transport + message dispatch)
-        ↑
-GamePlay/NetworkSync (consumes network messages)
+Framework
+   ↑
+Network (transport and dispatch)
+   ↑
+MultiPlaySystem (role-aware gameplay sync)
+   ↑
+EntitySystem (consumed simulation/state contracts)
 ```
 
-Network depends on Framework and Protobuf, but not on GamePlay/NetworkSync. NetworkSync consumes Network events from above.
-
-## Assembly
-
-Network currently compiles into the default `Assembly-CSharp`. Document boundaries and direction before adding an `.asmdef`; see [AGENTS.md](../../AGENTS.md).
+In code terms, MultiPlaySystem consumes EntitySystem and Network services. EntitySystem has no dependency on MultiPlaySystem.
