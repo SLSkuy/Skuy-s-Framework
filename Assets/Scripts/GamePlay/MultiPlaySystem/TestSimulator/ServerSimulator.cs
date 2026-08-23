@@ -1,26 +1,21 @@
 using System;
 using System.Collections.Generic;
 using Events;
-using Framework;
-using GamePlay.EntitySystem;
 using Network;
 using UnityEngine;
 
 namespace GamePlay.MultiPlaySystem
 {
     /// <summary>
-    /// 服务端同步测试夹具，只负责连接、生成和销毁测试实体。
+    /// 服务端同步测试夹具：监听加入并仅在客户端连接后生成其权威角色。
     /// </summary>
     public sealed class ServerSimulator : IDisposable
     {
         private const string PlayerPrefabPath = "NetPlayer";
 
-        private const uint ServerDrivenEntityId = 10001;
-
         private readonly Dictionary<uint, GameObject> _players = new();
         private readonly NetServer _netServer;
         private GameObject _playerPrefab;
-        private GameObject _serverDrivenCharacter;
 
         #region 属性
         public bool IsRunning { get; private set; }
@@ -40,7 +35,6 @@ namespace GamePlay.MultiPlaySystem
 
             _netServer.RegNetHandler<global::NetSync.Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleJoinRequest);
             _netServer.OnClientRemoved += HandleClientRemoved;
-            SpawnServerDrivenCharacter();
             IsRunning = true;
         }
 
@@ -58,8 +52,6 @@ namespace GamePlay.MultiPlaySystem
                 if (player != null) UnityEngine.Object.Destroy(player);
             }
             _players.Clear();
-            if (_serverDrivenCharacter != null) UnityEngine.Object.Destroy(_serverDrivenCharacter);
-            _serverDrivenCharacter = null;
             IsRunning = false;
         }
 
@@ -85,23 +77,6 @@ namespace GamePlay.MultiPlaySystem
             }
             identity.Init(clientId, EntitySimulationMode.Authority, clientId);
             _players.Add(clientId, instance);
-        }
-
-        private void SpawnServerDrivenCharacter()
-        {
-            GameObject instance = UnityEngine.Object.Instantiate(
-                _playerPrefab,
-                new Vector3(0f, 1f, 4f),
-                Quaternion.identity);
-            instance.name = "ServerDrivenCharacter";
-            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
-            if (identity == null)
-            {
-                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
-            }
-
-            identity.Init(ServerDrivenEntityId, EntitySimulationMode.Authority, 0);
-            _serverDrivenCharacter = instance;
         }
 
         private void HandleClientRemoved(uint clientId)

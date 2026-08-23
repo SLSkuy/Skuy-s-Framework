@@ -459,6 +459,10 @@ namespace Network
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
             NetUtils.RegisterParser(NetEvent.RELIABLE_CONNECT_REQUEST, Client_Reliable_Connect_Request.Parser);
+            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, global::NetSync.Player_Input.Parser);
+            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, global::NetSync.World_Snapshot.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, global::NetSync.Game_Join_Request.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, global::NetSync.Game_Join_Response.Parser);
             RegNetHandler<Heart_Beat_Request>(NetEvent.HEART_BEAT_REQUEST, HandleHeartBeatRequest);
         }
 

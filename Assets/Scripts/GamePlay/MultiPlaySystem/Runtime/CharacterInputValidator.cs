@@ -4,19 +4,22 @@ using UnityEngine;
 namespace GamePlay.MultiPlaySystem
 {
     /// <summary>
-    /// 角色输入合法性校验：有限数值与向量模长上限。
+    /// 角色输入合法性校验：有限数值，并限制移动向量模长。
     /// </summary>
     public static class CharacterInputValidator
     {
         /// <summary>
-        /// 判断输入向量是否有限且未超过配置模长。
+        /// 校验有限数值并将移动向量限制在配置模长内。瞄准不参与模长否决，避免鼠标 delta 丢掉整包移动。
         /// </summary>
-        public static bool IsValid(in InputState state, float maxInputVectorMagnitude)
+        public static bool TrySanitize(ref InputState state, float maxMoveMagnitude)
         {
             if (!IsFinite(state.MoveInput) || !IsFinite(state.AimInput)) return false;
-            float maxMagnitudeSquared = maxInputVectorMagnitude * maxInputVectorMagnitude;
-            return state.MoveInput.sqrMagnitude <= maxMagnitudeSquared &&
-                state.AimInput.sqrMagnitude <= maxMagnitudeSquared;
+            if (maxMoveMagnitude > 0f)
+            {
+                state.MoveInput = Vector2.ClampMagnitude(state.MoveInput, maxMoveMagnitude);
+            }
+
+            return true;
         }
 
         /// <summary>

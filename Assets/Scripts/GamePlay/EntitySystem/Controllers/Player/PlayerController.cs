@@ -22,6 +22,10 @@ namespace GamePlay.EntitySystem
         {
             Bind(entity);
             _isLocalPlay = localPlay;
+            if (_inputProvider == null && GameCore.Instance != null)
+            {
+                SetInputSource(GameCore.Instance.LocalInput);
+            }
         }
 
         /// <summary>

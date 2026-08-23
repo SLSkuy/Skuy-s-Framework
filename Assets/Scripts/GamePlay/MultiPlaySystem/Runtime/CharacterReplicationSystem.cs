@@ -95,7 +95,7 @@ namespace GamePlay.MultiPlaySystem
 
             InputState state = NetSyncUtils.ToInputState(input);
             SyncConfig config = SyncConfig.Instance;
-            if (!CharacterInputValidator.IsValid(state, config.maxInputVectorMagnitude)) return false;
+            if (!CharacterInputValidator.TrySanitize(ref state, config.maxInputVectorMagnitude)) return false;
 
             return entry.Input.Enqueue(input.InputTick, serverTick,
                 (uint)config.maxPastInputTicks, (uint)config.maxFutureInputTicks, state);
@@ -106,6 +106,7 @@ namespace GamePlay.MultiPlaySystem
         /// </summary>
         public void AdvanceTick(uint tick, float deltaTime)
         {
+            BindNetworkHandlers();
             foreach (CharacterReplicationEntry entry in _characters.Values)
             {
                 if (entry.Identity.IsLocalPlay) SimulateLocalPlayTick(entry, tick, deltaTime);
@@ -233,6 +234,7 @@ namespace GamePlay.MultiPlaySystem
 
         private void PredictOwnedTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
         {
+            BindNetworkHandlers();
             if (_client == null || entry.OwnerClientId != _client.ClientId || entry.PlayerController == null)
             {
                 return;
@@ -240,6 +242,12 @@ namespace GamePlay.MultiPlaySystem
 
             uint inputTick = entry.Prediction.AllocateInputTick(tick);
             InputState input = entry.PlayerController.SampleInput();
+            SyncConfig config = SyncConfig.Instance;
+            if (!CharacterInputValidator.TrySanitize(ref input, config.maxInputVectorMagnitude))
+            {
+                input = default;
+            }
+
             EntityInputCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
             entry.Prediction.History.Add(new EntityPredictionFrame
@@ -248,11 +256,11 @@ namespace GamePlay.MultiPlaySystem
                 Command = command,
                 State = entry.Simulation.CaptureRollbackState()
             });
-            if (_client.HasFastChannel)
-            {
-                _client.Send(NetEvent.PLAYER_INPUT,
-                    NetSyncUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input));
-            }
+
+            global::NetSync.Player_Input message =
+                NetSyncUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input);
+            if (_client.HasFastChannel) _client.Send(NetEvent.PLAYER_INPUT, message);
+            else if (_client.IsRunning) _client.SendReliable(NetEvent.PLAYER_INPUT, message);
         }
 
         private static void ReconcilePredictedCharacter(CharacterReplicationEntry entry,

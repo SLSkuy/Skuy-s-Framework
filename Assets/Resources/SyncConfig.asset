@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: SyncConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.MultiPlaySystem.SyncConfig
   simulationTickRate: 60
+  maxSimulationTicksPerFrame: 8
   snapshotTickRate: 20
   interpolationDelayTicks: 3
   maxBufferedInputs: 64
+  maxPastInputTicks: 32
+  maxFutureInputTicks: 32
+  maxInputVectorMagnitude: 1.5
+  predictionHistorySize: 128
+  positionReconcileThreshold: 0.02
+  rotationReconcileThresholdDegrees: 1
+  positionSnapThreshold: 2
+  rotationSnapThresholdDegrees: 45
