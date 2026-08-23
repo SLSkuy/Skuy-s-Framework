@@ -30,7 +30,7 @@ EntitySystem/
 - `EntityCharacter` is the scene MonoBehaviour. It owns `EntityContext` and `EntitySimulation`, and exposes `Init`, `Step`, `CaptureSimulationState`, `CaptureRollbackState`, and `RestoreRollbackState`.
 - `EntitySimulation` implements `IEntitySimulation` / `IEntityStateStore` and is the shared `Step` path used by LocalPlay, authority, prediction, and replay.
 - `EntityInputCommandBuilder` converts sampled `InputState` into a fixed-tick `EntityInputCommand`.
-- `EntityCommandQueue` and `EntityPredictionHistory` are data primitives; they do not encode a generic replication protocol. Replica snapshot buffering lives in MultiPlay `Interpolation/`.
+- `EntityCommandQueue` is a client-tick-indexed ring buffer primitive (slot 0 means empty). Sequential consume, `LastProcessedTick`, and past/future receive windows live on MultiPlay `CharacterInputBuffer`. Missing slots yield a default command. `EntityPredictionHistory` is a data primitive. Neither encodes a generic replication protocol. Replica snapshot buffering lives in MultiPlay `Interpolation/`.
 - `PlayerController` samples local input. Role selection lives on `NetworkObjectIdentity`.
 - `AIController` is an empty stub. No AI command policy is active.
 - Dash fields on `MovementRollbackState` / `MovementModule` and `IsFocus` on `EntityContext` / `EntityRollbackState` are retained for later gameplay.

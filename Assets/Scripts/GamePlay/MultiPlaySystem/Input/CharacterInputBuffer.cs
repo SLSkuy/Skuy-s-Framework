@@ -5,55 +5,109 @@ using GamePlay.EntitySystem;
 namespace GamePlay.MultiPlaySystem
 {
     /// <summary>
-    /// 角色输入缓冲：服务端命令队列与每 Tick 命令构建。
+    /// 角色输入缓冲：服务端按客户端 Tick 做窗口校验与顺序消费，并构建每 Tick 命令。
+    /// LastProcessedTick 为已消费的客户端输入序号，0 表示尚未消费；下一拍固定取 LastProcessedTick + 1。
+    /// 环形槽位以 0 表示空，有效输入 Tick 从 1 起。
     /// </summary>
     public sealed class CharacterInputBuffer
     {
         private readonly EntityCommandQueue<InputState> _commands;
-        private readonly EntityInputCommandBuilder _commandBuilder = new();
+        private readonly EntityCommandBuilder _commandBuilder = new();
+        private readonly int _maxFutureInputTicks;
 
-        #region Properties
-        public uint LastProcessedTick => _commands.LastProcessedTick;
+        #region 属性
+        public uint LastProcessedTick { get; private set; }
         #endregion
 
-        public CharacterInputBuffer(int capacity)
+        public CharacterInputBuffer(int capacity, int maxFutureInputTicks)
         {
-            _commands = new EntityCommandQueue<InputState>(Math.Max(2, capacity));
+            if (maxFutureInputTicks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxFutureInputTicks));
+            }
+
+            int resolvedCapacity = Math.Max(2, capacity);
+            _commands = new EntityCommandQueue<InputState>(resolvedCapacity);
+            _maxFutureInputTicks = Math.Min(Math.Max(1, maxFutureInputTicks), resolvedCapacity);
         }
 
         /// <summary>
-        /// 将经过合法性校验的输入加入服务端命令队列。
+        /// 将经过合法性校验的输入按客户端 Tick 加入服务端命令缓冲。
         /// </summary>
-        public bool Enqueue(uint inputTick, uint serverTick, uint maxPastTicks, uint maxFutureTicks,
-            in InputState input)
+        public bool Enqueue(uint inputTick, in InputState input)
         {
-            return _commands.Enqueue(inputTick, serverTick, maxPastTicks, maxFutureTicks, input);
+            if (!IsInReceiveWindow(inputTick))
+            {
+                return false;
+            }
+
+            return _commands.TryEnqueue(inputTick, input);
         }
 
         /// <summary>
-        /// 构建服务端当前 Tick 应执行的命令；缺失输入时使用空输入继续模拟。
+        /// 构建服务端当前 Tick 应执行的命令；按客户端输入序号消费，缺失时使用空输入。
         /// </summary>
-        public EntityInputCommand BuildAuthorityCommand(uint tick)
+        public EntityCommand BuildAuthorityCommand(uint tick)
         {
-            _commands.TryDequeueExecutable(tick, out _, out InputState input);
+            InputState input = ConsumeNext();
             return _commandBuilder.Build(tick, input);
         }
 
         /// <summary>
         /// 根据已采样输入构建预测命令。
         /// </summary>
-        public EntityInputCommand BuildPredictedCommand(uint inputTick, in InputState input)
+        public EntityCommand BuildPredictedCommand(uint inputTick, in InputState input)
         {
             return _commandBuilder.Build(inputTick, input);
         }
 
         /// <summary>
-        /// 清空队列并重置边沿检测。
+        /// 清空缓冲并重置消费序号与边沿检测。
         /// </summary>
         public void Reset()
         {
             _commands.Clear();
             _commandBuilder.Reset();
+            LastProcessedTick = 0;
+        }
+
+        /// <summary>
+        /// 相对已消费序号做过去/未来窗口校验。环形缓冲不能存放 Tick 0。
+        /// </summary>
+        private bool IsInReceiveWindow(uint inputTick)
+        {
+            if (inputTick == 0)
+            {
+                return false;
+            }
+
+            if (inputTick <= LastProcessedTick)
+            {
+                return false;
+            }
+
+            uint offset = inputTick - LastProcessedTick;
+            if (offset > (uint)_maxFutureInputTicks)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 消费 LastProcessedTick 之后的下一序号；槽位缺失时返回默认空输入并仍推进确认点。
+        /// </summary>
+        private InputState ConsumeNext()
+        {
+            uint inputTick = LastProcessedTick + 1;
+            if (!_commands.TryDequeue(inputTick, out InputState input))
+            {
+                input = default;
+            }
+
+            LastProcessedTick = inputTick;
+            return input;
         }
     }
 }

@@ -17,12 +17,11 @@ namespace GamePlay.MultiPlaySystem
         [Min(1)] public int snapshotTickRate = 20;
         [Min(0)] public int interpolationDelayTicks = 3;
         [Min(1)] public int maxBufferedInputs = 64;
-        [Min(0)] public int maxPastInputTicks = 32;
         [Min(0)] public int maxFutureInputTicks = 32;
         [Min(0f)] public float maxInputVectorMagnitude = 1f;
 
         [Header("客户端预测")]
-        [Min(2)] public int predictionHistorySize = 128;
+        [Min(2)] public int predictionHistorySize = 64;
         [Min(0f)] public float positionReconcileThreshold = 0.02f;
         [Min(0f)] public float rotationReconcileThresholdDegrees = 1f;
         [Min(0f)] public float positionSnapThreshold = 2f;

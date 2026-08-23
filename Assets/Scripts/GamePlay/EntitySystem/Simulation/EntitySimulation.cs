@@ -18,16 +18,16 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 应用完整命令并推进一个固定 Tick。
         /// </summary>
-        public void Step(uint tick, float deltaTime, in EntityInputCommand command)
+        public void Step(uint tick, float deltaTime, in EntityCommand command)
         {
             _context.CurrentTick = tick;
-            _context.LastMoveInput = command.Move;
-            _context.LastAimInput = command.Aim;
-            _context.IsSprinting = command.IsHeld(EntityCommandButtons.Sprint);
-            _context.JumpRequest = command.IsPressed(EntityCommandButtons.Jump);
-            _context.RunToggleRequest = command.IsPressed(EntityCommandButtons.ToggleRun);
+            _context.LastMoveInput = command.move;
+            _context.LastAimInput = command.aim;
+            _context.IsSprinting = command.IsHeld(EntityCommandFlags.Sprint);
+            _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
+            _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
-            _context.Rotation.Rotate(command.Move, command.Aim, deltaTime);
+            _context.Rotation.Rotate(command.move, command.aim, deltaTime);
             _context.StateMachine.Update(deltaTime);
             _context.ResetTickFlags();
         }

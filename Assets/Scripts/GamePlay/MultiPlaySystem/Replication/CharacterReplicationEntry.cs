@@ -43,7 +43,8 @@ namespace GamePlay.MultiPlaySystem
             }
 
             SyncConfig config = SyncConfig.Instance;
-            Input ??= new CharacterInputBuffer(config.maxBufferedInputs);
+            Input ??= new CharacterInputBuffer(
+                config.maxBufferedInputs, config.maxFutureInputTicks);
             Prediction ??= new CharacterPredictionController(config.predictionHistorySize);
             Interpolation ??= new CharacterSnapshotInterpolator(
                 config.simulationTickRate,

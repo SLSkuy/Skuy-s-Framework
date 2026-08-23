@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     public struct EntityPredictionFrame
     {
         public uint Tick;
-        public EntityInputCommand Command;
+        public EntityCommand Command;
         public EntityRollbackState State;
     }
 }

@@ -53,7 +53,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 使用完整命令推进一次固定 Tick 模拟。
         /// </summary>
-        public void Step(uint tick, float deltaTime, in EntityInputCommand command)
+        public void Step(uint tick, float deltaTime, in EntityCommand command)
         {
             _simulation?.Step(tick, deltaTime, command);
         }

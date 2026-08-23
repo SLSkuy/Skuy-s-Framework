@@ -25,20 +25,16 @@ namespace GamePlay.MultiPlaySystem
         }
 
         /// <summary>
-        /// 使用首个服务端快照建立客户端输入 Tick 锚点。
+        /// 分配下一个预测输入 Tick。序号从 1 起连续增加，不与快照 Tick 对齐。
         /// </summary>
-        public void SetSnapshotAnchor(uint snapshotTick)
+        public uint AllocateInputTick()
         {
-            if (NextInputTick == 0 && snapshotTick > 0) NextInputTick = snapshotTick;
-        }
+            uint inputTick = NextInputTick;
+            if (inputTick == 0)
+            {
+                inputTick = 1;
+            }
 
-        /// <summary>
-        /// 分配下一个预测输入 Tick。
-        /// </summary>
-        public uint AllocateInputTick(uint simulationTick)
-        {
-            uint inputTick = Math.Max(NextInputTick, LastConfirmedInputTick + 1);
-            if (inputTick == 0) inputTick = Math.Max(1u, simulationTick);
             NextInputTick = inputTick + 1;
             return inputTick;
         }

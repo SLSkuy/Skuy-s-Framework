@@ -2,8 +2,11 @@ using System;
 
 namespace GamePlay.EntitySystem
 {
+    /// <summary>
+    /// 实体控制命令类型枚举定义
+    /// </summary>
     [Flags]
-    public enum EntityCommandButtons : ushort
+    public enum EntityCommandFlags : ushort
     {
         None = 0,
         Sprint = 1 << 0,

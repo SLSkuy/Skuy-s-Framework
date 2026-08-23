@@ -93,19 +93,18 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 接收并校验一个客户端输入。该入口供传输层与集成测试共同使用。
         /// </summary>
-        public bool TryAcceptInput(uint clientId, global::NetSync.Player_Input input, uint serverTick)
+        public bool TryAcceptInput(uint clientId, global::NetSync.Player_Input input)
         {
             if (input == null || !_characters.TryGetValue(input.EntityId, out CharacterReplicationEntry entry))
                 return false;
             if (!entry.Identity.IsAuthority || entry.OwnerClientId == 0 || entry.OwnerClientId != clientId)
                 return false;
 
-            InputState state = NetSyncUtils.ToInputState(input);
+            InputState state = ProtoUtils.ToInputState(input);
             SyncConfig config = SyncConfig.Instance;
             if (!CharacterInputValidator.TrySanitize(ref state, config.maxInputVectorMagnitude)) return false;
 
-            return entry.Input.Enqueue(input.InputTick, serverTick,
-                (uint)config.maxPastInputTicks, (uint)config.maxFutureInputTicks, state);
+            return entry.Input.Enqueue(input.InputTick, state);
         }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace GamePlay.MultiPlaySystem
         {
             if (entry.PlayerController == null) return;
             InputState input = entry.PlayerController.SampleInput();
-            EntityInputCommand command = entry.Input.BuildPredictedCommand(tick, input);
+            EntityCommand command = entry.Input.BuildPredictedCommand(tick, input);
             entry.Simulation.Step(tick, deltaTime, command);
         }
 
@@ -157,7 +156,7 @@ namespace GamePlay.MultiPlaySystem
                 if (!entry.Identity.IsAuthority) continue;
                 EntitySimulationState state = entry.Presentation.CaptureState();
                 if (!state.IsFinite()) continue;
-                world.CharacterSnapshots.Add(NetSyncUtils.ToCharacterSnapshotMessage(
+                world.CharacterSnapshots.Add(ProtoUtils.ToCharacterSnapshotMessage(
                     state,
                     entry.Identity.NetworkObjectId,
                     entry.OwnerClientId,
@@ -176,7 +175,7 @@ namespace GamePlay.MultiPlaySystem
             if (world == null) return;
             foreach (global::NetSync.Character_Snapshot snapshot in world.CharacterSnapshots)
             {
-                EntitySimulationState state = NetSyncUtils.ToSimulationState(snapshot);
+                EntitySimulationState state = ProtoUtils.ToSimulationState(snapshot);
                 if (!state.IsFinite()) continue;
 
                 if (_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry existingEntry) &&
@@ -193,7 +192,6 @@ namespace GamePlay.MultiPlaySystem
                 entry.OwnerClientId = snapshot.OwnerClientId;
                 if (entry.Identity.IsPredict)
                 {
-                    entry.Prediction.SetSnapshotAnchor(snapshot.SnapshotTick);
                     ReconcilePredictedCharacter(entry, snapshot, state, GetTickDeltaTime());
                 }
                 else if (entry.Identity.IsReplica)
@@ -235,7 +233,7 @@ namespace GamePlay.MultiPlaySystem
 
         private static void SimulateAuthorityTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
         {
-            EntityInputCommand command = entry.Input.BuildAuthorityCommand(tick);
+            EntityCommand command = entry.Input.BuildAuthorityCommand(tick);
             entry.Simulation.Step(tick, deltaTime, command);
         }
 
@@ -247,7 +245,7 @@ namespace GamePlay.MultiPlaySystem
                 return;
             }
 
-            uint inputTick = entry.Prediction.AllocateInputTick(tick);
+            uint inputTick = entry.Prediction.AllocateInputTick();
             InputState input = entry.PlayerController.SampleInput();
             SyncConfig config = SyncConfig.Instance;
             if (!CharacterInputValidator.TrySanitize(ref input, config.maxInputVectorMagnitude))
@@ -255,7 +253,7 @@ namespace GamePlay.MultiPlaySystem
                 input = default;
             }
 
-            EntityInputCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
+            EntityCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
             entry.Prediction.History.Add(new EntityPredictionFrame
             {
@@ -265,7 +263,7 @@ namespace GamePlay.MultiPlaySystem
             });
 
             global::NetSync.Player_Input message =
-                NetSyncUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input);
+                ProtoUtils.ToPlayerInput(entry.Identity.EntityId, inputTick, input);
             if (_client.HasFastChannel) _client.Send(NetEvent.PLAYER_INPUT, message);
             else if (_client.IsRunning) _client.SendReliable(NetEvent.PLAYER_INPUT, message);
         }
@@ -361,7 +359,7 @@ namespace GamePlay.MultiPlaySystem
 
         private void HandlePlayerInput(uint clientId, global::NetSync.Player_Input input)
         {
-            TryAcceptInput(clientId, input, CurrentTick);
+            TryAcceptInput(clientId, input);
         }
 
         private void HandleWorldSnapshot(global::NetSync.World_Snapshot world)

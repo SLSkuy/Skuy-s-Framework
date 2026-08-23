@@ -8,7 +8,7 @@ namespace Utils
     /// <summary>
     /// 网络协议对象与游戏状态之间的转换。
     /// </summary>
-    public static class NetSyncUtils
+    public static class ProtoUtils
     {
         public static Vec2 ToProto(Vector2 value)
         {
@@ -78,12 +78,8 @@ namespace Utils
             };
         }
 
-        public static Character_Snapshot ToCharacterSnapshotMessage(
-            in EntitySimulationState state,
-            uint entityId,
-            uint ownerClientId,
-            uint snapshotTick,
-            uint lastProcessedInputTick)
+        public static Character_Snapshot ToCharacterSnapshotMessage(in EntitySimulationState state, 
+            uint entityId, uint ownerClientId, uint snapshotTick, uint lastProcessedInputTick)
         {
             return new Character_Snapshot
             {
