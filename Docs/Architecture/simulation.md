@@ -6,14 +6,14 @@ This document describes `Assets/Scripts/GamePlay/EntitySimulationCore/` and `Ass
 
 ## Responsibilities
 
-- **`EntitySimulationCore/`** is pure C# and defines commands, state, simulation contracts, and fixed-tick utilities. It has no `UnityEngine` dependency and is the base for server authority, client prediction, and remote interpolation.
-- **`NetworkSync/`** implements authority simulation, client prediction, remote interpolation, and snapshot synchronization on top of EntitySimulationCore and EntitySystem.
+- **`EntitySimulationCore/`** is C# and defines commands, state, simulation contracts, and fixed-tick utilities. It is the base for server authority, client prediction, and remote interpolation.
+- **`NetworkSync/`** implements an explicit character synchronization runtime: authority simulation, owner prediction, remote interpolation, and character snapshots. It does not discover arbitrary network capabilities at runtime.
 
 ## EntitySimulationCore
 
 ### Assembly
 
-`GamePlay.EntitySimulationCore.asmdef` is an independent assembly with no engine reference (`noEngineReferences: false` in the current snapshot); it is pure C#.
+`GamePlay.EntitySimulationCore.asmdef` is an independent assembly. It currently references Unity value types used by command and snapshot structs.
 
 ### Directory Structure
 
@@ -22,7 +22,8 @@ EntitySimulationCore/
 ├── GamePlay.EntitySimulationCore.asmdef
 ├── Contracts/
 ├── Commands/
-├── Simulation/
+├── Prediction/
+├── Snapshots/
 └── state-related types
 ```
 
@@ -30,6 +31,7 @@ EntitySimulationCore/
 
 - **`IEntitySimulation`** exposes `Step(uint tick, float deltaTime, in EntityInputCommand command)` for one fixed-tick simulation.
 - **`EntityInputCommand`** contains movement/aim input and held/pressed key state. `EntityInputCommandBuilder` builds it from `InputState` in EntitySystem.
+- **`EntityCommandQueue`**, **`EntityPredictionHistory`**, and **`SnapshotBuffer`** are reusable tick primitives. They do not encode a generic entity protocol.
 - **`EntitySimulation`** applies input, updates rotation/state, and resets tick flags.
 - **`EntitySimulationSystem`** registers local simulation entries, listens to `NetworkTimeSystem.Tick`, builds commands, and calls `Simulation.Step`.
 
@@ -39,10 +41,15 @@ EntitySimulationCore/
 NetworkSync/
 ├── Config/
 ├── Runtime/
-│   ├── EntityReplicationSystem.cs
-│   ├── EntitySimulationMode.cs
-│   └── Capabilities/
-└── Snapshot/
+│   ├── NetworkObjectIdentity.cs
+│   ├── CharacterReplicationSystem.cs
+│   ├── CharacterReplicationEntry.cs
+│   ├── CharacterInputBuffer.cs
+│   ├── CharacterPredictionController.cs
+│   ├── CharacterSnapshotInterpolator.cs
+│   ├── CharacterPresentationAdapter.cs
+│   └── EntitySimulationMode.cs
+└── TestSimulator/
 ```
 
 ### Simulation Modes
@@ -54,30 +61,50 @@ NetworkSync/
 - `Replica`: remote snapshot interpolation.
 - `LocalPlay`: local single-player simulation.
 
-### Orchestration and Capabilities
+### Character replication
 
-`EntityReplicationSystem` advances authority or owner prediction through `entry.Simulation.Step(...)`; prediction additionally records rollback state.
+`NetworkObjectIdentity` holds `networkObjectId`, `ownerClientId`, and `EntitySimulationMode`. It notifies `CharacterReplicationSystem` on init/enable/disable. It does not scan sibling components.
 
-Capabilities are role-specific synchronization components:
+`CharacterReplicationSystem` registers an explicit `CharacterReplicationEntry` per character. The entry binds:
 
-- `NetworkPredictionCapability`: `Predict`, requiring input command, simulation, and snapshot support.
-- `NetworkInterpolationCapability`: `Replica`, requiring transform and snapshot support.
-- `NetworkTransformCapability`: transform synchronization.
+- `NetworkObjectIdentity`
+- `EntitySimulationObject`
+- `PlayerController` or `AIController`
+- `CharacterPresentationAdapter`
+- input buffer, prediction history, and interpolation buffer
 
-`SnapshotInterpolator` stores server snapshots and samples interpolated `EntitySimulationState` for remote replicas.
+Call chain:
+
+```text
+NetworkObjectIdentity
+  -> CharacterReplicationSystem.Register(character)
+
+NetworkTimeSystem.Tick
+  -> CharacterReplicationSystem.AdvanceTick(tick, deltaTime)
+      -> authority input queue -> EntitySimulation.Step
+      -> local input source -> EntitySimulation.Step + prediction history
+```
+
+The protocol uses `Player_Input`, `Character_Snapshot`, and `World_Snapshot` from `net_sync.proto`. `World_Snapshot` is a batch of character snapshots, not a generic channel container.
+
+### Unity simulation assumption
+
+Movement currently uses Unity `CharacterController`, `Transform`, and Unity value types. A future non-Unity dedicated server or strict cross-platform deterministic simulation will require a pure movement solver and collision abstraction. That work is outside the current character-sync prototype.
 
 ## Dependency Direction
 
 ```text
-EntitySimulationCore (pure C#, no UnityEngine)
+EntitySimulationCore (commands, history, snapshot buffer)
         ↑
-NetworkSync (EntitySimulationCore + EntitySystem)
+EntitySystem (Unity character host and movement)
+        ↑
+NetworkSync (character replication runtime)
         ↑
 Network (transport layer; see networking.md)
 ```
 
-EntitySimulationCore has no upper-layer dependency. NetworkSync depends on EntitySimulationCore and EntitySystem, but does not directly depend on Network transport; it consumes messages after Network receives them.
+EntitySimulationCore has no gameplay-host dependency. NetworkSync depends on EntitySimulationCore and EntitySystem. It consumes Network messages after the transport layer receives them.
 
 ## Design Principle
 
-Prefer “fail initialization loudly, expose the lifecycle error, then fix it” over self-healing. Keep the simulation core pure C# so server, client, and tests can reuse it; keep Unity glue in EntitySystem. See [AGENTS.md](../../AGENTS.md).
+Prefer “fail initialization loudly, expose the lifecycle error, then fix it” over self-healing. Keep tick/queue/snapshot primitives reusable; keep character synchronization explicit and game-specific. See [AGENTS.md](../../AGENTS.md).

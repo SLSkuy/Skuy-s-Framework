@@ -17,7 +17,7 @@ namespace GamePlay.NetSync
 
         private readonly Dictionary<uint, GameObject> _players = new();
         private readonly NetClient _netClient;
-        private EntityReplicationSystem _replicationSystem;
+        private CharacterReplicationSystem _replicationSystem;
         private GameObject _playerPrefab;
         private bool _joinRequested;
 
@@ -38,7 +38,7 @@ namespace GamePlay.NetSync
             _playerPrefab = Resources.Load<GameObject>(PlayerPrefabPath);
             if (_playerPrefab == null) throw new InvalidOperationException($"缺少 Resources Prefab：{PlayerPrefabPath}");
 
-            _replicationSystem = Global.Get<EntityReplicationSystem>();
+            _replicationSystem = Global.Get<CharacterReplicationSystem>();
             _replicationSystem?.SetClientEntityFactory(SpawnPlayer);
             _netClient.RegNetHandler<global::NetSync.Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleJoinResponse);
             IsRunning = true;

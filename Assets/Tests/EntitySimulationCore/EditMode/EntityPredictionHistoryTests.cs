@@ -37,5 +37,23 @@ namespace GamePlay.EntitySystem.Tests
             Assert.That(history.Count, Is.EqualTo(1));
             Assert.That(history.LatestTick, Is.EqualTo(7));
         }
+
+        [Test]
+        public void ConfirmationBoundaryKeepsOnlyUnconfirmedReplay()
+        {
+            EntityPredictionHistory history = new(8);
+            history.Add(new EntityPredictionFrame { Tick = 10 });
+            history.Add(new EntityPredictionFrame { Tick = 11 });
+            history.Add(new EntityPredictionFrame { Tick = 12 });
+
+            List<EntityPredictionFrame> replay = new();
+            history.CopyAfter(10, replay);
+            history.RemoveThrough(10);
+
+            Assert.That(replay.Count, Is.EqualTo(2));
+            Assert.That(replay[0].Tick, Is.EqualTo(11));
+            Assert.That(history.Count, Is.EqualTo(2));
+            Assert.That(history.TryGet(10, out _), Is.False);
+        }
     }
 }

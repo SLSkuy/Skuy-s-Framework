@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Core;
 using Events;
 using Framework;
 using GamePlay.EntitySystem;
@@ -11,35 +10,11 @@ using Utils;
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// 网络实体复制系统：编排已激活能力的输入、模拟、快照、预测和插值流程。
+    /// 角色同步子系统：显式注册角色并编排输入、权威模拟、预测和插值。
     /// </summary>
-    public sealed class EntityReplicationSystem : SubSystemBase
+    public sealed class CharacterReplicationSystem : SubSystemBase
     {
-        private sealed class EntityEntry
-        {
-            public NetworkObjectIdentity Identity;
-            public NetworkTransformCapability Transform;
-            public NetworkInputCapability Input;
-            public NetworkSimulationCapability Simulation;
-            public NetworkSnapshotCapability Snapshot;
-            public NetworkPredictionCapability Prediction;
-            public NetworkInterpolationCapability Interpolation;
-            public uint OwnerClientId;
-            public uint LastAppliedSnapshotTick;
-
-            public bool RefreshCapabilities()
-            {
-                Identity.TryGetCapability(out Transform);
-                Identity.TryGetCapability(out Input);
-                Identity.TryGetCapability(out Simulation);
-                Identity.TryGetCapability(out Snapshot);
-                Identity.TryGetCapability(out Prediction);
-                Identity.TryGetCapability(out Interpolation);
-                return Transform != null && Snapshot != null;
-            }
-        }
-
-        private readonly Dictionary<uint, EntityEntry> _entities = new();
+        private readonly Dictionary<uint, CharacterReplicationEntry> _characters = new();
         private NetworkTimeSystem _networkTime;
         private NetClient _client;
         private NetServer _server;
@@ -48,21 +23,19 @@ namespace GamePlay.NetSync
         private bool _clientHandlerBound;
         private bool _serverHandlerBound;
 
-        #region 属性
-
+        #region Properties
         public override SubSystemPriority Priority => SubSystemPriority.NetSyncManager;
         public uint CurrentTick => _networkTime?.CurrentTick ?? 0;
-        public int RegisteredEntityCount => _entities.Count;
-
+        public int RegisteredEntityCount => _characters.Count;
         #endregion
 
         /// <summary>
-        /// 注册网络对象及其所有者。
+        /// 注册角色及其所有者。
         /// </summary>
         public bool Register(NetworkObjectIdentity identity, uint ownerClientId = 0)
         {
             if (identity == null || identity.EntityId == 0) return false;
-            if (_entities.TryGetValue(identity.EntityId, out EntityEntry existingEntry))
+            if (_characters.TryGetValue(identity.EntityId, out CharacterReplicationEntry existingEntry))
             {
                 if (existingEntry.Identity != identity)
                 {
@@ -72,21 +45,16 @@ namespace GamePlay.NetSync
                 }
 
                 existingEntry.OwnerClientId = ownerClientId;
-                return existingEntry.RefreshCapabilities();
+                existingEntry.ApplyRole(identity.Role);
+                return true;
             }
 
-            EntityEntry entry = new()
-            {
-                Identity = identity,
-                OwnerClientId = ownerClientId
-            };
-            if (!entry.RefreshCapabilities())
-            {
-                Debug.LogError($"网络对象 {identity.name} 缺少 Transform 或 Snapshot 能力，无法注册复制系统。");
-                return false;
-            }
+            CharacterReplicationEntry entry = new();
+            if (!entry.TryBind(identity)) return false;
 
-            _entities.Add(identity.EntityId, entry);
+            entry.OwnerClientId = ownerClientId;
+            entry.ApplyRole(identity.Role);
+            _characters.Add(identity.EntityId, entry);
             return true;
         }
 
@@ -95,8 +63,13 @@ namespace GamePlay.NetSync
         /// </summary>
         public void Unregister(uint entityId, NetworkObjectIdentity identity)
         {
-            if (!_entities.TryGetValue(entityId, out EntityEntry entry) || entry.Identity != identity) return;
-            _entities.Remove(entityId);
+            if (!_characters.TryGetValue(entityId, out CharacterReplicationEntry entry) ||
+                entry.Identity != identity)
+            {
+                return;
+            }
+
+            _characters.Remove(entityId);
         }
 
         /// <summary>
@@ -112,78 +85,65 @@ namespace GamePlay.NetSync
         /// </summary>
         public bool TryAcceptInput(uint clientId, global::NetSync.Player_Input input, uint serverTick)
         {
-            if (input == null || !_entities.TryGetValue(input.EntityId, out EntityEntry entry)) return false;
-            if (!entry.Identity.IsAuthority || entry.OwnerClientId != clientId ||
-                entry.Input == null || !entry.Input.IsActive ||
-                entry.Simulation == null || !entry.Simulation.IsActive)
-            {
+            if (input == null || !_characters.TryGetValue(input.EntityId, out CharacterReplicationEntry entry))
                 return false;
-            }
+            if (!entry.Identity.IsAuthority || entry.OwnerClientId == 0 || entry.OwnerClientId != clientId)
+                return false;
 
-            SyncConfig config = SyncConfig.Instance;
             InputState state = NetSyncUtils.ToInputState(input);
-            if (!IsFinite(state.MoveInput) || !IsFinite(state.AimInput)) return false;
-            float maxMagnitudeSquared = config.maxInputVectorMagnitude * config.maxInputVectorMagnitude;
-            if (state.MoveInput.sqrMagnitude > maxMagnitudeSquared || state.AimInput.sqrMagnitude > maxMagnitudeSquared)
-                return false;
+            SyncConfig config = SyncConfig.Instance;
+            if (!CharacterInputValidator.IsValid(state, config.maxInputVectorMagnitude)) return false;
 
             return entry.Input.Enqueue(input.InputTick, serverTick,
                 (uint)config.maxPastInputTicks, (uint)config.maxFutureInputTicks, state);
         }
 
         /// <summary>
-        /// 推进所有当前启用的权威模拟或预测能力。
+        /// 推进所有权威角色与本地预测角色的固定 Tick。
         /// </summary>
-        public void AdvanceSimulation(uint tick, float deltaTime)
+        public void AdvanceTick(uint tick, float deltaTime)
         {
-            foreach (EntityEntry entry in _entities.Values)
+            foreach (CharacterReplicationEntry entry in _characters.Values)
             {
-                if (entry.Simulation == null || !entry.Simulation.IsActive) continue;
-                if (entry.Prediction != null && entry.Prediction.IsActive)
-                {
-                    PredictOwnedTick(entry, tick, deltaTime);
-                }
-                else if (entry.Identity.IsAuthority && entry.Input != null && entry.Input.IsActive)
-                {
-                    SimulateAuthorityTick(entry, tick, deltaTime);
-                }
+                if (entry.Identity.IsPredict) PredictOwnedTick(entry, tick, deltaTime);
+                else if (entry.Identity.IsAuthority) SimulateAuthorityTick(entry, tick, deltaTime);
             }
         }
 
         /// <summary>
-        /// 捕获当前权威世界快照。只有启用 Snapshot 与 Transform 的对象参与。
+        /// 捕获当前权威世界快照。
         /// </summary>
         public global::NetSync.World_Snapshot CreateWorldSnapshot(uint tick)
         {
             global::NetSync.World_Snapshot world = new() { SnapshotTick = tick };
-            foreach (EntityEntry entry in _entities.Values)
+            foreach (CharacterReplicationEntry entry in _characters.Values)
             {
-                if (!entry.Identity.IsAuthority || !entry.Transform.IsActive || !entry.Snapshot.IsActive) continue;
-                EntitySimulationState state = entry.Transform.CaptureState();
+                if (!entry.Identity.IsAuthority) continue;
+                EntitySimulationState state = entry.Presentation.CaptureState();
                 if (!state.IsFinite()) continue;
-                world.TransformSnapshots.Add(NetSyncUtils.ToTransformSnapshotMessage(
+                world.CharacterSnapshots.Add(NetSyncUtils.ToCharacterSnapshotMessage(
                     state,
                     entry.Identity.NetworkObjectId,
                     entry.OwnerClientId,
                     tick,
-                    entry.Input?.LastProcessedTick ?? 0));
+                    entry.Input.LastProcessedTick));
             }
 
             return world;
         }
 
         /// <summary>
-        /// 应用权威世界快照，并依据 Owner 元数据选择 Predict 或 Replica 能力矩阵。
+        /// 应用权威世界快照，并依据 Owner 元数据选择 Predict 或 Replica。
         /// </summary>
         public void ApplyWorldSnapshot(global::NetSync.World_Snapshot world, uint localClientId)
         {
             if (world == null) return;
-            foreach (global::NetSync.Transform_Snapshot snapshot in world.TransformSnapshots)
+            foreach (global::NetSync.Character_Snapshot snapshot in world.CharacterSnapshots)
             {
                 EntitySimulationState state = NetSyncUtils.ToSimulationState(snapshot);
                 if (!state.IsFinite()) continue;
 
-                if (_entities.TryGetValue(snapshot.EntityId, out EntityEntry existingEntry) &&
+                if (_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry existingEntry) &&
                     snapshot.SnapshotTick <= existingEntry.LastAppliedSnapshotTick)
                 {
                     continue;
@@ -191,20 +151,20 @@ namespace GamePlay.NetSync
 
                 bool isOwned = snapshot.OwnerClientId != 0 && snapshot.OwnerClientId == localClientId;
                 EntitySimulationMode expectedRole = isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica;
-                EntityEntry entry = ResolveSnapshotEntry(snapshot, expectedRole, isOwned);
+                CharacterReplicationEntry entry = ResolveSnapshotEntry(snapshot, expectedRole, isOwned);
                 if (entry == null) continue;
 
                 entry.OwnerClientId = snapshot.OwnerClientId;
-                entry.Prediction?.SetSnapshotAnchor(snapshot.SnapshotTick);
-                if (entry.Prediction != null && entry.Prediction.IsActive)
+                if (entry.Identity.IsPredict)
                 {
-                    ReconcilePredictedEntity(entry, snapshot, state, GetTickDeltaTime());
+                    entry.Prediction.SetSnapshotAnchor(snapshot.SnapshotTick);
+                    ReconcilePredictedCharacter(entry, snapshot, state, GetTickDeltaTime());
                 }
-                else if (entry.Interpolation != null && entry.Interpolation.IsActive)
+                else if (entry.Identity.IsReplica)
                 {
                     if (entry.Interpolation.AddSnapshot(snapshot.SnapshotTick, state))
                     {
-                        entry.Transform.ApplyState(state);
+                        entry.Presentation.ApplyState(state);
                     }
                 }
 
@@ -212,47 +172,47 @@ namespace GamePlay.NetSync
             }
         }
 
-        private EntityEntry ResolveSnapshotEntry(global::NetSync.Transform_Snapshot snapshot,
+        private CharacterReplicationEntry ResolveSnapshotEntry(global::NetSync.Character_Snapshot snapshot,
             EntitySimulationMode expectedRole, bool isOwned)
         {
-            if (!_entities.TryGetValue(snapshot.EntityId, out EntityEntry entry))
+            if (!_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry entry))
             {
                 NetworkObjectIdentity identity =
                     _clientEntityFactory?.Invoke(snapshot.EntityId, snapshot.OwnerClientId, isOwned);
                 if (identity == null) return null;
                 identity.ApplyNetworkMetadata(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
-                if (!_entities.TryGetValue(snapshot.EntityId, out entry) &&
+                if (!_characters.TryGetValue(snapshot.EntityId, out entry) &&
                     !Register(identity, snapshot.OwnerClientId))
                 {
                     return null;
                 }
-                entry = _entities[snapshot.EntityId];
+
+                entry = _characters[snapshot.EntityId];
             }
             else
             {
                 entry.Identity.ApplyNetworkMetadata(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
-                entry.RefreshCapabilities();
             }
 
             return entry;
         }
 
-        private static void SimulateAuthorityTick(EntityEntry entry, uint tick, float deltaTime)
+        private static void SimulateAuthorityTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
         {
             EntityInputCommand command = entry.Input.BuildAuthorityCommand(tick);
             entry.Simulation.Step(tick, deltaTime, command);
         }
 
-        private void PredictOwnedTick(EntityEntry entry, uint tick, float deltaTime)
+        private void PredictOwnedTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
         {
-            if (_client == null || entry.OwnerClientId != _client.ClientId ||
-                entry.Input == null || !entry.Input.IsActive)
+            if (_client == null || entry.OwnerClientId != _client.ClientId || entry.PlayerController == null)
             {
                 return;
             }
 
             uint inputTick = entry.Prediction.AllocateInputTick(tick);
-            EntityInputCommand command = entry.Input.BuildPredictedCommand(inputTick, out InputState input);
+            InputState input = entry.PlayerController.SampleInput();
+            EntityInputCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
             entry.Prediction.History.Add(new EntityPredictionFrame
             {
@@ -267,20 +227,21 @@ namespace GamePlay.NetSync
             }
         }
 
-        private static void ReconcilePredictedEntity(EntityEntry entry,
-            global::NetSync.Transform_Snapshot snapshot,
+        private static void ReconcilePredictedCharacter(CharacterReplicationEntry entry,
+            global::NetSync.Character_Snapshot snapshot,
             in EntitySimulationState authoritativeState,
             float tickDeltaTime)
         {
-            NetworkPredictionCapability prediction = entry.Prediction;
+            CharacterPredictionController prediction = entry.Prediction;
             uint confirmedTick = snapshot.LastProcessedInputTick;
             if (confirmedTick == 0)
             {
                 if (prediction.History.Count == 0)
                 {
                     ApplyCorrectedTransform(entry, authoritativeState,
-                        ShouldSmoothCorrection(entry.Transform.CaptureState(), authoritativeState));
+                        ShouldSmoothCorrection(entry.Presentation.CaptureState(), authoritativeState));
                 }
+
                 return;
             }
 
@@ -288,7 +249,7 @@ namespace GamePlay.NetSync
             if (!prediction.History.TryGet(confirmedTick, out EntityPredictionFrame confirmedFrame))
             {
                 ApplyCorrectedTransform(entry, authoritativeState,
-                    ShouldSmoothCorrection(entry.Transform.CaptureState(), authoritativeState));
+                    ShouldSmoothCorrection(entry.Presentation.CaptureState(), authoritativeState));
                 prediction.History.Clear();
                 prediction.AdvanceAfter(confirmedTick);
                 return;
@@ -309,7 +270,7 @@ namespace GamePlay.NetSync
 
             bool smoothCorrection = positionError < config.positionSnapThreshold &&
                 rotationError < config.rotationSnapThresholdDegrees;
-            entry.Transform.BeginPredictionCorrection();
+            entry.Presentation.BeginPredictionCorrection();
 
             EntityRollbackState rollbackState = confirmedFrame.State;
             rollbackState.TransformState = authoritativeState;
@@ -324,16 +285,16 @@ namespace GamePlay.NetSync
                 prediction.History.Add(frame);
             }
 
-            entry.Transform.EndPredictionCorrection(smoothCorrection);
+            entry.Presentation.EndPredictionCorrection(smoothCorrection);
             prediction.History.RemoveThrough(confirmedTick);
         }
 
-        private static void ApplyCorrectedTransform(EntityEntry entry,
+        private static void ApplyCorrectedTransform(CharacterReplicationEntry entry,
             in EntitySimulationState authoritativeState, bool smoothCorrection)
         {
-            entry.Transform.BeginPredictionCorrection();
-            entry.Transform.ApplyState(authoritativeState);
-            entry.Transform.EndPredictionCorrection(smoothCorrection);
+            entry.Presentation.BeginPredictionCorrection();
+            entry.Presentation.ApplyState(authoritativeState);
+            entry.Presentation.EndPredictionCorrection(smoothCorrection);
         }
 
         private static bool ShouldSmoothCorrection(in EntitySimulationState currentState,
@@ -347,11 +308,11 @@ namespace GamePlay.NetSync
 
         private void UpdateReplicaInterpolation(float deltaTime)
         {
-            foreach (EntityEntry entry in _entities.Values)
+            foreach (CharacterReplicationEntry entry in _characters.Values)
             {
-                if (entry.Interpolation == null || !entry.Interpolation.IsActive) continue;
+                if (!entry.Identity.IsReplica) continue;
                 if (!entry.Interpolation.TrySample(deltaTime, out EntitySimulationState state)) continue;
-                entry.Transform.ApplyState(state);
+                entry.Presentation.ApplyState(state);
             }
         }
 
@@ -367,7 +328,7 @@ namespace GamePlay.NetSync
 
         private void SimulateTick(uint tick, float deltaTime)
         {
-            AdvanceSimulation(tick, deltaTime);
+            AdvanceTick(tick, deltaTime);
 
             _snapshotAccumulator += SyncConfig.Instance.snapshotTickRate;
             if (_snapshotAccumulator < SyncConfig.Instance.simulationTickRate) return;
@@ -385,11 +346,6 @@ namespace GamePlay.NetSync
         {
             return SyncConfig.Instance.simulationTickRate > 0 ?
                 1f / SyncConfig.Instance.simulationTickRate : 0f;
-        }
-
-        private static bool IsFinite(Vector2 value)
-        {
-            return float.IsFinite(value.x) && float.IsFinite(value.y);
         }
 
         private void BindNetworkHandlers()
@@ -417,7 +373,7 @@ namespace GamePlay.NetSync
             }
         }
 
-        #region 子系统生命周期
+        #region Subsystem Lifecycle
 
         public override void Init()
         {
@@ -438,7 +394,7 @@ namespace GamePlay.NetSync
             if (_clientHandlerBound) _client?.UnRegNetHandler(NetEvent.WORLD_SNAPSHOT);
             if (_serverHandlerBound) _server?.UnRegNetHandler(NetEvent.PLAYER_INPUT);
 
-            _entities.Clear();
+            _characters.Clear();
             _clientEntityFactory = null;
         }
 

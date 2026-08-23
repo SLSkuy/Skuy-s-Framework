@@ -63,7 +63,7 @@ namespace Core
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
             SystemMgr.RegisterSystem<NetworkTimeSystem>();
             EntitySimulationMgr = SystemMgr.RegisterSystem<EntitySimulationSystem>();
-            SystemMgr.RegisterSystem<EntityReplicationSystem>();
+            SystemMgr.RegisterSystem<CharacterReplicationSystem>();
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();

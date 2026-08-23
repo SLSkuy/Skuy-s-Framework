@@ -15,9 +15,12 @@ namespace GamePlay.NetSync
     {
         private const string PlayerPrefabPath = "NetPlayer";
 
+        private const uint ServerDrivenEntityId = 10001;
+
         private readonly Dictionary<uint, GameObject> _players = new();
         private readonly NetServer _netServer;
         private GameObject _playerPrefab;
+        private GameObject _serverDrivenCharacter;
 
         #region 属性
         public bool IsRunning { get; private set; }
@@ -37,6 +40,7 @@ namespace GamePlay.NetSync
 
             _netServer.RegNetHandler<global::NetSync.Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleJoinRequest);
             _netServer.OnClientRemoved += HandleClientRemoved;
+            SpawnServerDrivenCharacter();
             IsRunning = true;
         }
 
@@ -54,6 +58,8 @@ namespace GamePlay.NetSync
                 if (player != null) UnityEngine.Object.Destroy(player);
             }
             _players.Clear();
+            if (_serverDrivenCharacter != null) UnityEngine.Object.Destroy(_serverDrivenCharacter);
+            _serverDrivenCharacter = null;
             IsRunning = false;
         }
 
@@ -79,6 +85,23 @@ namespace GamePlay.NetSync
             }
             identity.Init(clientId, EntitySimulationMode.Authority, clientId);
             _players.Add(clientId, instance);
+        }
+
+        private void SpawnServerDrivenCharacter()
+        {
+            GameObject instance = UnityEngine.Object.Instantiate(
+                _playerPrefab,
+                new Vector3(0f, 1f, 4f),
+                Quaternion.identity);
+            instance.name = "ServerDrivenCharacter";
+            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
+            if (identity == null)
+            {
+                throw new InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
+            }
+
+            identity.Init(ServerDrivenEntityId, EntitySimulationMode.Authority, 0);
+            _serverDrivenCharacter = instance;
         }
 
         private void HandleClientRemoved(uint clientId)

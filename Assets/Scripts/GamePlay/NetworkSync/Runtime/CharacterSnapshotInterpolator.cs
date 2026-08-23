@@ -5,55 +5,66 @@ using UnityEngine;
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// 远端实体服务端时间插值器，只负责 Position/Rotation 表现采样。
+    /// 远端角色快照缓冲、传送检测与插值采样。
     /// </summary>
-    public sealed class SnapshotInterpolator
+    public sealed class CharacterSnapshotInterpolator
     {
-        private readonly SnapshotBuffer<TransformSnapshot> _snapshots;
+        private readonly SnapshotBuffer<CharacterSnapshot> _snapshots;
         private readonly double _tickInterval;
         private readonly int _interpolationDelayTicks;
-        private double _renderServerTime;
-        private bool _hasRenderTime;
+        private EntitySimulationState _lastIncomingState;
         private EntitySimulationState _lastState;
+        private double _renderServerTime;
+        private bool _hasIncomingState;
+        private bool _hasRenderTime;
         private bool _hasLastState;
 
-        #region 属性
+        #region Properties
         public int BufferedSnapshotCount => _snapshots.Count;
-        public uint OldestTick => _snapshots.OldestTick;
-        public uint LatestTick => _snapshots.LatestTick;
         #endregion
 
-        public SnapshotInterpolator(int simulationTickRate, int interpolationDelayTicks, int bufferCapacity)
+        public CharacterSnapshotInterpolator(int simulationTickRate, int interpolationDelayTicks, int bufferCapacity)
         {
             _tickInterval = 1d / Mathf.Max(1, simulationTickRate);
             _interpolationDelayTicks = Mathf.Max(1, interpolationDelayTicks);
-            _snapshots = new SnapshotBuffer<TransformSnapshot>(Mathf.Max(2, bufferCapacity));
+            _snapshots = new SnapshotBuffer<CharacterSnapshot>(Mathf.Max(2, bufferCapacity));
         }
 
         /// <summary>
-        /// 添加服务端快照。乱序和重复快照由 SnapshotBuffer 处理。
+        /// 添加远端快照；首帧或大距离传送返回 true，调用方应立即 Snap。
         /// </summary>
-        public void Add(uint snapshotTick, in EntitySimulationState state)
+        public bool AddSnapshot(uint snapshotTick, in EntitySimulationState state)
         {
-            if (!state.IsFinite()) return;
+            if (!state.IsFinite()) return false;
 
-            TransformSnapshot snapshot = new()
+            SyncConfig config = SyncConfig.Instance;
+            bool requiresSnap = !_hasIncomingState ||
+                Vector3.Distance(_lastIncomingState.Position, state.Position) >= config.positionSnapThreshold ||
+                Quaternion.Angle(_lastIncomingState.Rotation, state.Rotation) >=
+                config.rotationSnapThresholdDegrees;
+            if (requiresSnap) Reset();
+
+            _snapshots.Add(new CharacterSnapshot
             {
                 SnapshotTick = snapshotTick,
                 State = state
-            };
-            _snapshots.Add(snapshot);
+            });
+            _lastIncomingState = state;
+            _hasIncomingState = true;
 
-            if (_hasRenderTime) return;
+            if (!_hasRenderTime)
+            {
+                _renderServerTime = snapshotTick * _tickInterval;
+                _lastState = state;
+                _hasLastState = true;
+                _hasRenderTime = true;
+            }
 
-            _renderServerTime = snapshotTick * _tickInterval;
-            _lastState = state;
-            _hasLastState = true;
-            _hasRenderTime = true;
+            return requiresSnap;
         }
 
         /// <summary>
-        /// 推进渲染服务端时间并采样当前 Transform。
+        /// 推进远端渲染时间并采样角色姿态。
         /// </summary>
         public bool TrySample(float deltaTime, out EntitySimulationState state)
         {
@@ -68,7 +79,7 @@ namespace GamePlay.NetSync
             _renderServerTime = Math.Min(_renderServerTime + Mathf.Max(0f, deltaTime), targetRenderTime);
 
             if (!_snapshots.TrySample(_renderServerTime, _tickInterval,
-                    out TransformSnapshot from, out TransformSnapshot to, out float t))
+                    out CharacterSnapshot from, out CharacterSnapshot to, out float t))
                 return true;
 
             EntitySimulationState fromState = from.State;
@@ -78,7 +89,9 @@ namespace GamePlay.NetSync
                 Position = Vector3.Lerp(fromState.Position, toState.Position, t),
                 Rotation = Quaternion.Slerp(fromState.Rotation, toState.Rotation, t),
                 LinearVelocity = Vector3.Lerp(fromState.LinearVelocity, toState.LinearVelocity, t),
-                AngularVelocity = Vector3.Lerp(fromState.AngularVelocity, toState.AngularVelocity, t)
+                AngularVelocity = Vector3.Lerp(fromState.AngularVelocity, toState.AngularVelocity, t),
+                LocomotionState = t >= 0.5f ? toState.LocomotionState : fromState.LocomotionState,
+                IsGrounded = t >= 0.5f ? toState.IsGrounded : fromState.IsGrounded
             };
             state = _lastState;
             return true;
@@ -91,7 +104,9 @@ namespace GamePlay.NetSync
         {
             _snapshots.Clear();
             _renderServerTime = 0d;
+            _lastIncomingState = default;
             _lastState = default;
+            _hasIncomingState = false;
             _hasRenderTime = false;
             _hasLastState = false;
         }

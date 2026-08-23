@@ -8,6 +8,7 @@ This directory contains module and feature design documents. Normative rules liv
 Docs/
 ├── README.md
 ├── Plan/                 # Feature designs and implementation plans
+├── Archive/              # Completed historical plans
 └── Architecture/        # Module architecture documents
     ├── framework.md
     ├── entity.md
@@ -26,7 +27,11 @@ Docs/
 
 ## Feature Plans
 
-Feature designs and implementation plans live under `Docs/Plan/<Feature>/`. Documents use direct feature/purpose names without numeric prefixes. Module facts remain under `Docs/Architecture/`. See [`.agents/rules/Documentation.md`](../.agents/rules/Documentation.md) for layout and document levels.
+Feature designs and implementation plans live under `Docs/Plan/<Feature>/`. Documents use direct feature/purpose names without numeric prefixes. See the [feature plan index](Plan/README.md) for active plans and workflow status. Module facts remain under `Docs/Architecture/`. See [`.agents/rules/Documentation.md`](../.agents/rules/Documentation.md) for layout and document levels.
+
+## Archived Plans
+
+Completed plans explicitly archived by the user live under `Docs/Archive/<YYYY-MM-DD>-<Feature>/`. They remain searchable historical evidence but are not active `apply` inputs. See the [archive index](Archive/README.md).
 
 ## Note
 

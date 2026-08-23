@@ -86,6 +86,8 @@ When a change adds a subsystem, crosses module boundaries, adds a protocol, or r
 
 **Architecture synchronization:** when adding a top-level module directory or an independent `.asmdef` module, create its module document under `Docs/Architecture/` (responsibility, structure, core abstractions, dependency direction) and update [Docs/README.md](Docs/README.md). For substantial changes to an existing module's responsibility, core abstractions, or dependency direction, update its architecture document.
 
+**Plan synchronization:** design and task documents are live implementation records. During implementation, keep task progress, design facts, confirmation status, and the matching entry in `Docs/Plan/README.md` synchronized. Update factual implementation drift in place; return to planning before changing the approved technical direction. Completed plans remain active until the user explicitly requests archival; archive the complete feature folder under `Docs/Archive/` and update both indexes.
+
 ## 7. Rule Index
 
 | Topic | File |
@@ -94,4 +96,4 @@ When a change adds a subsystem, crosses module boundaries, adds a protocol, or r
 | C# style, member order, regions | [`.agents/rules/CodingStyle.md`](.agents/rules/CodingStyle.md) |
 | Documentation layout and self-contained requirements | [`.agents/rules/Documentation.md`](.agents/rules/Documentation.md) |
 
-Feature design documents live under `Docs/Plan/` (see [Docs/README.md](Docs/README.md)). Module architecture documents live under `Docs/Architecture/` (`framework`, `entity`, `simulation`, `networking`). Plan documents use direct feature/purpose names without numeric prefixes.
+Active feature design documents live under `Docs/Plan/`, archived plans under `Docs/Archive/`, and module architecture documents under `Docs/Architecture/` (see [Docs/README.md](Docs/README.md)). Plan documents use direct feature/purpose names without numeric prefixes.

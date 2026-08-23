@@ -6,15 +6,15 @@ namespace GamePlay.EntitySystem.Tests
     public class EntityCommandQueueTests
     {
         [Test]
-        public void RejectsDuplicateAndAlreadyProcessedTicks()
+        public void ReplacesDuplicateTicksAndRejectsAlreadyProcessedTicks()
         {
             EntityCommandQueue<int> queue = new(4);
 
             Assert.That(queue.Enqueue(2, 2, 2, 2, 20), Is.True);
-            Assert.That(queue.Enqueue(2, 2, 2, 2, 21), Is.False);
+            Assert.That(queue.Enqueue(2, 2, 2, 2, 21), Is.True);
             Assert.That(queue.TryDequeueExecutable(2, out uint tick, out int value), Is.True);
             Assert.That(tick, Is.EqualTo(2));
-            Assert.That(value, Is.EqualTo(20));
+            Assert.That(value, Is.EqualTo(21));
             Assert.That(queue.Enqueue(1, 2, 2, 2, 10), Is.False);
         }
 
@@ -48,6 +48,15 @@ namespace GamePlay.EntitySystem.Tests
 
             Assert.That(queue.Enqueue(0, 10, 2, 2, 0), Is.False);
             Assert.That(queue.Enqueue(13, 10, 2, 2, 13), Is.False);
+        }
+
+        [Test]
+        public void MissingCommandDoesNotAdvanceLastProcessedTick()
+        {
+            EntityCommandQueue<int> queue = new(4);
+
+            Assert.That(queue.TryDequeueExecutable(1, out _, out _), Is.False);
+            Assert.That(queue.LastProcessedTick, Is.EqualTo(0));
         }
     }
 }

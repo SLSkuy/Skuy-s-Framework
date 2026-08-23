@@ -26,7 +26,13 @@ namespace GamePlay.NetSync
         {
             long tickDistance = (long)tick - currentTick;
             if (tickDistance < -maxPastTicks || tickDistance > maxFutureTicks) return false;
-            if (tick <= LastProcessedTick || _commands.ContainsKey(tick)) return false;
+            if (tick <= LastProcessedTick) return false;
+            if (_commands.ContainsKey(tick))
+            {
+                _commands[tick] = command;
+                return true;
+            }
+
             if (_commands.Count >= _capacity) return false;
             _commands.Add(tick, command);
             return true;

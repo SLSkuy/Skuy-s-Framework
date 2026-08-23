@@ -6,7 +6,7 @@ This document describes `Assets/Scripts/Network/`. It is a module reference; beh
 
 ## Responsibility
 
-Network provides transport-independent client/server entry points, transport abstractions (KCP/TCP), message serialization, and dispatch. It is exposed as `SubSystemBase` services through `Global`. Network handles byte transport and message dispatch; gameplay synchronization belongs to `GamePlay/NetworkSync/` (see [simulation.md](simulation.md)).
+Network provides transport-independent client/server entry points, transport abstractions (KCP/TCP), message serialization, and dispatch. It is exposed as `SubSystemBase` services through `Global`. Network handles byte transport and message dispatch; gameplay synchronization belongs to `GamePlay/NetworkSync/` as character replication (see [simulation.md](simulation.md)).
 
 ## Directory Structure
 

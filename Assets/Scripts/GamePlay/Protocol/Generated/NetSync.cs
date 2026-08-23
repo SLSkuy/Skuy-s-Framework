@@ -34,17 +34,18 @@ namespace NetSync {
             "ZWNpYWxfYXR0YWNrX3ByZXNzZWQYBiABKAgSIQoZaXNfc3BlY2lhbF9hY3Rp",
             "b25fcHJlc3NlZBgHIAEoCBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAggASgI",
             "EhkKEWlzX3NwcmludF9wcmVzc2VkGAkgASgIEhcKD2lzX2p1bXBfcHJlc3Nl",
-            "ZBgKIAEoCBIeChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAsgASgIIogCChJU",
-            "cmFuc2Zvcm1fU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SFAoMc25hcHNo",
+            "ZBgKIAEoCBIeChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAsgASgIIrcCChJD",
+            "aGFyYWN0ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SFAoMc25hcHNo",
             "b3RUaWNrGAIgASgNEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sYAyABKA0S",
             "HwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
             "BSABKAsyDS5OZXRTeW5jLlF1YXQSJgoPbGluZWFyX3ZlbG9jaXR5GAYgASgL",
             "Mg0uTmV0U3luYy5WZWMzEicKEGFuZ3VsYXJfdmVsb2NpdHkYByABKAsyDS5O",
-            "ZXRTeW5jLlZlYzMSFwoPb3duZXJfY2xpZW50X2lkGAggASgNImAKDldvcmxk",
-            "X1NuYXBzaG90EhQKDHNuYXBzaG90VGljaxgBIAEoDRI4ChN0cmFuc2Zvcm1f",
-            "c25hcHNob3RzGAIgAygLMhsuTmV0U3luYy5UcmFuc2Zvcm1fU25hcHNob3Qi",
-            "JQoRR2FtZV9Kb2luX1JlcXVlc3QSEAoIY2xpZW50SWQYASABKA0iJgoSR2Ft",
-            "ZV9Kb2luX1Jlc3BvbnNlEhAKCGFjY2VwdGVkGAEgASgIYgZwcm90bzM="));
+            "ZXRTeW5jLlZlYzMSFwoPb3duZXJfY2xpZW50X2lkGAggASgNEhgKEGxvY29t",
+            "b3Rpb25fc3RhdGUYCSABKA0SEwoLaXNfZ3JvdW5kZWQYCiABKAgiYAoOV29y",
+            "bGRfU25hcHNob3QSFAoMc25hcHNob3RUaWNrGAEgASgNEjgKE2NoYXJhY3Rl",
+            "cl9zbmFwc2hvdHMYAiADKAsyGy5OZXRTeW5jLkNoYXJhY3Rlcl9TbmFwc2hv",
+            "dCIlChFHYW1lX0pvaW5fUmVxdWVzdBIQCghjbGllbnRJZBgBIAEoDSImChJH",
+            "YW1lX0pvaW5fUmVzcG9uc2USEAoIYWNjZXB0ZWQYASABKAhiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -52,8 +53,8 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "EntityId", "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Transform_Snapshot), global::NetSync.Transform_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation", "LinearVelocity", "AngularVelocity", "OwnerClientId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "TransformSnapshots" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation", "LinearVelocity", "AngularVelocity", "OwnerClientId", "LocomotionState", "IsGrounded" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "CharacterSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, new[]{ "ClientId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted" }, null, null, null, null)
           }));
@@ -1431,16 +1432,16 @@ namespace NetSync {
 
   }
 
-  public sealed partial class Transform_Snapshot : pb::IMessage<Transform_Snapshot>
+  public sealed partial class Character_Snapshot : pb::IMessage<Character_Snapshot>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Transform_Snapshot> _parser = new pb::MessageParser<Transform_Snapshot>(() => new Transform_Snapshot());
+    private static readonly pb::MessageParser<Character_Snapshot> _parser = new pb::MessageParser<Character_Snapshot>(() => new Character_Snapshot());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Transform_Snapshot> Parser { get { return _parser; } }
+    public static pb::MessageParser<Character_Snapshot> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1456,7 +1457,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Transform_Snapshot() {
+    public Character_Snapshot() {
       OnConstruction();
     }
 
@@ -1464,7 +1465,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Transform_Snapshot(Transform_Snapshot other) : this() {
+    public Character_Snapshot(Character_Snapshot other) : this() {
       entityId_ = other.entityId_;
       snapshotTick_ = other.snapshotTick_;
       lastProcessedInputTick_ = other.lastProcessedInputTick_;
@@ -1473,13 +1474,15 @@ namespace NetSync {
       linearVelocity_ = other.linearVelocity_ != null ? other.linearVelocity_.Clone() : null;
       angularVelocity_ = other.angularVelocity_ != null ? other.angularVelocity_.Clone() : null;
       ownerClientId_ = other.ownerClientId_;
+      locomotionState_ = other.locomotionState_;
+      isGrounded_ = other.isGrounded_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Transform_Snapshot Clone() {
-      return new Transform_Snapshot(this);
+    public Character_Snapshot Clone() {
+      return new Character_Snapshot(this);
     }
 
     /// <summary>Field number for the "entityId" field.</summary>
@@ -1578,15 +1581,39 @@ namespace NetSync {
       }
     }
 
+    /// <summary>Field number for the "locomotion_state" field.</summary>
+    public const int LocomotionStateFieldNumber = 9;
+    private uint locomotionState_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as Transform_Snapshot);
+    public uint LocomotionState {
+      get { return locomotionState_; }
+      set {
+        locomotionState_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "is_grounded" field.</summary>
+    public const int IsGroundedFieldNumber = 10;
+    private bool isGrounded_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsGrounded {
+      get { return isGrounded_; }
+      set {
+        isGrounded_ = value;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Transform_Snapshot other) {
+    public override bool Equals(object other) {
+      return Equals(other as Character_Snapshot);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(Character_Snapshot other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1601,6 +1628,8 @@ namespace NetSync {
       if (!object.Equals(LinearVelocity, other.LinearVelocity)) return false;
       if (!object.Equals(AngularVelocity, other.AngularVelocity)) return false;
       if (OwnerClientId != other.OwnerClientId) return false;
+      if (LocomotionState != other.LocomotionState) return false;
+      if (IsGrounded != other.IsGrounded) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1616,6 +1645,8 @@ namespace NetSync {
       if (linearVelocity_ != null) hash ^= LinearVelocity.GetHashCode();
       if (angularVelocity_ != null) hash ^= AngularVelocity.GetHashCode();
       if (OwnerClientId != 0) hash ^= OwnerClientId.GetHashCode();
+      if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
+      if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1666,6 +1697,14 @@ namespace NetSync {
         output.WriteRawTag(64);
         output.WriteUInt32(OwnerClientId);
       }
+      if (LocomotionState != 0) {
+        output.WriteRawTag(72);
+        output.WriteUInt32(LocomotionState);
+      }
+      if (IsGrounded != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(IsGrounded);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1708,6 +1747,14 @@ namespace NetSync {
         output.WriteRawTag(64);
         output.WriteUInt32(OwnerClientId);
       }
+      if (LocomotionState != 0) {
+        output.WriteRawTag(72);
+        output.WriteUInt32(LocomotionState);
+      }
+      if (IsGrounded != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(IsGrounded);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1742,6 +1789,12 @@ namespace NetSync {
       if (OwnerClientId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(OwnerClientId);
       }
+      if (LocomotionState != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LocomotionState);
+      }
+      if (IsGrounded != false) {
+        size += 1 + 1;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1750,7 +1803,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Transform_Snapshot other) {
+    public void MergeFrom(Character_Snapshot other) {
       if (other == null) {
         return;
       }
@@ -1789,6 +1842,12 @@ namespace NetSync {
       }
       if (other.OwnerClientId != 0) {
         OwnerClientId = other.OwnerClientId;
+      }
+      if (other.LocomotionState != 0) {
+        LocomotionState = other.LocomotionState;
+      }
+      if (other.IsGrounded != false) {
+        IsGrounded = other.IsGrounded;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1849,6 +1908,14 @@ namespace NetSync {
             OwnerClientId = input.ReadUInt32();
             break;
           }
+          case 72: {
+            LocomotionState = input.ReadUInt32();
+            break;
+          }
+          case 80: {
+            IsGrounded = input.ReadBool();
+            break;
+          }
         }
       }
     #endif
@@ -1906,6 +1973,14 @@ namespace NetSync {
           }
           case 64: {
             OwnerClientId = input.ReadUInt32();
+            break;
+          }
+          case 72: {
+            LocomotionState = input.ReadUInt32();
+            break;
+          }
+          case 80: {
+            IsGrounded = input.ReadBool();
             break;
           }
         }
@@ -1950,7 +2025,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public World_Snapshot(World_Snapshot other) : this() {
       snapshotTick_ = other.snapshotTick_;
-      transformSnapshots_ = other.transformSnapshots_.Clone();
+      characterSnapshots_ = other.characterSnapshots_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1972,15 +2047,15 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "transform_snapshots" field.</summary>
-    public const int TransformSnapshotsFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::NetSync.Transform_Snapshot> _repeated_transformSnapshots_codec
-        = pb::FieldCodec.ForMessage(18, global::NetSync.Transform_Snapshot.Parser);
-    private readonly pbc::RepeatedField<global::NetSync.Transform_Snapshot> transformSnapshots_ = new pbc::RepeatedField<global::NetSync.Transform_Snapshot>();
+    /// <summary>Field number for the "character_snapshots" field.</summary>
+    public const int CharacterSnapshotsFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::NetSync.Character_Snapshot> _repeated_characterSnapshots_codec
+        = pb::FieldCodec.ForMessage(18, global::NetSync.Character_Snapshot.Parser);
+    private readonly pbc::RepeatedField<global::NetSync.Character_Snapshot> characterSnapshots_ = new pbc::RepeatedField<global::NetSync.Character_Snapshot>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::NetSync.Transform_Snapshot> TransformSnapshots {
-      get { return transformSnapshots_; }
+    public pbc::RepeatedField<global::NetSync.Character_Snapshot> CharacterSnapshots {
+      get { return characterSnapshots_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1999,7 +2074,7 @@ namespace NetSync {
         return true;
       }
       if (SnapshotTick != other.SnapshotTick) return false;
-      if(!transformSnapshots_.Equals(other.transformSnapshots_)) return false;
+      if(!characterSnapshots_.Equals(other.characterSnapshots_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2008,7 +2083,7 @@ namespace NetSync {
     public override int GetHashCode() {
       int hash = 1;
       if (SnapshotTick != 0) hash ^= SnapshotTick.GetHashCode();
-      hash ^= transformSnapshots_.GetHashCode();
+      hash ^= characterSnapshots_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2031,7 +2106,7 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(SnapshotTick);
       }
-      transformSnapshots_.WriteTo(output, _repeated_transformSnapshots_codec);
+      characterSnapshots_.WriteTo(output, _repeated_characterSnapshots_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2046,7 +2121,7 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(SnapshotTick);
       }
-      transformSnapshots_.WriteTo(ref output, _repeated_transformSnapshots_codec);
+      characterSnapshots_.WriteTo(ref output, _repeated_characterSnapshots_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -2060,7 +2135,7 @@ namespace NetSync {
       if (SnapshotTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SnapshotTick);
       }
-      size += transformSnapshots_.CalculateSize(_repeated_transformSnapshots_codec);
+      size += characterSnapshots_.CalculateSize(_repeated_characterSnapshots_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -2076,7 +2151,7 @@ namespace NetSync {
       if (other.SnapshotTick != 0) {
         SnapshotTick = other.SnapshotTick;
       }
-      transformSnapshots_.Add(other.transformSnapshots_);
+      characterSnapshots_.Add(other.characterSnapshots_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -2097,7 +2172,7 @@ namespace NetSync {
             break;
           }
           case 18: {
-            transformSnapshots_.AddEntriesFrom(input, _repeated_transformSnapshots_codec);
+            characterSnapshots_.AddEntriesFrom(input, _repeated_characterSnapshots_codec);
             break;
           }
         }
@@ -2120,7 +2195,7 @@ namespace NetSync {
             break;
           }
           case 18: {
-            transformSnapshots_.AddEntriesFrom(ref input, _repeated_transformSnapshots_codec);
+            characterSnapshots_.AddEntriesFrom(ref input, _repeated_characterSnapshots_codec);
             break;
           }
         }

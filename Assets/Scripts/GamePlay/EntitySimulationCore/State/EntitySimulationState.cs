@@ -13,6 +13,8 @@ namespace GamePlay.EntitySystem
         public Quaternion Rotation;
         public Vector3 LinearVelocity;
         public Vector3 AngularVelocity;
+        public uint LocomotionState;
+        public bool IsGrounded;
 
         /// <summary>
         /// 判断状态中的 Transform 数值是否可安全进入网络协议。

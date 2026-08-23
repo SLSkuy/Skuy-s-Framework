@@ -42,7 +42,7 @@ namespace GamePlay.NetSync
         {
             NetServer server = Global.Get<NetServer>();
             NetClient client = Global.Get<NetClient>();
-            EntityReplicationSystem replication = Global.Get<EntityReplicationSystem>();
+            CharacterReplicationSystem replication = Global.Get<CharacterReplicationSystem>();
 
             GUILayout.Label($"模式：{Mode}", _statusStyle);
             GUILayout.Label($"服务端：{(server?.IsRunning == true ? "运行中" : "未启动")}");

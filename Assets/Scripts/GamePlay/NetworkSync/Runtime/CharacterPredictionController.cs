@@ -5,32 +5,24 @@ using GamePlay.EntitySystem;
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// 本地预测命令历史、确认与重放能力。
+    /// 本地预测命令历史、确认与重放策略。
     /// </summary>
-    public sealed class NetworkPredictionCapability : NetworkObjectCapabilityBase
+    public sealed class CharacterPredictionController
     {
-        private static readonly NetworkObjectCapabilityId[] Dependencies =
-        {
-            NetworkObjectCapabilityId.InputCommand,
-            NetworkObjectCapabilityId.Simulation,
-            NetworkObjectCapabilityId.Snapshot
-        };
-
-        private EntityPredictionHistory _history;
+        private readonly EntityPredictionHistory _history;
         private readonly List<EntityPredictionFrame> _replayFrames = new();
 
-        #region 属性
-        public override NetworkObjectCapabilityId CapabilityId => NetworkObjectCapabilityId.Prediction;
-        public override NetworkObjectSyncChannelId ChannelId => NetworkObjectSyncChannelId.InputCommand;
-        public override IReadOnlyList<NetworkObjectCapabilityId> RequiredCapabilities => Dependencies;
+        #region Properties
         public EntityPredictionHistory History => _history;
         public List<EntityPredictionFrame> ReplayFrames => _replayFrames;
         public uint LastConfirmedInputTick { get; private set; }
         public uint NextInputTick { get; private set; }
         #endregion
 
-        /// <inheritdoc />
-        public override bool SupportsMode(EntitySimulationMode mode) => mode == EntitySimulationMode.Predict;
+        public CharacterPredictionController(int historySize)
+        {
+            _history = new EntityPredictionHistory(Math.Max(2, historySize));
+        }
 
         /// <summary>
         /// 使用首个服务端快照建立客户端输入 Tick 锚点。
@@ -67,21 +59,12 @@ namespace GamePlay.NetSync
             NextInputTick = Math.Max(NextInputTick, confirmedTick + 1);
         }
 
-        protected override void OnActivated(EntitySimulationMode mode)
+        /// <summary>
+        /// 清空预测历史与 Tick 锚点。
+        /// </summary>
+        public void Reset()
         {
-            _history ??= new EntityPredictionHistory(
-                Math.Max(2, SyncConfig.Instance.predictionHistorySize));
-            ResetState();
-        }
-
-        protected override void OnDeactivated()
-        {
-            ResetState();
-        }
-
-        private void ResetState()
-        {
-            _history?.Clear();
+            _history.Clear();
             _replayFrames.Clear();
             LastConfirmedInputTick = 0;
             NextInputTick = 0;

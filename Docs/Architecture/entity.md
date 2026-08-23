@@ -6,7 +6,7 @@ This document describes `Assets/Scripts/GamePlay/EntitySystem/`. It is a module 
 
 ## Responsibility
 
-EntitySystem owns the lifecycle, input, modular capabilities, and state-machine-driven simulation of local/single-player entities. It bridges Unity object lifecycle to fixed-tick simulation but does **not** contain network synchronization; that belongs to `GamePlay/NetworkSync/` (see [simulation.md](simulation.md)).
+EntitySystem owns the lifecycle, input, modular capabilities, and state-machine-driven simulation of local/single-player entities. It bridges Unity object lifecycle to fixed-tick simulation but does **not** own network synchronization; that belongs to `GamePlay/NetworkSync/` as an explicit character replication runtime (see [simulation.md](simulation.md)).
 
 ## Directory Structure
 

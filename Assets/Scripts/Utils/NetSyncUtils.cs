@@ -78,14 +78,14 @@ namespace Utils
             };
         }
 
-        public static Transform_Snapshot ToTransformSnapshotMessage(
+        public static Character_Snapshot ToCharacterSnapshotMessage(
             in EntitySimulationState state,
             uint entityId,
             uint ownerClientId,
             uint snapshotTick,
             uint lastProcessedInputTick)
         {
-            return new Transform_Snapshot
+            return new Character_Snapshot
             {
                 EntityId = entityId,
                 SnapshotTick = snapshotTick,
@@ -94,18 +94,22 @@ namespace Utils
                 Rotation = ToProto(state.Rotation),
                 LinearVelocity = ToProto(state.LinearVelocity),
                 AngularVelocity = ToProto(state.AngularVelocity),
-                OwnerClientId = ownerClientId
+                OwnerClientId = ownerClientId,
+                LocomotionState = state.LocomotionState,
+                IsGrounded = state.IsGrounded
             };
         }
 
-        public static EntitySimulationState ToSimulationState(Transform_Snapshot snapshot)
+        public static EntitySimulationState ToSimulationState(Character_Snapshot snapshot)
         {
             return new EntitySimulationState
             {
                 Position = ToUnity(snapshot.Position),
                 Rotation = ToUnity(snapshot.Rotation),
                 LinearVelocity = ToUnity(snapshot.LinearVelocity),
-                AngularVelocity = ToUnity(snapshot.AngularVelocity)
+                AngularVelocity = ToUnity(snapshot.AngularVelocity),
+                LocomotionState = snapshot.LocomotionState,
+                IsGrounded = snapshot.IsGrounded
             };
         }
 

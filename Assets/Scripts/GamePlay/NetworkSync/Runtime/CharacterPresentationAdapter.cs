@@ -1,13 +1,13 @@
-using System.Collections.Generic;
 using GamePlay.EntitySystem;
 using UnityEngine;
 
 namespace GamePlay.NetSync
 {
     /// <summary>
-    /// Position/Rotation 状态捕获、权威应用和预测表现平滑能力。
+    /// 角色网络可见 Transform 捕获、权威应用和预测表现平滑。
     /// </summary>
-    public sealed class NetworkTransformCapability : NetworkObjectCapabilityBase
+    [DisallowMultipleComponent]
+    public sealed class CharacterPresentationAdapter : MonoBehaviour
     {
         [SerializeField] private Transform presentationRoot;
         [SerializeField, Min(0.001f)] private float correctionHalfLife = 0.08f;
@@ -18,14 +18,6 @@ namespace GamePlay.NetSync
         private Quaternion _preservedWorldRotation;
         private bool _isSmoothingCorrection;
         private bool _hasPreservedPose;
-
-        #region 属性
-        public override NetworkObjectCapabilityId CapabilityId => NetworkObjectCapabilityId.Transform;
-        public override NetworkObjectSyncChannelId ChannelId => NetworkObjectSyncChannelId.TransformSnapshot;
-        #endregion
-
-        /// <inheritdoc />
-        public override bool SupportsMode(EntitySimulationMode mode) => true;
 
         /// <summary>
         /// 捕获当前网络可见 Transform 状态。
@@ -59,6 +51,18 @@ namespace GamePlay.NetSync
         }
 
         /// <summary>
+        /// 按模拟角色启用或关闭碰撞驱动。
+        /// </summary>
+        public void ApplyRole(EntitySimulationMode mode)
+        {
+            CharacterController controller = GetComponent<CharacterController>();
+            if (controller != null) controller.enabled = mode != EntitySimulationMode.Replica;
+            if (presentationRoot == null) return;
+            _presentationLocalPosition = presentationRoot.localPosition;
+            _presentationLocalRotation = presentationRoot.localRotation;
+        }
+
+        /// <summary>
         /// 保存校正前表现节点的世界空间姿态。
         /// </summary>
         public void BeginPredictionCorrection()
@@ -86,20 +90,6 @@ namespace GamePlay.NetSync
             _isSmoothingCorrection = true;
         }
 
-        protected override void OnActivated(EntitySimulationMode mode)
-        {
-            CharacterController controller = GetComponent<CharacterController>();
-            if (controller != null) controller.enabled = mode != EntitySimulationMode.Replica;
-            if (presentationRoot == null) return;
-            _presentationLocalPosition = presentationRoot.localPosition;
-            _presentationLocalRotation = presentationRoot.localRotation;
-        }
-
-        protected override void OnDeactivated()
-        {
-            ResetPresentationPose();
-        }
-
         private void ResetPresentationPose()
         {
             _isSmoothingCorrection = false;
@@ -108,7 +98,7 @@ namespace GamePlay.NetSync
             presentationRoot.SetLocalPositionAndRotation(_presentationLocalPosition, _presentationLocalRotation);
         }
 
-        #region 生命周期
+        #region Lifecycle
 
         private void LateUpdate()
         {

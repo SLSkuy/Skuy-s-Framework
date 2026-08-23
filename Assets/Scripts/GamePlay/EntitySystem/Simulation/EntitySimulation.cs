@@ -42,7 +42,9 @@ namespace GamePlay.EntitySystem
                 Position = _context.Movement.Position,
                 Rotation = _context.Rotation.Rotation,
                 LinearVelocity = _context.Movement.LinearVelocity,
-                AngularVelocity = _context.Rotation.AngularVelocity
+                AngularVelocity = _context.Rotation.AngularVelocity,
+                LocomotionState = _context.StateMachine.CurrentState,
+                IsGrounded = _context.IsGrounded
             };
         }
 

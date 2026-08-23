@@ -39,12 +39,13 @@ Read only relevant context, in roughly this order:
 1. `AGENTS.md` and applicable `.agents/rules/`;
 2. the matching `Docs/Architecture/` documents;
 3. related `Docs/Plan/` documents;
-4. directories, types, interfaces, call sites, tests, and configuration;
-5. Unity state/resources only when Unity MCP is available and necessary.
+4. related `Docs/Archive/` plans when a previous implementation may provide useful evidence;
+5. directories, types, interfaces, call sites, tests, and configuration;
+6. Unity state/resources only when Unity MCP is available and necessary.
 
 Use `rg` / `rg --files`. Confirm module ownership, namespace, entry point, dependency direction, lifecycle, data flow, similar implementations, test entry points, and constraints. Every conclusion needs an evidence location (path, type, method, or call relationship).
 
-Produce a compact **Repository Index** listing read documents, key files/types, entry call chains, related tests, and potentially relevant unread areas.
+Produce a compact **Repository Index** listing read documents, relevant archived plans, key files/types, entry call chains, related tests, and potentially relevant unread areas. Treat archived plans as historical context and verify every fact against current code.
 
 ### 3. Decide whether to search externally
 
@@ -83,9 +84,10 @@ End with:
 - options, recommendation, and rejected alternatives;
 - open questions, risks, and required verification;
 - whether `AGENTS.md`'s cross-module confirmation gate is triggered;
-- next action: continue exploring, enter planning, or stop.
+- a proposed English `PascalCase` feature folder name and matching `kebab-case` file stem when planning is the next action;
+- next action: continue exploring, invoke `design`, or stop.
 
-Exploration is not implementation approval. After the user confirms the direction, start the normal planning flow and create `Docs/Plan/<Feature>/` documentation only when required.
+Exploration is not implementation approval. After the user confirms the direction, explicitly hand off to `design` with the confirmed direction, Repository Index, gate status, and proposed feature identity. `design` owns creation of `Docs/Plan/<Feature>/`; Explore never writes those artifacts.
 
 ## Project Rules
 
