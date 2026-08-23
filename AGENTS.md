@@ -1,6 +1,6 @@
 # Repository Guide
 
-This is a Unity project. This file is the **Agent behavior constitution**: it defines how an Agent works and what it must or must not do. Project details (architecture, namespaces, coding style, and documentation) live in [`.agents/rules/`](.agents/rules/). **Do not make this file a second source of truth** for module lists, namespaces, or type names; those drift during refactoring, so use the actual code as the authority.
+This is a Unity project. This file is the **Agent behavior constitution**: it defines how an Agent works and what it must or must not do. Project details (architecture, namespaces, coding style, and documentation) live in `[.agents/rules/](.agents/rules/)`. **Do not make this file a second source of truth** for module lists, namespaces, or type names; those drift during refactoring, so use the actual code as the authority.
 
 ## 1. Agent Workflow
 
@@ -41,23 +41,28 @@ Do not refactor the existing architecture merely to follow generic best practice
 
 ## 3. Architecture Rules
 
-- **Module boundaries:** identify the owning module before editing and do not add responsibilities across boundaries. See [`.agents/rules/Architecture.md`](.agents/rules/Architecture.md).
+- **Module boundaries:** identify the owning module before editing and do not add responsibilities across boundaries. See `[.agents/rules/Architecture.md](.agents/rules/Architecture.md)`.
 - **Dependency direction:** keep assembly dependencies explicit. Pure simulation/core assemblies must remain independent from Unity scene glue, gameplay hosts, transport, and test assemblies. Do not add `.asmdef` files before recording the boundary and direction.
 - **Scene glue vs. core:** MonoBehaviours such as `EntityCharacter`, `UIController`, and `NetworkObjectIdentity` bridge Unity lifecycle to framework services. Reusable logic belongs in `SubSystemBase` or a pure core assembly, not in scene glue.
 - **New-code migration:** once a module has an approved target folder/assembly, put new code there. Do not extend legacy/compatibility files with new behavior. Compatibility shims must be temporary, documented, and tracked by a removal task.
 - **Lifecycle:** framework lifecycle is driven by `SubSystemBase._Init()` / `Init()` / `Destroy()`. Do not use `EnsureXXX()`, lazy initialization, or automatic self-healing to hide lifecycle errors; missing initialization should fail loudly.
 
+
+
 ## 4. Coding Rules
 
-Only high-level points are listed here; see [`.agents/rules/CodingStyle.md`](.agents/rules/CodingStyle.md) for details.
+Only high-level points are listed here; see `[.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md)` for details.
 
-- **CRLF:** preserve CRLF line endings across the repository; never normalize to LF.
 - **Namespaces:** only `Launch` and `MainEntry` may use the global namespace. All other types must declare a module namespace (see `Architecture.md`).
 - **Naming:** types/methods/properties use `PascalCase`; private fields use `_camelCase`; `[SerializeField]` fields use `camelCase` without an underscore; interfaces use the `I` prefix; abstract bases use the `Base` suffix; managers, utilities, and states use `Manager`, `Utils`, and `State` suffixes.
 - **Member order:** serialized fields -> class references -> primitive values -> `#region Properties` -> `#region Events` -> methods -> lifecycle regions at the end.
 - **Regions:** use only `Properties`, `Events`, `Lifecycle`, and `Subsystem Lifecycle` regions. Do not region ordinary methods.
 
+
+
 ## 5. Change Constraints
+
+
 
 ### Forbidden
 
@@ -67,10 +72,14 @@ Only high-level points are listed here; see [`.agents/rules/CodingStyle.md`](.ag
 - Do not introduce speculative abstractions because they appear more "best practice" compliant.
 - Do not create an abstraction before searching for an existing one.
 
+
+
 ### Comments and Dead Code
 
 - Preserve existing comments and update them in place; keep banner comments attached to their field groups.
 - Delete replaced implementations. Do not leave them as comments, `#if false`, or unused code. Keep compatibility code only when explicitly requested and label it `// Legacy implementation retained for compatibility`.
+
+
 
 ### Scope Control
 
@@ -82,7 +91,7 @@ For existing architecture, the repository is the source of truth. Do not guess f
 
 ## 6. Documentation
 
-When a change adds a subsystem, crosses module boundaries, adds a protocol, or records an architectural decision, create or update a document under `Docs/Plan/<Feature>/`. Use the minimal template for ordinary features and the full template for architecture, protocol, and cross-module work. See [`.agents/rules/Documentation.md`](.agents/rules/Documentation.md).
+When a change adds a subsystem, crosses module boundaries, adds a protocol, or records an architectural decision, create or update a document under `Docs/Plan/<Feature>/`. Use the minimal template for ordinary features and the full template for architecture, protocol, and cross-module work. See `[.agents/rules/Documentation.md](.agents/rules/Documentation.md)`.
 
 **Architecture synchronization:** when adding a top-level module directory or an independent `.asmdef` module, create its module document under `Docs/Architecture/` (responsibility, structure, core abstractions, dependency direction) and update [Docs/README.md](Docs/README.md). For substantial changes to an existing module's responsibility, core abstractions, or dependency direction, update its architecture document.
 
@@ -90,10 +99,12 @@ When a change adds a subsystem, crosses module boundaries, adds a protocol, or r
 
 ## 7. Rule Index
 
-| Topic | File |
-| --- | --- |
-| Architecture, modules, namespaces, patterns | [`.agents/rules/Architecture.md`](.agents/rules/Architecture.md) |
-| C# style, member order, regions | [`.agents/rules/CodingStyle.md`](.agents/rules/CodingStyle.md) |
-| Documentation layout and self-contained requirements | [`.agents/rules/Documentation.md`](.agents/rules/Documentation.md) |
+
+| Topic                                                | File                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Architecture, modules, namespaces, patterns          | `[.agents/rules/Architecture.md](.agents/rules/Architecture.md)`   |
+| C# style, member order, regions                      | `[.agents/rules/CodingStyle.md](.agents/rules/CodingStyle.md)`     |
+| Documentation layout and self-contained requirements | `[.agents/rules/Documentation.md](.agents/rules/Documentation.md)` |
+
 
 Active feature design documents live under `Docs/Plan/`, archived plans under `Docs/Archive/`, and module architecture documents under `Docs/Architecture/` (see [Docs/README.md](Docs/README.md)). Plan documents use direct feature/purpose names without numeric prefixes.

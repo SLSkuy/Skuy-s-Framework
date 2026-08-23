@@ -2,7 +2,7 @@
 
 Detailed C# style rules. Workflow rules are defined in [AGENTS.md](../../AGENTS.md).
 
-Use C#, 4-space indentation, and braces on their own line. Preserve CRLF (`\r\n`) in all text files and enforce it with `.gitattributes`. Public types/methods use `PascalCase`; locals/parameters use `camelCase`. Preserve existing XML summaries and inline comments, update them in place, and keep banner comments attached to their field groups.
+Use C#, 4-space indentation, and braces on their own line. Public types/methods use `PascalCase`; locals/parameters use `camelCase`. Preserve existing XML summaries and inline comments, update them in place, and keep banner comments attached to their field groups.
 
 **Preserve comments, delete dead code.** Delete replaced implementations instead of commenting them out or wrapping them in `#if false`. Keep compatibility code only when explicitly requested and mark it as legacy compatibility.
 
@@ -16,6 +16,8 @@ Use C#, 4-space indentation, and braces on their own line. Preserve CRLF (`\r\n`
 - **Concrete states:** `State` suffix: `EntityIdleState`, `LoadingState`, `GamingState`.
 - **Network components:** preserve existing names such as `NetworkObjectIdentity` and `CharacterPresentationAdapter`; client/server entry points remain `NetClient` / `NetServer`.
 
+
+
 ## Fields and Properties
 
 The repository distinguishes private backing fields from serialized and public fields:
@@ -26,6 +28,8 @@ The repository distinguishes private backing fields from serialized and public f
 - `protected readonly` **fields:** `PascalCase` (`protected readonly EntityContext Context;`).
 - **Private** `static readonly` **collections/locks:** `PascalCase` (`Lock`, `SubSystems`).
 - **Properties:** `PascalCase` (`Instance`, `Priority`, `CurrentState`, `EntityId`, `RTT`, `IsRunning`); prefer expression-bodied getters for simple accessors.
+
+
 
 ## Methods
 
@@ -47,6 +51,8 @@ The repository distinguishes private backing fields from serialized and public f
   public static void Step(IEntitySimulation simulation, EntityInputCommandBuilder commandBuilder,
       uint tick, float deltaTime, in InputState input)
   ```
+
+
 
 ## Member Order
 
