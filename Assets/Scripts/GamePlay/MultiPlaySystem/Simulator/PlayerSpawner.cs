@@ -5,7 +5,7 @@ namespace GamePlay.MultiPlaySystem
     /// <summary>
     /// 测试用角色生成：加载 NetPlayer 并写入网络身份。
     /// </summary>
-    public static class TestPlayerSpawner
+    public static class PlayerSpawner
     {
         public const string PlayerPrefabPath = "NetPlayer";
 

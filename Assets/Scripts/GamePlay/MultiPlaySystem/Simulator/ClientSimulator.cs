@@ -33,7 +33,7 @@ namespace GamePlay.MultiPlaySystem
         public void Start()
         {
             if (IsRunning) return;
-            _playerPrefab = TestPlayerSpawner.LoadPrefab();
+            _playerPrefab = PlayerSpawner.LoadPrefab();
             _replicationSystem = Global.Get<CharacterReplicationSystem>();
             _replicationSystem?.SetClientEntityFactory(SpawnPlayer);
             _netClient.RegNetHandler<global::NetSync.Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleJoinResponse);
@@ -73,7 +73,7 @@ namespace GamePlay.MultiPlaySystem
 
             string objectName = isOwned ? $"LocalPlayer_{entityId}" : $"RemotePlayer_{entityId}";
             EntitySimulationMode role = isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica;
-            NetworkObjectIdentity identity = TestPlayerSpawner.Spawn(
+            NetworkObjectIdentity identity = PlayerSpawner.Spawn(
                 _playerPrefab, Vector3.up, objectName, entityId, role, ownerClientId);
             _players.Add(entityId, identity.gameObject);
             return identity;

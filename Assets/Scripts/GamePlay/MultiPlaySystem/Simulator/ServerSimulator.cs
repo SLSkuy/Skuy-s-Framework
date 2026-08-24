@@ -29,7 +29,7 @@ namespace GamePlay.MultiPlaySystem
         public void Start()
         {
             if (IsRunning) return;
-            _playerPrefab = TestPlayerSpawner.LoadPrefab();
+            _playerPrefab = PlayerSpawner.LoadPrefab();
             _netServer.RegNetHandler<global::NetSync.Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleJoinRequest);
             _netServer.OnClientRemoved += HandleClientRemoved;
             IsRunning = true;
@@ -62,7 +62,7 @@ namespace GamePlay.MultiPlaySystem
 
         private void SpawnPlayer(uint clientId)
         {
-            NetworkObjectIdentity identity = TestPlayerSpawner.Spawn(
+            NetworkObjectIdentity identity = PlayerSpawner.Spawn(
                 _playerPrefab,
                 new Vector3((clientId - 1u) * 2f, 1f, 0f),
                 $"ServerPlayer_{clientId}",
