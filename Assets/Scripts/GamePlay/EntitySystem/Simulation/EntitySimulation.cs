@@ -39,12 +39,12 @@ namespace GamePlay.EntitySystem
         {
             return new EntitySimulationState
             {
-                Position = _context.Movement.Position,
-                Rotation = _context.Rotation.Rotation,
-                LinearVelocity = _context.Movement.LinearVelocity,
-                AngularVelocity = _context.Rotation.AngularVelocity,
-                LocomotionState = _context.StateMachine.CurrentState,
-                IsGrounded = _context.IsGrounded
+                position = _context.Movement.Position,
+                rotation = _context.Rotation.Rotation,
+                linearVelocity = _context.Movement.LinearVelocity,
+                angularVelocity = _context.Rotation.AngularVelocity,
+                locomotionState = _context.StateMachine.CurrentState,
+                isGrounded = _context.IsGrounded
             };
         }
 
@@ -72,8 +72,8 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void RestoreRollbackState(in EntityRollbackState state)
         {
-            _context.Movement.RestoreRollbackState(state.TransformState.Position, state.MovementState);
-            _context.Rotation.Restore(state.TransformState.Rotation, state.TransformState.AngularVelocity);
+            _context.Movement.RestoreRollbackState(state.TransformState.position, state.MovementState);
+            _context.Rotation.Restore(state.TransformState.rotation, state.TransformState.angularVelocity);
             _context.LastMoveInput = state.MoveInput;
             _context.LastAimInput = state.AimInput;
             _context.LocomotionSpeed = state.LocomotionSpeed;

@@ -13,7 +13,7 @@ namespace GamePlay.EntitySystem
         #region 属性
         public abstract ModuleType ModuleType { get; }
         public EntityCharacter Target => _target;
-        public bool HasTarget => _target != null;
+        public bool HasTarget => _target;
         public bool IsEnabled => _isEnabled;
         #endregion
 

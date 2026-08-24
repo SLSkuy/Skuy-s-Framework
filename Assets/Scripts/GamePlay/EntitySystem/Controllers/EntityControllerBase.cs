@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体控制器基础类，统一维护控制源与实体目标的绑定关系。
+    /// 实体控制器基础类，统一维护控制源与实体目标的绑定关系
     /// </summary>
     public abstract class EntityControllerBase : MonoBehaviour
     {
@@ -14,12 +14,18 @@ namespace GamePlay.EntitySystem
         public bool HasTarget => _target != null;
         #endregion
 
+        /// <summary>
+        /// 绑定控制器对应控制对象
+        /// </summary>
         public virtual void Bind(EntityCharacter target)
         {
             _target = target;
             OnBound(target);
         }
 
+        /// <summary>
+        /// 解绑当前控制器控制的对象
+        /// </summary>
         public virtual void Unbind()
         {
             EntityCharacter oldTarget = _target;

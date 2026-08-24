@@ -4,29 +4,24 @@ using Framework;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 玩家输入控制器，只负责采样输入。
+    /// 玩家输入控制器，只负责采样输入
     /// </summary>
     public class PlayerController : EntityControllerBase
     {
         private IInputStateProvider _inputProvider;
 
         /// <summary>
-        /// 初始化玩家控制器。
+        /// 设置输入源
         /// </summary>
-        public void Init(EntityCharacter entity)
-        {
-            Bind(entity);
-            if (_inputProvider == null && GameCore.Instance != null)
-            {
-                SetInputSource(GameCore.Instance.LocalInput);
-            }
-        }
-
         public void SetInputSource(IInputStateProvider inputProvider)
         {
             _inputProvider = inputProvider;
         }
 
+        /// <summary>
+        /// 采样当前玩家输入
+        /// </summary>
+        /// <returns></returns>
         public InputState SampleInput()
         {
             return _inputProvider?.GetInputState() ?? default;

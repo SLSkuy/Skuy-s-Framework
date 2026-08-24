@@ -10,11 +10,11 @@ namespace GamePlay.MultiPlaySystem
     public sealed class CharacterPredictionController
     {
         private readonly EntityPredictionHistory _history;
-        private readonly List<EntityPredictionFrame> _replayFrames = new();
+        private readonly List<EntityPredictionState> _replayFrames = new();
 
         #region Properties
         public EntityPredictionHistory History => _history;
-        public List<EntityPredictionFrame> ReplayFrames => _replayFrames;
+        public List<EntityPredictionState> ReplayFrames => _replayFrames;
         public uint LastConfirmedInputTick { get; private set; }
         public uint NextInputTick { get; private set; }
         #endregion

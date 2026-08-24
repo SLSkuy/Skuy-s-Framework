@@ -35,12 +35,10 @@ namespace GamePlay.MultiPlaySystem
         /// </summary>
         public bool AddSnapshot(uint snapshotTick, in EntitySimulationState state)
         {
-            if (!state.IsFinite()) return false;
-
             SyncConfig config = SyncConfig.Instance;
             bool requiresSnap = !_hasIncomingState ||
-                Vector3.Distance(_lastIncomingState.Position, state.Position) >= config.positionSnapThreshold ||
-                Quaternion.Angle(_lastIncomingState.Rotation, state.Rotation) >=
+                Vector3.Distance(_lastIncomingState.position, state.position) >= config.positionSnapThreshold ||
+                Quaternion.Angle(_lastIncomingState.rotation, state.rotation) >=
                 config.rotationSnapThresholdDegrees;
             if (requiresSnap) Reset();
 
@@ -86,12 +84,12 @@ namespace GamePlay.MultiPlaySystem
             EntitySimulationState toState = to.State;
             _lastState = new EntitySimulationState
             {
-                Position = Vector3.Lerp(fromState.Position, toState.Position, t),
-                Rotation = Quaternion.Slerp(fromState.Rotation, toState.Rotation, t),
-                LinearVelocity = Vector3.Lerp(fromState.LinearVelocity, toState.LinearVelocity, t),
-                AngularVelocity = Vector3.Lerp(fromState.AngularVelocity, toState.AngularVelocity, t),
-                LocomotionState = t >= 0.5f ? toState.LocomotionState : fromState.LocomotionState,
-                IsGrounded = t >= 0.5f ? toState.IsGrounded : fromState.IsGrounded
+                position = Vector3.Lerp(fromState.position, toState.position, t),
+                rotation = Quaternion.Slerp(fromState.rotation, toState.rotation, t),
+                linearVelocity = Vector3.Lerp(fromState.linearVelocity, toState.linearVelocity, t),
+                angularVelocity = Vector3.Lerp(fromState.angularVelocity, toState.angularVelocity, t),
+                locomotionState = t >= 0.5f ? toState.locomotionState : fromState.locomotionState,
+                isGrounded = t >= 0.5f ? toState.isGrounded : fromState.isGrounded
             };
             state = _lastState;
             return true;

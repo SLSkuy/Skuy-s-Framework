@@ -86,13 +86,13 @@ namespace Utils
                 EntityId = entityId,
                 SnapshotTick = snapshotTick,
                 LastProcessedInputTick = lastProcessedInputTick,
-                Position = ToProto(state.Position),
-                Rotation = ToProto(state.Rotation),
-                LinearVelocity = ToProto(state.LinearVelocity),
-                AngularVelocity = ToProto(state.AngularVelocity),
+                Position = ToProto(state.position),
+                Rotation = ToProto(state.rotation),
+                LinearVelocity = ToProto(state.linearVelocity),
+                AngularVelocity = ToProto(state.angularVelocity),
                 OwnerClientId = ownerClientId,
-                LocomotionState = state.LocomotionState,
-                IsGrounded = state.IsGrounded
+                LocomotionState = state.locomotionState,
+                IsGrounded = state.isGrounded
             };
         }
 
@@ -100,12 +100,12 @@ namespace Utils
         {
             return new EntitySimulationState
             {
-                Position = ToUnity(snapshot.Position),
-                Rotation = ToUnity(snapshot.Rotation),
-                LinearVelocity = ToUnity(snapshot.LinearVelocity),
-                AngularVelocity = ToUnity(snapshot.AngularVelocity),
-                LocomotionState = snapshot.LocomotionState,
-                IsGrounded = snapshot.IsGrounded
+                position = ToUnity(snapshot.Position),
+                rotation = ToUnity(snapshot.Rotation),
+                linearVelocity = ToUnity(snapshot.LinearVelocity),
+                angularVelocity = ToUnity(snapshot.AngularVelocity),
+                locomotionState = snapshot.LocomotionState,
+                isGrounded = snapshot.IsGrounded
             };
         }
 

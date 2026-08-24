@@ -90,7 +90,7 @@ namespace GamePlay.MultiPlaySystem
             if (PlayerController != null)
             {
                 PlayerController.enabled = requiresLocalInput;
-                if (requiresLocalInput) PlayerController.Init(Simulation);
+                if (requiresLocalInput) PlayerController.Bind(Simulation);
             }
 
             if (AIController != null) AIController.enabled = role == EntitySimulationMode.Authority && OwnerClientId == 0;

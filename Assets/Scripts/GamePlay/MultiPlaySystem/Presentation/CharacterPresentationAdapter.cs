@@ -29,10 +29,10 @@ namespace GamePlay.MultiPlaySystem
 
             return new EntitySimulationState
             {
-                Position = transform.position,
-                Rotation = transform.rotation,
-                LinearVelocity = Vector3.zero,
-                AngularVelocity = Vector3.zero
+                position = transform.position,
+                rotation = transform.rotation,
+                linearVelocity = Vector3.zero,
+                angularVelocity = Vector3.zero
             };
         }
 
@@ -42,12 +42,12 @@ namespace GamePlay.MultiPlaySystem
         public void ApplyState(in EntitySimulationState state)
         {
             MovementModule movement = GetComponent<MovementModule>();
-            if (movement != null) movement.Teleport(state.Position);
-            else transform.position = state.Position;
+            if (movement != null) movement.Teleport(state.position);
+            else transform.position = state.position;
 
             RotationModule rotation = GetComponent<RotationModule>();
-            if (rotation != null) rotation.Restore(state.Rotation, state.AngularVelocity);
-            else transform.rotation = state.Rotation;
+            if (rotation != null) rotation.Restore(state.rotation, state.angularVelocity);
+            else transform.rotation = state.rotation;
         }
 
         /// <summary>

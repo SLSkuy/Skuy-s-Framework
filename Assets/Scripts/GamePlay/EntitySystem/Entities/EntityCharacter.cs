@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Utils;
 
@@ -9,19 +8,23 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityCharacter : MonoBehaviour
     {
-        protected EntityConfig _config;
-        protected EntityContext _context;
+        [SerializeField] 
+        private EntityConfig config;
+        private EntityContext _context;
+        private bool _isInitialized;
+        
+        // 身份识别
         private IEntityObjectIdentity _identity;
+        
+        // 能力组件
+        private EntitySimulation _simulation;
         private MovementModule _movementModule;
         private RotationModule _rotationModule;
-        protected EntitySimulation _simulation;
-        private bool _isInitialized;
 
         #region 属性
-        public EntityConfig Config => _config;
         public EntityContext Context => _context;
-        public bool IsInitialized => _isInitialized;
-        public uint EntityId => _identity != null ? _identity.EntityId : 0;
+        public bool IsInitialized => _identity.IsInitialized;
+        public uint EntityId => _identity?.EntityId ?? 0;
         public uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
 
@@ -30,49 +33,47 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Init()
         {
-            if (_isInitialized) throw new InvalidOperationException($"实体 {name} 已初始化。 ");
-            _config ??= EntityConfig.Instance;
+            if (_isInitialized) return;
+            
             _identity = GetComponent<IEntityObjectIdentity>();
-
-            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
-            _movementModule.Init(_config);
-            _movementModule.Bind(this);
-
-            _rotationModule = gameObject.GetOrAddComponent<RotationModule>();
-            _rotationModule.Init(_config);
-            _rotationModule.Bind(this);
-
-            _context = new EntityContext(_config, _movementModule, _rotationModule);
+            
+            InitConfig();
+            InitSimulationContext();
+            InitCapacityModule();
             RegisterStates();
-            _context.StateMachine.ChangeState(EntityState.IDLE);
-            _simulation = new EntitySimulation(_context);
-            if (_config == null) throw new InvalidOperationException($"实体 {name} 未提供有效配置。 ");
+            
+            
             _isInitialized = true;
         }
 
+        protected virtual void InitConfig()
+        {
+            if (!config) config = EntityConfig.Instance;
+        }
+        
         /// <summary>
-        /// 使用完整命令推进一次固定 Tick 模拟。
+        /// 初始化能力组件
         /// </summary>
-        public void Step(uint tick, float deltaTime, in EntityCommand command)
+        protected virtual void InitCapacityModule()
         {
-            _simulation?.Step(tick, deltaTime, command);
-        }
+            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
+            _movementModule.Init(config);
+            _movementModule.Bind(this);
 
-        public EntitySimulationState CaptureSimulationState()
+            _rotationModule = gameObject.GetOrAddComponent<RotationModule>();
+            _rotationModule.Init(config);
+            _rotationModule.Bind(this);
+        }
+        
+        /// <summary>
+        /// 初始化模拟上下文
+        /// </summary>
+        protected virtual void InitSimulationContext()
         {
-            return _simulation != null ? _simulation.CaptureSimulationState() : default;
+            _context = new EntityContext(config, _movementModule, _rotationModule);
+            _simulation = new EntitySimulation(_context);
         }
-
-        public EntityRollbackState CaptureRollbackState()
-        {
-            return _simulation != null ? _simulation.CaptureRollbackState() : default;
-        }
-
-        public void RestoreRollbackState(in EntityRollbackState state)
-        {
-            _simulation?.RestoreRollbackState(state);
-        }
-
+        
         /// <summary>
         /// 注册角色默认状态。子类可追加或替换角色专属状态。
         /// </summary>
@@ -84,5 +85,44 @@ namespace GamePlay.EntitySystem
             _context.StateMachine.RegisterState(new EntitySprintState(_context));
             _context.StateMachine.RegisterState(new EntityAirborneState(_context));
         }
+        
+        #region 模拟入口
+
+        /// <summary>
+        /// 使用完整命令推进一次固定 Tick 模拟
+        /// </summary>
+        public void Step(uint tick, float deltaTime, in EntityCommand command)
+        {
+            _simulation?.Step(tick, deltaTime, command);
+        }
+
+        /// <summary>
+        /// 捕获当前状态
+        /// </summary>
+        /// <returns></returns>
+        public EntitySimulationState CaptureSimulationState()
+        {
+            return _simulation?.CaptureSimulationState() ?? default;
+        }
+
+        /// <summary>
+        /// 获取回退状态
+        /// </summary>
+        /// <returns></returns>
+        public EntityRollbackState CaptureRollbackState()
+        {
+            return _simulation?.CaptureRollbackState() ?? default;
+        }
+
+        /// <summary>
+        /// 缓存回退状态
+        /// </summary>
+        /// <param name="state"></param>
+        public void RestoreRollbackState(in EntityRollbackState state)
+        {
+            _simulation?.RestoreRollbackState(state);
+        }
+
+        #endregion
     }
 }

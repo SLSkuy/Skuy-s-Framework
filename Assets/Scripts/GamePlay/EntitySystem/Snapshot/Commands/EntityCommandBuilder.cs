@@ -15,7 +15,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public EntityCommand Build(uint tick, in InputState input)
         {
-            EntityCommandFlags heldFlags = CommandUtils.GetHeldButtons(input);
+            EntityCommandFlags heldFlags = SnapshotUtils.GetHeldFlags(input);
             EntityCommand command = new()
             {
                 tick = tick,

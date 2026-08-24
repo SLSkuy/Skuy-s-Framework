@@ -1,17 +1,18 @@
 ﻿using Framework;
 using GamePlay.EntitySystem;
+using UnityEngine;
 
 namespace Utils
 {
     /// <summary>
     /// 控制命令工具
     /// </summary>
-    public static class CommandUtils
+    public static class SnapshotUtils
     {
         /// <summary>
         /// 获取当前Tick按住的按键集合
         /// </summary>
-        public static EntityCommandFlags GetHeldButtons(in InputState input)
+        public static EntityCommandFlags GetHeldFlags(in InputState input)
         {
             EntityCommandFlags flags = EntityCommandFlags.None;
             if (input.IsSprintPressed) flags |= EntityCommandFlags.Sprint;

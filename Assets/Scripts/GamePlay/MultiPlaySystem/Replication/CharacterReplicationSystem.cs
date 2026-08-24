@@ -155,7 +155,6 @@ namespace GamePlay.MultiPlaySystem
             {
                 if (!entry.Identity.IsAuthority) continue;
                 EntitySimulationState state = entry.Presentation.CaptureState();
-                if (!state.IsFinite()) continue;
                 world.CharacterSnapshots.Add(ProtoUtils.ToCharacterSnapshotMessage(
                     state,
                     entry.Identity.NetworkObjectId,
@@ -176,7 +175,6 @@ namespace GamePlay.MultiPlaySystem
             foreach (global::NetSync.Character_Snapshot snapshot in world.CharacterSnapshots)
             {
                 EntitySimulationState state = ProtoUtils.ToSimulationState(snapshot);
-                if (!state.IsFinite()) continue;
 
                 if (_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry existingEntry) &&
                     snapshot.SnapshotTick <= existingEntry.LastAppliedSnapshotTick)
@@ -255,11 +253,11 @@ namespace GamePlay.MultiPlaySystem
 
             EntityCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
-            entry.Prediction.History.Add(new EntityPredictionFrame
+            entry.Prediction.History.Add(new EntityPredictionState
             {
-                Tick = inputTick,
-                Command = command,
-                State = entry.Simulation.CaptureRollbackState()
+                tick = inputTick,
+                command = command,
+                state = entry.Simulation.CaptureRollbackState()
             });
 
             global::NetSync.Player_Input message =
@@ -287,7 +285,7 @@ namespace GamePlay.MultiPlaySystem
             }
 
             prediction.Confirm(confirmedTick);
-            if (!prediction.History.TryGet(confirmedTick, out EntityPredictionFrame confirmedFrame))
+            if (!prediction.History.TryGet(confirmedTick, out EntityPredictionState confirmedFrame))
             {
                 ApplyCorrectedTransform(entry, authoritativeState,
                     ShouldSmoothCorrection(entry.Presentation.CaptureState(), authoritativeState));
@@ -296,10 +294,10 @@ namespace GamePlay.MultiPlaySystem
                 return;
             }
 
-            EntitySimulationState predictedState = confirmedFrame.State.TransformState;
+            EntitySimulationState predictedState = confirmedFrame.state.TransformState;
             SyncConfig config = SyncConfig.Instance;
-            float positionError = Vector3.Distance(predictedState.Position, authoritativeState.Position);
-            float rotationError = Quaternion.Angle(predictedState.Rotation, authoritativeState.Rotation);
+            float positionError = Vector3.Distance(predictedState.position, authoritativeState.position);
+            float rotationError = Quaternion.Angle(predictedState.rotation, authoritativeState.rotation);
             prediction.History.CopyAfter(confirmedTick, prediction.ReplayFrames);
 
             if (positionError <= config.positionReconcileThreshold &&
@@ -313,17 +311,17 @@ namespace GamePlay.MultiPlaySystem
                 rotationError < config.rotationSnapThresholdDegrees;
             entry.Presentation.BeginPredictionCorrection();
 
-            EntityRollbackState rollbackState = confirmedFrame.State;
+            EntityRollbackState rollbackState = confirmedFrame.state;
             rollbackState.TransformState = authoritativeState;
-            rollbackState.MovementState.LinearVelocity = authoritativeState.LinearVelocity;
+            rollbackState.MovementState.linearVelocity = authoritativeState.linearVelocity;
             entry.Simulation.RestoreRollbackState(rollbackState);
 
             for (int i = 0; i < prediction.ReplayFrames.Count; i++)
             {
-                EntityPredictionFrame frame = prediction.ReplayFrames[i];
-                entry.Simulation.Step(frame.Tick, tickDeltaTime, frame.Command);
-                frame.State = entry.Simulation.CaptureRollbackState();
-                prediction.History.Add(frame);
+                EntityPredictionState state = prediction.ReplayFrames[i];
+                entry.Simulation.Step(state.tick, tickDeltaTime, state.command);
+                state.state = entry.Simulation.CaptureRollbackState();
+                prediction.History.Add(state);
             }
 
             entry.Presentation.EndPredictionCorrection(smoothCorrection);
@@ -342,8 +340,8 @@ namespace GamePlay.MultiPlaySystem
             in EntitySimulationState authoritativeState)
         {
             SyncConfig config = SyncConfig.Instance;
-            return Vector3.Distance(currentState.Position, authoritativeState.Position) < config.positionSnapThreshold &&
-                Quaternion.Angle(currentState.Rotation, authoritativeState.Rotation) <
+            return Vector3.Distance(currentState.position, authoritativeState.position) < config.positionSnapThreshold &&
+                Quaternion.Angle(currentState.rotation, authoritativeState.rotation) <
                 config.rotationSnapThresholdDegrees;
         }
 

@@ -90,14 +90,14 @@ namespace GamePlay.EntitySystem
         {
             return new MovementRollbackState
             {
-                LastMoveDirection = _lastMoveDir,
-                LinearVelocity = LinearVelocity,
-                DashDirection = _dashDir,
-                LocomotionSpeed = _locomotionSpeed,
-                VerticalVelocity = _verticalVelocity,
-                DashRemainingTime = _dashAccumulator,
-                JumpCount = _jumpCount,
-                IsDashing = _isDashing
+                lastMoveDirection = _lastMoveDir,
+                linearVelocity = LinearVelocity,
+                dashDirection = _dashDir,
+                locomotionSpeed = _locomotionSpeed,
+                verticalVelocity = _verticalVelocity,
+                dashRemainingTime = _dashAccumulator,
+                jumpCount = _jumpCount,
+                isDashing = _isDashing
             };
         }
 
@@ -107,14 +107,14 @@ namespace GamePlay.EntitySystem
         public void RestoreRollbackState(Vector3 position, in MovementRollbackState state)
         {
             Teleport(position);
-            _lastMoveDir = state.LastMoveDirection;
-            LinearVelocity = state.LinearVelocity;
-            _dashDir = state.DashDirection;
-            _locomotionSpeed = state.LocomotionSpeed;
-            _verticalVelocity = state.VerticalVelocity;
-            _dashAccumulator = state.DashRemainingTime;
-            _jumpCount = state.JumpCount;
-            _isDashing = state.IsDashing;
+            _lastMoveDir = state.lastMoveDirection;
+            LinearVelocity = state.linearVelocity;
+            _dashDir = state.dashDirection;
+            _locomotionSpeed = state.locomotionSpeed;
+            _verticalVelocity = state.verticalVelocity;
+            _dashAccumulator = state.dashRemainingTime;
+            _jumpCount = state.jumpCount;
+            _isDashing = state.isDashing;
         }
         
         #endregion

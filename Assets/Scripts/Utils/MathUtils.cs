@@ -8,6 +8,11 @@ namespace Utils
     /// </summary>
     public static class MathUtils
     {
+        public static bool IsFinite(Vector3 value) => float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
+        
+        public static bool IsFinite(Quaternion value) => float.IsFinite(value.x) && float.IsFinite(value.y) 
+            && float.IsFinite(value.z) && float.IsFinite(value.w) && value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w > 0.000001f;
+        
         /// <summary>
         /// 转换三维向量到平面上，忽略Y轴
         /// </summary>
