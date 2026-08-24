@@ -4,14 +4,14 @@ using UnityEngine;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体状态机上下文，保存移动相关状态。
+    /// 实体状态机上下文，保存移动与视角相关状态。
     /// </summary>
     public class EntityContext
     {
         public readonly ExtendableStateMachine<uint> StateMachine;
         public readonly EntityConfig Config;
-        public readonly MovementModule Movement;
-        public readonly RotationModule Rotation;
+        public readonly TransformModule Transform;
+        public readonly ViewModule View;
 
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
@@ -25,18 +25,18 @@ namespace GamePlay.EntitySystem
         #region 持续状态
         public float LocomotionSpeed;
 
-        public bool IsGrounded => Movement.IsGrounded;
+        public bool IsGrounded => Transform.IsGrounded;
         public bool IsSprinting;
         public bool IsRunning;
         public bool IsFocus;
         #endregion
 
-        public EntityContext(EntityConfig config, MovementModule movement, RotationModule rotation)
+        public EntityContext(EntityConfig config, TransformModule transform, ViewModule view)
         {
             Config = config;
             StateMachine = new ExtendableStateMachine<uint>();
-            Movement = movement;
-            Rotation = rotation;
+            Transform = transform;
+            View = view;
         }
 
         /// <summary>

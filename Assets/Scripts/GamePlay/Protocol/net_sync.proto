@@ -46,6 +46,7 @@ message Character_Snapshot {
   uint32 owner_client_id = 8;
   uint32 locomotion_state = 9;
   bool is_grounded = 10;
+  Quat view_rotation = 11;
 }
 
 message World_Snapshot {

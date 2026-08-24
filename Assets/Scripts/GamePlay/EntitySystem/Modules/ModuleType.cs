@@ -2,8 +2,8 @@ namespace GamePlay.EntitySystem
 {
     public enum ModuleType
     {
-        Position,
-        Rotation,
+        Transform,
+        View,
         Animation,
     }
 }

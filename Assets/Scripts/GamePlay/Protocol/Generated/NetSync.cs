@@ -34,18 +34,19 @@ namespace NetSync {
             "ZWNpYWxfYXR0YWNrX3ByZXNzZWQYBiABKAgSIQoZaXNfc3BlY2lhbF9hY3Rp",
             "b25fcHJlc3NlZBgHIAEoCBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAggASgI",
             "EhkKEWlzX3NwcmludF9wcmVzc2VkGAkgASgIEhcKD2lzX2p1bXBfcHJlc3Nl",
-            "ZBgKIAEoCBIeChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAsgASgIIrcCChJD",
+            "ZBgKIAEoCBIeChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAsgASgIIt0CChJD",
             "aGFyYWN0ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SFAoMc25hcHNo",
             "b3RUaWNrGAIgASgNEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sYAyABKA0S",
             "HwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
             "BSABKAsyDS5OZXRTeW5jLlF1YXQSJgoPbGluZWFyX3ZlbG9jaXR5GAYgASgL",
             "Mg0uTmV0U3luYy5WZWMzEicKEGFuZ3VsYXJfdmVsb2NpdHkYByABKAsyDS5O",
             "ZXRTeW5jLlZlYzMSFwoPb3duZXJfY2xpZW50X2lkGAggASgNEhgKEGxvY29t",
-            "b3Rpb25fc3RhdGUYCSABKA0SEwoLaXNfZ3JvdW5kZWQYCiABKAgiYAoOV29y",
-            "bGRfU25hcHNob3QSFAoMc25hcHNob3RUaWNrGAEgASgNEjgKE2NoYXJhY3Rl",
-            "cl9zbmFwc2hvdHMYAiADKAsyGy5OZXRTeW5jLkNoYXJhY3Rlcl9TbmFwc2hv",
-            "dCIlChFHYW1lX0pvaW5fUmVxdWVzdBIQCghjbGllbnRJZBgBIAEoDSImChJH",
-            "YW1lX0pvaW5fUmVzcG9uc2USEAoIYWNjZXB0ZWQYASABKAhiBnByb3RvMw=="));
+            "b3Rpb25fc3RhdGUYCSABKA0SEwoLaXNfZ3JvdW5kZWQYCiABKAgSJAoNdmll",
+            "d19yb3RhdGlvbhgLIAEoCzINLk5ldFN5bmMuUXVhdCJgCg5Xb3JsZF9TbmFw",
+            "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SOAoTY2hhcmFjdGVyX3NuYXBz",
+            "aG90cxgCIAMoCzIbLk5ldFN5bmMuQ2hhcmFjdGVyX1NuYXBzaG90IiUKEUdh",
+            "bWVfSm9pbl9SZXF1ZXN0EhAKCGNsaWVudElkGAEgASgNIiYKEkdhbWVfSm9p",
+            "bl9SZXNwb25zZRIQCghhY2NlcHRlZBgBIAEoCGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -53,7 +54,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "EntityId", "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation", "LinearVelocity", "AngularVelocity", "OwnerClientId", "LocomotionState", "IsGrounded" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation", "LinearVelocity", "AngularVelocity", "OwnerClientId", "LocomotionState", "IsGrounded", "ViewRotation" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "CharacterSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, new[]{ "ClientId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted" }, null, null, null, null)
@@ -1476,6 +1477,7 @@ namespace NetSync {
       ownerClientId_ = other.ownerClientId_;
       locomotionState_ = other.locomotionState_;
       isGrounded_ = other.isGrounded_;
+      viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1605,6 +1607,18 @@ namespace NetSync {
       }
     }
 
+    /// <summary>Field number for the "view_rotation" field.</summary>
+    public const int ViewRotationFieldNumber = 11;
+    private global::NetSync.Quat viewRotation_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NetSync.Quat ViewRotation {
+      get { return viewRotation_; }
+      set {
+        viewRotation_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1630,6 +1644,7 @@ namespace NetSync {
       if (OwnerClientId != other.OwnerClientId) return false;
       if (LocomotionState != other.LocomotionState) return false;
       if (IsGrounded != other.IsGrounded) return false;
+      if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1647,6 +1662,7 @@ namespace NetSync {
       if (OwnerClientId != 0) hash ^= OwnerClientId.GetHashCode();
       if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
       if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
+      if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1705,6 +1721,10 @@ namespace NetSync {
         output.WriteRawTag(80);
         output.WriteBool(IsGrounded);
       }
+      if (viewRotation_ != null) {
+        output.WriteRawTag(90);
+        output.WriteMessage(ViewRotation);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1755,6 +1775,10 @@ namespace NetSync {
         output.WriteRawTag(80);
         output.WriteBool(IsGrounded);
       }
+      if (viewRotation_ != null) {
+        output.WriteRawTag(90);
+        output.WriteMessage(ViewRotation);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1794,6 +1818,9 @@ namespace NetSync {
       }
       if (IsGrounded != false) {
         size += 1 + 1;
+      }
+      if (viewRotation_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ViewRotation);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1848,6 +1875,12 @@ namespace NetSync {
       }
       if (other.IsGrounded != false) {
         IsGrounded = other.IsGrounded;
+      }
+      if (other.viewRotation_ != null) {
+        if (viewRotation_ == null) {
+          ViewRotation = new global::NetSync.Quat();
+        }
+        ViewRotation.MergeFrom(other.ViewRotation);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1916,6 +1949,13 @@ namespace NetSync {
             IsGrounded = input.ReadBool();
             break;
           }
+          case 90: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
+            }
+            input.ReadMessage(ViewRotation);
+            break;
+          }
         }
       }
     #endif
@@ -1981,6 +2021,13 @@ namespace NetSync {
           }
           case 80: {
             IsGrounded = input.ReadBool();
+            break;
+          }
+          case 90: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
+            }
+            input.ReadMessage(ViewRotation);
             break;
           }
         }

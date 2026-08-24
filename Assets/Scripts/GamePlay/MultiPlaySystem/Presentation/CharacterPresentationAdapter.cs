@@ -18,6 +18,7 @@ namespace GamePlay.MultiPlaySystem
         private Quaternion _preservedWorldRotation;
         private bool _isSmoothingCorrection;
         private bool _hasPreservedPose;
+        private bool _presentationOwnsBodyYaw;
 
         /// <summary>
         /// 捕获当前网络可见 Transform 状态。
@@ -27,10 +28,12 @@ namespace GamePlay.MultiPlaySystem
             EntityCharacter entity = GetComponent<EntityCharacter>();
             if (entity != null && entity.IsInitialized) return entity.CaptureSimulationState();
 
+            Transform mesh = transform.Find("mesh");
             return new EntitySimulationState
             {
                 position = transform.position,
-                rotation = transform.rotation,
+                rotation = mesh != null ? mesh.rotation : Quaternion.identity,
+                viewRotation = Quaternion.identity,
                 linearVelocity = Vector3.zero,
                 angularVelocity = Vector3.zero
             };
@@ -41,23 +44,40 @@ namespace GamePlay.MultiPlaySystem
         /// </summary>
         public void ApplyState(in EntitySimulationState state)
         {
-            MovementModule movement = GetComponent<MovementModule>();
-            if (movement != null) movement.Teleport(state.position);
-            else transform.position = state.position;
+            TransformModule transformModule = GetComponent<TransformModule>();
+            if (transformModule != null)
+            {
+                transformModule.Teleport(state.position);
+                transformModule.Restore(state.rotation, state.angularVelocity);
+            }
+            else
+            {
+                transform.position = state.position;
+                transform.rotation = Quaternion.identity;
+                Transform mesh = transform.Find("mesh");
+                if (mesh != null) mesh.rotation = state.rotation;
+            }
 
-            RotationModule rotation = GetComponent<RotationModule>();
-            if (rotation != null) rotation.Restore(state.rotation, state.angularVelocity);
-            else transform.rotation = state.rotation;
+            ViewModule view = GetComponent<ViewModule>();
+            if (view != null) view.Restore(state.viewRotation, Vector3.zero);
+            else
+            {
+                Transform orientation = transform.Find("orientation");
+                if (orientation != null) orientation.rotation = state.viewRotation;
+            }
         }
 
         /// <summary>
         /// 记录表现根节点的本地姿态，供预测校正使用。
+        /// mesh 承载模拟身体偏航时，校正不得把旋转拉回预制体本地值。
         /// </summary>
         public void ApplyRole(EntitySimulationMode mode)
         {
             if (presentationRoot == null) return;
             _presentationLocalPosition = presentationRoot.localPosition;
             _presentationLocalRotation = presentationRoot.localRotation;
+            Transform mesh = transform.Find("mesh");
+            _presentationOwnsBodyYaw = mesh != null && presentationRoot == mesh;
         }
 
         /// <summary>
@@ -66,6 +86,8 @@ namespace GamePlay.MultiPlaySystem
         public void BeginPredictionCorrection()
         {
             if (presentationRoot == null) return;
+            Transform mesh = transform.Find("mesh");
+            _presentationOwnsBodyYaw = mesh != null && presentationRoot == mesh;
             _preservedWorldPosition = presentationRoot.position;
             _preservedWorldRotation = presentationRoot.rotation;
             _hasPreservedPose = true;
@@ -84,7 +106,15 @@ namespace GamePlay.MultiPlaySystem
                 return;
             }
 
-            presentationRoot.SetPositionAndRotation(_preservedWorldPosition, _preservedWorldRotation);
+            if (_presentationOwnsBodyYaw)
+            {
+                presentationRoot.position = _preservedWorldPosition;
+            }
+            else
+            {
+                presentationRoot.SetPositionAndRotation(_preservedWorldPosition, _preservedWorldRotation);
+            }
+
             _isSmoothingCorrection = true;
         }
 
@@ -93,7 +123,11 @@ namespace GamePlay.MultiPlaySystem
             _isSmoothingCorrection = false;
             _hasPreservedPose = false;
             if (presentationRoot == null) return;
-            presentationRoot.SetLocalPositionAndRotation(_presentationLocalPosition, _presentationLocalRotation);
+            presentationRoot.localPosition = _presentationLocalPosition;
+            if (!_presentationOwnsBodyYaw)
+            {
+                presentationRoot.localRotation = _presentationLocalRotation;
+            }
         }
 
         #region Lifecycle
@@ -105,6 +139,18 @@ namespace GamePlay.MultiPlaySystem
             float blend = 1f - Mathf.Pow(0.5f, Time.deltaTime / correctionHalfLife);
             presentationRoot.localPosition = Vector3.Lerp(
                 presentationRoot.localPosition, _presentationLocalPosition, blend);
+
+            if (_presentationOwnsBodyYaw)
+            {
+                if (Vector3.SqrMagnitude(presentationRoot.localPosition - _presentationLocalPosition) > 0.000001f)
+                {
+                    return;
+                }
+
+                ResetPresentationPose();
+                return;
+            }
+
             presentationRoot.localRotation = Quaternion.Slerp(
                 presentationRoot.localRotation, _presentationLocalRotation, blend);
 

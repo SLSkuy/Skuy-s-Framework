@@ -29,7 +29,9 @@ CharacterReplicationSystem.AdvanceTick
 
 `GameCore` registers `NetworkTimeSystem` and `CharacterReplicationSystem`. LocalPlay does not require `MultiPlayManager`, `NetClient`, or `NetServer`. Scene identities with `EntitySimulationMode.LocalPlay` register even when `NetworkObjectId` is 0.
 
-Replica never calls `EntitySimulation.Step`. `MovementModule.SetReplicaMode` is the only place that disables the driving `CharacterController` for Replica.
+Replica never calls `EntitySimulation.Step`. `TransformModule.SetReplicaMode` is the only place that disables the driving `CharacterController` for Replica.
+
+`EntitySimulation.Step` order is `ViewModule.Look` -> `TransformModule.Rotate` -> `ViewModule.ApplyWorldPose` -> locomotion `TransformModule.Move`. Root rotation stays identity. `Rotate` turns child `mesh` toward the orientation-mapped move vector. `Move` translates along current mesh planar forward. `ApplyWorldPose` writes `orientation` as `Euler(pitch, yaw, 0)`.
 
 ## Prediction Contract
 

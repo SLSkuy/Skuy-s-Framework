@@ -1,5 +1,6 @@
 using Core;
 using Framework;
+using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
@@ -33,6 +34,8 @@ namespace GamePlay.EntitySystem
         {
             if (_inputProvider == null && GameCore.Instance != null)
             {
+                Cursor.lockState = CursorLockMode.Locked;
+                GameCore.Instance.CameraMgr.SetTarget(transform.Find("orientation"));
                 SetInputSource(GameCore.Instance.LocalInput);
             }
         }

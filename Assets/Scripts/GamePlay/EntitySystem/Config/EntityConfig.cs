@@ -22,7 +22,7 @@ namespace GamePlay.EntitySystem
         [Header("表现属性")]
         public bool rootMotion = true;
         [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 动画 Speed 参数插值平滑时间（秒）
-        [Min(0f)] public float meshTurnSpeed = 360f;   // 非锁定状态下模型转向移动方向的角速度（度/秒）
+        [Min(0f)] public float meshTurnSpeed = 360f;   // mesh 转向由 orientation 映射的目标方向的角速度（度/秒）
 
         [Header("物理属性")] 
         public float radius = 0.2f;

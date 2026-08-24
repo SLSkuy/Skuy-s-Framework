@@ -24,7 +24,8 @@ MultiPlaySystem/
 - `NetworkTimeSystem` broadcasts the shared fixed tick without requiring a net session.
 - `NetworkObjectIdentity` implements `IEntityObjectIdentity` and registers with `CharacterReplicationSystem`.
 - `EntitySimulationMode` is Authority, Predict, Replica, LocalPlay.
-- Replica collision: `MovementModule.SetReplicaMode(true)` disables `CharacterController` and adds a capsule collider. `CharacterPresentationAdapter.ApplyRole` does not toggle the controller.
+- Replica collision: `TransformModule.SetReplicaMode(true)` disables `CharacterController` and adds a capsule collider. `CharacterPresentationAdapter.ApplyRole` does not toggle the controller.
+- Snapshots include `Character_Snapshot.view_rotation`. Interpolation slerps view pose; prediction reconcile includes view angle against the body-yaw thresholds. `rotation` is mesh body yaw; root rotation stays identity. When `presentationRoot` is `mesh`, prediction correction must not overwrite that yaw.
 
 ## Role Flow
 

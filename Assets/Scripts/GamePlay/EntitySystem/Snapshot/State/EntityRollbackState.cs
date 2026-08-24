@@ -11,6 +11,7 @@ namespace GamePlay.EntitySystem
     {
         public EntitySimulationState TransformState;
         public MovementRollbackState MovementState;
+        public ViewRollbackState ViewState;
         public uint StateKey;
         public Vector2 MoveInput;
         public Vector2 AimInput;

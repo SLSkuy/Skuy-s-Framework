@@ -11,6 +11,7 @@ namespace GamePlay.EntitySystem
     {
         public Vector3 position;
         public Quaternion rotation;
+        public Quaternion viewRotation;
         public Vector3 linearVelocity;
         public Vector3 angularVelocity;
         public uint locomotionState;

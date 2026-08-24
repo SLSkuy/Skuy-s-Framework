@@ -39,6 +39,8 @@ namespace GamePlay.MultiPlaySystem
             bool requiresSnap = !_hasIncomingState ||
                 Vector3.Distance(_lastIncomingState.position, state.position) >= config.positionSnapThreshold ||
                 Quaternion.Angle(_lastIncomingState.rotation, state.rotation) >=
+                config.rotationSnapThresholdDegrees ||
+                Quaternion.Angle(_lastIncomingState.viewRotation, state.viewRotation) >=
                 config.rotationSnapThresholdDegrees;
             if (requiresSnap) Reset();
 
@@ -86,6 +88,7 @@ namespace GamePlay.MultiPlaySystem
             {
                 position = Vector3.Lerp(fromState.position, toState.position, t),
                 rotation = Quaternion.Slerp(fromState.rotation, toState.rotation, t),
+                viewRotation = Quaternion.Slerp(fromState.viewRotation, toState.viewRotation, t),
                 linearVelocity = Vector3.Lerp(fromState.linearVelocity, toState.linearVelocity, t),
                 angularVelocity = Vector3.Lerp(fromState.angularVelocity, toState.angularVelocity, t),
                 locomotionState = t >= 0.5f ? toState.locomotionState : fromState.locomotionState,

@@ -88,6 +88,7 @@ namespace Utils
                 LastProcessedInputTick = lastProcessedInputTick,
                 Position = ToProto(state.position),
                 Rotation = ToProto(state.rotation),
+                ViewRotation = ToProto(state.viewRotation),
                 LinearVelocity = ToProto(state.linearVelocity),
                 AngularVelocity = ToProto(state.angularVelocity),
                 OwnerClientId = ownerClientId,
@@ -102,6 +103,7 @@ namespace Utils
             {
                 position = ToUnity(snapshot.Position),
                 rotation = ToUnity(snapshot.Rotation),
+                viewRotation = ToUnity(snapshot.ViewRotation),
                 linearVelocity = ToUnity(snapshot.LinearVelocity),
                 angularVelocity = ToUnity(snapshot.AngularVelocity),
                 locomotionState = snapshot.LocomotionState,

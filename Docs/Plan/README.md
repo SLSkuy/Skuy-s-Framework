@@ -8,3 +8,4 @@ Small features may use the minimal document template. Architecture, protocol, an
 
 | Feature | Design | Tasks | Status |
 | --- | --- | --- | --- |
+| Transform and View Modules | [design](TransformViewModules/transform-view-modules-design.md) | [tasks](TransformViewModules/transform-view-modules-tasks.md) | In Progress (confirmation gate Confirmed; `/apply` 2026-08-25) |

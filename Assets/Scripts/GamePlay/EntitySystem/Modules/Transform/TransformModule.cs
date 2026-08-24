@@ -4,56 +4,64 @@ using Utils;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体位置移动能力模块，只负责位置模拟与位置同步落点。
+    /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换。
+    /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上。
     /// </summary>
-    public class MovementModule : EntityModuleBase
+    public class TransformModule : EntityModuleBase
     {
+        private const string MeshChildName = "mesh";
+
         private CharacterController _controller;
         private EntityConfig _config;
+        private Transform _mesh;
 
         private Vector3 _lastMoveDir;
+        private Vector3 _angularVelocity;
+        private Vector3 _dashDir;
         private float _locomotionSpeed;
         private float _verticalVelocity;
-        private int _jumpCount;
-
-        private Vector3 _dashDir;
         private float _dashAccumulator;
+        private int _jumpCount;
         private bool _isDashing;
 
-        #region 状态属性
-        public override ModuleType ModuleType => ModuleType.Position;
-        
+        #region 属性
+        public override ModuleType ModuleType => ModuleType.Transform;
         public Vector3 Position => transform.position;
+        public Quaternion Rotation => _mesh != null ? _mesh.rotation : Quaternion.identity;
         public Vector3 LinearVelocity { get; private set; }
+        public Vector3 AngularVelocity => _angularVelocity;
         public bool IsGrounded => _controller != null && _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion
 
-        #region 初始化
         /// <summary>
-        /// 初始化移动模块运行时配置。
+        /// 初始化移动与转向运行时配置。
         /// </summary>
         public void Init(EntityConfig config)
         {
             _config = config;
             _locomotionSpeed = _config.walkSpeed;
-        }
-        #endregion
+            _controller = GetComponent<CharacterController>();
+            _mesh = transform.Find(MeshChildName);
+            if (_mesh == null)
+            {
+                Debug.LogError($"{name} 缺少名为 {MeshChildName} 的直接子节点，TransformModule 无法写入身体朝向。", this);
+            }
 
-        #region 网络同步
-        
+            KeepRootIdentity();
+        }
+
         /// <summary>
-        /// 添加碰撞体或驱动器
+        /// 按 Replica 切换驱动 CharacterController 或静态胶囊。
         /// </summary>
         public void SetReplicaMode(bool isReplica)
         {
             if (isReplica)
             {
-                // 保险措施
                 _controller = GetComponent<CharacterController>();
                 if (_controller != null) _controller.enabled = false;
-                
+
                 CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
                 collider.height = _config.height;
                 collider.radius = _config.radius;
@@ -67,6 +75,7 @@ namespace GamePlay.EntitySystem
                 _controller.skinWidth = 0.0001f;
                 _controller.minMoveDistance = 0f;
                 _controller.center = new Vector3(0, _config.height / 2, 0);
+                _controller.enabled = true;
             }
         }
 
@@ -79,8 +88,47 @@ namespace GamePlay.EntitySystem
             if (wasEnabled) _controller.enabled = false;
 
             transform.position = position;
+            KeepRootIdentity();
 
             if (wasEnabled) _controller.enabled = true;
+        }
+
+        /// <summary>
+        /// 按视角相对移动输入，将 mesh 转向该目标朝向；不旋转根节点。
+        /// </summary>
+        public void Rotate(Vector2 move, float viewYaw, float deltaTime)
+        {
+            KeepRootIdentity();
+            if (_config == null || _mesh == null || deltaTime <= 0f) return;
+
+            Vector3 planarDirection = Quaternion.Euler(0f, viewYaw, 0f) * new Vector3(move.x, 0f, move.y);
+            if (planarDirection.sqrMagnitude <= Mathf.Epsilon)
+            {
+                _angularVelocity = Vector3.zero;
+                return;
+            }
+
+            Quaternion previousRotation = _mesh.rotation;
+            Quaternion targetRotation = Quaternion.LookRotation(planarDirection.normalized, Vector3.up);
+            _mesh.rotation = Quaternion.RotateTowards(
+                previousRotation,
+                targetRotation,
+                _config.meshTurnSpeed * deltaTime);
+
+            Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
+            deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+            if (angle > 180f) angle -= 360f;
+            _angularVelocity = axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
+        }
+
+        /// <summary>
+        /// 直接应用 mesh 世界空间旋转与角速度；根节点保持单位旋转。
+        /// </summary>
+        public void Restore(Quaternion rotation, Vector3 angularVelocity)
+        {
+            KeepRootIdentity();
+            if (_mesh != null) _mesh.rotation = Normalize(rotation);
+            _angularVelocity = angularVelocity;
         }
 
         /// <summary>
@@ -116,23 +164,19 @@ namespace GamePlay.EntitySystem
             _jumpCount = state.jumpCount;
             _isDashing = state.isDashing;
         }
-        
-        #endregion
 
-        #region 移动能力
-        
         /// <summary>
-        /// 位移：以模型朝向作为移动方向基准，并应用重力与冲刺计时器推进。
+        /// 位移：平面速度沿 mesh 当前朝向，输入只提供相对 orientation 的目标转向与速度大小。
         /// </summary>
-        public void Move(Vector2 inputDir, float speed, float dt)
+        public void Move(Vector2 inputDir, float speed, float viewYaw, float dt)
         {
-            // 快照模式，不进行模拟
             if (!_controller) return;
-            
+
+            KeepRootIdentity();
             if (!_isDashing)
             {
                 _locomotionSpeed = speed;
-                UpdateLocomotionDir(inputDir);
+                UpdateLocomotionDir(inputDir, viewYaw);
             }
 
             ApplyGravity(dt);
@@ -153,10 +197,31 @@ namespace GamePlay.EntitySystem
             return true;
         }
 
-        private void UpdateLocomotionDir(Vector2 inputDir)
+        private void UpdateLocomotionDir(Vector2 inputDir, float viewYaw)
         {
-            _lastMoveDir = new Vector3(inputDir.x, 0f, inputDir.y);
-            _lastMoveDir = Vector3.ClampMagnitude(_lastMoveDir, 1f);
+            float magnitude = Mathf.Clamp01(inputDir.magnitude);
+            if (magnitude <= Mathf.Epsilon)
+            {
+                _lastMoveDir = Vector3.zero;
+                return;
+            }
+
+            Vector3 meshForward = _mesh != null ? _mesh.forward : Quaternion.Euler(0f, viewYaw, 0f) * Vector3.forward;
+            meshForward.y = 0f;
+            if (meshForward.sqrMagnitude <= Mathf.Epsilon)
+            {
+                meshForward = Vector3.forward;
+            }
+
+            _lastMoveDir = meshForward.normalized * magnitude;
+        }
+
+        private void KeepRootIdentity()
+        {
+            if (transform.rotation != Quaternion.identity)
+            {
+                transform.rotation = Quaternion.identity;
+            }
         }
 
         private void ApplyGravity(float dt)
@@ -200,6 +265,20 @@ namespace GamePlay.EntitySystem
                 _isDashing = false;
             }
         }
-        #endregion
+
+        private static Quaternion Normalize(Quaternion rotation)
+        {
+            float length = Mathf.Sqrt(
+                rotation.x * rotation.x + rotation.y * rotation.y +
+                rotation.z * rotation.z + rotation.w * rotation.w);
+            if (length <= Mathf.Epsilon) return Quaternion.identity;
+
+            float inverse = 1f / length;
+            return new Quaternion(
+                rotation.x * inverse,
+                rotation.y * inverse,
+                rotation.z * inverse,
+                rotation.w * inverse);
+        }
     }
 }

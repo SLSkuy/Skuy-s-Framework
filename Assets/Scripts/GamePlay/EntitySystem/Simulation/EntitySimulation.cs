@@ -27,7 +27,8 @@ namespace GamePlay.EntitySystem
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
             _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
-            _context.Rotation.Rotate(command.move, command.aim, deltaTime);
+            _context.View.Look(command.aim, deltaTime);
+            _context.Transform.Rotate(command.move, _context.View.Yaw, deltaTime);
             _context.StateMachine.Update(deltaTime);
             _context.ResetTickFlags();
         }
@@ -39,10 +40,11 @@ namespace GamePlay.EntitySystem
         {
             return new EntitySimulationState
             {
-                position = _context.Movement.Position,
-                rotation = _context.Rotation.Rotation,
-                linearVelocity = _context.Movement.LinearVelocity,
-                angularVelocity = _context.Rotation.AngularVelocity,
+                position = _context.Transform.Position,
+                rotation = _context.Transform.Rotation,
+                viewRotation = _context.View.ViewRotation,
+                linearVelocity = _context.Transform.LinearVelocity,
+                angularVelocity = _context.Transform.AngularVelocity,
                 locomotionState = _context.StateMachine.CurrentState,
                 isGrounded = _context.IsGrounded
             };
@@ -56,7 +58,8 @@ namespace GamePlay.EntitySystem
             return new EntityRollbackState
             {
                 TransformState = CaptureSimulationState(),
-                MovementState = _context.Movement.CaptureRollbackState(),
+                MovementState = _context.Transform.CaptureRollbackState(),
+                ViewState = _context.View.CaptureRollbackState(),
                 StateKey = _context.StateMachine.CurrentState,
                 MoveInput = _context.LastMoveInput,
                 AimInput = _context.LastAimInput,
@@ -72,8 +75,9 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void RestoreRollbackState(in EntityRollbackState state)
         {
-            _context.Movement.RestoreRollbackState(state.TransformState.position, state.MovementState);
-            _context.Rotation.Restore(state.TransformState.rotation, state.TransformState.angularVelocity);
+            _context.Transform.RestoreRollbackState(state.TransformState.position, state.MovementState);
+            _context.Transform.Restore(state.TransformState.rotation, state.TransformState.angularVelocity);
+            _context.View.RestoreRollbackState(state.ViewState);
             _context.LastMoveInput = state.MoveInput;
             _context.LastAimInput = state.AimInput;
             _context.LocomotionSpeed = state.LocomotionSpeed;

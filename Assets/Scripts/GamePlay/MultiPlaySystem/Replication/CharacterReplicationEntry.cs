@@ -70,9 +70,9 @@ namespace GamePlay.MultiPlaySystem
 
             if (!Simulation.IsInitialized) Simulation.Init();
 
-            MovementModule movement = Identity.GetComponent<MovementModule>();
+            TransformModule transformModule = Identity.GetComponent<TransformModule>();
             bool isReplica = role == EntitySimulationMode.Replica;
-            movement?.SetReplicaMode(isReplica);
+            transformModule?.SetReplicaMode(isReplica);
             Presentation.ApplyRole(role);
 
             Input.Reset();

@@ -298,17 +298,20 @@ namespace GamePlay.MultiPlaySystem
             SyncConfig config = SyncConfig.Instance;
             float positionError = Vector3.Distance(predictedState.position, authoritativeState.position);
             float rotationError = Quaternion.Angle(predictedState.rotation, authoritativeState.rotation);
+            float viewError = Quaternion.Angle(predictedState.viewRotation, authoritativeState.viewRotation);
             prediction.History.CopyAfter(confirmedTick, prediction.ReplayFrames);
 
             if (positionError <= config.positionReconcileThreshold &&
-                rotationError <= config.rotationReconcileThresholdDegrees)
+                rotationError <= config.rotationReconcileThresholdDegrees &&
+                viewError <= config.rotationReconcileThresholdDegrees)
             {
                 prediction.History.RemoveThrough(confirmedTick);
                 return;
             }
 
             bool smoothCorrection = positionError < config.positionSnapThreshold &&
-                rotationError < config.rotationSnapThresholdDegrees;
+                rotationError < config.rotationSnapThresholdDegrees &&
+                viewError < config.rotationSnapThresholdDegrees;
             entry.Presentation.BeginPredictionCorrection();
 
             EntityRollbackState rollbackState = confirmedFrame.state;
@@ -342,6 +345,8 @@ namespace GamePlay.MultiPlaySystem
             SyncConfig config = SyncConfig.Instance;
             return Vector3.Distance(currentState.position, authoritativeState.position) < config.positionSnapThreshold &&
                 Quaternion.Angle(currentState.rotation, authoritativeState.rotation) <
+                config.rotationSnapThresholdDegrees &&
+                Quaternion.Angle(currentState.viewRotation, authoritativeState.viewRotation) <
                 config.rotationSnapThresholdDegrees;
         }
 

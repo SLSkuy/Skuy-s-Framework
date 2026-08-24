@@ -18,12 +18,12 @@ namespace GamePlay.EntitySystem
         
         // 能力组件
         private EntitySimulation _simulation;
-        private MovementModule _movementModule;
-        private RotationModule _rotationModule;
+        private TransformModule _transformModule;
+        private ViewModule _viewModule;
 
         #region 属性
         public EntityContext Context => _context;
-        public bool IsInitialized => _identity.IsInitialized;
+        public bool IsInitialized => _isInitialized;
         public uint EntityId => _identity?.EntityId ?? 0;
         public uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
@@ -38,10 +38,9 @@ namespace GamePlay.EntitySystem
             _identity = GetComponent<IEntityObjectIdentity>();
             
             InitConfig();
-            InitSimulationContext();
             InitCapacityModule();
+            InitSimulationContext();
             RegisterStates();
-            
             
             _isInitialized = true;
         }
@@ -56,13 +55,13 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitCapacityModule()
         {
-            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
-            _movementModule.Init(config);
-            _movementModule.Bind(this);
+            _transformModule = gameObject.GetOrAddComponent<TransformModule>();
+            _transformModule.Init(config);
+            _transformModule.Bind(this);
 
-            _rotationModule = gameObject.GetOrAddComponent<RotationModule>();
-            _rotationModule.Init(config);
-            _rotationModule.Bind(this);
+            _viewModule = gameObject.GetOrAddComponent<ViewModule>();
+            _viewModule.Init(config);
+            _viewModule.Bind(this);
         }
         
         /// <summary>
@@ -70,7 +69,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitSimulationContext()
         {
-            _context = new EntityContext(config, _movementModule, _rotationModule);
+            _context = new EntityContext(config, _transformModule, _viewModule);
             _simulation = new EntitySimulation(_context);
         }
         
@@ -84,6 +83,7 @@ namespace GamePlay.EntitySystem
             _context.StateMachine.RegisterState(new EntityRunState(_context));
             _context.StateMachine.RegisterState(new EntitySprintState(_context));
             _context.StateMachine.RegisterState(new EntityAirborneState(_context));
+            _context.StateMachine.ChangeState(EntityState.IDLE);
         }
         
         #region 模拟入口
@@ -99,7 +99,6 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获当前状态
         /// </summary>
-        /// <returns></returns>
         public EntitySimulationState CaptureSimulationState()
         {
             return _simulation?.CaptureSimulationState() ?? default;
@@ -108,7 +107,6 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 获取回退状态
         /// </summary>
-        /// <returns></returns>
         public EntityRollbackState CaptureRollbackState()
         {
             return _simulation?.CaptureRollbackState() ?? default;
@@ -117,7 +115,6 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 缓存回退状态
         /// </summary>
-        /// <param name="state"></param>
         public void RestoreRollbackState(in EntityRollbackState state)
         {
             _simulation?.RestoreRollbackState(state);
