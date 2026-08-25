@@ -12,7 +12,7 @@ namespace GamePlay.EntitySystem
 
         protected override void Tick(float dt)
         {
-            Transform.Move(Context.LastMoveInput, LocomotionSpeed, Context.View.Yaw, dt);
+            Movement.Move(Context.LastMoveInput, LocomotionSpeed, Context.View.Yaw, dt);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace GamePlay.EntitySystem
 
             if (JumpRequest)
             {
-                Transform.Jump(Config.jumpSpeed, Config.jumpCount);
+                Movement.Jump(Config.jumpSpeed, Config.jumpCount);
             }
 
             return false;

@@ -28,25 +28,19 @@ namespace GamePlay.EntitySystem
             _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
             _context.View.Look(command.aim, deltaTime);
-            _context.Transform.Rotate(command.move, _context.View.Yaw, deltaTime);
+            _context.Movement.Rotate(command.move, _context.View.Yaw, deltaTime);
             _context.StateMachine.Update(deltaTime);
             _context.ResetTickFlags();
         }
 
         /// <summary>
-        /// 捕获当前网络可见 Transform 状态。
+        /// 捕获实体基础状态（状态机）。
         /// </summary>
         public EntitySimulationState CaptureSimulationState()
         {
             return new EntitySimulationState
             {
-                position = _context.Transform.Position,
-                rotation = _context.Transform.Rotation,
-                viewRotation = _context.View.ViewRotation,
-                linearVelocity = _context.Transform.LinearVelocity,
-                angularVelocity = _context.Transform.AngularVelocity,
-                locomotionState = _context.StateMachine.CurrentState,
-                isGrounded = _context.IsGrounded
+                entityState = _context.StateMachine.CurrentState
             };
         }
 
@@ -55,18 +49,22 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public EntityRollbackState CaptureRollbackState()
         {
+            MovementRollbackState movementState = _context.Movement.CaptureRollbackState();
+            movementState.desiredLocomotionSpeed = _context.LocomotionSpeed;
+            movementState.isSprinting = _context.IsSprinting;
+            movementState.isRunning = _context.IsRunning;
+            movementState.isGrounded = _context.IsGrounded;
+
+            ViewRollbackState viewState = _context.View.CaptureRollbackState();
+            viewState.isFocus = _context.IsFocus;
+
             return new EntityRollbackState
             {
-                TransformState = CaptureSimulationState(),
-                MovementState = _context.Transform.CaptureRollbackState(),
-                ViewState = _context.View.CaptureRollbackState(),
-                StateKey = _context.StateMachine.CurrentState,
-                MoveInput = _context.LastMoveInput,
-                AimInput = _context.LastAimInput,
-                LocomotionSpeed = _context.LocomotionSpeed,
-                IsSprinting = _context.IsSprinting,
-                IsRunning = _context.IsRunning,
-                IsFocus = _context.IsFocus
+                simulationState = CaptureSimulationState(),
+                movementState = movementState,
+                viewState = viewState,
+                moveInput = _context.LastMoveInput,
+                aimInput = _context.LastAimInput
             };
         }
 
@@ -75,17 +73,16 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void RestoreRollbackState(in EntityRollbackState state)
         {
-            _context.Transform.RestoreRollbackState(state.TransformState.position, state.MovementState);
-            _context.Transform.Restore(state.TransformState.rotation, state.TransformState.angularVelocity);
-            _context.View.RestoreRollbackState(state.ViewState);
-            _context.LastMoveInput = state.MoveInput;
-            _context.LastAimInput = state.AimInput;
-            _context.LocomotionSpeed = state.LocomotionSpeed;
-            _context.IsSprinting = state.IsSprinting;
-            _context.IsRunning = state.IsRunning;
-            _context.IsFocus = state.IsFocus;
+            _context.Movement.RestoreRollbackState(state.movementState);
+            _context.View.RestoreRollbackState(state.viewState);
+            _context.LastMoveInput = state.moveInput;
+            _context.LastAimInput = state.aimInput;
+            _context.LocomotionSpeed = state.movementState.desiredLocomotionSpeed;
+            _context.IsSprinting = state.movementState.isSprinting;
+            _context.IsRunning = state.movementState.isRunning;
+            _context.IsFocus = state.viewState.isFocus;
             _context.ResetTickFlags();
-            _context.StateMachine.ChangeState(state.StateKey);
+            _context.StateMachine.ChangeState(state.simulationState.entityState);
         }
     }
 }

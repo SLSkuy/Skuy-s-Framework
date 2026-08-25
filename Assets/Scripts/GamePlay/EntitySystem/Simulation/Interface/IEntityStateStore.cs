@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     public interface IEntityStateStore
     {
         /// <summary>
-        /// 捕获当前实体模拟状态
+        /// 捕获当前实体基础状态（状态机）
         /// </summary>
         EntitySimulationState CaptureSimulationState();
         

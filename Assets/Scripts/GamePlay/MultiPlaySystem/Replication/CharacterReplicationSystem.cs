@@ -154,7 +154,7 @@ namespace GamePlay.MultiPlaySystem
             foreach (CharacterReplicationEntry entry in _characters.Values)
             {
                 if (!entry.Identity.IsAuthority) continue;
-                EntitySimulationState state = entry.Presentation.CaptureState();
+                EntityRollbackState state = entry.Presentation.CaptureState();
                 world.CharacterSnapshots.Add(ProtoUtils.ToCharacterSnapshotMessage(
                     state,
                     entry.Identity.NetworkObjectId,
@@ -174,7 +174,7 @@ namespace GamePlay.MultiPlaySystem
             if (world == null) return;
             foreach (global::NetSync.Character_Snapshot snapshot in world.CharacterSnapshots)
             {
-                EntitySimulationState state = ProtoUtils.ToSimulationState(snapshot);
+                EntityRollbackState state = ProtoUtils.ToRollbackState(snapshot);
 
                 if (_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry existingEntry) &&
                     snapshot.SnapshotTick <= existingEntry.LastAppliedSnapshotTick)
@@ -268,7 +268,7 @@ namespace GamePlay.MultiPlaySystem
 
         private static void ReconcilePredictedCharacter(CharacterReplicationEntry entry,
             global::NetSync.Character_Snapshot snapshot,
-            in EntitySimulationState authoritativeState,
+            in EntityRollbackState authoritativeState,
             float tickDeltaTime)
         {
             CharacterPredictionController prediction = entry.Prediction;
@@ -294,11 +294,13 @@ namespace GamePlay.MultiPlaySystem
                 return;
             }
 
-            EntitySimulationState predictedState = confirmedFrame.state.TransformState;
+            MovementRollbackState predictedMove = confirmedFrame.state.movementState;
+            MovementRollbackState authoritativeMove = authoritativeState.movementState;
             SyncConfig config = SyncConfig.Instance;
-            float positionError = Vector3.Distance(predictedState.position, authoritativeState.position);
-            float rotationError = Quaternion.Angle(predictedState.rotation, authoritativeState.rotation);
-            float viewError = Quaternion.Angle(predictedState.viewRotation, authoritativeState.viewRotation);
+            float positionError = Vector3.Distance(predictedMove.rootPosition, authoritativeMove.rootPosition);
+            float rotationError = Quaternion.Angle(predictedMove.meshRotation, authoritativeMove.meshRotation);
+            float viewError = Quaternion.Angle(confirmedFrame.state.viewState.viewRotation,
+                authoritativeState.viewState.viewRotation);
             prediction.History.CopyAfter(confirmedTick, prediction.ReplayFrames);
 
             if (positionError <= config.positionReconcileThreshold &&
@@ -314,9 +316,7 @@ namespace GamePlay.MultiPlaySystem
                 viewError < config.rotationSnapThresholdDegrees;
             entry.Presentation.BeginPredictionCorrection();
 
-            EntityRollbackState rollbackState = confirmedFrame.state;
-            rollbackState.TransformState = authoritativeState;
-            rollbackState.MovementState.linearVelocity = authoritativeState.linearVelocity;
+            EntityRollbackState rollbackState = OverlayAuthoritativeVisibleState(confirmedFrame.state, authoritativeState);
             entry.Simulation.RestoreRollbackState(rollbackState);
 
             for (int i = 0; i < prediction.ReplayFrames.Count; i++)
@@ -332,22 +332,48 @@ namespace GamePlay.MultiPlaySystem
         }
 
         private static void ApplyCorrectedTransform(CharacterReplicationEntry entry,
-            in EntitySimulationState authoritativeState, bool smoothCorrection)
+            in EntityRollbackState authoritativeState, bool smoothCorrection)
         {
             entry.Presentation.BeginPredictionCorrection();
             entry.Presentation.ApplyState(authoritativeState);
             entry.Presentation.EndPredictionCorrection(smoothCorrection);
         }
 
-        private static bool ShouldSmoothCorrection(in EntitySimulationState currentState,
-            in EntitySimulationState authoritativeState)
+        private static bool ShouldSmoothCorrection(in EntityRollbackState currentState,
+            in EntityRollbackState authoritativeState)
         {
             SyncConfig config = SyncConfig.Instance;
-            return Vector3.Distance(currentState.position, authoritativeState.position) < config.positionSnapThreshold &&
-                Quaternion.Angle(currentState.rotation, authoritativeState.rotation) <
+            return Vector3.Distance(currentState.movementState.rootPosition, authoritativeState.movementState.rootPosition) <
+                config.positionSnapThreshold &&
+                Quaternion.Angle(currentState.movementState.meshRotation, authoritativeState.movementState.meshRotation) <
                 config.rotationSnapThresholdDegrees &&
-                Quaternion.Angle(currentState.viewRotation, authoritativeState.viewRotation) <
+                Quaternion.Angle(currentState.viewState.viewRotation, authoritativeState.viewState.viewRotation) <
                 config.rotationSnapThresholdDegrees;
+        }
+
+        private static EntityRollbackState OverlayAuthoritativeVisibleState(in EntityRollbackState predicted,
+            in EntityRollbackState authoritative)
+        {
+            EntityRollbackState result = predicted;
+            MovementRollbackState movement = result.movementState;
+            MovementRollbackState authoritativeMove = authoritative.movementState;
+            movement.rootPosition = authoritativeMove.rootPosition;
+            movement.meshRotation = authoritativeMove.meshRotation;
+            movement.rootLinearVelocity = authoritativeMove.rootLinearVelocity;
+            movement.meshAngularVelocity = authoritativeMove.meshAngularVelocity;
+            movement.isGrounded = authoritativeMove.isGrounded;
+            result.movementState = movement;
+
+            ViewRollbackState view = result.viewState;
+            ViewRollbackState authoritativeView = authoritative.viewState;
+            view.viewRotation = authoritativeView.viewRotation;
+            view.yaw = authoritativeView.yaw;
+            view.pitch = authoritativeView.pitch;
+            view.viewAngularVelocity = authoritativeView.viewAngularVelocity;
+            result.viewState = view;
+
+            result.simulationState = authoritative.simulationState;
+            return result;
         }
 
         private void UpdateReplicaInterpolation(float deltaTime)
@@ -355,7 +381,7 @@ namespace GamePlay.MultiPlaySystem
             foreach (CharacterReplicationEntry entry in _characters.Values)
             {
                 if (!entry.Identity.IsReplica) continue;
-                if (!entry.Interpolation.TrySample(deltaTime, out EntitySimulationState state)) continue;
+                if (!entry.Interpolation.TrySample(deltaTime, out EntityRollbackState state)) continue;
                 entry.Presentation.ApplyState(state);
             }
         }

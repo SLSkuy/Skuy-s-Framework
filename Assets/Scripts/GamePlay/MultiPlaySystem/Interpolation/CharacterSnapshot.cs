@@ -8,6 +8,6 @@ namespace GamePlay.MultiPlaySystem
     public struct CharacterSnapshot : IEntitySnapshot
     {
         public uint SnapshotTick { get; set; }
-        public EntitySimulationState State;
+        public EntityRollbackState State;
     }
 }

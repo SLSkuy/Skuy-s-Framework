@@ -18,7 +18,7 @@ namespace GamePlay.EntitySystem
         
         // 能力组件
         private EntitySimulation _simulation;
-        private TransformModule _transformModule;
+        private MovementModule _movementModule;
         private ViewModule _viewModule;
 
         #region 属性
@@ -55,9 +55,9 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitCapacityModule()
         {
-            _transformModule = gameObject.GetOrAddComponent<TransformModule>();
-            _transformModule.Init(config);
-            _transformModule.Bind(this);
+            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
+            _movementModule.Init(config);
+            _movementModule.Bind(this);
 
             _viewModule = gameObject.GetOrAddComponent<ViewModule>();
             _viewModule.Init(config);
@@ -69,7 +69,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         protected virtual void InitSimulationContext()
         {
-            _context = new EntityContext(config, _transformModule, _viewModule);
+            _context = new EntityContext(config, _movementModule, _viewModule);
             _simulation = new EntitySimulation(_context);
         }
         
@@ -97,7 +97,7 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 捕获当前状态
+        /// 捕获当前实体基础状态（状态机）
         /// </summary>
         public EntitySimulationState CaptureSimulationState()
         {

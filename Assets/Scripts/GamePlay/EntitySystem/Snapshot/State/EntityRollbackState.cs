@@ -9,15 +9,11 @@ namespace GamePlay.EntitySystem
     [Serializable]
     public struct EntityRollbackState
     {
-        public EntitySimulationState TransformState;
-        public MovementRollbackState MovementState;
-        public ViewRollbackState ViewState;
-        public uint StateKey;
-        public Vector2 MoveInput;
-        public Vector2 AimInput;
-        public float LocomotionSpeed;
-        public bool IsSprinting;
-        public bool IsRunning;
-        public bool IsFocus;
+        public EntitySimulationState simulationState;
+        public MovementRollbackState movementState;
+        public ViewRollbackState viewState;
+
+        public Vector2 moveInput;
+        public Vector2 aimInput;
     }
 }

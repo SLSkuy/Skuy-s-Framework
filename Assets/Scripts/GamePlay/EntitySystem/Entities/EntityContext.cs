@@ -10,7 +10,7 @@ namespace GamePlay.EntitySystem
     {
         public readonly ExtendableStateMachine<uint> StateMachine;
         public readonly EntityConfig Config;
-        public readonly TransformModule Transform;
+        public readonly MovementModule Movement;
         public readonly ViewModule View;
 
         public Vector2 LastMoveInput;
@@ -25,17 +25,17 @@ namespace GamePlay.EntitySystem
         #region 持续状态
         public float LocomotionSpeed;
 
-        public bool IsGrounded => Transform.IsGrounded;
+        public bool IsGrounded => Movement.IsGrounded;
         public bool IsSprinting;
         public bool IsRunning;
         public bool IsFocus;
         #endregion
 
-        public EntityContext(EntityConfig config, TransformModule transform, ViewModule view)
+        public EntityContext(EntityConfig config, MovementModule movement, ViewModule view)
         {
             Config = config;
             StateMachine = new ExtendableStateMachine<uint>();
-            Transform = transform;
+            Movement = movement;
             View = view;
         }
 

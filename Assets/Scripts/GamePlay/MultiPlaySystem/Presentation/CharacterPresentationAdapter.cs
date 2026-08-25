@@ -21,49 +21,60 @@ namespace GamePlay.MultiPlaySystem
         private bool _presentationOwnsBodyYaw;
 
         /// <summary>
-        /// 捕获当前网络可见 Transform 状态。
+        /// 捕获当前网络可见姿态，按组件回滚状态聚合。
         /// </summary>
-        public EntitySimulationState CaptureState()
+        public EntityRollbackState CaptureState()
         {
             EntityCharacter entity = GetComponent<EntityCharacter>();
-            if (entity != null && entity.IsInitialized) return entity.CaptureSimulationState();
+            if (entity != null && entity.IsInitialized) return entity.CaptureRollbackState();
 
             Transform mesh = transform.Find("mesh");
-            return new EntitySimulationState
+            Transform orientation = transform.Find("orientation");
+            Quaternion viewRotation = orientation != null ? orientation.rotation : Quaternion.identity;
+            Vector3 euler = viewRotation.eulerAngles;
+            return new EntityRollbackState
             {
-                position = transform.position,
-                rotation = mesh != null ? mesh.rotation : Quaternion.identity,
-                viewRotation = Quaternion.identity,
-                linearVelocity = Vector3.zero,
-                angularVelocity = Vector3.zero
+                movementState = new MovementRollbackState
+                {
+                    rootPosition = transform.position,
+                    meshRotation = mesh != null ? mesh.rotation : Quaternion.identity
+                },
+                viewState = new ViewRollbackState
+                {
+                    viewRotation = viewRotation,
+                    yaw = euler.y,
+                    pitch = euler.x
+                }
             };
         }
 
         /// <summary>
-        /// 将网络 Transform 状态安全应用到当前对象。
+        /// 将网络可见姿态应用到当前对象；不恢复冲刺等内部回滚量。
         /// </summary>
-        public void ApplyState(in EntitySimulationState state)
+        public void ApplyState(in EntityRollbackState state)
         {
-            TransformModule transformModule = GetComponent<TransformModule>();
-            if (transformModule != null)
+            MovementRollbackState movement = state.movementState;
+            MovementModule movementModule = GetComponent<MovementModule>();
+            if (movementModule != null)
             {
-                transformModule.Teleport(state.position);
-                transformModule.Restore(state.rotation, state.angularVelocity);
+                movementModule.Teleport(movement.rootPosition);
+                movementModule.Restore(movement.meshRotation, movement.meshAngularVelocity);
             }
             else
             {
-                transform.position = state.position;
+                transform.position = movement.rootPosition;
                 transform.rotation = Quaternion.identity;
                 Transform mesh = transform.Find("mesh");
-                if (mesh != null) mesh.rotation = state.rotation;
+                if (mesh != null) mesh.rotation = movement.meshRotation;
             }
 
+            ViewRollbackState viewState = state.viewState;
             ViewModule view = GetComponent<ViewModule>();
-            if (view != null) view.Restore(state.viewRotation, Vector3.zero);
+            if (view != null) view.Restore(viewState.viewRotation, viewState.viewAngularVelocity);
             else
             {
                 Transform orientation = transform.Find("orientation");
-                if (orientation != null) orientation.rotation = state.viewRotation;
+                if (orientation != null) orientation.rotation = viewState.viewRotation;
             }
         }
 

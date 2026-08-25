@@ -78,36 +78,50 @@ namespace Utils
             };
         }
 
-        public static Character_Snapshot ToCharacterSnapshotMessage(in EntitySimulationState state, 
+        public static Character_Snapshot ToCharacterSnapshotMessage(in EntityRollbackState state,
             uint entityId, uint ownerClientId, uint snapshotTick, uint lastProcessedInputTick)
         {
+            MovementRollbackState movement = state.movementState;
             return new Character_Snapshot
             {
                 EntityId = entityId,
                 SnapshotTick = snapshotTick,
                 LastProcessedInputTick = lastProcessedInputTick,
-                Position = ToProto(state.position),
-                Rotation = ToProto(state.rotation),
-                ViewRotation = ToProto(state.viewRotation),
-                LinearVelocity = ToProto(state.linearVelocity),
-                AngularVelocity = ToProto(state.angularVelocity),
+                Position = ToProto(movement.rootPosition),
+                Rotation = ToProto(movement.meshRotation),
+                ViewRotation = ToProto(state.viewState.viewRotation),
+                LinearVelocity = ToProto(movement.rootLinearVelocity),
+                AngularVelocity = ToProto(movement.meshAngularVelocity),
                 OwnerClientId = ownerClientId,
-                LocomotionState = state.locomotionState,
-                IsGrounded = state.isGrounded
+                LocomotionState = state.simulationState.entityState,
+                IsGrounded = movement.isGrounded
             };
         }
 
-        public static EntitySimulationState ToSimulationState(Character_Snapshot snapshot)
+        public static EntityRollbackState ToRollbackState(Character_Snapshot snapshot)
         {
-            return new EntitySimulationState
+            Quaternion viewRotation = ToUnity(snapshot.ViewRotation);
+            Vector3 euler = viewRotation.eulerAngles;
+            return new EntityRollbackState
             {
-                position = ToUnity(snapshot.Position),
-                rotation = ToUnity(snapshot.Rotation),
-                viewRotation = ToUnity(snapshot.ViewRotation),
-                linearVelocity = ToUnity(snapshot.LinearVelocity),
-                angularVelocity = ToUnity(snapshot.AngularVelocity),
-                locomotionState = snapshot.LocomotionState,
-                isGrounded = snapshot.IsGrounded
+                simulationState = new EntitySimulationState
+                {
+                    entityState = snapshot.LocomotionState
+                },
+                movementState = new MovementRollbackState
+                {
+                    rootPosition = ToUnity(snapshot.Position),
+                    meshRotation = ToUnity(snapshot.Rotation),
+                    rootLinearVelocity = ToUnity(snapshot.LinearVelocity),
+                    meshAngularVelocity = ToUnity(snapshot.AngularVelocity),
+                    isGrounded = snapshot.IsGrounded
+                },
+                viewState = new ViewRollbackState
+                {
+                    viewRotation = viewRotation,
+                    yaw = euler.y,
+                    pitch = MathUtils.NormalizePitch(euler.x)
+                }
             };
         }
 

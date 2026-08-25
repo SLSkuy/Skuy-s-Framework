@@ -1,20 +1,13 @@
 using System;
-using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体Tick模拟状态基础单位
+    /// 实体最基础状态
     /// </summary>
     [Serializable]
     public struct EntitySimulationState
     {
-        public Vector3 position;
-        public Quaternion rotation;
-        public Quaternion viewRotation;
-        public Vector3 linearVelocity;
-        public Vector3 angularVelocity;
-        public uint locomotionState;
-        public bool isGrounded;
+        public uint entityState;    // 实体当前状态（待机、死亡等）
     }
 }

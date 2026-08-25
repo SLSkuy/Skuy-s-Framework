@@ -51,7 +51,9 @@ namespace GamePlay.EntitySystem
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
             _angularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
         }
-
+        
+        #region 快照逻辑
+        
         /// <summary>
         /// 从网络可见四元数恢复视角，供 Replica 插值与权威应用使用
         /// </summary>
@@ -64,8 +66,6 @@ namespace GamePlay.EntitySystem
             _angularVelocity = angularVelocity;
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
-        
-        #region 模拟入口
 
         /// <summary>
         /// 捕获视角回滚状态
@@ -74,9 +74,10 @@ namespace GamePlay.EntitySystem
         {
             return new ViewRollbackState
             {
+                viewAngularVelocity = _angularVelocity,
+                viewRotation = ViewRotation,
                 yaw = _yaw,
-                pitch = _pitch,
-                angularVelocity = _angularVelocity
+                pitch = _pitch
             };
         }
 
@@ -87,7 +88,7 @@ namespace GamePlay.EntitySystem
         {
             _yaw = state.yaw;
             _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);
-            _angularVelocity = state.angularVelocity;
+            _angularVelocity = state.viewAngularVelocity;
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 

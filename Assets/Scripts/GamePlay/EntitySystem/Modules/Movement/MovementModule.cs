@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换
     /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上
     /// </summary>
-    public class TransformModule : EntityModuleBase
+    public class MovementModule : EntityModuleBase
     {
         private const string MESH_CHILD_NAME = "mesh";
 
@@ -175,7 +175,7 @@ namespace GamePlay.EntitySystem
             }
         }
 
-        #region 模拟入口
+        #region 快照逻辑
         
         /// <summary>
         /// 按 Replica 切换驱动 CharacterController 或静态胶囊。
@@ -220,10 +220,13 @@ namespace GamePlay.EntitySystem
         {
             return new MovementRollbackState
             {
+                rootPosition = Position,
+                meshRotation = Rotation,
+                rootLinearVelocity = LinearVelocity,
+                meshAngularVelocity = _angularVelocity,
                 lastMoveDirection = _lastMoveDir,
-                linearVelocity = LinearVelocity,
                 dashDirection = _dashDir,
-                locomotionSpeed = _locomotionSpeed,
+                appliedLocomotionSpeed = _locomotionSpeed,
                 verticalVelocity = _verticalVelocity,
                 dashRemainingTime = _dashAccumulator,
                 jumpCount = _jumpCount,
@@ -232,15 +235,16 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 恢复位置和全部移动内部状态
+        /// 恢复位置、姿态和全部移动内部状态
         /// </summary>
-        public void RestoreRollbackState(Vector3 position, in MovementRollbackState state)
+        public void RestoreRollbackState(in MovementRollbackState state)
         {
-            Teleport(position);
+            Teleport(state.rootPosition);
+            Restore(state.meshRotation, state.meshAngularVelocity);
+            LinearVelocity = state.rootLinearVelocity;
             _lastMoveDir = state.lastMoveDirection;
-            LinearVelocity = state.linearVelocity;
             _dashDir = state.dashDirection;
-            _locomotionSpeed = state.locomotionSpeed;
+            _locomotionSpeed = state.appliedLocomotionSpeed;
             _verticalVelocity = state.verticalVelocity;
             _dashAccumulator = state.dashRemainingTime;
             _jumpCount = state.jumpCount;

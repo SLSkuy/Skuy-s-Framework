@@ -1,6 +1,7 @@
 using System;
 using GamePlay.EntitySystem;
 using UnityEngine;
+using Utils;
 
 namespace GamePlay.MultiPlaySystem
 {
@@ -12,8 +13,8 @@ namespace GamePlay.MultiPlaySystem
         private readonly SnapshotBuffer<CharacterSnapshot> _snapshots;
         private readonly double _tickInterval;
         private readonly int _interpolationDelayTicks;
-        private EntitySimulationState _lastIncomingState;
-        private EntitySimulationState _lastState;
+        private EntityRollbackState _lastIncomingState;
+        private EntityRollbackState _lastState;
         private double _renderServerTime;
         private bool _hasIncomingState;
         private bool _hasRenderTime;
@@ -33,14 +34,15 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 添加远端快照；首帧或大距离传送返回 true，调用方应立即 Snap。
         /// </summary>
-        public bool AddSnapshot(uint snapshotTick, in EntitySimulationState state)
+        public bool AddSnapshot(uint snapshotTick, in EntityRollbackState state)
         {
             SyncConfig config = SyncConfig.Instance;
             bool requiresSnap = !_hasIncomingState ||
-                Vector3.Distance(_lastIncomingState.position, state.position) >= config.positionSnapThreshold ||
-                Quaternion.Angle(_lastIncomingState.rotation, state.rotation) >=
+                Vector3.Distance(_lastIncomingState.movementState.rootPosition, state.movementState.rootPosition) >=
+                config.positionSnapThreshold ||
+                Quaternion.Angle(_lastIncomingState.movementState.meshRotation, state.movementState.meshRotation) >=
                 config.rotationSnapThresholdDegrees ||
-                Quaternion.Angle(_lastIncomingState.viewRotation, state.viewRotation) >=
+                Quaternion.Angle(_lastIncomingState.viewState.viewRotation, state.viewState.viewRotation) >=
                 config.rotationSnapThresholdDegrees;
             if (requiresSnap) Reset();
 
@@ -66,7 +68,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 推进远端渲染时间并采样角色姿态。
         /// </summary>
-        public bool TrySample(float deltaTime, out EntitySimulationState state)
+        public bool TrySample(float deltaTime, out EntityRollbackState state)
         {
             state = _lastState;
             if (!_hasRenderTime || !_hasLastState) return false;
@@ -82,18 +84,7 @@ namespace GamePlay.MultiPlaySystem
                     out CharacterSnapshot from, out CharacterSnapshot to, out float t))
                 return true;
 
-            EntitySimulationState fromState = from.State;
-            EntitySimulationState toState = to.State;
-            _lastState = new EntitySimulationState
-            {
-                position = Vector3.Lerp(fromState.position, toState.position, t),
-                rotation = Quaternion.Slerp(fromState.rotation, toState.rotation, t),
-                viewRotation = Quaternion.Slerp(fromState.viewRotation, toState.viewRotation, t),
-                linearVelocity = Vector3.Lerp(fromState.linearVelocity, toState.linearVelocity, t),
-                angularVelocity = Vector3.Lerp(fromState.angularVelocity, toState.angularVelocity, t),
-                locomotionState = t >= 0.5f ? toState.locomotionState : fromState.locomotionState,
-                isGrounded = t >= 0.5f ? toState.isGrounded : fromState.isGrounded
-            };
+            _lastState = LerpVisibleState(from.State, to.State, t);
             state = _lastState;
             return true;
         }
@@ -110,6 +101,32 @@ namespace GamePlay.MultiPlaySystem
             _hasIncomingState = false;
             _hasRenderTime = false;
             _hasLastState = false;
+        }
+
+        private static EntityRollbackState LerpVisibleState(in EntityRollbackState from, in EntityRollbackState to,
+            float t)
+        {
+            EntityRollbackState state = t >= 0.5f ? to : from;
+            MovementRollbackState fromMove = from.movementState;
+            MovementRollbackState toMove = to.movementState;
+            MovementRollbackState movement = state.movementState;
+            movement.rootPosition = Vector3.Lerp(fromMove.rootPosition, toMove.rootPosition, t);
+            movement.meshRotation = Quaternion.Slerp(fromMove.meshRotation, toMove.meshRotation, t);
+            movement.rootLinearVelocity = Vector3.Lerp(fromMove.rootLinearVelocity, toMove.rootLinearVelocity, t);
+            movement.meshAngularVelocity = Vector3.Lerp(fromMove.meshAngularVelocity, toMove.meshAngularVelocity, t);
+            state.movementState = movement;
+
+            ViewRollbackState fromView = from.viewState;
+            ViewRollbackState toView = to.viewState;
+            ViewRollbackState view = state.viewState;
+            Quaternion viewRotation = Quaternion.Slerp(fromView.viewRotation, toView.viewRotation, t);
+            Vector3 euler = viewRotation.eulerAngles;
+            view.viewRotation = viewRotation;
+            view.viewAngularVelocity = Vector3.Lerp(fromView.viewAngularVelocity, toView.viewAngularVelocity, t);
+            view.yaw = euler.y;
+            view.pitch = MathUtils.NormalizePitch(euler.x);
+            state.viewState = view;
+            return state;
         }
     }
 }
