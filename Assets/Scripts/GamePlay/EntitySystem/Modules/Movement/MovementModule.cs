@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换
     /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上
     /// </summary>
-    public class MovementModule : EntityModuleBase
+    public class MovementModule : EntityModuleBase<MovementRollbackState>
     {
         private const string MESH_CHILD_NAME = "mesh";
 
@@ -216,7 +216,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获移动模块完整回滚状态
         /// </summary>
-        public MovementRollbackState CaptureRollbackState()
+        public override MovementRollbackState CaptureRollbackState()
         {
             return new MovementRollbackState
             {
@@ -237,7 +237,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 恢复位置、姿态和全部移动内部状态
         /// </summary>
-        public void RestoreRollbackState(in MovementRollbackState state)
+        public override void RestoreRollbackState(in MovementRollbackState state)
         {
             Teleport(state.rootPosition);
             Restore(state.meshRotation, state.meshAngularVelocity);

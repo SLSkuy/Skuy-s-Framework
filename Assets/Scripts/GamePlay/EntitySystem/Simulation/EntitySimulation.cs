@@ -3,7 +3,7 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 单机、预测与权威模式共用的实体模拟实现。
     /// </summary>
-    public sealed class EntitySimulation : IEntitySimulation, IEntityStateStore
+    public sealed class EntitySimulation : IEntitySimulation, IEntityStateStore<EntityRollbackState>
     {
         private readonly EntityContext _context;
 

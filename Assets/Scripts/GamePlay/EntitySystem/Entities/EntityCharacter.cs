@@ -97,14 +97,6 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 捕获当前实体基础状态（状态机）
-        /// </summary>
-        public EntitySimulationState CaptureSimulationState()
-        {
-            return _simulation?.CaptureSimulationState() ?? default;
-        }
-
-        /// <summary>
         /// 获取回退状态
         /// </summary>
         public EntityRollbackState CaptureRollbackState()

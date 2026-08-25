@@ -5,7 +5,8 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体能力模块基础类，统一处理实体绑定与启用状态。
     /// </summary>
-    public abstract class EntityModuleBase : MonoBehaviour, IEntityModule
+    public abstract class EntityModuleBase<TState> : MonoBehaviour, IEntityModule, 
+        IEntityStateStore<TState> where TState : struct
     {
         private EntityCharacter _target;
         private bool _isEnabled = true;
@@ -36,6 +37,9 @@ namespace GamePlay.EntitySystem
             _target = null;
             OnUnbound(oldTarget);
         }
+
+        public abstract TState CaptureRollbackState();
+        public abstract void RestoreRollbackState(in TState state);
 
         protected virtual void OnBound(EntityCharacter target) { }
         protected virtual void OnEnabledChanged(bool isEnabled) { }
