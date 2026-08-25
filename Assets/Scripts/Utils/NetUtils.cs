@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using Events;
 using Google.Protobuf;
 using UnityEngine;
+using Events;
 
 namespace Utils
 {

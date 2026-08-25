@@ -1,7 +1,7 @@
 using Framework;
 using GamePlay.EntitySystem;
-using NetSync;
 using UnityEngine;
+using NetSync;
 
 namespace Utils
 {

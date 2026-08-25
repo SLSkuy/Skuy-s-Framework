@@ -4,12 +4,12 @@ using Utils;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换。
-    /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上。
+    /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换
+    /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上
     /// </summary>
     public class TransformModule : EntityModuleBase
     {
-        private const string MeshChildName = "mesh";
+        private const string MESH_CHILD_NAME = "mesh";
 
         private CharacterController _controller;
         private EntityConfig _config;
@@ -36,51 +36,17 @@ namespace GamePlay.EntitySystem
         #endregion
 
         /// <summary>
-        /// 初始化移动与转向运行时配置。
+        /// 初始化移动与转向运行时配置
         /// </summary>
         public void Init(EntityConfig config)
         {
             _config = config;
             _locomotionSpeed = _config.walkSpeed;
-            _controller = GetComponent<CharacterController>();
-            _mesh = transform.Find(MeshChildName);
-            if (_mesh == null)
-            {
-                Debug.LogError($"{name} 缺少名为 {MeshChildName} 的直接子节点，TransformModule 无法写入身体朝向。", this);
-            }
-
-            KeepRootIdentity();
+            _mesh = transform.Find(MESH_CHILD_NAME);
         }
 
         /// <summary>
-        /// 按 Replica 切换驱动 CharacterController 或静态胶囊。
-        /// </summary>
-        public void SetReplicaMode(bool isReplica)
-        {
-            if (isReplica)
-            {
-                _controller = GetComponent<CharacterController>();
-                if (_controller != null) _controller.enabled = false;
-
-                CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
-                collider.height = _config.height;
-                collider.radius = _config.radius;
-                collider.center = new Vector3(0, _config.height / 2, 0);
-            }
-            else
-            {
-                _controller = gameObject.GetOrAddComponent<CharacterController>();
-                _controller.height = _config.height;
-                _controller.radius = _config.radius;
-                _controller.skinWidth = 0.0001f;
-                _controller.minMoveDistance = 0f;
-                _controller.center = new Vector3(0, _config.height / 2, 0);
-                _controller.enabled = true;
-            }
-        }
-
-        /// <summary>
-        /// 直接设置实体位置，用于权威快照或插值快照应用。
+        /// 直接设置实体位置，用于权威快照或插值快照应用
         /// </summary>
         public void Teleport(Vector3 position)
         {
@@ -88,18 +54,16 @@ namespace GamePlay.EntitySystem
             if (wasEnabled) _controller.enabled = false;
 
             transform.position = position;
-            KeepRootIdentity();
 
             if (wasEnabled) _controller.enabled = true;
         }
 
         /// <summary>
-        /// 按视角相对移动输入，将 mesh 转向该目标朝向；不旋转根节点。
+        /// 按视角相对移动输入，将 mesh 转向该目标朝向；不旋转根节点
         /// </summary>
         public void Rotate(Vector2 move, float viewYaw, float deltaTime)
         {
-            KeepRootIdentity();
-            if (_config == null || _mesh == null || deltaTime <= 0f) return;
+            if (deltaTime <= 0f) return;
 
             Vector3 planarDirection = Quaternion.Euler(0f, viewYaw, 0f) * new Vector3(move.x, 0f, move.y);
             if (planarDirection.sqrMagnitude <= Mathf.Epsilon)
@@ -110,9 +74,7 @@ namespace GamePlay.EntitySystem
 
             Quaternion previousRotation = _mesh.rotation;
             Quaternion targetRotation = Quaternion.LookRotation(planarDirection.normalized, Vector3.up);
-            _mesh.rotation = Quaternion.RotateTowards(
-                previousRotation,
-                targetRotation,
+            _mesh.rotation = Quaternion.RotateTowards(previousRotation, targetRotation, 
                 _config.meshTurnSpeed * deltaTime);
 
             Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
@@ -122,57 +84,12 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 直接应用 mesh 世界空间旋转与角速度；根节点保持单位旋转。
-        /// </summary>
-        public void Restore(Quaternion rotation, Vector3 angularVelocity)
-        {
-            KeepRootIdentity();
-            if (_mesh != null) _mesh.rotation = Normalize(rotation);
-            _angularVelocity = angularVelocity;
-        }
-
-        /// <summary>
-        /// 捕获移动模块完整回滚状态。
-        /// </summary>
-        public MovementRollbackState CaptureRollbackState()
-        {
-            return new MovementRollbackState
-            {
-                lastMoveDirection = _lastMoveDir,
-                linearVelocity = LinearVelocity,
-                dashDirection = _dashDir,
-                locomotionSpeed = _locomotionSpeed,
-                verticalVelocity = _verticalVelocity,
-                dashRemainingTime = _dashAccumulator,
-                jumpCount = _jumpCount,
-                isDashing = _isDashing
-            };
-        }
-
-        /// <summary>
-        /// 恢复位置和全部移动内部状态。
-        /// </summary>
-        public void RestoreRollbackState(Vector3 position, in MovementRollbackState state)
-        {
-            Teleport(position);
-            _lastMoveDir = state.lastMoveDirection;
-            LinearVelocity = state.linearVelocity;
-            _dashDir = state.dashDirection;
-            _locomotionSpeed = state.locomotionSpeed;
-            _verticalVelocity = state.verticalVelocity;
-            _dashAccumulator = state.dashRemainingTime;
-            _jumpCount = state.jumpCount;
-            _isDashing = state.isDashing;
-        }
-
-        /// <summary>
-        /// 位移：平面速度沿 mesh 当前朝向，输入只提供相对 orientation 的目标转向与速度大小。
+        /// 位移：平面速度沿 mesh 当前朝向，输入只提供相对 orientation 的目标转向与速度大小
         /// </summary>
         public void Move(Vector2 inputDir, float speed, float viewYaw, float dt)
         {
             if (!_controller) return;
 
-            KeepRootIdentity();
             if (!_isDashing)
             {
                 _locomotionSpeed = speed;
@@ -185,7 +102,7 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 尝试跳跃，成功则设置垂直速度并累计跳跃次数。
+        /// 尝试跳跃，成功则设置垂直速度并累计跳跃次数
         /// </summary>
         public bool Jump(float jumpSpeed, int maxJumpCount)
         {
@@ -206,7 +123,7 @@ namespace GamePlay.EntitySystem
                 return;
             }
 
-            Vector3 meshForward = _mesh != null ? _mesh.forward : Quaternion.Euler(0f, viewYaw, 0f) * Vector3.forward;
+            Vector3 meshForward = _mesh.forward;
             meshForward.y = 0f;
             if (meshForward.sqrMagnitude <= Mathf.Epsilon)
             {
@@ -214,14 +131,6 @@ namespace GamePlay.EntitySystem
             }
 
             _lastMoveDir = meshForward.normalized * magnitude;
-        }
-
-        private void KeepRootIdentity()
-        {
-            if (transform.rotation != Quaternion.identity)
-            {
-                transform.rotation = Quaternion.identity;
-            }
         }
 
         private void ApplyGravity(float dt)
@@ -266,19 +175,78 @@ namespace GamePlay.EntitySystem
             }
         }
 
-        private static Quaternion Normalize(Quaternion rotation)
+        #region 模拟入口
+        
+        /// <summary>
+        /// 按 Replica 切换驱动 CharacterController 或静态胶囊。
+        /// </summary>
+        public void SetReplicaMode(bool isReplica)
         {
-            float length = Mathf.Sqrt(
-                rotation.x * rotation.x + rotation.y * rotation.y +
-                rotation.z * rotation.z + rotation.w * rotation.w);
-            if (length <= Mathf.Epsilon) return Quaternion.identity;
+            if (isReplica)
+            {
+                _controller = GetComponent<CharacterController>();
+                if (_controller) _controller.enabled = false;
 
-            float inverse = 1f / length;
-            return new Quaternion(
-                rotation.x * inverse,
-                rotation.y * inverse,
-                rotation.z * inverse,
-                rotation.w * inverse);
+                CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
+                collider.height = _config.height;
+                collider.radius = _config.radius;
+                collider.center = new Vector3(0, _config.height / 2, 0);
+            }
+            else
+            {
+                _controller = gameObject.GetOrAddComponent<CharacterController>();
+                _controller.height = _config.height;
+                _controller.radius = _config.radius;
+                _controller.skinWidth = 0.0001f;
+                _controller.minMoveDistance = 0f;
+                _controller.center = new Vector3(0, _config.height / 2, 0);
+                _controller.enabled = true;
+            }
         }
+
+        /// <summary>
+        /// 直接应用 mesh 世界空间旋转与角速度；根节点保持单位旋转
+        /// </summary>
+        public void Restore(Quaternion rotation, Vector3 angularVelocity)
+        {
+            _mesh.rotation = MathUtils.SafeNormalize(rotation);
+            _angularVelocity = angularVelocity;
+        }
+
+        /// <summary>
+        /// 捕获移动模块完整回滚状态
+        /// </summary>
+        public MovementRollbackState CaptureRollbackState()
+        {
+            return new MovementRollbackState
+            {
+                lastMoveDirection = _lastMoveDir,
+                linearVelocity = LinearVelocity,
+                dashDirection = _dashDir,
+                locomotionSpeed = _locomotionSpeed,
+                verticalVelocity = _verticalVelocity,
+                dashRemainingTime = _dashAccumulator,
+                jumpCount = _jumpCount,
+                isDashing = _isDashing
+            };
+        }
+
+        /// <summary>
+        /// 恢复位置和全部移动内部状态
+        /// </summary>
+        public void RestoreRollbackState(Vector3 position, in MovementRollbackState state)
+        {
+            Teleport(position);
+            _lastMoveDir = state.lastMoveDirection;
+            LinearVelocity = state.linearVelocity;
+            _dashDir = state.dashDirection;
+            _locomotionSpeed = state.locomotionSpeed;
+            _verticalVelocity = state.verticalVelocity;
+            _dashAccumulator = state.dashRemainingTime;
+            _jumpCount = state.jumpCount;
+            _isDashing = state.isDashing;
+        }
+
+        #endregion
     }
 }

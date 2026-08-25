@@ -67,6 +67,17 @@ namespace Utils
             return vector.normalized;
         }
         
+        public static Quaternion SafeNormalize(Quaternion rotation)
+        {
+            float length = Mathf.Sqrt(rotation.x * rotation.x + rotation.y * rotation.y + 
+                                      rotation.z * rotation.z + rotation.w * rotation.w);
+            if (length <= Mathf.Epsilon) return Quaternion.identity;
+
+            float inverse = 1f / length;
+            return new Quaternion(rotation.x * inverse, rotation.y * inverse,
+                rotation.z * inverse, rotation.w * inverse);
+        }
+        
         /// <summary>
         /// 叉乘
         /// </summary>
@@ -84,6 +95,20 @@ namespace Utils
             if (angle > 180f) angle -= 360f;
             else if (angle < -180f) angle += 360f;
             return angle;
+        }
+        
+        public static Vector3 CalAngularVelocity(Quaternion previousRotation, Quaternion currentRotation, float deltaTime)
+        {
+            Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
+            deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+            if (angle > 180f) angle -= 360f;
+            return axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
+        }
+        
+        public static float NormalizePitch(float eulerX)
+        {
+            if (eulerX > 180f) eulerX -= 360f;
+            return eulerX;
         }
     }
 }
