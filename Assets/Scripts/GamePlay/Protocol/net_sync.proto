@@ -37,16 +37,16 @@ message Player_Input {
 
 message Character_Snapshot {
   uint32 entityId = 1;
-  uint32 snapshotTick = 2;
-  uint32 lastProcessedInputTick = 3;
-  Vec3 position = 4;
-  Quat rotation = 5;
-  Vec3 linear_velocity = 6;
-  Vec3 angular_velocity = 7;
-  uint32 owner_client_id = 8;
-  uint32 locomotion_state = 9;
+  uint32 owner_client_id = 2;
+  uint32 snapshotTick = 3;
+  uint32 locomotion_state = 4;
+  Vec3 position = 5;
+  Quat rotation = 6;
+  Quat view_rotation = 7;
+  Vec3 linear_velocity = 8;
+  Vec3 angular_velocity = 9;
   bool is_grounded = 10;
-  Quat view_rotation = 11;
+  uint32 lastProcessedInputTick = 11;
 }
 
 message World_Snapshot {

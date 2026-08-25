@@ -3,12 +3,15 @@ using System.Collections.Generic;
 
 namespace GamePlay.EntitySystem
 {
+    /// <summary>
+    /// 客户端预测命令缓存
+    /// </summary>
     public sealed class EntityPredictionHistory
     {
         private readonly List<EntityPredictionState> _frames;
         private readonly int _capacity;
 
-        #region Properties
+        #region 属性
         public int Count => _frames.Count;
         public uint LatestTick => _frames.Count == 0 ? 0 : _frames[^1].tick;
         #endregion

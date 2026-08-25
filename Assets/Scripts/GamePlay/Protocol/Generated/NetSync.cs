@@ -35,14 +35,14 @@ namespace NetSync {
             "b25fcHJlc3NlZBgHIAEoCBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAggASgI",
             "EhkKEWlzX3NwcmludF9wcmVzc2VkGAkgASgIEhcKD2lzX2p1bXBfcHJlc3Nl",
             "ZBgKIAEoCBIeChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAsgASgIIt0CChJD",
-            "aGFyYWN0ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SFAoMc25hcHNo",
-            "b3RUaWNrGAIgASgNEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sYAyABKA0S",
-            "HwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
-            "BSABKAsyDS5OZXRTeW5jLlF1YXQSJgoPbGluZWFyX3ZlbG9jaXR5GAYgASgL",
-            "Mg0uTmV0U3luYy5WZWMzEicKEGFuZ3VsYXJfdmVsb2NpdHkYByABKAsyDS5O",
-            "ZXRTeW5jLlZlYzMSFwoPb3duZXJfY2xpZW50X2lkGAggASgNEhgKEGxvY29t",
-            "b3Rpb25fc3RhdGUYCSABKA0SEwoLaXNfZ3JvdW5kZWQYCiABKAgSJAoNdmll",
-            "d19yb3RhdGlvbhgLIAEoCzINLk5ldFN5bmMuUXVhdCJgCg5Xb3JsZF9TbmFw",
+            "aGFyYWN0ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SFwoPb3duZXJf",
+            "Y2xpZW50X2lkGAIgASgNEhQKDHNuYXBzaG90VGljaxgDIAEoDRIYChBsb2Nv",
+            "bW90aW9uX3N0YXRlGAQgASgNEh8KCHBvc2l0aW9uGAUgASgLMg0uTmV0U3lu",
+            "Yy5WZWMzEh8KCHJvdGF0aW9uGAYgASgLMg0uTmV0U3luYy5RdWF0EiQKDXZp",
+            "ZXdfcm90YXRpb24YByABKAsyDS5OZXRTeW5jLlF1YXQSJgoPbGluZWFyX3Zl",
+            "bG9jaXR5GAggASgLMg0uTmV0U3luYy5WZWMzEicKEGFuZ3VsYXJfdmVsb2Np",
+            "dHkYCSABKAsyDS5OZXRTeW5jLlZlYzMSEwoLaXNfZ3JvdW5kZWQYCiABKAgS",
+            "HgoWbGFzdFByb2Nlc3NlZElucHV0VGljaxgLIAEoDSJgCg5Xb3JsZF9TbmFw",
             "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SOAoTY2hhcmFjdGVyX3NuYXBz",
             "aG90cxgCIAMoCzIbLk5ldFN5bmMuQ2hhcmFjdGVyX1NuYXBzaG90IiUKEUdh",
             "bWVfSm9pbl9SZXF1ZXN0EhAKCGNsaWVudElkGAEgASgNIiYKEkdhbWVfSm9p",
@@ -54,7 +54,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "EntityId", "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "SnapshotTick", "LastProcessedInputTick", "Position", "Rotation", "LinearVelocity", "AngularVelocity", "OwnerClientId", "LocomotionState", "IsGrounded", "ViewRotation" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "OwnerClientId", "SnapshotTick", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "IsGrounded", "LastProcessedInputTick" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "CharacterSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, new[]{ "ClientId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted" }, null, null, null, null)
@@ -1468,16 +1468,16 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Character_Snapshot(Character_Snapshot other) : this() {
       entityId_ = other.entityId_;
+      ownerClientId_ = other.ownerClientId_;
       snapshotTick_ = other.snapshotTick_;
-      lastProcessedInputTick_ = other.lastProcessedInputTick_;
+      locomotionState_ = other.locomotionState_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       rotation_ = other.rotation_ != null ? other.rotation_.Clone() : null;
+      viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
       linearVelocity_ = other.linearVelocity_ != null ? other.linearVelocity_.Clone() : null;
       angularVelocity_ = other.angularVelocity_ != null ? other.angularVelocity_.Clone() : null;
-      ownerClientId_ = other.ownerClientId_;
-      locomotionState_ = other.locomotionState_;
       isGrounded_ = other.isGrounded_;
-      viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
+      lastProcessedInputTick_ = other.lastProcessedInputTick_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1499,8 +1499,20 @@ namespace NetSync {
       }
     }
 
+    /// <summary>Field number for the "owner_client_id" field.</summary>
+    public const int OwnerClientIdFieldNumber = 2;
+    private uint ownerClientId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint OwnerClientId {
+      get { return ownerClientId_; }
+      set {
+        ownerClientId_ = value;
+      }
+    }
+
     /// <summary>Field number for the "snapshotTick" field.</summary>
-    public const int SnapshotTickFieldNumber = 2;
+    public const int SnapshotTickFieldNumber = 3;
     private uint snapshotTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1511,20 +1523,20 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "lastProcessedInputTick" field.</summary>
-    public const int LastProcessedInputTickFieldNumber = 3;
-    private uint lastProcessedInputTick_;
+    /// <summary>Field number for the "locomotion_state" field.</summary>
+    public const int LocomotionStateFieldNumber = 4;
+    private uint locomotionState_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint LastProcessedInputTick {
-      get { return lastProcessedInputTick_; }
+    public uint LocomotionState {
+      get { return locomotionState_; }
       set {
-        lastProcessedInputTick_ = value;
+        locomotionState_ = value;
       }
     }
 
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 4;
+    public const int PositionFieldNumber = 5;
     private global::NetSync.Vec3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1536,7 +1548,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "rotation" field.</summary>
-    public const int RotationFieldNumber = 5;
+    public const int RotationFieldNumber = 6;
     private global::NetSync.Quat rotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1547,8 +1559,20 @@ namespace NetSync {
       }
     }
 
+    /// <summary>Field number for the "view_rotation" field.</summary>
+    public const int ViewRotationFieldNumber = 7;
+    private global::NetSync.Quat viewRotation_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NetSync.Quat ViewRotation {
+      get { return viewRotation_; }
+      set {
+        viewRotation_ = value;
+      }
+    }
+
     /// <summary>Field number for the "linear_velocity" field.</summary>
-    public const int LinearVelocityFieldNumber = 6;
+    public const int LinearVelocityFieldNumber = 8;
     private global::NetSync.Vec3 linearVelocity_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1560,7 +1584,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "angular_velocity" field.</summary>
-    public const int AngularVelocityFieldNumber = 7;
+    public const int AngularVelocityFieldNumber = 9;
     private global::NetSync.Vec3 angularVelocity_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1568,30 +1592,6 @@ namespace NetSync {
       get { return angularVelocity_; }
       set {
         angularVelocity_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "owner_client_id" field.</summary>
-    public const int OwnerClientIdFieldNumber = 8;
-    private uint ownerClientId_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint OwnerClientId {
-      get { return ownerClientId_; }
-      set {
-        ownerClientId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "locomotion_state" field.</summary>
-    public const int LocomotionStateFieldNumber = 9;
-    private uint locomotionState_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint LocomotionState {
-      get { return locomotionState_; }
-      set {
-        locomotionState_ = value;
       }
     }
 
@@ -1607,15 +1607,15 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "view_rotation" field.</summary>
-    public const int ViewRotationFieldNumber = 11;
-    private global::NetSync.Quat viewRotation_;
+    /// <summary>Field number for the "lastProcessedInputTick" field.</summary>
+    public const int LastProcessedInputTickFieldNumber = 11;
+    private uint lastProcessedInputTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.Quat ViewRotation {
-      get { return viewRotation_; }
+    public uint LastProcessedInputTick {
+      get { return lastProcessedInputTick_; }
       set {
-        viewRotation_ = value;
+        lastProcessedInputTick_ = value;
       }
     }
 
@@ -1635,16 +1635,16 @@ namespace NetSync {
         return true;
       }
       if (EntityId != other.EntityId) return false;
+      if (OwnerClientId != other.OwnerClientId) return false;
       if (SnapshotTick != other.SnapshotTick) return false;
-      if (LastProcessedInputTick != other.LastProcessedInputTick) return false;
+      if (LocomotionState != other.LocomotionState) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Rotation, other.Rotation)) return false;
+      if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
       if (!object.Equals(LinearVelocity, other.LinearVelocity)) return false;
       if (!object.Equals(AngularVelocity, other.AngularVelocity)) return false;
-      if (OwnerClientId != other.OwnerClientId) return false;
-      if (LocomotionState != other.LocomotionState) return false;
       if (IsGrounded != other.IsGrounded) return false;
-      if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
+      if (LastProcessedInputTick != other.LastProcessedInputTick) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1653,16 +1653,16 @@ namespace NetSync {
     public override int GetHashCode() {
       int hash = 1;
       if (EntityId != 0) hash ^= EntityId.GetHashCode();
+      if (OwnerClientId != 0) hash ^= OwnerClientId.GetHashCode();
       if (SnapshotTick != 0) hash ^= SnapshotTick.GetHashCode();
-      if (LastProcessedInputTick != 0) hash ^= LastProcessedInputTick.GetHashCode();
+      if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (rotation_ != null) hash ^= Rotation.GetHashCode();
+      if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
       if (linearVelocity_ != null) hash ^= LinearVelocity.GetHashCode();
       if (angularVelocity_ != null) hash ^= AngularVelocity.GetHashCode();
-      if (OwnerClientId != 0) hash ^= OwnerClientId.GetHashCode();
-      if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
       if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
-      if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
+      if (LastProcessedInputTick != 0) hash ^= LastProcessedInputTick.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1685,45 +1685,45 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (SnapshotTick != 0) {
+      if (OwnerClientId != 0) {
         output.WriteRawTag(16);
+        output.WriteUInt32(OwnerClientId);
+      }
+      if (SnapshotTick != 0) {
+        output.WriteRawTag(24);
         output.WriteUInt32(SnapshotTick);
       }
-      if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(LastProcessedInputTick);
+      if (LocomotionState != 0) {
+        output.WriteRawTag(32);
+        output.WriteUInt32(LocomotionState);
       }
       if (position_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(50);
         output.WriteMessage(Rotation);
       }
+      if (viewRotation_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(ViewRotation);
+      }
       if (linearVelocity_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(66);
         output.WriteMessage(LinearVelocity);
       }
       if (angularVelocity_ != null) {
-        output.WriteRawTag(58);
+        output.WriteRawTag(74);
         output.WriteMessage(AngularVelocity);
-      }
-      if (OwnerClientId != 0) {
-        output.WriteRawTag(64);
-        output.WriteUInt32(OwnerClientId);
-      }
-      if (LocomotionState != 0) {
-        output.WriteRawTag(72);
-        output.WriteUInt32(LocomotionState);
       }
       if (IsGrounded != false) {
         output.WriteRawTag(80);
         output.WriteBool(IsGrounded);
       }
-      if (viewRotation_ != null) {
-        output.WriteRawTag(90);
-        output.WriteMessage(ViewRotation);
+      if (LastProcessedInputTick != 0) {
+        output.WriteRawTag(88);
+        output.WriteUInt32(LastProcessedInputTick);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1739,45 +1739,45 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (SnapshotTick != 0) {
+      if (OwnerClientId != 0) {
         output.WriteRawTag(16);
+        output.WriteUInt32(OwnerClientId);
+      }
+      if (SnapshotTick != 0) {
+        output.WriteRawTag(24);
         output.WriteUInt32(SnapshotTick);
       }
-      if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(LastProcessedInputTick);
+      if (LocomotionState != 0) {
+        output.WriteRawTag(32);
+        output.WriteUInt32(LocomotionState);
       }
       if (position_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(50);
         output.WriteMessage(Rotation);
       }
+      if (viewRotation_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(ViewRotation);
+      }
       if (linearVelocity_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(66);
         output.WriteMessage(LinearVelocity);
       }
       if (angularVelocity_ != null) {
-        output.WriteRawTag(58);
+        output.WriteRawTag(74);
         output.WriteMessage(AngularVelocity);
-      }
-      if (OwnerClientId != 0) {
-        output.WriteRawTag(64);
-        output.WriteUInt32(OwnerClientId);
-      }
-      if (LocomotionState != 0) {
-        output.WriteRawTag(72);
-        output.WriteUInt32(LocomotionState);
       }
       if (IsGrounded != false) {
         output.WriteRawTag(80);
         output.WriteBool(IsGrounded);
       }
-      if (viewRotation_ != null) {
-        output.WriteRawTag(90);
-        output.WriteMessage(ViewRotation);
+      if (LastProcessedInputTick != 0) {
+        output.WriteRawTag(88);
+        output.WriteUInt32(LastProcessedInputTick);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1792,11 +1792,14 @@ namespace NetSync {
       if (EntityId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityId);
       }
+      if (OwnerClientId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(OwnerClientId);
+      }
       if (SnapshotTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SnapshotTick);
       }
-      if (LastProcessedInputTick != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LastProcessedInputTick);
+      if (LocomotionState != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LocomotionState);
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -1804,23 +1807,20 @@ namespace NetSync {
       if (rotation_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Rotation);
       }
+      if (viewRotation_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ViewRotation);
+      }
       if (linearVelocity_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(LinearVelocity);
       }
       if (angularVelocity_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(AngularVelocity);
       }
-      if (OwnerClientId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(OwnerClientId);
-      }
-      if (LocomotionState != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LocomotionState);
-      }
       if (IsGrounded != false) {
         size += 1 + 1;
       }
-      if (viewRotation_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ViewRotation);
+      if (LastProcessedInputTick != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LastProcessedInputTick);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1837,11 +1837,14 @@ namespace NetSync {
       if (other.EntityId != 0) {
         EntityId = other.EntityId;
       }
+      if (other.OwnerClientId != 0) {
+        OwnerClientId = other.OwnerClientId;
+      }
       if (other.SnapshotTick != 0) {
         SnapshotTick = other.SnapshotTick;
       }
-      if (other.LastProcessedInputTick != 0) {
-        LastProcessedInputTick = other.LastProcessedInputTick;
+      if (other.LocomotionState != 0) {
+        LocomotionState = other.LocomotionState;
       }
       if (other.position_ != null) {
         if (position_ == null) {
@@ -1855,6 +1858,12 @@ namespace NetSync {
         }
         Rotation.MergeFrom(other.Rotation);
       }
+      if (other.viewRotation_ != null) {
+        if (viewRotation_ == null) {
+          ViewRotation = new global::NetSync.Quat();
+        }
+        ViewRotation.MergeFrom(other.ViewRotation);
+      }
       if (other.linearVelocity_ != null) {
         if (linearVelocity_ == null) {
           LinearVelocity = new global::NetSync.Vec3();
@@ -1867,20 +1876,11 @@ namespace NetSync {
         }
         AngularVelocity.MergeFrom(other.AngularVelocity);
       }
-      if (other.OwnerClientId != 0) {
-        OwnerClientId = other.OwnerClientId;
-      }
-      if (other.LocomotionState != 0) {
-        LocomotionState = other.LocomotionState;
-      }
       if (other.IsGrounded != false) {
         IsGrounded = other.IsGrounded;
       }
-      if (other.viewRotation_ != null) {
-        if (viewRotation_ == null) {
-          ViewRotation = new global::NetSync.Quat();
-        }
-        ViewRotation.MergeFrom(other.ViewRotation);
+      if (other.LastProcessedInputTick != 0) {
+        LastProcessedInputTick = other.LastProcessedInputTick;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1902,58 +1902,58 @@ namespace NetSync {
             break;
           }
           case 16: {
-            SnapshotTick = input.ReadUInt32();
+            OwnerClientId = input.ReadUInt32();
             break;
           }
           case 24: {
-            LastProcessedInputTick = input.ReadUInt32();
+            SnapshotTick = input.ReadUInt32();
             break;
           }
-          case 34: {
+          case 32: {
+            LocomotionState = input.ReadUInt32();
+            break;
+          }
+          case 42: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 42: {
+          case 50: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 50: {
+          case 58: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
+            }
+            input.ReadMessage(ViewRotation);
+            break;
+          }
+          case 66: {
             if (linearVelocity_ == null) {
               LinearVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(LinearVelocity);
             break;
           }
-          case 58: {
+          case 74: {
             if (angularVelocity_ == null) {
               AngularVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(AngularVelocity);
             break;
           }
-          case 64: {
-            OwnerClientId = input.ReadUInt32();
-            break;
-          }
-          case 72: {
-            LocomotionState = input.ReadUInt32();
-            break;
-          }
           case 80: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 90: {
-            if (viewRotation_ == null) {
-              ViewRotation = new global::NetSync.Quat();
-            }
-            input.ReadMessage(ViewRotation);
+          case 88: {
+            LastProcessedInputTick = input.ReadUInt32();
             break;
           }
         }
@@ -1976,58 +1976,58 @@ namespace NetSync {
             break;
           }
           case 16: {
-            SnapshotTick = input.ReadUInt32();
+            OwnerClientId = input.ReadUInt32();
             break;
           }
           case 24: {
-            LastProcessedInputTick = input.ReadUInt32();
+            SnapshotTick = input.ReadUInt32();
             break;
           }
-          case 34: {
+          case 32: {
+            LocomotionState = input.ReadUInt32();
+            break;
+          }
+          case 42: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 42: {
+          case 50: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 50: {
+          case 58: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
+            }
+            input.ReadMessage(ViewRotation);
+            break;
+          }
+          case 66: {
             if (linearVelocity_ == null) {
               LinearVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(LinearVelocity);
             break;
           }
-          case 58: {
+          case 74: {
             if (angularVelocity_ == null) {
               AngularVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(AngularVelocity);
             break;
           }
-          case 64: {
-            OwnerClientId = input.ReadUInt32();
-            break;
-          }
-          case 72: {
-            LocomotionState = input.ReadUInt32();
-            break;
-          }
           case 80: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 90: {
-            if (viewRotation_ == null) {
-              ViewRotation = new global::NetSync.Quat();
-            }
-            input.ReadMessage(ViewRotation);
+          case 88: {
+            LastProcessedInputTick = input.ReadUInt32();
             break;
           }
         }

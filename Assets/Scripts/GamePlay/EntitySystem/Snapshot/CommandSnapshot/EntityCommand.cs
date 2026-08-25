@@ -19,16 +19,16 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 判断当前控制命令有哪些持续按住的按键
         /// </summary>
-        public bool IsHeld(EntityCommandFlags flag) => (flagsHeld & flag) != 0;
+        public readonly bool IsHeld(EntityCommandFlags flag) => (flagsHeld & flag) != 0;
         
         /// <summary>
         /// 判断当前控制命令在当前Tick有哪些按下的按键
         /// </summary>
-        public bool IsPressed(EntityCommandFlags flag) => (flagsPressed & flag) != 0;
+        public readonly bool IsPressed(EntityCommandFlags flag) => (flagsPressed & flag) != 0;
         
         /// <summary>
         /// 判断当前控制命令在当前Tick有哪些释放的按键
         /// </summary>
-        public bool IsReleased(EntityCommandFlags flag) => (flagsReleased & flag) != 0;
+        public readonly bool IsReleased(EntityCommandFlags flag) => (flagsReleased & flag) != 0;
     }
 }
