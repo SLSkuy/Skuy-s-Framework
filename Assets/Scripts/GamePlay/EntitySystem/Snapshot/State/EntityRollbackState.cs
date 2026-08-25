@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
@@ -12,8 +11,5 @@ namespace GamePlay.EntitySystem
         public EntitySimulationState simulationState;
         public MovementRollbackState movementState;
         public ViewRollbackState viewState;
-
-        public Vector2 moveInput;
-        public Vector2 aimInput;
     }
 }

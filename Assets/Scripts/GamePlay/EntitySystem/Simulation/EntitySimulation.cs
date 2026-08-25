@@ -62,9 +62,7 @@ namespace GamePlay.EntitySystem
             {
                 simulationState = CaptureSimulationState(),
                 movementState = movementState,
-                viewState = viewState,
-                moveInput = _context.LastMoveInput,
-                aimInput = _context.LastAimInput
+                viewState = viewState
             };
         }
 
@@ -75,8 +73,6 @@ namespace GamePlay.EntitySystem
         {
             _context.Movement.RestoreRollbackState(state.movementState);
             _context.View.RestoreRollbackState(state.viewState);
-            _context.LastMoveInput = state.moveInput;
-            _context.LastAimInput = state.aimInput;
             _context.LocomotionSpeed = state.movementState.desiredLocomotionSpeed;
             _context.IsSprinting = state.movementState.isSprinting;
             _context.IsRunning = state.movementState.isRunning;
