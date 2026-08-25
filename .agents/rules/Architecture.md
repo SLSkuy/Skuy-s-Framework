@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the project structure and established patterns. It is reference material; workflow rules are in [AGENTS.md](../../AGENTS.md).
+This document describes the project structure and established patterns.
 
 ## Project Structure and Modules
 
@@ -19,26 +19,24 @@ Top-level modules under `Assets/Scripts/`:
 
 Scenes live under `Assets/Scenes`, with development scenes under `Assets/Scenes/Dev`. Generated protocol classes live under `Assets/Scripts/GamePlay/Protocol/Generated`; do not edit them unless the generator is unavailable. Third-party code lives under `Assets/ThirdParty`.
 
-> **Note:** Module lists, namespace tables, and type names drift. Always verify against actual code before acting; see the Repository Truth rule in [AGENTS.md](../../AGENTS.md).
-
 ## Namespace Conventions
 
 Namespaces represent logical modules and do **not** strictly mirror folder paths. Use established names:
 
 
-| Namespace                | Purpose                                                | Examples                                                                   |
-| ------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `Framework`              | Core services, singleton, subsystems, `Global` locator | `Global.cs`, `MonoSingleton.cs`, `SubSystemBase.cs`, `GameStateManager.cs` |
-| `Framework.Core`         | UI controller base and shared UI core                  | `UIController.cs`                                                          |
-| `Framework.StateMachine` | General state machine                                  | `IState.cs`, `EnumStateBase.cs`                                            |
-| `Network`                | Client/server networking and message handling          | `NetClient.cs`, `NetServer.cs`                                             |
-| `Events`                 | Cross-module event enums                               | `NetEvent.cs`                                                              |
-| `EventProcess`           | Event bus (`EventBus.Get<T>()`)                        | —                                                                          |
-| `GamePlay.EntitySystem`  | Entity characters, FSM states, simulation              | `EntityCharacter.cs`, `EntityBaseState.cs`                                 |
-| `GamePlay.MultiPlaySystem` | Character replication, prediction, interpolation     | `CharacterReplicationSystem.cs`, `NetworkObjectIdentity.cs`              |
-| `Utils`                  | Stateless utilities                                    | `MathUtils.cs`                                                             |
-| `NetConnect`             | Low-level connection primitives                        | —                                                                          |
-| *(global)*               | Scene entry points only                                | `Launch.cs`, `MainEntry.cs`                                                |
+| Namespace                  | Purpose                                                | Examples                                                                   |
+| -------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `Framework`                | Core services, singleton, subsystems, `Global` locator | `Global.cs`, `MonoSingleton.cs`, `SubSystemBase.cs`, `GameStateManager.cs` |
+| `Framework.Core`           | UI controller base and shared UI core                  | `UIController.cs`                                                          |
+| `Framework.StateMachine`   | General state machine                                  | `IState.cs`, `EnumStateBase.cs`                                            |
+| `Network`                  | Client/server networking and message handling          | `NetClient.cs`, `NetServer.cs`                                             |
+| `Events`                   | Cross-module event enums                               | `NetEvent.cs`                                                              |
+| `EventProcess`             | Event bus (`EventBus.Get<T>()`)                        | —                                                                          |
+| `GamePlay.EntitySystem`    | Entity characters, FSM states, simulation              | `EntityCharacter.cs`, `EntityBaseState.cs`                                 |
+| `GamePlay.MultiPlaySystem` | Character replication, prediction, interpolation       | `CharacterReplicationSystem.cs`, `NetworkObjectIdentity.cs`                |
+| `Utils`                    | Stateless utilities                                    | `MathUtils.cs`                                                             |
+| `NetConnect`               | Low-level connection primitives                        | —                                                                          |
+| *(global)*                 | Scene entry points only                                | `Launch.cs`, `MainEntry.cs`                                                |
 
 
 Only `Launch` and `MainEntry` may use the global namespace. All other types must declare a module namespace. Reuse the owning module namespace for new subsystems.

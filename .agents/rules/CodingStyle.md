@@ -1,6 +1,6 @@
 # C# Coding Style
 
-Detailed C# style rules. Workflow rules are defined in [AGENTS.md](../../AGENTS.md).
+Detailed C# style rules. Project structure, module layout, and the namespace mapping are owned by `Architecture.md`; this file owns C# naming, style, and member ordering.
 
 Use C#, 4-space indentation, and braces on their own line. Public types/methods use `PascalCase`; locals/parameters use `camelCase`. Preserve existing XML summaries and inline comments, update them in place, and keep banner comments attached to their field groups.
 
@@ -15,7 +15,6 @@ Use C#, 4-space indentation, and braces on their own line. Public types/methods 
 - **Static utilities:** `Utils` suffix and `static class`: `MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`.
 - **Concrete states:** `State` suffix: `EntityIdleState`, `LoadingState`, `GamingState`.
 - **Network components:** preserve existing names such as `NetworkObjectIdentity` and `CharacterPresentationAdapter`; client/server entry points remain `NetClient` / `NetServer`.
-
 
 
 ## Fields and Properties
