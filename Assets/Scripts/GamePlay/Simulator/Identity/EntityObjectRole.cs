@@ -1,6 +1,9 @@
-namespace GamePlay.MultiPlaySystem
+namespace GamePlay.Simulator
 {
-    public enum EntitySimulationMode
+    /// <summary>
+    /// 实体对象身份枚举
+    /// </summary>
+    public enum EntityObjectRole
     {
         /// <summary>
         /// 消耗输入命令进行模拟

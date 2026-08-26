@@ -6,12 +6,12 @@ namespace GamePlay.MultiPlaySystem
     /// <summary>
     /// 全局唯一网络时间服务，为所有模拟模式广播同一固定 Tick。
     /// </summary>
-    public sealed class NetworkTimeSystem : SubSystemBase
+    public sealed class SimulatorTickSystem : SubSystemBase
     {
         private NetworkTickSystem _ticks;
 
         #region 属性
-        public override int Priority => (int)SubSystemPriority.NetworkTimeSystem;
+        public override int Priority => (int)SubSystemPriority.SimulatorTickSystem;
         public uint CurrentTick => _ticks?.CurrentTick ?? 0;
         public float TickDeltaTime => _ticks != null ? (float)_ticks.TickDeltaTime : 0f;
         #endregion

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Events;
 using Framework;
+using GamePlay.Simulator;
 using Network;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -66,14 +67,14 @@ namespace GamePlay.MultiPlaySystem
             if (response == null || !response.Accepted) _joinRequested = false;
         }
 
-        private NetworkObjectIdentity SpawnPlayer(uint entityId, uint ownerClientId, bool isOwned)
+        private EntityObjectIdentity SpawnPlayer(uint entityId, uint ownerClientId, bool isOwned)
         {
             if (_players.TryGetValue(entityId, out GameObject existing))
-                return existing.GetComponent<NetworkObjectIdentity>();
+                return existing.GetComponent<EntityObjectIdentity>();
 
             string objectName = isOwned ? $"LocalPlayer_{entityId}" : $"RemotePlayer_{entityId}";
-            EntitySimulationMode role = isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica;
-            NetworkObjectIdentity identity = PlayerSpawner.Spawn(
+            EntityObjectRole role = isOwned ? EntityObjectRole.Predict : EntityObjectRole.Replica;
+            EntityObjectIdentity identity = PlayerSpawner.Spawn(
                 _playerPrefab, Vector3.up, objectName, entityId, role, ownerClientId);
             _players.Add(entityId, identity.gameObject);
             return identity;

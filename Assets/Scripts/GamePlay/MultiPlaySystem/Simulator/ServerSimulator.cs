@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Events;
+using GamePlay.Simulator;
 using Network;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -62,12 +63,12 @@ namespace GamePlay.MultiPlaySystem
 
         private void SpawnPlayer(uint clientId)
         {
-            NetworkObjectIdentity identity = PlayerSpawner.Spawn(
+            EntityObjectIdentity identity = PlayerSpawner.Spawn(
                 _playerPrefab,
                 new Vector3((clientId - 1u) * 2f, 1f, 0f),
                 $"ServerPlayer_{clientId}",
                 clientId,
-                EntitySimulationMode.Authority,
+                EntityObjectRole.Authority,
                 clientId);
             _players.Add(clientId, identity.gameObject);
         }

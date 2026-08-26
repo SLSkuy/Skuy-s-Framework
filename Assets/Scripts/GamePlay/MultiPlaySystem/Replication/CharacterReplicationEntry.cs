@@ -1,4 +1,5 @@
 using GamePlay.EntitySystem;
+using GamePlay.Simulator;
 using UnityEngine;
 
 namespace GamePlay.MultiPlaySystem
@@ -8,11 +9,11 @@ namespace GamePlay.MultiPlaySystem
     /// </summary>
     public sealed class CharacterReplicationEntry
     {
-        private EntitySimulationMode _configuredRole;
+        private EntityObjectRole _configuredRole;
         private bool _roleConfigured;
 
         #region Properties
-        public NetworkObjectIdentity Identity { get; private set; }
+        public EntityObjectIdentity Identity { get; private set; }
         public EntityCharacter Simulation { get; private set; }
         public PlayerController PlayerController { get; private set; }
         public AIController AIController { get; private set; }
@@ -27,7 +28,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 绑定角色对象上的显式运行时组件。
         /// </summary>
-        public bool TryBind(NetworkObjectIdentity identity)
+        public bool TryBind(EntityObjectIdentity identity)
         {
             if (identity == null) return false;
 
@@ -56,7 +57,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 按当前模拟角色装配输入源、碰撞体与缓冲。
         /// </summary>
-        public void ApplyRole(EntitySimulationMode role)
+        public void ApplyRole(EntityObjectRole role)
         {
             if (Identity == null || Simulation == null) return;
             if (_roleConfigured && _configuredRole == role)
@@ -71,7 +72,7 @@ namespace GamePlay.MultiPlaySystem
             if (!Simulation.IsInitialized) Simulation.Init();
 
             MovementModule movementModule = Identity.GetComponent<MovementModule>();
-            bool isReplica = role == EntitySimulationMode.Replica;
+            bool isReplica = role == EntityObjectRole.Replica;
             movementModule?.SetReplicaMode(isReplica);
             Presentation.ApplyRole(role);
 
@@ -83,17 +84,17 @@ namespace GamePlay.MultiPlaySystem
             UpdateControllerActivation(role);
         }
 
-        private void UpdateControllerActivation(EntitySimulationMode role)
+        private void UpdateControllerActivation(EntityObjectRole role)
         {
-            bool requiresLocalInput = role == EntitySimulationMode.Predict ||
-                role == EntitySimulationMode.LocalPlay;
+            bool requiresLocalInput = role == EntityObjectRole.Predict ||
+                role == EntityObjectRole.LocalPlay;
             if (PlayerController != null)
             {
                 PlayerController.enabled = requiresLocalInput;
                 if (requiresLocalInput) PlayerController.Bind(Simulation);
             }
 
-            if (AIController != null) AIController.enabled = role == EntitySimulationMode.Authority && OwnerClientId == 0;
+            if (AIController != null) AIController.enabled = role == EntityObjectRole.Authority && OwnerClientId == 0;
         }
     }
 }

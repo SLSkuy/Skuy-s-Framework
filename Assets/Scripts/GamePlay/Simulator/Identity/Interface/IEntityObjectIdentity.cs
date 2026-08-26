@@ -1,6 +1,4 @@
-using GamePlay.MultiPlaySystem;
-
-namespace GamePlay.EntitySystem
+namespace GamePlay.Simulator
 {
     /// <summary>
     /// 实体对象身份接口。
@@ -11,7 +9,7 @@ namespace GamePlay.EntitySystem
         uint EntityId { get; }
         bool IsInitialized { get; }
 
-        EntitySimulationMode Role { get; }
+        EntityObjectRole Role { get; }
         bool IsAuthority { get; }
         bool IsPredict { get; }
         bool IsReplica { get; }

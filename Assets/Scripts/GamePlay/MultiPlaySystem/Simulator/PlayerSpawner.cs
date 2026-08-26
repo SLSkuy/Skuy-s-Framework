@@ -1,3 +1,4 @@
+using GamePlay.Simulator;
 using UnityEngine;
 
 namespace GamePlay.MultiPlaySystem
@@ -16,12 +17,12 @@ namespace GamePlay.MultiPlaySystem
             return prefab;
         }
 
-        public static NetworkObjectIdentity Spawn(GameObject prefab, Vector3 position, string objectName,
-            uint entityId, EntitySimulationMode role, uint ownerClientId)
+        public static EntityObjectIdentity Spawn(GameObject prefab, Vector3 position, string objectName,
+            uint entityId, EntityObjectRole role, uint ownerClientId)
         {
             GameObject instance = Object.Instantiate(prefab, position, Quaternion.identity);
             instance.name = objectName;
-            NetworkObjectIdentity identity = instance.GetComponent<NetworkObjectIdentity>();
+            EntityObjectIdentity identity = instance.GetComponent<EntityObjectIdentity>();
             if (identity == null)
             {
                 throw new System.InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");

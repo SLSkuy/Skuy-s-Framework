@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Events;
 using Framework;
 using GamePlay.EntitySystem;
+using GamePlay.Simulator;
 using Network;
 using UnityEngine;
 using Utils;
@@ -15,24 +16,24 @@ namespace GamePlay.MultiPlaySystem
     public sealed class CharacterReplicationSystem : SubSystemBase
     {
         private readonly Dictionary<uint, CharacterReplicationEntry> _characters = new();
-        private NetworkTimeSystem _networkTime;
+        private SimulatorTickSystem _simulatorTick;
         private NetClient _client;
         private NetServer _server;
-        private Func<uint, uint, bool, NetworkObjectIdentity> _clientEntityFactory;
+        private Func<uint, uint, bool, EntityObjectIdentity> _clientEntityFactory;
         private int _snapshotAccumulator;
         private bool _clientHandlerBound;
         private bool _serverHandlerBound;
 
         #region Properties
         public override int Priority => (int)SubSystemPriority.NetSyncManager;
-        public uint CurrentTick => _networkTime?.CurrentTick ?? 0;
+        public uint CurrentTick => _simulatorTick?.CurrentTick ?? 0;
         public int RegisteredEntityCount => _characters.Count;
         #endregion
 
         /// <summary>
         /// 注册角色及其所有者。LocalPlay 允许 NetworkObjectId 为 0。
         /// </summary>
-        public bool Register(NetworkObjectIdentity identity, uint ownerClientId = 0)
+        public bool Register(EntityObjectIdentity identity, uint ownerClientId = 0)
         {
             if (identity == null || (identity.EntityId == 0 && !identity.IsLocalPlay)) return false;
             uint registrationId = GetRegistrationId(identity);
@@ -62,7 +63,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 注册离线 LocalPlay 角色。
         /// </summary>
-        public bool RegisterLocalPlay(NetworkObjectIdentity identity)
+        public bool RegisterLocalPlay(EntityObjectIdentity identity)
         {
             return Register(identity, 0);
         }
@@ -70,7 +71,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 注销指定实例；相同 ID 的其他实例不会被误移除。
         /// </summary>
-        public void Unregister(uint entityId, NetworkObjectIdentity identity)
+        public void Unregister(uint entityId, EntityObjectIdentity identity)
         {
             uint registrationId = entityId != 0 ? entityId : FindRegistrationId(identity);
             if (registrationId == 0 || !_characters.TryGetValue(registrationId, out CharacterReplicationEntry entry) ||
@@ -85,7 +86,7 @@ namespace GamePlay.MultiPlaySystem
         /// <summary>
         /// 配置客户端对象工厂，参数依次为对象 ID、Owner ID 和是否本地拥有。
         /// </summary>
-        public void SetClientEntityFactory(Func<uint, uint, bool, NetworkObjectIdentity> entityFactory)
+        public void SetClientEntityFactory(Func<uint, uint, bool, EntityObjectIdentity> entityFactory)
         {
             _clientEntityFactory = entityFactory;
         }
@@ -128,13 +129,13 @@ namespace GamePlay.MultiPlaySystem
         }
 
         [Obsolete("Obsolete")]
-        private static uint GetRegistrationId(NetworkObjectIdentity identity)
+        private static uint GetRegistrationId(EntityObjectIdentity identity)
         {
             if (identity.EntityId != 0) return identity.EntityId;
             return unchecked((uint)identity.GetInstanceID());
         }
 
-        private uint FindRegistrationId(NetworkObjectIdentity identity)
+        private uint FindRegistrationId(EntityObjectIdentity identity)
         {
             foreach (KeyValuePair<uint, CharacterReplicationEntry> pair in _characters)
             {
@@ -181,7 +182,7 @@ namespace GamePlay.MultiPlaySystem
                 }
 
                 bool isOwned = snapshot.OwnerClientId != 0 && snapshot.OwnerClientId == localClientId;
-                EntitySimulationMode expectedRole = isOwned ? EntitySimulationMode.Predict : EntitySimulationMode.Replica;
+                EntityObjectRole expectedRole = isOwned ? EntityObjectRole.Predict : EntityObjectRole.Replica;
                 CharacterReplicationEntry entry = ResolveSnapshotEntry(snapshot, expectedRole, isOwned);
                 if (entry == null) continue;
 
@@ -203,11 +204,11 @@ namespace GamePlay.MultiPlaySystem
         }
 
         private CharacterReplicationEntry ResolveSnapshotEntry(global::NetSync.Character_Snapshot snapshot,
-            EntitySimulationMode expectedRole, bool isOwned)
+            EntityObjectRole expectedRole, bool isOwned)
         {
             if (!_characters.TryGetValue(snapshot.EntityId, out CharacterReplicationEntry entry))
             {
-                NetworkObjectIdentity identity =
+                EntityObjectIdentity identity =
                     _clientEntityFactory?.Invoke(snapshot.EntityId, snapshot.OwnerClientId, isOwned);
                 if (identity == null) return null;
                 identity.Init(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
@@ -439,8 +440,8 @@ namespace GamePlay.MultiPlaySystem
 
         public override void Init()
         {
-            _networkTime = Global.Get<NetworkTimeSystem>();
-            if (_networkTime != null) _networkTime.Tick += SimulateTick;
+            _simulatorTick = Global.Get<SimulatorTickSystem>();
+            if (_simulatorTick != null) _simulatorTick.Tick += SimulateTick;
             BindNetworkHandlers();
         }
 
@@ -452,7 +453,7 @@ namespace GamePlay.MultiPlaySystem
 
         public override void Destroy()
         {
-            if (_networkTime != null) _networkTime.Tick -= SimulateTick;
+            if (_simulatorTick != null) _simulatorTick.Tick -= SimulateTick;
             if (_clientHandlerBound) _client?.UnRegNetHandler(NetEvent.WORLD_SNAPSHOT);
             if (_serverHandlerBound) _server?.UnRegNetHandler(NetEvent.PLAYER_INPUT);
 

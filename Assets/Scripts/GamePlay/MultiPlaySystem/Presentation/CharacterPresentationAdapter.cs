@@ -1,4 +1,5 @@
 using GamePlay.EntitySystem;
+using GamePlay.Simulator;
 using UnityEngine;
 
 namespace GamePlay.MultiPlaySystem
@@ -82,7 +83,7 @@ namespace GamePlay.MultiPlaySystem
         /// 记录表现根节点的本地姿态，供预测校正使用。
         /// mesh 承载模拟身体偏航时，校正不得把旋转拉回预制体本地值。
         /// </summary>
-        public void ApplyRole(EntitySimulationMode mode)
+        public void ApplyRole(EntityObjectRole mode)
         {
             if (presentationRoot == null) return;
             _presentationLocalPosition = presentationRoot.localPosition;
