@@ -10,7 +10,6 @@ namespace Framework
         DataProxyManager = -100,
         SceneLoader = -50,
         GameStateManager = 0,
-        SimulatorTickSystem = 40,
         NetSyncManager = 100,
         UIManager = 5000,
         CameraManager = 10000,

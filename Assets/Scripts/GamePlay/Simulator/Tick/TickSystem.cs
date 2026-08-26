@@ -1,30 +1,33 @@
 using System;
 
-namespace GamePlay.MultiPlaySystem
+namespace GamePlay.Simulator
 {
-    public sealed class NetworkTickSystem
+    /// <summary>
+    /// 固定步长 Tick 模块，支持追帧，避免每帧时长超过Tick时长
+    /// </summary>
+    public sealed class TickSystem
     {
         private readonly int _maxTicksPerFrame;
         private double _accumulator;
+        private readonly double _tickDeltaTime;
 
-        #region Properties
+        #region 属性
         public bool IsRunning { get; private set; }
         public uint CurrentTick { get; private set; }
-        public double TickDeltaTime { get; }
+        public float TickDeltaTime => (float)_tickDeltaTime;
         public int TickRate { get; }
-        public uint CatchUpLimitCount { get; private set; }
         #endregion
 
-        #region Events
+        #region 事件
         public event Action<uint, float> Tick;
         #endregion
 
-        public NetworkTickSystem(int tickRate, int maxTicksPerFrame = 8)
+        public TickSystem(int tickRate, int maxTicksPerFrame = 8)
         {
             if (tickRate < 1) throw new ArgumentOutOfRangeException(nameof(tickRate));
             if (maxTicksPerFrame < 1) throw new ArgumentOutOfRangeException(nameof(maxTicksPerFrame));
             TickRate = tickRate;
-            TickDeltaTime = 1d / tickRate;
+            _tickDeltaTime = 1d / tickRate;
             _maxTicksPerFrame = maxTicksPerFrame;
         }
 
@@ -36,23 +39,23 @@ namespace GamePlay.MultiPlaySystem
 
         public void Stop() => IsRunning = false;
 
-        public int Advance(double deltaTime)
+        /// <summary>
+        /// Tick驱动
+        /// </summary>
+        /// <returns>deltaTime内更新的Tick数量</returns>
+        public int Update(double deltaTime)
         {
             if (!IsRunning || deltaTime <= 0d) return 0;
             _accumulator += deltaTime;
             int processedTicks = 0;
-            while (_accumulator + 1e-9d >= TickDeltaTime && processedTicks < _maxTicksPerFrame)
+            while (_accumulator + 1e-9d >= _tickDeltaTime && processedTicks < _maxTicksPerFrame)
             {
-                _accumulator -= TickDeltaTime;
+                _accumulator -= _tickDeltaTime;
                 CurrentTick++;
-                Tick?.Invoke(CurrentTick, (float)TickDeltaTime);
+                Tick?.Invoke(CurrentTick, (float)_tickDeltaTime);
                 processedTicks++;
             }
-            if (_accumulator + 1e-9d >= TickDeltaTime)
-            {
-                CatchUpLimitCount++;
-                _accumulator %= TickDeltaTime;
-            }
+
             return processedTicks;
         }
 
@@ -60,7 +63,6 @@ namespace GamePlay.MultiPlaySystem
         {
             _accumulator = 0d;
             CurrentTick = 0;
-            CatchUpLimitCount = 0;
         }
     }
 }

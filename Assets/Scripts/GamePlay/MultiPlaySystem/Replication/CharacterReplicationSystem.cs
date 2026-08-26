@@ -16,7 +16,7 @@ namespace GamePlay.MultiPlaySystem
     public sealed class CharacterReplicationSystem : SubSystemBase
     {
         private readonly Dictionary<uint, CharacterReplicationEntry> _characters = new();
-        private SimulatorTickSystem _simulatorTick;
+        private TickSystem _tick;
         private NetClient _client;
         private NetServer _server;
         private Func<uint, uint, bool, EntityObjectIdentity> _clientEntityFactory;
@@ -26,7 +26,7 @@ namespace GamePlay.MultiPlaySystem
 
         #region Properties
         public override int Priority => (int)SubSystemPriority.NetSyncManager;
-        public uint CurrentTick => _simulatorTick?.CurrentTick ?? 0;
+        public uint CurrentTick => _tick?.CurrentTick ?? 0;
         public int RegisteredEntityCount => _characters.Count;
         #endregion
 
@@ -407,8 +407,7 @@ namespace GamePlay.MultiPlaySystem
 
         private float GetTickDeltaTime()
         {
-            return SyncConfig.Instance.simulationTickRate > 0 ?
-                1f / SyncConfig.Instance.simulationTickRate : 0f;
+            return _tick?.TickDeltaTime ?? 0f;
         }
 
         private void BindNetworkHandlers()
@@ -440,20 +439,28 @@ namespace GamePlay.MultiPlaySystem
 
         public override void Init()
         {
-            _simulatorTick = Global.Get<SimulatorTickSystem>();
-            if (_simulatorTick != null) _simulatorTick.Tick += SimulateTick;
+            SyncConfig config = SyncConfig.Instance;
+            _tick = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
+            _tick.Tick += SimulateTick;
+            _tick.Start();
             BindNetworkHandlers();
         }
 
         public override void Update(float deltaTime)
         {
+            _tick?.Update(deltaTime);
             BindNetworkHandlers();
             UpdateReplicaInterpolation(deltaTime);
         }
 
         public override void Destroy()
         {
-            if (_simulatorTick != null) _simulatorTick.Tick -= SimulateTick;
+            if (_tick != null)
+            {
+                _tick.Tick -= SimulateTick;
+                _tick.Stop();
+                _tick = null;
+            }
             if (_clientHandlerBound) _client?.UnRegNetHandler(NetEvent.WORLD_SNAPSHOT);
             if (_serverHandlerBound) _server?.UnRegNetHandler(NetEvent.PLAYER_INPUT);
 
