@@ -1,8 +1,5 @@
 using UnityEngine;
 using Framework;
-using UIFramework;
-using GamePlay.EntitySystem;
-using GamePlay.MultiPlaySystem;
 
 namespace Core
 {
@@ -60,8 +57,6 @@ namespace Core
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             UIMgr = SystemMgr.RegisterSystem<UIManager>();
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
-            SystemMgr.RegisterSystem<NetworkTimeSystem>();
-            SystemMgr.RegisterSystem<CharacterReplicationSystem>();
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();

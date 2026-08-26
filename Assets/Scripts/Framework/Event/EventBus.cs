@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EventProcess
+namespace Framework
 {
     /// <summary>
     /// 事件类

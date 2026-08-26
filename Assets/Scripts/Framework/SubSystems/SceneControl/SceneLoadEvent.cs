@@ -1,5 +1,3 @@
-using EventProcess;
-
 namespace Framework
 {
     /// <summary>

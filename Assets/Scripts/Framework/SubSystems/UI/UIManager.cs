@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Framework;
 using Framework.Core;
 using Framework.Panel;
 using Framework.Window;
@@ -9,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace UIFramework
+namespace Framework
 {
     /// <summary>
     /// UI框架，声明所有的对外接口

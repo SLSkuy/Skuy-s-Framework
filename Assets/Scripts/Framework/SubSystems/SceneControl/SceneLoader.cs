@@ -1,5 +1,3 @@
-using EventProcess;
-using UIFramework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

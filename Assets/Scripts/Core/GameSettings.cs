@@ -7,8 +7,8 @@
     {
         #region 画面设置
 
-        public int ScreenWidth;
-        public int ScreenHeight;
+        public int ScreenWidth = 1920;
+        public int ScreenHeight = 1080;
 
         #endregion
     }

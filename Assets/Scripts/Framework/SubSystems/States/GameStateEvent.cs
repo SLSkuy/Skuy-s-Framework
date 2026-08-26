@@ -1,6 +1,4 @@
-﻿using EventProcess;
-
-namespace Framework
+﻿namespace Framework
 {
     /// 游戏状态管理器全局事件列表
     public abstract class GameStateEvent
