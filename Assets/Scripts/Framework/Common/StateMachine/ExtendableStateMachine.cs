@@ -23,6 +23,7 @@ namespace Framework.StateMachine
 
         #region 状态管理
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 注册状态
         /// </summary>

@@ -39,6 +39,7 @@ namespace GamePlay.Simulator
 
         public void Stop() => IsRunning = false;
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// Tick驱动
         /// </summary>
