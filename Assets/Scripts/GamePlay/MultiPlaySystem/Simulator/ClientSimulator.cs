@@ -77,6 +77,7 @@ namespace GamePlay.MultiPlaySystem
             EntityObjectIdentity identity = PlayerSpawner.Spawn(
                 _playerPrefab, Vector3.up, objectName, entityId, role, ownerClientId);
             _players.Add(entityId, identity.gameObject);
+            _replicationSystem?.Register(identity, ownerClientId);
             return identity;
         }
     }

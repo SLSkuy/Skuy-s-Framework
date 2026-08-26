@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core;
 using Events;
 using Framework;
 using GamePlay.EntitySystem;
@@ -31,12 +32,12 @@ namespace GamePlay.MultiPlaySystem
         #endregion
 
         /// <summary>
-        /// 注册角色及其所有者。LocalPlay 允许 NetworkObjectId 为 0。
+        /// 注册角色及其所有者。
         /// </summary>
         public bool Register(EntityObjectIdentity identity, uint ownerClientId = 0)
         {
-            if (identity == null || (identity.EntityId == 0 && !identity.IsLocalPlay)) return false;
-            uint registrationId = GetRegistrationId(identity);
+            if (identity == null || identity.EntityId == 0) return false;
+            uint registrationId = identity.EntityId;
             if (_characters.TryGetValue(registrationId, out CharacterReplicationEntry existingEntry))
             {
                 if (existingEntry.Identity != identity)
@@ -61,19 +62,11 @@ namespace GamePlay.MultiPlaySystem
         }
 
         /// <summary>
-        /// 注册离线 LocalPlay 角色。
-        /// </summary>
-        public bool RegisterLocalPlay(EntityObjectIdentity identity)
-        {
-            return Register(identity, 0);
-        }
-
-        /// <summary>
         /// 注销指定实例；相同 ID 的其他实例不会被误移除。
         /// </summary>
         public void Unregister(uint entityId, EntityObjectIdentity identity)
         {
-            uint registrationId = entityId != 0 ? entityId : FindRegistrationId(identity);
+            uint registrationId = entityId;
             if (registrationId == 0 || !_characters.TryGetValue(registrationId, out CharacterReplicationEntry entry) ||
                 entry.Identity != identity)
             {
@@ -114,34 +107,9 @@ namespace GamePlay.MultiPlaySystem
             BindNetworkHandlers();
             foreach (CharacterReplicationEntry entry in _characters.Values)
             {
-                if (entry.Identity.IsLocalPlay) SimulateLocalPlayTick(entry, tick, deltaTime);
-                else if (entry.Identity.IsPredict) PredictOwnedTick(entry, tick, deltaTime);
+                if (entry.Identity.IsPredict) PredictOwnedTick(entry, tick, deltaTime);
                 else if (entry.Identity.IsAuthority) SimulateAuthorityTick(entry, tick, deltaTime);
             }
-        }
-
-        private static void SimulateLocalPlayTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
-        {
-            if (entry.PlayerController == null) return;
-            InputState input = entry.PlayerController.SampleInput();
-            EntityCommand command = entry.Input.BuildPredictedCommand(tick, input);
-            entry.Simulation.Step(tick, deltaTime, command);
-        }
-
-        [Obsolete("Obsolete")]
-        private static uint GetRegistrationId(EntityObjectIdentity identity)
-        {
-            if (identity.EntityId != 0) return identity.EntityId;
-            return unchecked((uint)identity.GetInstanceID());
-        }
-
-        private uint FindRegistrationId(EntityObjectIdentity identity)
-        {
-            foreach (KeyValuePair<uint, CharacterReplicationEntry> pair in _characters)
-            {
-                if (pair.Value.Identity == identity) return pair.Key;
-            }
-            return 0;
         }
 
         /// <summary>
@@ -237,13 +205,14 @@ namespace GamePlay.MultiPlaySystem
         private void PredictOwnedTick(CharacterReplicationEntry entry, uint tick, float deltaTime)
         {
             BindNetworkHandlers();
-            if (_client == null || entry.OwnerClientId != _client.ClientId || entry.PlayerController == null)
+            IInputStateProvider inputProvider = GameCore.Instance != null ? GameCore.Instance.LocalInput : null;
+            if (_client == null || entry.OwnerClientId != _client.ClientId || inputProvider == null)
             {
                 return;
             }
 
             uint inputTick = entry.Prediction.AllocateInputTick();
-            InputState input = entry.PlayerController.SampleInput();
+            InputState input = inputProvider.GetInputState();
             EntityCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
             entry.Prediction.History.Add(new EntityPredictionState

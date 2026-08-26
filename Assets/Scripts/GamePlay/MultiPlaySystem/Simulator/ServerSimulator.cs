@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Events;
+using Framework;
 using GamePlay.Simulator;
 using Network;
 using UnityEngine;
@@ -71,6 +72,7 @@ namespace GamePlay.MultiPlaySystem
                 EntityObjectRole.Authority,
                 clientId);
             _players.Add(clientId, identity.gameObject);
+            Global.Get<CharacterReplicationSystem>()?.Register(identity, clientId);
         }
 
         private void HandleClientRemoved(uint clientId)

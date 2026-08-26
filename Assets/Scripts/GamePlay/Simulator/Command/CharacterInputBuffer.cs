@@ -2,13 +2,13 @@ using System;
 using Framework;
 using GamePlay.EntitySystem;
 
-namespace GamePlay.MultiPlaySystem
+namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 角色输入缓冲：服务端按客户端 Tick 做窗口校验与顺序消费，并构建每 Tick 命令
-    /// LastProcessedTick 为已消费的客户端输入序号，0 表示尚未消费；下一拍固定取 LastProcessedTick + 1
-    /// 环形槽位以 0 表示空，有效输入 Tick 从 1 起
-    /// </summary> 
+    /// 角色输入缓冲：服务端按客户端 Tick 做窗口校验与顺序消费，并构建每 Tick 命令。
+    /// LastProcessedTick 为已消费的客户端输入序号，0 表示尚未消费；下一拍固定取 LastProcessedTick + 1。
+    /// 环形槽位以 0 表示空，有效输入 Tick 从 1 起。
+    /// </summary>
     public sealed class CharacterInputBuffer
     {
         private readonly EntityCommandQueue<InputState> _commands;

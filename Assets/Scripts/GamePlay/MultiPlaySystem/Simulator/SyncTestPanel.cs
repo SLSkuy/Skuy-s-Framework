@@ -1,6 +1,7 @@
 using System;
 using Core;
 using Framework;
+using GamePlay.Simulator;
 using Network;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace GamePlay.MultiPlaySystem
     public sealed class SyncTestPanel : MonoBehaviour
     {
         private MultiPlayManager _multiPlayManager;
+        private LocalSimulationHost _localHost;
         private GUIStyle _titleStyle;
         private GUIStyle _statusStyle;
         private string _lastError;
@@ -67,6 +69,8 @@ namespace GamePlay.MultiPlaySystem
 
             _multiPlayManager = systemManager.GetSystem<MultiPlayManager>() ??
                 systemManager.RegisterSystem<MultiPlayManager>();
+            _localHost = systemManager.GetSystem<LocalSimulationHost>() ??
+                systemManager.RegisterSystem<LocalSimulationHost>();
         }
 
         private void OnGUI()
@@ -78,11 +82,13 @@ namespace GamePlay.MultiPlaySystem
             };
             _statusStyle ??= new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
 
+            bool localRunning = _localHost != null && _localHost.IsSessionRunning;
+
             GUILayout.BeginArea(new Rect(16f, 16f, 360f, 310f), GUI.skin.box);
             GUILayout.Label("服务端权威同步测试", _titleStyle);
             GUILayout.Space(8f);
 
-            GUI.enabled = Mode == MultiPlayMode.None;
+            GUI.enabled = Mode == MultiPlayMode.None && !localRunning;
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("开启服务端", GUILayout.Height(36f))) StartEndpoint(MultiPlayMode.Server);
             if (GUILayout.Button("开启客户端", GUILayout.Height(36f))) StartEndpoint(MultiPlayMode.Client);

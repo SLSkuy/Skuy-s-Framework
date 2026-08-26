@@ -12,11 +12,9 @@ namespace GamePlay.MultiPlaySystem
         private EntityObjectRole _configuredRole;
         private bool _roleConfigured;
 
-        #region Properties
+        #region 属性
         public EntityObjectIdentity Identity { get; private set; }
         public EntityCharacter Simulation { get; private set; }
-        public PlayerController PlayerController { get; private set; }
-        public AIController AIController { get; private set; }
         public CharacterPresentationAdapter Presentation { get; private set; }
         public CharacterInputBuffer Input { get; private set; }
         public CharacterPredictionController Prediction { get; private set; }
@@ -35,8 +33,6 @@ namespace GamePlay.MultiPlaySystem
             Identity = identity;
             Simulation = identity.GetComponent<EntityCharacter>();
             Presentation = identity.GetComponent<CharacterPresentationAdapter>();
-            PlayerController = identity.GetComponent<PlayerController>();
-            AIController = identity.GetComponent<AIController>();
             if (Simulation == null || Presentation == null)
             {
                 Debug.LogError($"网络对象 {identity.name} 缺少 EntityCharacter 或 CharacterPresentationAdapter，无法注册角色复制。");
@@ -55,16 +51,12 @@ namespace GamePlay.MultiPlaySystem
         }
 
         /// <summary>
-        /// 按当前模拟角色装配输入源、碰撞体与缓冲。
+        /// 按当前模拟角色装配碰撞体与缓冲。
         /// </summary>
         public void ApplyRole(EntityObjectRole role)
         {
             if (Identity == null || Simulation == null) return;
-            if (_roleConfigured && _configuredRole == role)
-            {
-                UpdateControllerActivation(role);
-                return;
-            }
+            if (_roleConfigured && _configuredRole == role) return;
 
             _configuredRole = role;
             _roleConfigured = true;
@@ -80,21 +72,6 @@ namespace GamePlay.MultiPlaySystem
             Prediction.Reset();
             Interpolation.Reset();
             LastAppliedSnapshotTick = 0;
-
-            UpdateControllerActivation(role);
-        }
-
-        private void UpdateControllerActivation(EntityObjectRole role)
-        {
-            bool requiresLocalInput = role == EntityObjectRole.Predict ||
-                role == EntityObjectRole.LocalPlay;
-            if (PlayerController != null)
-            {
-                PlayerController.enabled = requiresLocalInput;
-                if (requiresLocalInput) PlayerController.Bind(Simulation);
-            }
-
-            if (AIController != null) AIController.enabled = role == EntityObjectRole.Authority && OwnerClientId == 0;
         }
     }
 }

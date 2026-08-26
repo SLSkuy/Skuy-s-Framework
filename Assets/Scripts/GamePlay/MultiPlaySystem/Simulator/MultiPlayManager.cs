@@ -1,5 +1,6 @@
 using System;
 using Framework;
+using GamePlay.Simulator;
 using Network;
 
 namespace GamePlay.MultiPlaySystem
@@ -30,7 +31,9 @@ namespace GamePlay.MultiPlaySystem
         {
             if (Mode == MultiPlayMode.Server) return true;
             if (Mode != MultiPlayMode.None) return false;
+            if (IsLocalSessionRunning()) return false;
 
+            GetOrRegister<CharacterReplicationSystem>();
             NetServer netServer = GetOrRegister<NetServer>();
             if (netServer == null) return false;
 
@@ -55,7 +58,9 @@ namespace GamePlay.MultiPlaySystem
         {
             if (Mode == MultiPlayMode.Client) return true;
             if (Mode != MultiPlayMode.None) return false;
+            if (IsLocalSessionRunning()) return false;
 
+            GetOrRegister<CharacterReplicationSystem>();
             NetClient netClient = GetOrRegister<NetClient>();
             if (netClient == null) return false;
 
@@ -106,6 +111,12 @@ namespace GamePlay.MultiPlaySystem
         public override void Destroy()
         {
             Stop();
+        }
+
+        private static bool IsLocalSessionRunning()
+        {
+            LocalSimulationHost localHost = Global.Get<LocalSimulationHost>();
+            return localHost != null && localHost.IsSessionRunning;
         }
 
         private static T GetOrRegister<T>() where T : class, ISubSystem, new()

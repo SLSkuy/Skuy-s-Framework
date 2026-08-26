@@ -44,7 +44,6 @@ GameObject:
   - component: {fileID: 8705368391808782593}
   - component: {fileID: 600000000000000002}
   - component: {fileID: 784472870069811886}
-  - component: {fileID: 600000000000000004}
   - component: {fileID: 600000000000000001}
   m_Layer: 0
   m_Name: NetPlayer
@@ -143,18 +142,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.MultiPlaySystem.CharacterPresentationAdapter
   presentationRoot: {fileID: 2417725431037458410}
   correctionHalfLife: 0.08
---- !u!114 &600000000000000004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4a1afe376a480483763f670fc99f28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.PlayerController
 --- !u!114 &600000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,10 +153,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4da1e754ec294f628cdf67d55fe4f1c1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.MultiPlaySystem.NetworkObjectIdentity
-  networkObjectId: 0
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulator.EntityObjectIdentity
+  entityId: 0
   ownerClientId: 0
-  role: 1
+  role: 3
 --- !u!1 &8013709126059864410
 GameObject:
   m_ObjectHideFlags: 0

@@ -43,6 +43,7 @@ namespace GamePlay.EntitySystem
             _config = config;
             _locomotionSpeed = _config.walkSpeed;
             _mesh = transform.Find(MESH_CHILD_NAME);
+            _controller = GetComponent<CharacterController>();
         }
 
         /// <summary>

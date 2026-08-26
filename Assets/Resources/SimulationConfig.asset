@@ -10,17 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e284c790d8b4a5bbd15a0caa1c5e3bc, type: 3}
-  m_Name: SyncConfig
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.MultiPlaySystem.SyncConfig
+  m_Name: SimulationConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulator.SimulationConfig
   simulationTickRate: 60
   maxSimulationTicksPerFrame: 8
-  snapshotTickRate: 20
+  snapshotTickRate: 30
   interpolationDelayTicks: 3
-  maxBufferedInputs: 64
-  maxPastInputTicks: 32
+  maxBufferedInputs: 32
   maxFutureInputTicks: 32
-  maxInputVectorMagnitude: 1.5
-  predictionHistorySize: 128
+  predictionHistorySize: 64
   positionReconcileThreshold: 0.02
   rotationReconcileThresholdDegrees: 1
   positionSnapThreshold: 2
