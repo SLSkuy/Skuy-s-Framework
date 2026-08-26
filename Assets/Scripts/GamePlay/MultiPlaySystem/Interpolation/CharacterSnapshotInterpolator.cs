@@ -1,5 +1,6 @@
 using System;
 using GamePlay.EntitySystem;
+using GamePlay.Simulator;
 using UnityEngine;
 using Utils;
 
@@ -36,7 +37,7 @@ namespace GamePlay.MultiPlaySystem
         /// </summary>
         public bool AddSnapshot(uint snapshotTick, in EntityRollbackState state)
         {
-            SyncConfig config = SyncConfig.Instance;
+            SimulationConfig config = SimulationConfig.Instance;
             bool requiresSnap = !_hasIncomingState ||
                 Vector3.Distance(_lastIncomingState.movementState.rootPosition, state.movementState.rootPosition) >=
                 config.positionSnapThreshold ||

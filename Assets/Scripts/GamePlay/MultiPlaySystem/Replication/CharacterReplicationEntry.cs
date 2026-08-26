@@ -43,7 +43,7 @@ namespace GamePlay.MultiPlaySystem
                 return false;
             }
 
-            SyncConfig config = SyncConfig.Instance;
+            SimulationConfig config = SimulationConfig.Instance;
             Input ??= new CharacterInputBuffer(
                 config.maxBufferedInputs, config.maxFutureInputTicks);
             Prediction ??= new CharacterPredictionController(config.predictionHistorySize);

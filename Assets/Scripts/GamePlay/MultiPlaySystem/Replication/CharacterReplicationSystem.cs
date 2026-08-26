@@ -289,7 +289,7 @@ namespace GamePlay.MultiPlaySystem
 
             MovementRollbackState predictedMove = confirmedFrame.state.movementState;
             MovementRollbackState authoritativeMove = authoritativeState.movementState;
-            SyncConfig config = SyncConfig.Instance;
+            SimulationConfig config = SimulationConfig.Instance;
             float positionError = Vector3.Distance(predictedMove.rootPosition, authoritativeMove.rootPosition);
             float rotationError = Quaternion.Angle(predictedMove.meshRotation, authoritativeMove.meshRotation);
             float viewError = Quaternion.Angle(confirmedFrame.state.viewState.viewRotation,
@@ -335,7 +335,7 @@ namespace GamePlay.MultiPlaySystem
         private static bool ShouldSmoothCorrection(in EntityRollbackState currentState,
             in EntityRollbackState authoritativeState)
         {
-            SyncConfig config = SyncConfig.Instance;
+            SimulationConfig config = SimulationConfig.Instance;
             return Vector3.Distance(currentState.movementState.rootPosition, authoritativeState.movementState.rootPosition) <
                 config.positionSnapThreshold &&
                 Quaternion.Angle(currentState.movementState.meshRotation, authoritativeState.movementState.meshRotation) <
@@ -393,9 +393,9 @@ namespace GamePlay.MultiPlaySystem
         {
             AdvanceTick(tick, deltaTime);
 
-            _snapshotAccumulator += SyncConfig.Instance.snapshotTickRate;
-            if (_snapshotAccumulator < SyncConfig.Instance.simulationTickRate) return;
-            _snapshotAccumulator -= SyncConfig.Instance.simulationTickRate;
+            _snapshotAccumulator += SimulationConfig.Instance.snapshotTickRate;
+            if (_snapshotAccumulator < SimulationConfig.Instance.simulationTickRate) return;
+            _snapshotAccumulator -= SimulationConfig.Instance.simulationTickRate;
             BroadcastSnapshots(tick);
         }
 
@@ -439,7 +439,7 @@ namespace GamePlay.MultiPlaySystem
 
         public override void Init()
         {
-            SyncConfig config = SyncConfig.Instance;
+            SimulationConfig config = SimulationConfig.Instance;
             _tick = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tick.Tick += SimulateTick;
             _tick.Start();

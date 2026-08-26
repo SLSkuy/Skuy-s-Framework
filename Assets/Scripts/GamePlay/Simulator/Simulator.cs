@@ -11,6 +11,20 @@ namespace GamePlay.Simulator
         
         // Tick模块
         private TickSystem _tickSystem;
+        
+        #region 实体管理
+
+        public void RegisterEntity()
+        {
+            
+        }
+
+        public void UnregisterEntity()
+        {
+            
+        }
+        
+        #endregion
 
         #region 生命周期
 

@@ -1,13 +1,13 @@
 using Framework;
 using UnityEngine;
 
-namespace GamePlay.MultiPlaySystem
+namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 网络同步属性配置
+    /// 模拟属性设置
     /// </summary>
-    [CreateAssetMenu(fileName = "SyncConfig", menuName = "GamePlay/MultiPlay/SyncConfig")]
-    public class SyncConfig : ScriptableObjectSingleton<SyncConfig>
+    [CreateAssetMenu(fileName = "SimulationConfig", menuName = "GamePlay/MultiPlay/SimulationConfig")]
+    public class SimulationConfig : ScriptableObjectSingleton<SimulationConfig>
     {
         [Header("权威模拟")]
         [Min(1)] public int simulationTickRate = 32;
