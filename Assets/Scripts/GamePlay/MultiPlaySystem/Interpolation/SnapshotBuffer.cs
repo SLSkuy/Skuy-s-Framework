@@ -1,38 +1,39 @@
 using System;
 using System.Collections.Generic;
+using GamePlay.EntitySystem;
 
 namespace GamePlay.MultiPlaySystem
 {
-    public sealed class SnapshotBuffer<T> where T : struct, IEntitySnapshot
+    public sealed class SnapshotBuffer
     {
-        private readonly List<T> _items;
+        private readonly List<EntityAuthorityState> _items;
         private readonly int _capacity;
 
         #region Properties
         public int Count => _items.Count;
-        public uint OldestTick => _items.Count == 0 ? 0 : _items[0].SnapshotTick;
-        public uint LatestTick => _items.Count == 0 ? 0 : _items[^1].SnapshotTick;
+        public uint OldestTick => _items.Count == 0 ? 0 : _items[0].snapshotTick;
+        public uint LatestTick => _items.Count == 0 ? 0 : _items[^1].snapshotTick;
         #endregion
 
         public SnapshotBuffer(int capacity)
         {
             if (capacity < 2) throw new ArgumentOutOfRangeException(nameof(capacity), "快照缓冲容量不能小于 2。");
             _capacity = capacity;
-            _items = new List<T>(capacity);
+            _items = new List<EntityAuthorityState>(capacity);
         }
 
-        public void Add(in T snapshot)
+        public void Add(in EntityAuthorityState snapshot)
         {
             int insertIndex = _items.Count;
             for (int i = 0; i < _items.Count; i++)
             {
-                uint bufferedTick = _items[i].SnapshotTick;
-                if (bufferedTick == snapshot.SnapshotTick)
+                uint bufferedTick = _items[i].snapshotTick;
+                if (bufferedTick == snapshot.snapshotTick)
                 {
                     _items[i] = snapshot;
                     return;
                 }
-                if (bufferedTick > snapshot.SnapshotTick)
+                if (bufferedTick > snapshot.snapshotTick)
                 {
                     insertIndex = i;
                     break;
@@ -42,18 +43,18 @@ namespace GamePlay.MultiPlaySystem
             while (_items.Count > _capacity) _items.RemoveAt(0);
         }
 
-        public bool TrySample(double renderServerTime, double simulationTickInterval, out T from, out T to, out float t)
+        public bool TrySample(double renderServerTime, double simulationTickInterval, out EntityAuthorityState from, out EntityAuthorityState to, out float t)
         {
             from = default;
             to = default;
             t = 0f;
             if (_items.Count < 2 || simulationTickInterval <= 0d) return false;
-            while (_items.Count > 2 && ToServerTime(_items[1].SnapshotTick, simulationTickInterval) <= renderServerTime)
+            while (_items.Count > 2 && ToServerTime(_items[1].snapshotTick, simulationTickInterval) <= renderServerTime)
                 _items.RemoveAt(0);
             from = _items[0];
             to = _items[1];
-            double fromTime = ToServerTime(from.SnapshotTick, simulationTickInterval);
-            double toTime = ToServerTime(to.SnapshotTick, simulationTickInterval);
+            double fromTime = ToServerTime(from.snapshotTick, simulationTickInterval);
+            double toTime = ToServerTime(to.snapshotTick, simulationTickInterval);
             if (toTime <= fromTime)
             {
                 t = 1f;

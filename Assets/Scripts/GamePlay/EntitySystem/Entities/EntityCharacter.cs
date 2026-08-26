@@ -8,13 +8,10 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityCharacter : MonoBehaviour
     {
-        [SerializeField] 
-        private EntityConfig config;
+        [SerializeField] private EntityConfig config;
+        
         private EntityContext _context;
         private bool _isInitialized;
-        
-        // 身份识别
-        private IEntityObjectIdentity _identity;
         
         // 能力组件
         private EntitySimulation _simulation;
@@ -24,7 +21,6 @@ namespace GamePlay.EntitySystem
         #region 属性
         public EntityContext Context => _context;
         public bool IsInitialized => _isInitialized;
-        public uint EntityId => _identity?.EntityId ?? 0;
         public uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
 
@@ -34,9 +30,7 @@ namespace GamePlay.EntitySystem
         public void Init()
         {
             if (_isInitialized) return;
-            
-            _identity = GetComponent<IEntityObjectIdentity>();
-            
+
             InitConfig();
             InitCapacityModule();
             InitSimulationContext();
@@ -93,7 +87,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void Step(uint tick, float deltaTime, in EntityCommand command)
         {
-            _simulation?.Step(tick, deltaTime, command);
+            _simulation.Step(tick, deltaTime, command);
         }
 
         /// <summary>
@@ -101,7 +95,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public EntityRollbackState CaptureRollbackState()
         {
-            return _simulation?.CaptureRollbackState() ?? default;
+            return _simulation.CaptureRollbackState();
         }
 
         /// <summary>
@@ -109,7 +103,7 @@ namespace GamePlay.EntitySystem
         /// </summary>
         public void RestoreRollbackState(in EntityRollbackState state)
         {
-            _simulation?.RestoreRollbackState(state);
+            _simulation.RestoreRollbackState(state);
         }
 
         #endregion

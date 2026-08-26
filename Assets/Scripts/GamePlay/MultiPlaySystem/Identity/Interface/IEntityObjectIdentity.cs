@@ -1,3 +1,5 @@
+using GamePlay.MultiPlaySystem;
+
 namespace GamePlay.EntitySystem
 {
     /// <summary>
@@ -8,5 +10,11 @@ namespace GamePlay.EntitySystem
     {
         uint EntityId { get; }
         bool IsInitialized { get; }
+
+        EntitySimulationMode Role { get; }
+        bool IsAuthority { get; }
+        bool IsPredict { get; }
+        bool IsReplica { get; }
+        bool IsLocalPlay { get; }
     }
 }

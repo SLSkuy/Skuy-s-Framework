@@ -27,7 +27,7 @@ namespace GamePlay.MultiPlaySystem
                 throw new System.InvalidOperationException("NetPlayer Prefab 缺少 NetworkObjectIdentity。");
             }
 
-            identity.Init(entityId, role, ownerClientId);
+            identity.Init(entityId, ownerClientId, role);
             return identity;
         }
     }

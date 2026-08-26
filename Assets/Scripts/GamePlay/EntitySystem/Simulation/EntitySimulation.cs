@@ -34,21 +34,15 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 捕获实体基础状态（状态机）。
-        /// </summary>
-        public EntitySimulationState CaptureSimulationState()
-        {
-            return new EntitySimulationState
-            {
-                entityState = _context.StateMachine.CurrentState
-            };
-        }
-
-        /// <summary>
         /// 捕获完整回滚状态。
         /// </summary>
         public EntityRollbackState CaptureRollbackState()
         {
+            EntitySimulationState simulationState = new EntitySimulationState()
+            {
+                entityState = _context.StateMachine.CurrentState,
+            };
+            
             MovementRollbackState movementState = _context.Movement.CaptureRollbackState();
             movementState.desiredLocomotionSpeed = _context.LocomotionSpeed;
             movementState.isSprinting = _context.IsSprinting;
@@ -60,7 +54,7 @@ namespace GamePlay.EntitySystem
 
             return new EntityRollbackState
             {
-                simulationState = CaptureSimulationState(),
+                simulationState = simulationState,
                 movementState = movementState,
                 viewState = viewState
             };

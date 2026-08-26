@@ -101,8 +101,6 @@ namespace GamePlay.MultiPlaySystem
                 return false;
 
             InputState state = ProtoUtils.ToInputState(input);
-            SyncConfig config = SyncConfig.Instance;
-            if (!CharacterInputValidator.TrySanitize(ref state, config.maxInputVectorMagnitude)) return false;
 
             return entry.Input.Enqueue(input.InputTick, state);
         }
@@ -157,7 +155,7 @@ namespace GamePlay.MultiPlaySystem
                 EntityRollbackState state = entry.Presentation.CaptureState();
                 world.CharacterSnapshots.Add(ProtoUtils.ToCharacterSnapshotMessage(
                     state,
-                    entry.Identity.NetworkObjectId,
+                    entry.Identity.EntityId,
                     entry.OwnerClientId,
                     tick,
                     entry.Input.LastProcessedTick));
@@ -212,7 +210,7 @@ namespace GamePlay.MultiPlaySystem
                 NetworkObjectIdentity identity =
                     _clientEntityFactory?.Invoke(snapshot.EntityId, snapshot.OwnerClientId, isOwned);
                 if (identity == null) return null;
-                identity.ApplyNetworkMetadata(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
+                identity.Init(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
                 if (!_characters.TryGetValue(snapshot.EntityId, out entry) &&
                     !Register(identity, snapshot.OwnerClientId))
                 {
@@ -223,7 +221,7 @@ namespace GamePlay.MultiPlaySystem
             }
             else
             {
-                entry.Identity.ApplyNetworkMetadata(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
+                entry.Identity.Init(snapshot.EntityId, snapshot.OwnerClientId, expectedRole);
             }
 
             return entry;
@@ -245,12 +243,6 @@ namespace GamePlay.MultiPlaySystem
 
             uint inputTick = entry.Prediction.AllocateInputTick();
             InputState input = entry.PlayerController.SampleInput();
-            SyncConfig config = SyncConfig.Instance;
-            if (!CharacterInputValidator.TrySanitize(ref input, config.maxInputVectorMagnitude))
-            {
-                input = default;
-            }
-
             EntityCommand command = entry.Input.BuildPredictedCommand(inputTick, input);
             entry.Simulation.Step(inputTick, deltaTime, command);
             entry.Prediction.History.Add(new EntityPredictionState

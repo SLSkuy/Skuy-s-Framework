@@ -18,7 +18,6 @@ namespace GamePlay.MultiPlaySystem
         [Min(0)] public int interpolationDelayTicks = 3;
         [Min(1)] public int maxBufferedInputs = 64;
         [Min(0)] public int maxFutureInputTicks = 32;
-        [Min(0f)] public float maxInputVectorMagnitude = 1f;
 
         [Header("客户端预测")]
         [Min(2)] public int predictionHistorySize = 64;

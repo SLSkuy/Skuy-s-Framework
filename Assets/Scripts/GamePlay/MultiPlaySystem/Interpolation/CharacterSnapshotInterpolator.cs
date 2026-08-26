@@ -10,7 +10,7 @@ namespace GamePlay.MultiPlaySystem
     /// </summary>
     public sealed class CharacterSnapshotInterpolator
     {
-        private readonly SnapshotBuffer<CharacterSnapshot> _snapshots;
+        private readonly SnapshotBuffer _snapshots;
         private readonly double _tickInterval;
         private readonly int _interpolationDelayTicks;
         private EntityRollbackState _lastIncomingState;
@@ -28,7 +28,7 @@ namespace GamePlay.MultiPlaySystem
         {
             _tickInterval = 1d / Mathf.Max(1, simulationTickRate);
             _interpolationDelayTicks = Mathf.Max(1, interpolationDelayTicks);
-            _snapshots = new SnapshotBuffer<CharacterSnapshot>(Mathf.Max(2, bufferCapacity));
+            _snapshots = new SnapshotBuffer(Mathf.Max(2, bufferCapacity));
         }
 
         /// <summary>
@@ -46,10 +46,10 @@ namespace GamePlay.MultiPlaySystem
                 config.rotationSnapThresholdDegrees;
             if (requiresSnap) Reset();
 
-            _snapshots.Add(new CharacterSnapshot
+            _snapshots.Add(new EntityAuthorityState
             {
-                SnapshotTick = snapshotTick,
-                State = state
+                snapshotTick = snapshotTick,
+                state = state
             });
             _lastIncomingState = state;
             _hasIncomingState = true;
@@ -81,10 +81,10 @@ namespace GamePlay.MultiPlaySystem
             _renderServerTime = Math.Min(_renderServerTime + Mathf.Max(0f, deltaTime), targetRenderTime);
 
             if (!_snapshots.TrySample(_renderServerTime, _tickInterval,
-                    out CharacterSnapshot from, out CharacterSnapshot to, out float t))
+                    out EntityAuthorityState from, out EntityAuthorityState to, out float t))
                 return true;
 
-            _lastState = LerpVisibleState(from.State, to.State, t);
+            _lastState = LerpVisibleState(from.state, to.state, t);
             state = _lastState;
             return true;
         }
