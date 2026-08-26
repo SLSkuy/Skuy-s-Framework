@@ -14,7 +14,7 @@ namespace Network
     /// </summary>
     public class NetClient : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.NetWorkManager;
+        public override int Priority => (int)SubSystemPriority.NetWorkManager;
 
         /// <summary>
         /// 当前网络延迟

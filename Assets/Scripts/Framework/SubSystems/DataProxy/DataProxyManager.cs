@@ -5,7 +5,7 @@ namespace Framework
 {
     public class DataProxyManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.DataProxyManager;
+        public override int Priority => (int)SubSystemPriority.DataProxyManager;
 
         private readonly Dictionary<Type, IDataProxy> _dataProxyDict = new();
 

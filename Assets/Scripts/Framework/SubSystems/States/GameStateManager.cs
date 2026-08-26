@@ -8,7 +8,7 @@ namespace Framework
     /// </summary>
     public class GameStateManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.GameStateManager;
+        public override int Priority => (int)SubSystemPriority.GameStateManager;
         public GameState CurrentState => _fsm.CurrentState;
         
         private EnumStateMachine<GameState> _fsm;

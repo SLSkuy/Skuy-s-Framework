@@ -8,7 +8,7 @@ namespace Framework
         /// <summary>
         /// 子系统优先级
         /// </summary>
-        SubSystemPriority Priority { get; }
+        int Priority { get; }
         bool IsInitialized { get; }
 
         void _Init();

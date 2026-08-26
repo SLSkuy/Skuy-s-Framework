@@ -9,7 +9,7 @@ namespace Framework
     /// </summary>
     public class SystemManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.SystemManager;
+        public override int Priority => (int)SubSystemPriority.SystemManager;
         private readonly List<ISubSystem> _subSystems = new();
 
         /// <summary>

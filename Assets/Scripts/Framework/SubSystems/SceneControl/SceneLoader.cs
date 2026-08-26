@@ -8,7 +8,7 @@ namespace Framework
     /// </summary>
     public class SceneLoader : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.SceneLoader;
+        public override int Priority => (int)SubSystemPriority.SceneLoader;
 
         public float CurrentProgress { get; private set; }
 

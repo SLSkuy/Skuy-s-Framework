@@ -13,7 +13,7 @@ namespace GamePlay.MultiPlaySystem
 
     public sealed class MultiPlayManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.NetSyncManager;
+        public override int Priority => (int)SubSystemPriority.NetSyncManager;
 
         public MultiPlayMode Mode { get; private set; }
         public ServerSimulator Server { get; private set; }

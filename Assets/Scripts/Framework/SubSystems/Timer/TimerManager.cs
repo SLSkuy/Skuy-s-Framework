@@ -9,7 +9,7 @@ namespace Framework
     /// </summary>
     public class TimerManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.TimerManager;
+        public override int Priority => (int)SubSystemPriority.TimerManager;
         private readonly List<Timer> _timers = new();
 
         /// <summary>

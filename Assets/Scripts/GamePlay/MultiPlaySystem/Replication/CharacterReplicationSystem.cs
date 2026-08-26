@@ -24,7 +24,7 @@ namespace GamePlay.MultiPlaySystem
         private bool _serverHandlerBound;
 
         #region Properties
-        public override SubSystemPriority Priority => SubSystemPriority.NetSyncManager;
+        public override int Priority => (int)SubSystemPriority.NetSyncManager;
         public uint CurrentTick => _networkTime?.CurrentTick ?? 0;
         public int RegisteredEntityCount => _characters.Count;
         #endregion

@@ -11,7 +11,7 @@ namespace Framework
     /// </summary>
     public sealed class PoolManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.PoolManager;
+        public override int Priority => (int)SubSystemPriority.PoolManager;
 
         private readonly Dictionary<string, Queue<GameObject>> _monoPools = new();
         private readonly Dictionary<GameObject, string> _objectKeyMap = new();

@@ -8,7 +8,7 @@ namespace Framework
 {
     public sealed class ResourceManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.ResourceManager;
+        public override int Priority => (int)SubSystemPriority.ResourceManager;
         
         /// <summary>
         /// 资源映射表

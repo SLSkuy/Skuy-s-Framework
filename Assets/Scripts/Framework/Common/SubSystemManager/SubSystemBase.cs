@@ -4,7 +4,7 @@ namespace Framework
 {
     public abstract class SubSystemBase : ISubSystem
     {
-        public abstract SubSystemPriority Priority { get; }
+        public abstract int Priority { get; }
         public bool IsInitialized { get; private set; }
 
         /// <summary>

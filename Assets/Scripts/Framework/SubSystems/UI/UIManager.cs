@@ -16,7 +16,7 @@ namespace Framework
     /// </summary>
     public class UIManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.UIManager;
+        public override int Priority => (int)SubSystemPriority.UIManager;
         
         #region 内部成员
         

@@ -9,7 +9,7 @@ namespace Framework
     /// </summary>
     public class CameraManager : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.CameraManager;
+        public override int Priority => (int)SubSystemPriority.CameraManager;
         private readonly Dictionary<GameCameraState, CameraEntry> _cameraMap = new();
         private GameCameraState _currentState;
         private Transform _cameraRoot;

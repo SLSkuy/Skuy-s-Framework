@@ -1,6 +1,6 @@
 namespace Framework
 {
-    public enum SubSystemPriority
+    public enum SubSystemPriority : int
     {
         SystemManager = int.MinValue,
         NetWorkManager = -114514,

@@ -74,6 +74,7 @@ namespace Utils
 
         #region Parser注册
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 注册消息类型的Protobuf Parser，用于反序列化
         /// </summary>

@@ -3,6 +3,7 @@ using Events;
 using Framework;
 using Google.Protobuf;
 using NetConnect;
+using NetSync;
 using UnityEngine;
 using Utils;
 using Ping = NetConnect.Ping;
@@ -14,7 +15,7 @@ namespace Network
     /// </summary>
     public class NetServer : SubSystemBase
     {
-        public override SubSystemPriority Priority => SubSystemPriority.NetWorkManager;
+        public override int Priority => (int)SubSystemPriority.NetWorkManager;
         
         /// <summary>
         /// 服务端是否正在运行
@@ -459,10 +460,10 @@ namespace Network
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             NetUtils.RegisterParser(NetEvent.FAST_CONNECT_REQUEST, Client_Fast_Connect_Request.Parser);
             NetUtils.RegisterParser(NetEvent.RELIABLE_CONNECT_REQUEST, Client_Reliable_Connect_Request.Parser);
-            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, global::NetSync.Player_Input.Parser);
-            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, global::NetSync.World_Snapshot.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, global::NetSync.Game_Join_Request.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, global::NetSync.Game_Join_Response.Parser);
+            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, Player_Input.Parser);
+            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, World_Snapshot.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, Game_Join_Request.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, Game_Join_Response.Parser);
             RegNetHandler<Heart_Beat_Request>(NetEvent.HEART_BEAT_REQUEST, HandleHeartBeatRequest);
         }
 

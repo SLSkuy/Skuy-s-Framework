@@ -11,7 +11,7 @@ namespace GamePlay.MultiPlaySystem
         private NetworkTickSystem _ticks;
 
         #region 属性
-        public override SubSystemPriority Priority => SubSystemPriority.NetworkTimeSystem;
+        public override int Priority => (int)SubSystemPriority.NetworkTimeSystem;
         public uint CurrentTick => _ticks?.CurrentTick ?? 0;
         public float TickDeltaTime => _ticks != null ? (float)_ticks.TickDeltaTime : 0f;
         #endregion
