@@ -4,49 +4,41 @@ using Framework;
 namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 按 entityId + tick 对齐的意图邮箱；缺失时返回空输入。
+    /// 单拍意图收集槽：按 entityId 覆盖写入，步进时取出后清空
     /// </summary>
     public sealed class CommandMailbox
     {
-        private readonly Dictionary<ulong, InputState> _pending = new();
+        private readonly Dictionary<uint, InputState> _pending = new();
 
-        public void Submit(uint entityId, uint tick, in InputState state)
+        /// <summary>
+        /// 提交本Tick意图
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="state"></param>
+        public void Submit(uint entityId, in InputState state)
         {
-            if (entityId == 0 || tick == 0) return;
-            _pending[Pack(entityId, tick)] = state;
+            if (entityId == 0) return;
+            _pending[entityId] = state;
         }
 
-        public InputState Consume(uint entityId, uint tick)
+        /// <summary>
+        /// 消费所有实体的意图
+        /// </summary>
+        public InputState Consume(uint entityId)
         {
-            ulong key = Pack(entityId, tick);
-            if (_pending.Remove(key, out InputState state)) return state;
+            if (_pending.Remove(entityId, out InputState state)) return state;
             return default;
         }
 
         public void RemoveEntity(uint entityId)
         {
             if (entityId == 0) return;
-
-            List<ulong> keysToRemove = null;
-            foreach (KeyValuePair<ulong, InputState> pair in _pending)
-            {
-                if ((uint)(pair.Key >> 32) != entityId) continue;
-                keysToRemove ??= new List<ulong>();
-                keysToRemove.Add(pair.Key);
-            }
-
-            if (keysToRemove == null) return;
-            for (int i = 0; i < keysToRemove.Count; i++) _pending.Remove(keysToRemove[i]);
+            _pending.Remove(entityId);
         }
 
         public void Clear()
         {
             _pending.Clear();
-        }
-
-        private static ulong Pack(uint entityId, uint tick)
-        {
-            return ((ulong)entityId << 32) | tick;
         }
     }
 }

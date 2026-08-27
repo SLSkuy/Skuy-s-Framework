@@ -21,7 +21,11 @@ Common workflows and patterns for effective Unity-MCP usage.
 
 ---
 
+
+
 ## Setup & Verification
+
+
 
 ### Initial Connection Verification
 
@@ -38,6 +42,8 @@ Common workflows and patterns for effective Unity-MCP usage.
 # 4. List available instances (multi-instance)
 # Read mcpforunity://instances
 ```
+
+
 
 ### Before Any Operation
 
@@ -57,11 +63,15 @@ if editor_state["is_compiling"]:
 
 ---
 
+
+
 ## Scene Generator Build Workflow
+
+
 
 ### Fresh Scene Before Building
 
-**Always start a generated scene build with `manage_scene(action="create")`** to get a clean empty scene. This avoids conflicts with existing default objects (Camera, Light) that would cause "already exists" errors when the execution plan tries to create its own.
+**Always start a generated scene build with** `manage_scene(action="create")` to get a clean empty scene. This avoids conflicts with existing default objects (Camera, Light) that would cause "already exists" errors when the execution plan tries to create its own.
 
 ```python
 # Step 0: Create fresh empty scene (replaces current scene entirely)
@@ -73,6 +83,8 @@ manage_scene(action="create", name="MyGeneratedScene", path="Assets/Scenes/")
 # Phase 3: Materials
 # etc.
 ```
+
+
 
 ### Wiring Object References Between Components
 
@@ -88,6 +100,8 @@ manage_components(
     value=[{"name": "Flower_1"}, {"name": "Flower_2"}, {"name": "Flower_3"}]
 )
 ```
+
+
 
 ### Physics Requirements for Trigger-Based Interactions
 
@@ -107,6 +121,8 @@ batch_execute(commands=[
 ])
 ```
 
+
+
 ### Script Overwrites with `manage_script(action="update")`
 
 When a generated script needs to be rewritten (e.g., to add auto-wiring logic), use `update` instead of deleting and recreating:
@@ -124,7 +140,11 @@ read_console(types=["error"], count=10)
 
 ---
 
+
+
 ## Scene Creation Workflows
+
+
 
 ### Create Complete Scene from Scratch
 
@@ -166,6 +186,8 @@ manage_camera(action="screenshot")
 manage_scene(action="save")
 ```
 
+
+
 ### Populate Scene with Grid of Objects
 
 ```python
@@ -187,6 +209,8 @@ for x in range(5):
 batch_execute(commands=commands[:25], parallel=True)
 ```
 
+
+
 ### Clone and Arrange Objects
 
 ```python
@@ -206,7 +230,11 @@ for i in range(10):
 
 ---
 
+
+
 ## Script Development Workflows
+
+
 
 ### Create New Script and Attach
 
@@ -255,6 +283,8 @@ else:
     )
 ```
 
+
+
 ### Edit Existing Script Safely
 
 ```python
@@ -296,6 +326,8 @@ validate_script(
 read_console(types=["error"], count=10)
 ```
 
+
+
 ### Add Method to Existing Class
 
 ```python
@@ -324,7 +356,11 @@ script_apply_edits(
 
 ---
 
+
+
 ## Asset Management Workflows
+
+
 
 ### Create and Apply Material
 
@@ -352,6 +388,8 @@ manage_material(
 # 3. Verify visually
 manage_camera(action="screenshot")
 ```
+
+
 
 ### Create Procedural Texture
 
@@ -384,6 +422,8 @@ manage_material(
 # 4. Assign texture to material (via manage_material set_material_shader_property)
 ```
 
+
+
 ### Organize Assets into Folders
 
 ```python
@@ -399,6 +439,8 @@ batch_execute(commands=[
 manage_asset(action="move", path="Assets/MyMaterial.mat", destination="Assets/Materials/MyMaterial.mat")
 manage_asset(action="move", path="Assets/MyScript.cs", destination="Assets/Scripts/MyScript.cs")
 ```
+
+
 
 ### Search and Process Assets
 
@@ -419,6 +461,8 @@ for asset in result["assets"]:
     info = manage_prefabs(action="get_info", prefab_path=prefab_path)
     print(f"Prefab: {prefab_path}, Children: {info['childCount']}")
 ```
+
+
 
 ### Instantiate Prefab in Scene
 
@@ -451,7 +495,11 @@ batch_execute(commands=[
 
 ---
 
+
+
 ## Testing Workflows
+
+
 
 ### Run Specific Tests
 
@@ -480,6 +528,8 @@ if final_result["status"] == "complete":
         print(f"FAILED: {test['name']}: {test['message']}")
 ```
 
+
+
 ### Run Tests by Category
 
 ```python
@@ -496,6 +546,8 @@ while True:
     if status["status"] in ["complete", "failed"]:
         break
 ```
+
+
 
 ### Test-Driven Development Pattern
 
@@ -528,7 +580,11 @@ get_test_job(job_id=result["job_id"], wait_timeout=30)
 
 ---
 
+
+
 ## Debugging Workflows
+
+
 
 ### Diagnose Compilation Errors
 
@@ -551,6 +607,8 @@ for error in errors["messages"]:
 refresh_unity(mode="force", scope="scripts", compile="request", wait_for_ready=True)
 read_console(types=["error"], count=10)
 ```
+
+
 
 ### Investigate Missing References
 
@@ -577,6 +635,8 @@ manage_components(
 )
 ```
 
+
+
 ### Check Scene State
 
 ```python
@@ -594,16 +654,21 @@ manage_camera(action="screenshot")
 
 ---
 
+
+
 ## UI Creation Workflows
 
 Unity has two UI systems: **UI Toolkit** (modern, recommended) and **uGUI** (Canvas-based, legacy). Use `manage_ui` for UI Toolkit workflows, and `batch_execute` with `manage_gameobject` + `manage_components` for uGUI.
 
 > **Template warning:** This section is a skill template library, not a guaranteed source of truth. Examples may be inaccurate for your Unity version, package setup, or project conventions.
 > **Use safely:**
-> 1. **Always read `mcpforunity://project/info` first** to detect installed packages and input system.
+>
+> 1. **Always read** `mcpforunity://project/info` **first** to detect installed packages and input system.
 > 2. Validate component/property names against the current project.
 > 3. Prefer targeting by instance ID or full path over generic names.
 > 4. Treat numeric enum values as placeholders and verify before reuse.
+
+
 
 ### Step 0: Detect Project UI Capabilities
 
@@ -626,21 +691,27 @@ Unity has two UI systems: **UI Toolkit** (modern, recommended) and **uGUI** (Can
 
 **Decision matrix:**
 
-| project_info field | Value | What to use |
-|---|---|---|
-| `packages.uiToolkit` | `true` | **Preferred:** Use `manage_ui` for UI Toolkit (UXML/USS) |
-| `packages.ugui` | `true` | Canvas-based UI (Image, Button, etc.) via `batch_execute` |
-| `packages.textmeshpro` | `true` | `TextMeshProUGUI` for text (uGUI) |
-| `packages.textmeshpro` | `false` | `UnityEngine.UI.Text` (legacy, lower quality) |
-| `activeInputHandler` | `"Old"` | `StandaloneInputModule` for EventSystem (uGUI) |
-| `activeInputHandler` | `"New"` | `InputSystemUIInputModule` for EventSystem (uGUI) |
-| `activeInputHandler` | `"Both"` | Either works; prefer `InputSystemUIInputModule` for UI |
+
+| project_info field     | Value    | What to use                                               |
+| ---------------------- | -------- | --------------------------------------------------------- |
+| `packages.uiToolkit`   | `true`   | **Preferred:** Use `manage_ui` for UI Toolkit (UXML/USS)  |
+| `packages.ugui`        | `true`   | Canvas-based UI (Image, Button, etc.) via `batch_execute` |
+| `packages.textmeshpro` | `true`   | `TextMeshProUGUI` for text (uGUI)                         |
+| `packages.textmeshpro` | `false`  | `UnityEngine.UI.Text` (legacy, lower quality)             |
+| `activeInputHandler`   | `"Old"`  | `StandaloneInputModule` for EventSystem (uGUI)            |
+| `activeInputHandler`   | `"New"`  | `InputSystemUIInputModule` for EventSystem (uGUI)         |
+| `activeInputHandler`   | `"Both"` | Either works; prefer `InputSystemUIInputModule` for UI    |
+
+
+
 
 ### UI Toolkit Workflows (manage_ui)
 
 UI Toolkit uses a web-like approach: **UXML** (like HTML) for structure, **USS** (like CSS) for styling. This is the preferred UI system for new projects.
 
 > **Important:** Always use `<ui:Style>` (with the `ui:` namespace prefix) in UXML, not bare `<Style>`. UI Builder will fail to open files that use `<Style>` without the prefix.
+
+
 
 #### Create a Complete UI Screen
 
@@ -703,6 +774,8 @@ manage_ui(
 manage_ui(action="get_visual_tree", target="UIRoot", max_depth=5)
 ```
 
+
+
 #### Update Existing UI
 
 ```python
@@ -715,6 +788,8 @@ manage_ui(
     contents=".title { font-size: 64px; color: yellow; }"
 )
 ```
+
+
 
 #### Custom PanelSettings
 
@@ -735,6 +810,8 @@ manage_ui(
     panel_settings="Assets/UI/GamePanelSettings.asset"
 )
 ```
+
+
 
 ### uGUI (Canvas-Based) Workflows
 
@@ -784,6 +861,8 @@ Every GameObject under a Canvas gets a `RectTransform` instead of `Transform`. *
 
 > **Note:** Vector2 properties accept both `[x, y]` array format and `{"x": ..., "y": ...}` object format.
 
+
+
 ### Create Canvas (Foundation for All UI)
 
 Every UI element must be under a Canvas. A Canvas requires three components: `Canvas`, `CanvasScaler`, and `GraphicRaycaster`.
@@ -820,9 +899,11 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Create EventSystem (Required Once Per Scene for UI Interaction)
 
-If no EventSystem exists in the scene, buttons and other interactive UI elements won't respond to input. Create one alongside your first Canvas. **Check `project_info.activeInputHandler` to pick the correct input module.**
+If no EventSystem exists in the scene, buttons and other interactive UI elements won't respond to input. Create one alongside your first Canvas. **Check** `project_info.activeInputHandler` **to pick the correct input module.**
 
 ```python
 # For activeInputHandler == "New" or "Both" (project has Input System package):
@@ -856,6 +937,8 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Create Panel (Background Container)
 
 A Panel is an Image component used as a background/container for other UI elements.
@@ -884,6 +967,8 @@ batch_execute(fail_fast=True, commands=[
     }}
 ])
 ```
+
+
 
 ### Create Text (TextMeshPro)
 
@@ -920,6 +1005,8 @@ batch_execute(fail_fast=True, commands=[
 ```
 
 > **TextMeshPro alignment values:** 257=TopLeft, 258=TopCenter, 260=TopRight, 513=MiddleLeft, 514=MiddleCenter, 516=MiddleRight, 1025=BottomLeft, 1026=BottomCenter, 1028=BottomRight.
+
+
 
 ### Create Button (With Label)
 
@@ -973,9 +1060,11 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Create Slider (With Reference Wiring)
 
-A Slider requires a specific hierarchy and **must have its `fillRect` and `handleRect` references wired** to function.
+A Slider requires a specific hierarchy and **must have its** `fillRect` **and** `handleRect` **references wired** to function.
 
 ```python
 # Step 1: Create hierarchy
@@ -1074,6 +1163,8 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Create Input Field (With Reference Wiring)
 
 ```python
@@ -1160,6 +1251,8 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Create Toggle (With Reference Wiring)
 
 ```python
@@ -1231,6 +1324,8 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### Add Layout Group (Vertical/Horizontal/Grid)
 
 Layout groups auto-arrange child elements, so you can skip manual RectTransform positioning for children.
@@ -1267,9 +1362,11 @@ batch_execute(fail_fast=True, commands=[
 > **childAlignment values:** 0=UpperLeft, 1=UpperCenter, 2=UpperRight, 3=MiddleLeft, 4=MiddleCenter, 5=MiddleRight, 6=LowerLeft, 7=LowerCenter, 8=LowerRight.
 > **ContentSizeFitter fit modes:** 0=Unconstrained, 1=MinSize, 2=PreferredSize.
 
+
+
 ### Complete Example: Main Menu Screen
 
-Combines multiple templates into a full menu screen in two batch calls (default 25 command limit per batch, configurable in Unity MCP Tools window up to 100). **Assumes `project_info` has been read and `activeInputHandler` is known.**
+Combines multiple templates into a full menu screen in two batch calls (default 25 command limit per batch, configurable in Unity MCP Tools window up to 100). **Assumes** `project_info` **has been read and** `activeInputHandler` **is known.**
 
 ```python
 # Batch 1: Canvas + EventSystem + Panel + Title
@@ -1330,25 +1427,31 @@ batch_execute(fail_fast=True, commands=[
 ])
 ```
 
+
+
 ### UI Component Quick Reference
 
-| UI Element | Required Components | Notes |
-| ---------- | ------------------- | ----- |
-| **Canvas** | Canvas + CanvasScaler + GraphicRaycaster | Root for all UI. One per screen. |
-| **EventSystem** | EventSystem + input module (see below) | One per scene. Required for interaction. |
-| **Panel** | Image + RectTransform sizing | Container. Set color for background. |
-| **Text** | TextMeshProUGUI (or Text if no TMP) + RectTransform | Check `packages.textmeshpro`. |
-| **Button** | Image + Button + child(TextMeshProUGUI) + RectTransform | Image = visual, Button = click handler. |
-| **Slider** | Slider + Image + children + **wire fillRect/handleRect** | Won't function without wiring. |
-| **Toggle** | Toggle + children + **wire graphic** | Wire checkmark Image to `graphic`. |
-| **Input Field** | Image + TMP_InputField + children + **wire textViewport/textComponent/placeholder** | Won't function without wiring. |
-| **Layout Group** | VerticalLayoutGroup / HorizontalLayoutGroup / GridLayoutGroup | Auto-arranges children; skip manual RectTransform on children. |
+
+| UI Element       | Required Components                                                                 | Notes                                                          |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Canvas**       | Canvas + CanvasScaler + GraphicRaycaster                                            | Root for all UI. One per screen.                               |
+| **EventSystem**  | EventSystem + input module (see below)                                              | One per scene. Required for interaction.                       |
+| **Panel**        | Image + RectTransform sizing                                                        | Container. Set color for background.                           |
+| **Text**         | TextMeshProUGUI (or Text if no TMP) + RectTransform                                 | Check `packages.textmeshpro`.                                  |
+| **Button**       | Image + Button + child(TextMeshProUGUI) + RectTransform                             | Image = visual, Button = click handler.                        |
+| **Slider**       | Slider + Image + children + **wire fillRect/handleRect**                            | Won't function without wiring.                                 |
+| **Toggle**       | Toggle + children + **wire graphic**                                                | Wire checkmark Image to `graphic`.                             |
+| **Input Field**  | Image + TMP_InputField + children + **wire textViewport/textComponent/placeholder** | Won't function without wiring.                                 |
+| **Layout Group** | VerticalLayoutGroup / HorizontalLayoutGroup / GridLayoutGroup                       | Auto-arranges children; skip manual RectTransform on children. |
+
 
 ---
 
+
+
 ## Input System: Old vs New
 
-Unity has two input systems that affect UI interaction, script input handling, and EventSystem configuration. **Always check `project_info.activeInputHandler` before creating EventSystems or writing input code.**
+Unity has two input systems that affect UI interaction, script input handling, and EventSystem configuration. **Always check** `project_info.activeInputHandler` **before creating EventSystems or writing input code.**
 
 ### Detection
 
@@ -1357,6 +1460,8 @@ Unity has two input systems that affect UI interaction, script input handling, a
 # activeInputHandler: "Old" | "New" | "Both"
 # packages.inputsystem: true/false (whether com.unity.inputsystem is installed)
 ```
+
+
 
 ### EventSystem — Old Input Manager
 
@@ -1393,6 +1498,8 @@ void Update()
         Fire();
 }
 ```
+
+
 
 ### EventSystem — New Input System
 
@@ -1443,6 +1550,8 @@ public class PlayerController : MonoBehaviour
 }
 ```
 
+
+
 ### When `activeInputHandler` is `"Both"`
 
 Both systems are active simultaneously. For UI, prefer `InputSystemUIInputModule`. For gameplay scripts, either approach works — `Input.GetAxis()` still functions alongside the new Input System.
@@ -1462,7 +1571,11 @@ Both systems are active simultaneously. For UI, prefer `InputSystemUIInputModule
 
 ---
 
+
+
 ## Camera & Cinemachine Workflows
+
+
 
 ### Setting Up a Third-Person Camera
 
@@ -1493,6 +1606,8 @@ manage_camera(action="set_noise", target="FollowCam", properties={
 manage_camera(action="screenshot", camera="FollowCam", include_image=True, max_resolution=512)
 ```
 
+
+
 ### Multi-Camera Setup with Blending
 
 ```python
@@ -1521,6 +1636,8 @@ manage_camera(action="force_camera", target="CinematicCam")
 manage_camera(action="release_override")
 ```
 
+
+
 ### Camera Without Cinemachine
 
 ```python
@@ -1543,6 +1660,8 @@ manage_camera(action="set_target", target="MainCam", properties={
 manage_camera(action="screenshot", camera="MainCam", include_image=True, max_resolution=512)
 ```
 
+
+
 ### Camera Inspection Workflow
 
 ```python
@@ -1560,6 +1679,8 @@ manage_camera(action="list_cameras")
 # 4. Multi-view screenshot to see from different angles
 manage_camera(action="screenshot_multiview", max_resolution=480)
 ```
+
+
 
 ### Scene View Screenshot Workflow
 
@@ -1583,6 +1704,8 @@ manage_camera(action="screenshot", capture_source="scene_view",
 
 ---
 
+
+
 ## ProBuilder Workflows
 
 When `com.unity.probuilder` is installed, prefer ProBuilder shapes over primitive GameObjects for any geometry that needs editing, multi-material faces, or non-trivial shapes. Check availability first with `manage_probuilder(action="ping")`.
@@ -1591,14 +1714,18 @@ See [ProBuilder Workflow Guide](probuilder-guide.md) for full reference with com
 
 ### ProBuilder vs Primitives Decision
 
-| Need | Use Primitives | Use ProBuilder |
-|------|---------------|----------------|
-| Simple placeholder cube | `manage_gameobject(action="create", primitive_type="Cube")` | - |
-| Editable geometry | - | `manage_probuilder(action="create_shape", ...)` |
-| Per-face materials | - | `set_face_material` |
-| Custom shapes (L-rooms, arches) | - | `create_poly_shape` or `create_shape` |
-| Mesh editing (extrude, bevel) | - | Face/edge/vertex operations |
-| Batch environment building | Either | ProBuilder + `batch_execute` |
+
+| Need                            | Use Primitives                                              | Use ProBuilder                                  |
+| ------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| Simple placeholder cube         | `manage_gameobject(action="create", primitive_type="Cube")` | -                                               |
+| Editable geometry               | -                                                           | `manage_probuilder(action="create_shape", ...)` |
+| Per-face materials              | -                                                           | `set_face_material`                             |
+| Custom shapes (L-rooms, arches) | -                                                           | `create_poly_shape` or `create_shape`           |
+| Mesh editing (extrude, bevel)   | -                                                           | Face/edge/vertex operations                     |
+| Batch environment building      | Either                                                      | ProBuilder + `batch_execute`                    |
+
+
+
 
 ### Basic ProBuilder Scene Build
 
@@ -1641,6 +1768,8 @@ manage_probuilder(action="auto_smooth", target="Pillar1",
 manage_camera(action="screenshot", include_image=True, max_resolution=512)
 ```
 
+
+
 ### Edit-Verify Loop Pattern
 
 Face indices change after every edit. Always re-query:
@@ -1657,15 +1786,21 @@ info = manage_probuilder(action="get_mesh_info", target="Obj", properties={"incl
 manage_probuilder(action="delete_faces", target="Obj", properties={"faceIndices": [correct_index]})
 ```
 
+
+
 ### Known Limitations
 
-- **`set_pivot`**: Broken -- vertex positions don't persist through mesh rebuild. Use `center_pivot` or Transform positioning.
-- **`convert_to_probuilder`**: Broken -- MeshImporter throws. Create shapes natively with `create_shape`/`create_poly_shape`.
-- **`subdivide`**: Uses `ConnectElements.Connect` (not traditional quad subdivision). Connects face midpoints.
+- `set_pivot`: Broken -- vertex positions don't persist through mesh rebuild. Use `center_pivot` or Transform positioning.
+- `convert_to_probuilder`: Broken -- MeshImporter throws. Create shapes natively with `create_shape`/`create_poly_shape`.
+- `subdivide`: Uses `ConnectElements.Connect` (not traditional quad subdivision). Connects face midpoints.
 
 ---
 
+
+
 ## Graphics & Rendering Workflows
+
+
 
 ### Setting Up Post-Processing
 
@@ -1699,10 +1834,13 @@ manage_camera(action="screenshot", include_image=True, max_resolution=512)
 ```
 
 **Tips:**
+
 - Always `ping` first to confirm URP/HDRP is active. Volumes do nothing on Built-in RP.
 - Use `volume_list_effects` to discover available effect types for the active pipeline (URP and HDRP have different sets).
 - Use `volume_get_info` to inspect current effect parameters before modifying.
 - Create a reusable VolumeProfile asset with `volume_create_profile` and reference it via `profile_path` on multiple volumes.
+
+
 
 ### Adding a Full-Screen Effect via Renderer Features (URP)
 
@@ -1741,9 +1879,12 @@ manage_graphics(action="feature_reorder", order=[1, 0, 2])
 ```
 
 **Tips:**
+
 - Renderer Features are URP-only. `feature_*` actions return an error on HDRP or Built-in RP.
 - Read `mcpforunity://pipeline/renderer-features` to inspect features without modifying.
 - Feature execution order affects the final image. Use `feature_reorder` to control pass ordering.
+
+
 
 ### Configuring Light Baking
 
@@ -1792,6 +1933,7 @@ manage_graphics(action="stats_get")
 ```
 
 **Tips:**
+
 - Baking only works in Edit mode. If the editor is in Play mode, `bake_start` will fail.
 - Use `bake_cancel` to abort a long bake.
 - `bake_clear` removes all baked data (lightmaps, probes). Use before re-baking from scratch.
@@ -1799,7 +1941,11 @@ manage_graphics(action="stats_get")
 
 ---
 
+
+
 ## Package Management Workflows
+
+
 
 ### Install a Package and Verify
 
@@ -1822,6 +1968,8 @@ read_console(types=["error"], count=10)
 manage_packages(action="get_package_info", package="com.unity.inputsystem")
 ```
 
+
+
 ### Add OpenUPM Registry and Install Package
 
 ```python
@@ -1841,6 +1989,8 @@ manage_packages(action="add_package", package="com.cysharp.unitask")
 manage_packages(action="status", job_id="<job_id>")
 ```
 
+
+
 ### Safe Package Removal
 
 ```python
@@ -1852,6 +2002,8 @@ manage_packages(action="remove_package", package="com.unity.modules.ui")
 manage_packages(action="remove_package", package="com.unity.modules.ui", force=True)
 manage_packages(action="status", job_id="<job_id>")
 ```
+
+
 
 ### Install from Git URL (e.g., NuGetForUnity)
 
@@ -1866,7 +2018,11 @@ manage_packages(action="status", job_id="<job_id>")
 
 ---
 
+
+
 ## Package Deployment Workflows
+
+
 
 ### Iterative Development Loop (Edit → Deploy → Test)
 
@@ -1891,6 +2047,8 @@ read_console(types=["error"], count=10, include_stacktrace=True)
 run_tests(mode="EditMode")
 ```
 
+
+
 ### Rollback After Failed Deploy
 
 ```python
@@ -1903,7 +2061,11 @@ refresh_unity(mode="force", compile="request", wait_for_ready=True)
 
 ---
 
+
+
 ## API Verification Workflows
+
+
 
 ### Full API Verification Before Writing Code
 
@@ -1929,6 +2091,8 @@ unity_docs(action="get_doc", class_name="NavMeshAgent", member_name="SetDestinat
 # → Returns description, signatures, parameters, code examples
 ```
 
+
+
 ### Batch API Lookup
 
 Use `unity_docs` `lookup` action to search multiple APIs in a single call:
@@ -1942,6 +2106,8 @@ unity_docs(action="lookup", query="VolumeProfile",
            package="com.unity.render-pipelines.universal", pkg_version="17.0")
 ```
 
+
+
 ### Finding Shaders and Materials in Project
 
 The `lookup` action automatically searches project assets for asset-related queries:
@@ -1951,6 +2117,8 @@ The `lookup` action automatically searches project assets for asset-related quer
 unity_docs(action="lookup", query="Lit shader")
 # → Returns doc hits + matching project assets (shaders, materials, etc.)
 ```
+
+
 
 ### Manual and Package Documentation
 
@@ -1964,6 +2132,8 @@ unity_docs(action="get_package_doc",
            page="2d-index", pkg_version="17.0")
 ```
 
+
+
 ### Verifying APIs Across Unity Versions
 
 ```python
@@ -1976,7 +2146,11 @@ unity_reflect(action="search", query="InputAction", scope="packages")
 
 ---
 
+
+
 ## Batch Operations
+
+
 
 ### Batch Discovery (Multi-Search)
 
@@ -1992,6 +2166,8 @@ batch_execute(commands=[
 ])
 # Returns array of results, one per command
 ```
+
+
 
 ### Mass Property Update
 
@@ -2018,6 +2194,8 @@ for i in range(0, len(commands), 25):
     batch_execute(commands=commands[i:i+25], parallel=True)
 ```
 
+
+
 ### Mass Object Creation with Variations
 
 ```python
@@ -2039,6 +2217,8 @@ for i in range(20):
 batch_execute(commands=commands, parallel=True)
 ```
 
+
+
 ### Cleanup Pattern
 
 ```python
@@ -2056,7 +2236,11 @@ batch_execute(commands=commands, fail_fast=False)
 
 ---
 
+
+
 ## Error Recovery Patterns
+
+
 
 ### Stale File Recovery
 
@@ -2070,6 +2254,8 @@ except Exception as e:
         # Retry with new SHA
         apply_text_edits(uri=script_uri, edits=[...], precondition_sha256=new_sha["sha256"])
 ```
+
+
 
 ### Domain Reload Recovery
 
@@ -2087,6 +2273,8 @@ for attempt in range(max_retries):
     except:
         time.sleep(2 ** attempt)  # Exponential backoff
 ```
+
+
 
 ### Compilation Block Recovery
 
@@ -2107,3 +2295,4 @@ if not errors["messages"]:
     # Safe to proceed with tools
     pass
 ```
+

@@ -4,7 +4,7 @@ using Utils;
 namespace GamePlay.EntitySystem
 {
     /// <summary>
-    /// 场景角色实体：装配模块与状态机，并托管固定 Tick 模拟。
+    /// 场景角色实体：装配模块与状态机，并托管固定 Tick 模拟
     /// </summary>
     public class EntityCharacter : MonoBehaviour
     {

@@ -20,6 +20,7 @@ namespace Tests
         private GUIStyle _statusStyle;
         private string _lastError;
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void StartSession()
         {
             if (_localHost == null) return;

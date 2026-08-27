@@ -4,9 +4,9 @@ using GamePlay.EntitySystem;
 namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 按非零 entityId 登记可模拟实体，拒绝重复标识。
+    /// 模拟器实体注册器，统一管理需要进行模拟管理的所有实体
     /// </summary>
-    public sealed class SimulationRegistry
+    public sealed class EntityRegistry
     {
         private readonly Dictionary<uint, RegisteredEntity> _entities = new();
 
@@ -14,24 +14,13 @@ namespace GamePlay.Simulator
         public int Count => _entities.Count;
         public IReadOnlyDictionary<uint, RegisteredEntity> Entities => _entities;
         #endregion
-
-        public readonly struct RegisteredEntity
-        {
-            public RegisteredEntity(EntityObjectIdentity identity, EntityCharacter character)
-            {
-                Identity = identity;
-                Character = character;
-            }
-
-            #region 属性
-            public EntityObjectIdentity Identity { get; }
-            public EntityCharacter Character { get; }
-            #endregion
-        }
-
+        
+        /// <summary>
+        /// 托管注册实体
+        /// </summary>
         public bool Register(EntityObjectIdentity identity, EntityCharacter character)
         {
-            if (identity == null || character == null) return false;
+            if (!identity || !character) return false;
 
             uint entityId = identity.EntityId;
             if (entityId == 0) return false;
@@ -41,6 +30,9 @@ namespace GamePlay.Simulator
             return true;
         }
 
+        /// <summary>
+        /// 注销实体
+        /// </summary>
         public bool Unregister(uint entityId)
         {
             return entityId != 0 && _entities.Remove(entityId);

@@ -16,7 +16,6 @@ namespace GamePlay.EntitySystem
         private Transform _mesh;
 
         private Vector3 _lastMoveDir;
-        private Vector3 _angularVelocity;
         private Vector3 _dashDir;
         private float _locomotionSpeed;
         private float _verticalVelocity;
@@ -25,12 +24,12 @@ namespace GamePlay.EntitySystem
         private bool _isDashing;
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.Transform;
+        public override ModuleType ModuleType => ModuleType.Movement;
         public Vector3 Position => transform.position;
-        public Quaternion Rotation => _mesh != null ? _mesh.rotation : Quaternion.identity;
+        public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
         public Vector3 LinearVelocity { get; private set; }
-        public Vector3 AngularVelocity => _angularVelocity;
-        public bool IsGrounded => _controller != null && _controller.isGrounded;
+        public Vector3 AngularVelocity { get; private set; }
+        public bool IsGrounded => _controller && _controller.isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion
@@ -69,7 +68,7 @@ namespace GamePlay.EntitySystem
             Vector3 planarDirection = Quaternion.Euler(0f, viewYaw, 0f) * new Vector3(move.x, 0f, move.y);
             if (planarDirection.sqrMagnitude <= Mathf.Epsilon)
             {
-                _angularVelocity = Vector3.zero;
+                AngularVelocity = Vector3.zero;
                 return;
             }
 
@@ -81,7 +80,7 @@ namespace GamePlay.EntitySystem
             Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
             deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
             if (angle > 180f) angle -= 360f;
-            _angularVelocity = axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
+            AngularVelocity = axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
         }
 
         /// <summary>
@@ -211,7 +210,7 @@ namespace GamePlay.EntitySystem
         public void Restore(Quaternion rotation, Vector3 angularVelocity)
         {
             _mesh.rotation = MathUtils.SafeNormalize(rotation);
-            _angularVelocity = angularVelocity;
+            AngularVelocity = angularVelocity;
         }
 
         /// <summary>
@@ -224,7 +223,7 @@ namespace GamePlay.EntitySystem
                 rootPosition = Position,
                 meshRotation = Rotation,
                 rootLinearVelocity = LinearVelocity,
-                meshAngularVelocity = _angularVelocity,
+                meshAngularVelocity = AngularVelocity,
                 lastMoveDirection = _lastMoveDir,
                 dashDirection = _dashDir,
                 appliedLocomotionSpeed = _locomotionSpeed,

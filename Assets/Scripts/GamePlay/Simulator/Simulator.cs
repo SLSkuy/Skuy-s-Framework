@@ -10,7 +10,7 @@ namespace GamePlay.Simulator
     public sealed class Simulator
     {
         private TickSystem _tickSystem;
-        private SimulationRegistry _registry;
+        private EntityRegistry _entityRegistry;
         private CommandMailbox _mailbox;
         private readonly Dictionary<uint, EntityCommandBuilder> _commandBuilders = new();
         private IInputStateProvider _deviceInput;
@@ -19,14 +19,14 @@ namespace GamePlay.Simulator
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
         public bool IsRunning => _tickSystem != null && _tickSystem.IsRunning;
-        public int RegisteredEntityCount => _registry?.Count ?? 0;
+        public int RegisteredEntityCount => _entityRegistry?.Count ?? 0;
         public uint PossessedEntityId => _possessedEntityId;
         #endregion
 
         public void Init()
         {
             SimulationConfig config = SimulationConfig.Instance;
-            _registry = new SimulationRegistry();
+            _entityRegistry = new EntityRegistry();
             _mailbox = new CommandMailbox();
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tickSystem.Tick += DispatchTick;
@@ -48,7 +48,7 @@ namespace GamePlay.Simulator
 
             _commandBuilders.Clear();
             _mailbox?.Clear();
-            _registry?.Clear();
+            _entityRegistry?.Clear();
             _possessedEntityId = 0;
             _deviceInput = null;
         }
@@ -60,14 +60,14 @@ namespace GamePlay.Simulator
 
         public bool Register(EntityObjectIdentity identity, EntityCharacter character)
         {
-            if (_registry == null || !_registry.Register(identity, character)) return false;
+            if (_entityRegistry == null || !_entityRegistry.Register(identity, character)) return false;
             _commandBuilders[identity.EntityId] = new EntityCommandBuilder();
             return true;
         }
 
         public bool Unregister(uint entityId)
         {
-            if (_registry == null || !_registry.Unregister(entityId)) return false;
+            if (_entityRegistry == null || !_entityRegistry.Unregister(entityId)) return false;
             _commandBuilders.Remove(entityId);
             _mailbox?.RemoveEntity(entityId);
             if (_possessedEntityId == entityId) _possessedEntityId = 0;
@@ -78,7 +78,7 @@ namespace GamePlay.Simulator
         {
             identity = null;
             character = null;
-            if (_registry == null || !_registry.TryGet(entityId, out SimulationRegistry.RegisteredEntity entity))
+            if (_entityRegistry == null || !_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
             {
                 return false;
             }
@@ -88,14 +88,14 @@ namespace GamePlay.Simulator
             return true;
         }
 
-        public void SubmitInput(uint entityId, uint tick, in InputState state)
+        public void SubmitInput(uint entityId, in InputState state)
         {
-            _mailbox?.Submit(entityId, tick, state);
+            _mailbox?.Submit(entityId, state);
         }
 
         public bool Possess(uint entityId)
         {
-            if (_registry == null || !_registry.Contains(entityId)) return false;
+            if (_entityRegistry == null || !_entityRegistry.Contains(entityId)) return false;
             _possessedEntityId = entityId;
             return true;
         }
@@ -108,7 +108,7 @@ namespace GamePlay.Simulator
         public bool TryCapture(uint entityId, out EntityRollbackState state)
         {
             state = default;
-            if (_registry == null || !_registry.TryGet(entityId, out SimulationRegistry.RegisteredEntity entity)) return false;
+            if (_entityRegistry == null || !_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
             if (entity.Character == null || !entity.Character.IsInitialized) return false;
             state = entity.Character.CaptureRollbackState();
             return true;
@@ -129,17 +129,17 @@ namespace GamePlay.Simulator
         {
             if (_possessedEntityId != 0 && _deviceInput != null)
             {
-                SubmitInput(_possessedEntityId, tick, _deviceInput.GetInputState());
+                SubmitInput(_possessedEntityId, _deviceInput.GetInputState());
             }
 
-            if (_registry == null) return;
-            foreach (KeyValuePair<uint, SimulationRegistry.RegisteredEntity> pair in _registry.Entities)
+            if (_entityRegistry == null) return;
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
             {
-                SimulationRegistry.RegisteredEntity entity = pair.Value;
+                RegisteredEntity entity = pair.Value;
                 if (entity.Character == null || !entity.Character.IsInitialized) continue;
                 if (!_commandBuilders.TryGetValue(pair.Key, out EntityCommandBuilder builder)) continue;
 
-                InputState input = _mailbox.Consume(pair.Key, tick);
+                InputState input = _mailbox.Consume(pair.Key);
                 entity.Character.Step(tick, deltaTime, builder.Build(tick, input));
             }
         }

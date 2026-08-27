@@ -12,15 +12,14 @@ namespace GamePlay.EntitySystem
 
         private EntityConfig _config;
         private Transform _orientation;
-        
-        private Vector3 _angularVelocity;
+
         private float _yaw;
         private float _pitch;
 
         #region 属性
         public override ModuleType ModuleType => ModuleType.View;
         public Quaternion ViewRotation => Quaternion.Euler(_pitch, _yaw, 0f);
-        public Vector3 AngularVelocity => _angularVelocity;
+        public Vector3 AngularVelocity { get; private set; }
         public float Yaw => _yaw;
         public float Pitch => _pitch;
         #endregion
@@ -49,7 +48,7 @@ namespace GamePlay.EntitySystem
             _pitch -= aimDelta.y * _config.aimVerticalSpeed * deltaTime;
             _pitch = Mathf.Clamp(_pitch, _config.minAimPitch, _config.maxAimPitch);
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-            _angularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
+            AngularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
         }
         
         #region 快照逻辑
@@ -63,7 +62,7 @@ namespace GamePlay.EntitySystem
             _yaw = euler.y;
             _pitch = Mathf.Clamp(MathUtils.NormalizePitch(euler.x), _config.minAimPitch, _config.maxAimPitch);
 
-            _angularVelocity = angularVelocity;
+            AngularVelocity = angularVelocity;
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
@@ -74,7 +73,7 @@ namespace GamePlay.EntitySystem
         {
             return new ViewRollbackState
             {
-                viewAngularVelocity = _angularVelocity,
+                viewAngularVelocity = AngularVelocity,
                 viewRotation = ViewRotation,
                 yaw = _yaw,
                 pitch = _pitch
@@ -88,7 +87,7 @@ namespace GamePlay.EntitySystem
         {
             _yaw = state.yaw;
             _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);
-            _angularVelocity = state.viewAngularVelocity;
+            AngularVelocity = state.viewAngularVelocity;
             _orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 

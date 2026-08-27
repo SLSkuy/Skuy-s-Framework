@@ -2,7 +2,7 @@ namespace GamePlay.EntitySystem
 {
     public enum ModuleType
     {
-        Transform,
+        Movement,
         View,
         Animation,
     }

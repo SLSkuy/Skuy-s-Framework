@@ -16,7 +16,7 @@ namespace GamePlay.MultiPlaySystem
         public EntityObjectIdentity Identity { get; private set; }
         public EntityCharacter Simulation { get; private set; }
         public CharacterPresentationAdapter Presentation { get; private set; }
-        public CharacterInputBuffer Input { get; private set; }
+        public EntityInputBuffer Input { get; private set; }
         public CharacterPredictionController Prediction { get; private set; }
         public CharacterSnapshotInterpolator Interpolation { get; private set; }
         public uint OwnerClientId { get; set; }
@@ -40,7 +40,7 @@ namespace GamePlay.MultiPlaySystem
             }
 
             SimulationConfig config = SimulationConfig.Instance;
-            Input ??= new CharacterInputBuffer(
+            Input ??= new EntityInputBuffer(
                 config.maxBufferedInputs, config.maxFutureInputTicks);
             Prediction ??= new CharacterPredictionController(config.predictionHistorySize);
             Interpolation ??= new CharacterSnapshotInterpolator(

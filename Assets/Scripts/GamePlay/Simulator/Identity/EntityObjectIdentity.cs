@@ -46,7 +46,7 @@ namespace GamePlay.Simulator
         }
 
         /// <summary>
-        /// 设置网络模拟模式并通知复制系统
+        /// 设置网络模拟模式
         /// </summary>
         public void SetRole(EntityObjectRole newRole)
         {
