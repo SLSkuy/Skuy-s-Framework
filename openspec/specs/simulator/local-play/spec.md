@@ -18,7 +18,7 @@
 - **THEN** 网络客户端与网络服务端 MUST NOT 仅因该启动而被拉起
 
 ### Requirement: Local session samples device input each tick
-单机会话运行期间，每个模拟步长 MUST 从本机设备输入提供器采样当前输入快照，写入被附身实体的邮箱，再由模拟核步进。运行时 MUST NOT 存在玩家/AI 实体控制器类型；采样 MUST NOT 经过已删除的控制器组件。
+单机会话启动并附身本地角色后，MUST 将该会话的本机设备意图来源挂到该角色的注册槽。每个模拟步长 MUST 由模拟核向各槽位收集快照再构建命令并步进。未挂来源的可步进实体 MUST 使用空输入快照。运行时 MUST NOT 存在玩家/AI 实体控制器类型；采样 MUST NOT 经过已删除的控制器组件，MUST NOT 再写入独立命令邮箱，MUST NOT 依赖模拟核上的全局设备字段。
 
 #### Scenario: Held move is applied every tick
 - **WHEN** 单机会话运行中且设备持续给出相同移动意图

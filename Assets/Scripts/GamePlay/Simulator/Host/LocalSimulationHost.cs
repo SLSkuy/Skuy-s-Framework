@@ -28,12 +28,12 @@ namespace GamePlay.Simulator
             if (IsSessionRunning) return true;
             if (Global.Get<MultiPlayManager>()?.IsRunning == true) return false;
 
-            EntityObjectIdentity identity = PlayerSpawner.Spawn(
-                PlayerSpawner.LoadPrefab(), Vector3.up, "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
+            EntityObjectIdentity identity = PlayerSpawner.Spawn(PlayerSpawner.LoadPrefab(), Vector3.up, 
+                "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
             _pawn = identity.gameObject;
+            
             _simulator.Register(identity, identity.GetComponent<EntityCharacter>());
-            _simulator.SetDeviceInput(GameCore.Instance.LocalInput);
-            _simulator.Possess(LOCAL_PLAYER_ID);
+            _simulator.SetInputSource(LOCAL_PLAYER_ID, GameCore.Instance.LocalInput);
             _simulator.StartClock();
 
             GameCore.Instance.CameraMgr.SetTarget(_pawn.transform.Find("orientation"));
@@ -47,10 +47,9 @@ namespace GamePlay.Simulator
         {
             if (!IsSessionRunning) return;
 
-            _simulator.Unpossess();
+            _simulator.SetInputSource(LOCAL_PLAYER_ID, null);
             _simulator.Unregister(LOCAL_PLAYER_ID);
             _simulator.StopClock();
-            _simulator.SetDeviceInput(null);
             Object.Destroy(_pawn);
             _pawn = null;
 

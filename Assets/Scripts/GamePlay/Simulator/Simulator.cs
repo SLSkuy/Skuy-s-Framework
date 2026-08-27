@@ -5,36 +5,32 @@ using GamePlay.EntitySystem;
 namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 模拟核子模块：持有唯一 Tick、实体注册表、命令邮箱与步进调度。由 Host 子系统持有并驱动。
+    /// 模拟核：持有唯一 Tick、实体注册表与步进调度。由 Host 子系统持有并驱动。
     /// </summary>
     public sealed class Simulator
     {
         private TickSystem _tickSystem;
         private EntityRegistry _entityRegistry;
-        private CommandMailbox _mailbox;
-        private readonly Dictionary<uint, EntityCommandBuilder> _commandBuilders = new();
-        private IInputStateProvider _deviceInput;
-        private uint _possessedEntityId;
+        private readonly Dictionary<uint, EntityCommand> _tickCommands = new();
 
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
-        public bool IsRunning => _tickSystem != null && _tickSystem.IsRunning;
+        public bool IsRunning => _tickSystem is { IsRunning: true };
         public int RegisteredEntityCount => _entityRegistry?.Count ?? 0;
-        public uint PossessedEntityId => _possessedEntityId;
         #endregion
 
         public void Init()
         {
             SimulationConfig config = SimulationConfig.Instance;
             _entityRegistry = new EntityRegistry();
-            _mailbox = new CommandMailbox();
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
+            
             _tickSystem.Tick += DispatchTick;
         }
 
         public void Update(float deltaTime)
         {
-            _tickSystem?.Update(deltaTime);
+            if(IsRunning) _tickSystem.Update(deltaTime);
         }
 
         public void Destroy()
@@ -46,39 +42,26 @@ namespace GamePlay.Simulator
                 _tickSystem = null;
             }
 
-            _commandBuilders.Clear();
-            _mailbox?.Clear();
+            _tickCommands.Clear();
             _entityRegistry?.Clear();
-            _possessedEntityId = 0;
-            _deviceInput = null;
-        }
-
-        public void SetDeviceInput(IInputStateProvider inputProvider)
-        {
-            _deviceInput = inputProvider;
         }
 
         public bool Register(EntityObjectIdentity identity, EntityCharacter character)
         {
-            if (_entityRegistry == null || !_entityRegistry.Register(identity, character)) return false;
-            _commandBuilders[identity.EntityId] = new EntityCommandBuilder();
-            return true;
+            return _entityRegistry.Register(identity, character);
         }
 
         public bool Unregister(uint entityId)
         {
-            if (_entityRegistry == null || !_entityRegistry.Unregister(entityId)) return false;
-            _commandBuilders.Remove(entityId);
-            _mailbox?.RemoveEntity(entityId);
-            if (_possessedEntityId == entityId) _possessedEntityId = 0;
-            return true;
+            return _entityRegistry.Unregister(entityId);
         }
 
         public bool TryGet(uint entityId, out EntityObjectIdentity identity, out EntityCharacter character)
         {
             identity = null;
             character = null;
-            if (_entityRegistry == null || !_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
+            
+            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
             {
                 return false;
             }
@@ -88,35 +71,33 @@ namespace GamePlay.Simulator
             return true;
         }
 
-        public void SubmitInput(uint entityId, in InputState state)
+        /// <summary>
+        /// 将意图来源挂到已注册槽位；不在核内缓存提供器
+        /// </summary>
+        public bool SetInputSource(uint entityId, IInputStateProvider inputSource)
         {
-            _mailbox?.Submit(entityId, state);
-        }
+            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
+            {
+                return false;
+            }
 
-        public bool Possess(uint entityId)
-        {
-            if (_entityRegistry == null || !_entityRegistry.Contains(entityId)) return false;
-            _possessedEntityId = entityId;
+            entity.SetInputSource(inputSource);
             return true;
-        }
-
-        public void Unpossess()
-        {
-            _possessedEntityId = 0;
         }
 
         public bool TryCapture(uint entityId, out EntityRollbackState state)
         {
             state = default;
-            if (_entityRegistry == null || !_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
-            if (entity.Character == null || !entity.Character.IsInitialized) return false;
+            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
+            if (!entity.Character.IsInitialized) return false;
+            
             state = entity.Character.CaptureRollbackState();
             return true;
         }
 
         public void StartClock()
         {
-            if (_tickSystem == null || _tickSystem.IsRunning) return;
+            if (IsRunning) return;
             _tickSystem.Start();
         }
 
@@ -125,22 +106,27 @@ namespace GamePlay.Simulator
             _tickSystem?.Stop();
         }
 
+        /// <summary>
+        /// 处理Tick逻辑
+        /// </summary>
         private void DispatchTick(uint tick, float deltaTime)
         {
-            if (_possessedEntityId != 0 && _deviceInput != null)
-            {
-                SubmitInput(_possessedEntityId, _deviceInput.GetInputState());
-            }
-
             if (_entityRegistry == null) return;
+
+            // 捕获当前Tick实体意图
+            _tickCommands.Clear();
             foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
             {
                 RegisteredEntity entity = pair.Value;
-                if (entity.Character == null || !entity.Character.IsInitialized) continue;
-                if (!_commandBuilders.TryGetValue(pair.Key, out EntityCommandBuilder builder)) continue;
+                if (!entity.Character || !entity.Character.IsInitialized) continue;
+                _tickCommands[pair.Key] = entity.CollectCommand(tick);
+            }
 
-                InputState input = _mailbox.Consume(pair.Key);
-                entity.Character.Step(tick, deltaTime, builder.Build(tick, input));
+            // 处理捕获的所有实体意图
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                if (!_tickCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
+                pair.Value.Character.Step(tick, deltaTime, command);
             }
         }
     }

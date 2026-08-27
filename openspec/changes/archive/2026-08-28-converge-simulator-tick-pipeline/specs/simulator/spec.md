@@ -1,32 +1,4 @@
-# simulator Specification
-
-## Purpose
-
-提供与联机无关的实体模拟核：固定步长推进世界、注册可模拟实体、接收每拍意图并驱动角色状态，供单机 Host 与后续多人 Host 共用。
-
-## Requirements
-
-### Requirement: Fixed-step simulation clock
-模拟核 SHALL 使用单一固定步长时钟推进已注册实体。时钟频率 MUST 来自模拟配置。同一进程内 MUST NOT 再为 LocalPlay 启用第二套独立模拟时钟。
-
-#### Scenario: Tick advances registered entities
-- **WHEN** 模拟核正在运行且已注册至少一个可步进实体
-- **THEN** 每个模拟步长对该实体应用恰好一次本拍命令并推进其模拟状态
-
-#### Scenario: No tick when stopped
-- **WHEN** 模拟核已停止或尚未启动
-- **THEN** 实体模拟状态 MUST NOT 因帧更新而被推进
-
-### Requirement: Entity registration
-模拟核 SHALL 按非零实体标识注册与注销可模拟对象。每个标识 MUST 最多对应一个已注册实例。注册时 MUST 记录该实例的模拟角色（本阶段为 LocalPlay）。注销后 MUST 停止对该实例的步进。
-
-#### Scenario: Duplicate id rejected
-- **WHEN** 调用方尝试用已被占用的实体标识再次注册另一个实例
-- **THEN** 系统 MUST 拒绝该注册并保持原实例不变
-
-#### Scenario: Unregister stops simulation
-- **WHEN** 已注册实体被注销
-- **THEN** 后续时钟步进 MUST NOT 再推进该实体
+## ADDED Requirements
 
 ### Requirement: Tick collects intents then simulates
 每个时钟步长，模拟核 SHALL 先为所有本拍将步进的实体各收集一份输入快照，再根据已冻结的快照构建命令并推进模拟。收集段 MUST 在任一实体被步进之前完成。意图单位 MUST 仍为可序列化的输入快照。模拟核 MUST NOT 因某实体缺少采样而跳过该步长或回退时钟。
@@ -68,6 +40,8 @@
 - **WHEN** 某实体被注销后以同一标识重新注册并再次步进
 - **THEN** 本拍命令边沿 MUST 不继承注销前的按住状态
 
+## MODIFIED Requirements
+
 ### Requirement: Possession routes local device input
 将本机设备意图赋给某已注册实体 SHALL 通过把设备来源挂到该实体的注册槽完成。每个时钟步长的收集段，仅该槽位 MUST 读到设备快照；其他可步进实体 MUST NOT 因该绑定而读到同一设备快照。模拟核 MUST NOT 再用「至多一个附身 id + 全局设备提供器」完成采样。
 
@@ -79,34 +53,8 @@
 - **WHEN** 实体 B 已注册但其槽位未挂本机设备来源
 - **THEN** 其本拍输入快照 MUST NOT 被本机设备输入覆盖
 
-### Requirement: Shared spawn entry
-模拟核 SHALL 提供与传输无关的生成入口：根据原型创建实例、写入身份与模拟角色、初始化实体模拟、完成注册。生成失败（缺少原型或缺少实体组件）MUST 失败且 MUST NOT 留下半注册实例。
+## REMOVED Requirements
 
-#### Scenario: Successful spawn is registered
-- **WHEN** 生成入口使用有效原型与未占用的实体标识成功创建角色
-- **THEN** 该实例 MUST 可被时钟步进，且身份中的模拟角色 MUST 与请求一致
-
-#### Scenario: Failed spawn does not register
-- **WHEN** 原型无效或实例缺少实体模拟组件
-- **THEN** 系统 MUST 不注册该标识，场景中 MUST NOT 残留未初始化的半成品实例
-
-### Requirement: Capture without network
-模拟核 SHALL 允许读取已注册实体的完整回滚状态快照。该能力 MUST 不依赖网络消息。本阶段无确认/插值消费方，但接口 MUST 存在以便后续 Host 复用。
-
-#### Scenario: Capture returns current simulated pose
-- **WHEN** 已注册实体已被至少推进过一次
-- **THEN** 捕获接口 MUST 返回与当前模拟一致的位置与视角状态
-
-### Requirement: Shared types live under simulator
-生成、命令构建与按 tick 意图缓冲 SHALL 作为模拟核的一部分存在于 Simulator 模块路径下。MultiPlay MUST NOT 再保留这些类型的旧副本；若联机路径仍需要它们，MUST 引用 Simulator 中的同一实现。
-
-#### Scenario: Spawn and command types have a single home
-- **WHEN** 单机或联机生成角色并构建本拍命令
-- **THEN** 生成与命令构建 MUST 使用 Simulator 模块中的实现，且旧 MultiPlay 生成器/命令缓冲文件 MUST NOT 仍作为第二份实现存在
-
-### Requirement: Single identity component
-可模拟对象的身份 SHALL 仅由 Simulator 身份组件表达。重复的身份接口、旧网络身份组件与旧模拟角色枚举 MUST NOT 保留在运行时程序集中。
-
-#### Scenario: Prefab uses simulator identity
-- **WHEN** 角色原型被实例化
-- **THEN** 实例 MUST 带有 Simulator 身份组件，且 MUST NOT 带有已删除的旧网络身份组件
+### Requirement: Command mailbox
+**Reason**: 推送邮箱在单机路径上没有跨拍或跨模块生命周期，Submit 与消费发生在同一次步进中，无法作为联机窗口缓冲的对接面。
+**Migration**: 改为每个 Tick 向注册槽上的意图来源读取快照再模拟；缺采样由该来源返回空快照。不要再调用按标识写入邮箱的入口。联机按 tick 窗口缓冲本阶段可继续走既有复制路径，与槽位上的网络控制器并行存在。
