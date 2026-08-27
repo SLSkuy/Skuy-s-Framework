@@ -8,7 +8,7 @@ namespace Framework
     /// <summary>
     /// 本地原生输入封装
     /// </summary>
-    public class LocalInputProvider : BaseInputProvider
+    public class LocalInputProvider : MonoBehaviour, IInputStateProvider
     {
         private PlayerInputActions _inputActions;
         private PlayerInputActions.PlayerActions _playerActions;
@@ -83,24 +83,20 @@ namespace Framework
             actionMap.Enable();
         }
         
-        /// <summary>
-        /// 更新本地玩家控制输入
-        /// </summary>
-        private void UpdateOriginPlayerActionInput()
+        public InputState GetInputState()
         {
-            // 缓存上一帧输入，用于检测需要触发哪些事件
-            _previousInputState = _currentInputState;
-            
-            // 获取当前帧中输入
-            _currentInputState.MoveInput = _playerActions.Move.ReadValue<Vector2>();
-            _currentInputState.AimInput = _playerActions.Aim.ReadValue<Vector2>();
-            _currentInputState.IsPrimaryAttackPressed = _playerActions.PrimaryAttack.IsPressed();
-            _currentInputState.IsSpecialAttackPressed = _playerActions.SpecialAttack.IsPressed();
-            _currentInputState.IsSpecialActionPressed = _playerActions.SpecialAction.IsPressed();
-            _currentInputState.IsInteractPressed = _playerActions.Interact.IsPressed();
-            _currentInputState.IsSprintPressed = _playerActions.Sprint.IsPressed();
-            _currentInputState.IsJumpPressed = _playerActions.Jump.IsPressed();
-            _currentInputState.IsSwitchModePressed = _playerActions.SwitchMode.IsPressed();
+            return new InputState
+            {
+                MoveInput = _playerActions.Move.ReadValue<Vector2>(),
+                AimInput = _playerActions.Aim.ReadValue<Vector2>(),
+                IsPrimaryAttackPressed = _playerActions.PrimaryAttack.IsPressed(),
+                IsSpecialAttackPressed = _playerActions.SpecialAttack.IsPressed(),
+                IsSpecialActionPressed = _playerActions.SpecialAction.IsPressed(),
+                IsInteractPressed = _playerActions.Interact.IsPressed(),
+                IsSprintPressed = _playerActions.Sprint.IsPressed(),
+                IsJumpPressed = _playerActions.Jump.IsPressed(),
+                IsSwitchModePressed = _playerActions.SwitchMode.IsPressed(),
+            };
         }
 
         #region 生命周期
@@ -119,12 +115,7 @@ namespace Framework
         {
             _actionMap[currentInputMap].Disable();
         }
-
-        private void Update()
-        {
-            UpdateOriginPlayerActionInput();
-            CheckDiffFromLastState();
-        }
+        
 
         #endregion
     }

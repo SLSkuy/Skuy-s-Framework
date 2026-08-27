@@ -7,7 +7,7 @@ namespace Framework
     /// 输入状态定义，抽象玩家输入数据，后续网络同步时，只需要同步该数据接口即可
     /// </summary>
     [Serializable]
-    public struct InputState : IInputProvider
+    public struct InputState
     {
         public Vector2 MoveInput { get; set; }
         public Vector2 AimInput { get; set; }
@@ -18,18 +18,5 @@ namespace Framework
         public bool IsSprintPressed { get; set; }
         public bool IsJumpPressed { get; set; }
         public bool IsSwitchModePressed { get; set; }
-
-        public InputState(IInputProvider provider)
-        {
-            MoveInput = provider.MoveInput;
-            AimInput = provider.AimInput;
-            IsPrimaryAttackPressed = provider.IsPrimaryAttackPressed;
-            IsSpecialAttackPressed = provider.IsSpecialAttackPressed;
-            IsSpecialActionPressed = provider.IsSpecialActionPressed;
-            IsInteractPressed = provider.IsInteractPressed;
-            IsSprintPressed = provider.IsSprintPressed;
-            IsJumpPressed = provider.IsJumpPressed;
-            IsSwitchModePressed = provider.IsSwitchModePressed;
-        }
     }
 }
