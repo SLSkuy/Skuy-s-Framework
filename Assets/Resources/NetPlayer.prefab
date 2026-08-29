@@ -43,7 +43,6 @@ GameObject:
   - component: {fileID: 6309289621052532212}
   - component: {fileID: 8705368391808782593}
   - component: {fileID: 600000000000000002}
-  - component: {fileID: 784472870069811886}
   - component: {fileID: 600000000000000001}
   m_Layer: 0
   m_Name: NetPlayer
@@ -128,20 +127,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
---- !u!114 &784472870069811886
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6549454998251404434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4c02f2de8ef2c54ca5c58bfb65184af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.MultiPlaySystem.CharacterPresentationAdapter
-  presentationRoot: {fileID: 2417725431037458410}
-  correctionHalfLife: 0.08
 --- !u!114 &600000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

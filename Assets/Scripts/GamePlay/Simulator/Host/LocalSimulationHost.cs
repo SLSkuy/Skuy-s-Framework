@@ -1,7 +1,6 @@
 using Core;
 using Framework;
 using GamePlay.EntitySystem;
-using GamePlay.MultiPlaySystem;
 using UnityEngine;
 
 namespace GamePlay.Simulator
@@ -26,9 +25,12 @@ namespace GamePlay.Simulator
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
-            if (Global.Get<MultiPlayManager>()?.IsRunning == true) return false;
+            if (GameCore.Instance == null) return false;
 
-            EntityObjectIdentity identity = PlayerSpawner.Spawn(PlayerSpawner.LoadPrefab(), Vector3.up, 
+            GameObject prefab = PlayerSpawner.LoadPrefab();
+            if (prefab == null) return false;
+
+            EntityObjectIdentity identity = PlayerSpawner.Spawn(prefab, Vector3.up,
                 "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
             _pawn = identity.gameObject;
             

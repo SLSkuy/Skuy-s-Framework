@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Events;
-using Google.Protobuf;
-using Network;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -32,44 +29,6 @@ namespace Framework
             SubSystems.Remove(type);
         }
 
-        /// <summary>
-        /// 注册网络处理器
-        /// </summary>
-        public static void RegNetHandler<T>(NetEvent eventId, Action<T> handler) where T : IMessage, new()
-        {
-            if (TryGet<NetClient>(out var client))
-            {
-                client.RegNetHandler(eventId, handler);
-            }
-        }
-        
-        /// <summary>
-        /// 注册网络处理器
-        /// </summary>
-        public static void RegNetHandler<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
-        {
-            if (TryGet<NetServer>(out var server))
-            {
-                server.RegNetHandler(eventId, handler);
-            }
-        }
-
-        /// <summary>
-        /// 注销网络处理器
-        /// </summary>
-        public static void UnRegNetHandler(NetEvent eventId)
-        {
-            if (TryGet<NetClient>(out var client))
-            {
-                client.UnRegNetHandler(eventId);
-            }
-
-            if (TryGet<NetServer>(out var server))
-            {
-                server.UnRegNetHandler(eventId);
-            }
-        }
-        
         /// <summary>
         /// 获取已注册的子系统
         /// </summary>

@@ -15,6 +15,7 @@ namespace Core
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
+        public GamePlay.GameManager GameMgr { get; private set; }
         #endregion
 
         #region 游戏状态
@@ -60,6 +61,8 @@ namespace Core
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
+            GameMgr = SystemMgr.RegisterSystem<GamePlay.GameManager>();
+            SystemMgr.RegisterSystem<GamePlay.Simulator.LocalSimulationHost>();
         }
 
         /// <summary>

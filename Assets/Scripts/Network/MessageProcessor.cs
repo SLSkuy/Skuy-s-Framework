@@ -2,95 +2,111 @@ using System;
 using System.Collections.Generic;
 using Events;
 using Google.Protobuf;
-using UnityEngine;
 using Utils;
 
 namespace Network
 {
     /// <summary>
-    /// 网络消息分发层，根据消息数据由对应的Handler进行处理
+    /// 网络消息分发：按事件保存处理器实例列表，支持多播与按实例注销。
     /// </summary>
-    public class MessageProcessor
+    public sealed class MessageProcessor
     {
-        private readonly Dictionary<NetEvent, Action<IMessage>> _handlers = new();
-        private readonly Dictionary<NetEvent, Action<uint, IMessage>> _serverHandlers = new();
+        private readonly Dictionary<NetEvent, List<object>> _clientHandlers = new();
+        private readonly Dictionary<NetEvent, List<object>> _serverHandlers = new();
+        private readonly Dictionary<object, HandlerBinding> _bindings = new();
 
-        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 判断接收道德消息类型，并进行分发
+        /// 分发客户端消息到该事件上所有仍登记的处理器。
         /// </summary>
         public void HandleMessage(NetEvent evt, IMessage message)
         {
-            if (_handlers.TryGetValue(evt, out var handler))
-            {
-                handler(message);
-            }
-            else
-            {
-                Debug.LogWarning($"[MessageProcessor] 事件 {evt} 没有对应的处理器");
-            }
+            Dispatch(evt, 0, message, server: false);
         }
 
-        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 处理服务端消息事件
+        /// 分发服务端消息（含发送方连接标识）。
         /// </summary>
         public void HandleServerMessage(uint clientId, NetEvent evt, IMessage message)
         {
-            if (_serverHandlers.TryGetValue(evt, out var handler))
-            {
-                handler(clientId, message);
-            }
-            else
-            {
-                Debug.LogWarning($"[MessageProcessor] 事件 {evt} 没有对应的处理器");
-            }
-        }
-        
-        /// <summary>
-        /// 注册Protobuf事件处理器
-        /// </summary>
-        /// <param name="clientEventId">事件ID</param>
-        /// <param name="handler">事件</param>
-        /// <typeparam name="T">Protobuf事件类型</typeparam>
-        public void Register<T>(NetEvent clientEventId, Action<T> handler) where T : IMessage, new()
-        {
-            _handlers[clientEventId] = msg => handler((T)msg);
-            NetUtils.RegisterParser(clientEventId, new T().Descriptor.Parser);
+            Dispatch(evt, clientId, message, server: true);
         }
 
-        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 注销所有Protobuf事件处理器
+        /// 登记客户端处理器。同一实例重复登记为无操作。
         /// </summary>
-        /// <param name="clientEventId">事件ID</param>
-        public void UnRegister(NetEvent clientEventId)
+        public void Register<T>(NetEvent eventId, INetHandler<T> handler) where T : class, IMessage, new()
         {
-            _handlers.Remove(clientEventId);
-            Debug.Log($"[MessageProcessor] 注销客户端事件 {clientEventId}");
-        }
-        
-        /// <summary>
-        /// 注册Protobuf事件处理器
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件</param>
-        /// <typeparam name="T">Protobuf事件类型</typeparam>
-        public void RegisterServer<T>(NetEvent eventId, Action<uint, T> handler) where T : IMessage, new()
-        {
-            _serverHandlers[eventId] = (id, msg) => handler(id, (T)msg);
+            if (handler == null) return;
+            Bind(eventId, handler, server: false, (_, msg) => handler.Handle((T)msg));
             NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
         }
 
-        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 注销所有Protobuf事件处理器
+        /// 登记服务端处理器。同一实例重复登记为无操作。
         /// </summary>
-        /// <param name="eventId">事件ID</param>
-        public void UnRegisterServer(NetEvent eventId)
+        public void RegisterServer<T>(NetEvent eventId, IServerNetHandler<T> handler) where T : class, IMessage, new()
         {
-            _serverHandlers.Remove(eventId);
-            Debug.Log($"[MessageProcessor] 注销服务端事件 {eventId}");
+            if (handler == null) return;
+            Bind(eventId, handler, server: true, (id, msg) => handler.Handle(id, (T)msg));
+            NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
+        }
+
+        /// <summary>
+        /// 按处理器实例注销。未登记过的实例为无操作。
+        /// </summary>
+        public void Unregister(object handler)
+        {
+            if (handler == null) return;
+            if (!_bindings.Remove(handler, out HandlerBinding binding)) return;
+
+            Dictionary<NetEvent, List<object>> map = binding.Server ? _serverHandlers : _clientHandlers;
+            if (!map.TryGetValue(binding.EventId, out List<object> list)) return;
+            list.Remove(handler);
+        }
+
+        private void Bind(NetEvent eventId, object handler, bool server, Action<uint, IMessage> invoke)
+        {
+            if (_bindings.ContainsKey(handler)) return;
+
+            Dictionary<NetEvent, List<object>> map = server ? _serverHandlers : _clientHandlers;
+            if (!map.TryGetValue(eventId, out List<object> list))
+            {
+                list = new List<object>();
+                map[eventId] = list;
+            }
+
+            list.Add(handler);
+            _bindings[handler] = new HandlerBinding(eventId, server, invoke);
+        }
+
+        private void Dispatch(NetEvent evt, uint senderId, IMessage message, bool server)
+        {
+            Dictionary<NetEvent, List<object>> map = server ? _serverHandlers : _clientHandlers;
+            if (!map.TryGetValue(evt, out List<object> list) || list.Count == 0) return;
+
+            object[] snapshot = list.ToArray();
+            for (int i = 0; i < snapshot.Length; i++)
+            {
+                object handler = snapshot[i];
+                if (_bindings.TryGetValue(handler, out HandlerBinding binding))
+                {
+                    binding.Invoke(senderId, message);
+                }
+            }
+        }
+
+        private readonly struct HandlerBinding
+        {
+            public readonly NetEvent EventId;
+            public readonly bool Server;
+            public readonly Action<uint, IMessage> Invoke;
+
+            public HandlerBinding(NetEvent eventId, bool server, Action<uint, IMessage> invoke)
+            {
+                EventId = eventId;
+                Server = server;
+                Invoke = invoke;
+            }
         }
     }
 }
