@@ -15,6 +15,7 @@ namespace Network
         private readonly Dictionary<NetEvent, Action<IMessage>> _handlers = new();
         private readonly Dictionary<NetEvent, Action<uint, IMessage>> _serverHandlers = new();
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 判断接收道德消息类型，并进行分发
         /// </summary>
@@ -30,6 +31,7 @@ namespace Network
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 处理服务端消息事件
         /// </summary>
@@ -57,6 +59,7 @@ namespace Network
             NetUtils.RegisterParser(clientEventId, new T().Descriptor.Parser);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 注销所有Protobuf事件处理器
         /// </summary>
@@ -79,6 +82,7 @@ namespace Network
             NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 注销所有Protobuf事件处理器
         /// </summary>

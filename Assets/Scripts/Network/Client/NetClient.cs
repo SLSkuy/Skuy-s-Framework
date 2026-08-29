@@ -3,6 +3,7 @@ using Events;
 using Framework;
 using Google.Protobuf;
 using NetConnect;
+using NetSync;
 using UnityEngine;
 using Utils;
 using Ping = NetConnect.Ping;
@@ -60,6 +61,7 @@ namespace Network
         private float _lastRtt;
         // ========== RTT ==========
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 开启可靠连接
         /// </summary>
@@ -268,6 +270,7 @@ namespace Network
 
         #region 心跳 / Ping
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 网络心跳：通过可靠通道发送HeartBeat，检测服务器存活
         /// </summary>
@@ -427,10 +430,10 @@ namespace Network
             RegNetHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             RegNetHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             RegNetHandler<Heart_Beat_Response>(NetEvent.HEART_BEAT_RESPONSE, HandleHeartBeatResponse);
-            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, global::NetSync.Player_Input.Parser);
-            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, global::NetSync.World_Snapshot.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, global::NetSync.Game_Join_Request.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, global::NetSync.Game_Join_Response.Parser);
+            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, Player_Input.Parser);
+            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, World_Snapshot.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, Game_Join_Request.Parser);
+            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, Game_Join_Response.Parser);
         }
 
         public override void Update(float deltaTime)

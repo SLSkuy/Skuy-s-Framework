@@ -17,6 +17,7 @@ namespace GamePlay.Simulator
 
         #region 属性
         public uint LastProcessedTick { get; private set; }
+        public bool HasQueued => _commands.Count > 0;
         #endregion
 
         public EntityInputBuffer(int capacity, int maxFutureInputTicks)
@@ -34,9 +35,17 @@ namespace GamePlay.Simulator
 
         /// <summary>
         /// 将经过合法性校验的输入按客户端 Tick 加入服务端命令缓冲。
+        /// 尚未消费过时，以首包序号对齐消费点，避免握手期间丢掉的快通道包把后续命令全部挤出窗口。
         /// </summary>
         public bool Enqueue(uint inputTick, in InputState input)
         {
+            if (inputTick == 0) return false;
+
+            if (LastProcessedTick == 0 && !HasQueued && inputTick > 1)
+            {
+                LastProcessedTick = inputTick - 1;
+            }
+
             if (!IsInReceiveWindow(inputTick))
             {
                 return false;
@@ -99,7 +108,7 @@ namespace GamePlay.Simulator
         /// <summary>
         /// 消费 LastProcessedTick 之后的下一序号；槽位缺失时返回默认空输入并仍推进确认点。
         /// </summary>
-        private InputState ConsumeNext()
+        public InputState ConsumeNext()
         {
             uint inputTick = LastProcessedTick + 1;
             if (!_commands.TryDequeue(inputTick, out InputState input))

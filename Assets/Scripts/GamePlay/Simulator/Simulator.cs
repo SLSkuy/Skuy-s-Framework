@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Framework;
 using GamePlay.EntitySystem;
 
@@ -19,32 +20,58 @@ namespace GamePlay.Simulator
         public int RegisteredEntityCount => _entityRegistry?.Count ?? 0;
         #endregion
 
-        public void Init()
+        #region 事件
+        /// <summary>
+        /// 核时钟推进后转发；在本拍 Dispatch 之后触发，禁止再 new TickSystem。
+        /// </summary>
+        public event Action<uint, float> Tick;
+        #endregion
+
+        #region Tick管理
+
+        public void StartClock()
         {
-            SimulationConfig config = SimulationConfig.Instance;
-            _entityRegistry = new EntityRegistry();
-            _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
-            
-            _tickSystem.Tick += DispatchTick;
+            if (IsRunning) return;
+            _tickSystem.Start();
         }
 
-        public void Update(float deltaTime)
+        public void StopClock()
         {
-            if(IsRunning) _tickSystem.Update(deltaTime);
+            _tickSystem?.Stop();
         }
 
-        public void Destroy()
+        private void HandleTick(uint tick, float deltaTime)
         {
-            if (_tickSystem != null)
-            {
-                _tickSystem.Tick -= DispatchTick;
-                _tickSystem.Stop();
-                _tickSystem = null;
-            }
+            DispatchTick(tick, deltaTime);
+            Tick?.Invoke(tick, deltaTime);
+        }
+
+        /// <summary>
+        /// 处理Tick逻辑。Replica 不收集、不 Step。
+        /// </summary>
+        private void DispatchTick(uint tick, float deltaTime)
+        {
+            if (_entityRegistry == null) return;
 
             _tickCommands.Clear();
-            _entityRegistry?.Clear();
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                RegisteredEntity entity = pair.Value;
+                if (!entity.Character || !entity.Character.IsInitialized) continue;
+                if (entity.Identity != null && entity.Identity.IsReplica) continue;
+                _tickCommands[pair.Key] = entity.CollectCommand(tick);
+            }
+
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                if (!_tickCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
+                pair.Value.Character.Step(tick, deltaTime, command);
+            }
         }
+
+        #endregion
+        
+        #region 模拟实体管理
 
         public bool Register(EntityObjectIdentity identity, EntityCharacter character)
         {
@@ -70,7 +97,7 @@ namespace GamePlay.Simulator
             character = entity.Character;
             return true;
         }
-
+        
         /// <summary>
         /// 将意图来源挂到已注册槽位；不在核内缓存提供器
         /// </summary>
@@ -85,6 +112,10 @@ namespace GamePlay.Simulator
             return true;
         }
 
+        #endregion
+
+        #region 快照处理
+
         public bool TryCapture(uint entityId, out EntityRollbackState state)
         {
             state = default;
@@ -95,39 +126,59 @@ namespace GamePlay.Simulator
             return true;
         }
 
-        public void StartClock()
-        {
-            if (IsRunning) return;
-            _tickSystem.Start();
-        }
-
-        public void StopClock()
-        {
-            _tickSystem?.Stop();
-        }
-
         /// <summary>
-        /// 处理Tick逻辑
+        /// 将回滚状态写回已注册且已初始化的实体；不解释网络序号。
         /// </summary>
-        private void DispatchTick(uint tick, float deltaTime)
+        public bool TryRestore(uint entityId, in EntityRollbackState state)
         {
-            if (_entityRegistry == null) return;
+            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
+            if (!entity.Character || !entity.Character.IsInitialized) return false;
 
-            // 捕获当前Tick实体意图
-            _tickCommands.Clear();
+            entity.Character.RestoreRollbackState(state);
+            return true;
+        }
+
+        #endregion
+
+        public void ForEachRegistered(Action<EntityObjectIdentity, EntityCharacter> visitor)
+        {
+            if (visitor == null || _entityRegistry == null) return;
             foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
             {
-                RegisteredEntity entity = pair.Value;
-                if (!entity.Character || !entity.Character.IsInitialized) continue;
-                _tickCommands[pair.Key] = entity.CollectCommand(tick);
-            }
-
-            // 处理捕获的所有实体意图
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                if (!_tickCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
-                pair.Value.Character.Step(tick, deltaTime, command);
+                visitor(pair.Value.Identity, pair.Value.Character);
             }
         }
+
+        #region 生命周期
+
+        public void Init()
+        {
+            SimulationConfig config = SimulationConfig.Instance;
+            _entityRegistry = new EntityRegistry();
+            _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
+            _tickSystem.Tick += HandleTick;
+        }
+
+        public void Update(float deltaTime)
+        {
+            if(IsRunning) _tickSystem.Update(deltaTime);
+        }
+
+        public void Destroy()
+        {
+            if (_tickSystem != null)
+            {
+                _tickSystem.Tick -= HandleTick;
+                _tickSystem.Stop();
+                _tickSystem = null;
+            }
+
+            Tick = null;
+
+            _tickCommands.Clear();
+            _entityRegistry?.Clear();
+        }
+
+        #endregion
     }
 }

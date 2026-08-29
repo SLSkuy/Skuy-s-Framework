@@ -408,33 +408,17 @@ namespace GamePlay.MultiPlaySystem
 
         public override void Init()
         {
-            SimulationConfig config = SimulationConfig.Instance;
-            _tick = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
-            _tick.Tick += SimulateTick;
-            _tick.Start();
-            BindNetworkHandlers();
         }
 
         public override void Update(float deltaTime)
         {
-            _tick?.Update(deltaTime);
-            BindNetworkHandlers();
-            UpdateReplicaInterpolation(deltaTime);
         }
 
         public override void Destroy()
         {
-            if (_tick != null)
-            {
-                _tick.Tick -= SimulateTick;
-                _tick.Stop();
-                _tick = null;
-            }
-            if (_clientHandlerBound) _client?.UnRegNetHandler(NetEvent.WORLD_SNAPSHOT);
-            if (_serverHandlerBound) _server?.UnRegNetHandler(NetEvent.PLAYER_INPUT);
-
             _characters.Clear();
             _clientEntityFactory = null;
+            _tick = null;
         }
 
         #endregion

@@ -36,7 +36,7 @@ namespace GamePlay.Simulator
         /// </summary>
         public EntityCommand CollectCommand(uint tick)
         {
-            InputState input = _inputSource.GetInputState();
+            InputState input = _inputSource != null ? _inputSource.GetInputState() : default;
             return _commandBuilder.Build(tick, input);
         }
     }

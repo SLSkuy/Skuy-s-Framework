@@ -17,36 +17,33 @@ namespace GamePlay.MultiPlaySystem
         public override int Priority => 100;
 
         public MultiPlayMode Mode { get; private set; }
-        public ServerSimulator Server { get; private set; }
-        public ClientSimulator Client { get; private set; }
+        public ServerSimulationHost Server { get; private set; }
+        public ClientSimulationHost Client { get; private set; }
         public bool IsRunning => Mode != MultiPlayMode.None;
 
         public event Action<MultiPlayMode> ModeChanged;
 
         /// <summary>
-        /// 启动同步测试服务端。
+        /// 启动快照同步服务端。
         /// </summary>
-
         public bool StartServer()
         {
             if (Mode == MultiPlayMode.Server) return true;
             if (Mode != MultiPlayMode.None) return false;
             if (IsLocalSessionRunning()) return false;
 
-            GetOrRegister<CharacterReplicationSystem>();
             NetServer netServer = GetOrRegister<NetServer>();
-            if (netServer == null) return false;
+            Server = GetOrRegister<ServerSimulationHost>();
+            if (netServer == null || Server == null) return false;
 
             try
             {
-                Server = new ServerSimulator(netServer);
-                Server.Start();
+                if (!Server.StartSession()) return false;
                 netServer.StartServer();
             }
             catch
             {
-                Server?.Dispose();
-                Server = null;
+                Server.StopSession();
                 throw;
             }
 
@@ -60,20 +57,18 @@ namespace GamePlay.MultiPlaySystem
             if (Mode != MultiPlayMode.None) return false;
             if (IsLocalSessionRunning()) return false;
 
-            GetOrRegister<CharacterReplicationSystem>();
             NetClient netClient = GetOrRegister<NetClient>();
-            if (netClient == null) return false;
+            Client = GetOrRegister<ClientSimulationHost>();
+            if (netClient == null || Client == null) return false;
 
             try
             {
-                Client = new ClientSimulator(netClient);
-                Client.Start();
+                if (!Client.StartSession()) return false;
                 netClient.StartReliableConnect();
             }
             catch
             {
-                Client?.Dispose();
-                Client = null;
+                Client.StopSession();
                 throw;
             }
 
@@ -82,30 +77,22 @@ namespace GamePlay.MultiPlaySystem
         }
 
         /// <summary>
-        /// 停止当前同步测试端并清理测试实体。
+        /// 停止当前联机端点并清理会话实体。
         /// </summary>
         public void Stop()
         {
             if (Mode == MultiPlayMode.Server)
             {
-                Server?.Dispose();
+                Server?.StopSession();
                 Global.Get<NetServer>()?.StopServer();
-                Server = null;
             }
             else if (Mode == MultiPlayMode.Client)
             {
-                Client?.Dispose();
+                Client?.StopSession();
                 Global.Get<NetClient>()?.StopClient();
-                Client = null;
             }
 
             SetMode(MultiPlayMode.None);
-        }
-
-        public override void Update(float deltaTime)
-        {
-            Server?.Update(deltaTime);
-            Client?.Update(deltaTime);
         }
 
         public override void Destroy()

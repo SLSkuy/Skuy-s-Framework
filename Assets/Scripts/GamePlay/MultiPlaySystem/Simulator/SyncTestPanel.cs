@@ -44,14 +44,16 @@ namespace GamePlay.MultiPlaySystem
         {
             NetServer server = Global.Get<NetServer>();
             NetClient client = Global.Get<NetClient>();
-            CharacterReplicationSystem replication = Global.Get<CharacterReplicationSystem>();
+            GamePlay.Simulator.Simulator simulator = null;
+            if (Mode == MultiPlayMode.Server) simulator = _multiPlayManager?.Server?.Simulator;
+            else if (Mode == MultiPlayMode.Client) simulator = _multiPlayManager?.Client?.Simulator;
 
             GUILayout.Label($"模式：{Mode}", _statusStyle);
             GUILayout.Label($"服务端：{(server?.IsRunning == true ? "运行中" : "未启动")}");
             GUILayout.Label($"客户端：{(client?.IsRunning == true ? "已连接" : "未连接")}");
             GUILayout.Label($"ClientId：{client?.ClientId ?? 0}");
-            GUILayout.Label($"同步实体：{replication?.RegisteredEntityCount ?? 0}");
-            GUILayout.Label($"网络 Tick：{replication?.CurrentTick ?? 0}");
+            GUILayout.Label($"模拟 Tick：{simulator?.CurrentTick ?? 0}");
+            GUILayout.Label($"模拟实体：{simulator?.RegisteredEntityCount ?? 0}");
             if (client?.IsRunning == true) GUILayout.Label($"KCP RTT：{client.RTT * 1000f:F0} ms");
             if (!string.IsNullOrEmpty(_lastError)) GUILayout.Label(_lastError);
         }
