@@ -64,6 +64,7 @@ namespace GamePlay.Battle
         /// </summary>
         public void JoinRemoteRoom()
         {
+            _activeRoom = new BattleRoom(BattleSessionRole.Client, false);
             _netClient = Global.Register<NetClient>();
 
             _clientHandler.Bind();
@@ -83,7 +84,7 @@ namespace GamePlay.Battle
         {
             if (_activeRoom != null) return false;
 
-            BattleRoom room = new(acceptsRemoteJoin);
+            BattleRoom room = new(BattleSessionRole.Host, acceptsRemoteJoin);
             if (!room.TryAdmit(LOCAL_CONNECTION_ID))
             {
                 return false;

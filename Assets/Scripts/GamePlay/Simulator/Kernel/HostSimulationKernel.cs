@@ -6,9 +6,9 @@ using UnityEngine;
 namespace GamePlay.Simulator
 {
     /// <summary>
-    /// 单机会话子系统：持有模拟核，生成并附身唯一本地角色。
+    /// 主机权威模拟核：持有 Simulator，开战时生成并附身本地角色。
     /// </summary>
-    public sealed class LocalSimulationHost : SubSystemBase
+    public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
         private const uint LOCAL_PLAYER_ID = 1;
 

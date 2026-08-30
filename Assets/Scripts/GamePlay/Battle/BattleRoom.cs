@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Framework;
 using GamePlay.GameSession;
+using GamePlay.Simulator;
 
 namespace GamePlay.Battle
 {
@@ -13,17 +14,20 @@ namespace GamePlay.Battle
 
         private readonly Dictionary<uint, BattlePlayer> _playersById = new();
         private GameManager _gameManager;
+        private ISimulationKernel _simulationKernel;
 
-        public BattleRoom(bool acceptsRemoteJoin, int capacity = DEFAULT_CAPACITY)
+        public BattleRoom(BattleSessionRole sessionRole, bool acceptsRemoteJoin, int capacity = DEFAULT_CAPACITY)
         {
+            SessionRole = sessionRole;
             AcceptsRemoteJoin = acceptsRemoteJoin;
             Capacity = capacity > 0 ? capacity : DEFAULT_CAPACITY;
         }
 
         #region 属性
+        public BattleSessionRole SessionRole { get; }
         public int Capacity { get; }
-        public bool AcceptsRemoteJoin { get; }
         public uint HostPlayerId { get; private set; }
+        public bool AcceptsRemoteJoin { get; }
         #endregion
 
         #region 玩家管理
@@ -75,12 +79,21 @@ namespace GamePlay.Battle
         #region 模拟核管理
 
         /// <summary>
-        /// 开战：创建并登记 GameManager 与权威模拟核，按当时名册生成实体。
+        /// 开战：按会话角色创建模拟核，再登记 GameManager。
         /// </summary>
         public bool StartMatch()
         {
-            _gameManager = Global.Register<GameManager>();
+            SystemManager systems = Global.Get<SystemManager>();
+            ISimulationKernel kernel = CreateKernel();
+            systems.RegisterSystem(kernel);
+            if (!kernel.StartSession())
+            {
+                systems.UnregisterSystem(kernel);
+                return false;
+            }
 
+            _simulationKernel = kernel;
+            _gameManager = Global.Register<GameManager>();
             return true;
         }
 
@@ -89,8 +102,26 @@ namespace GamePlay.Battle
         /// </summary>
         public void EndMatch()
         {
-            Global.Unregister(_gameManager);
-            _gameManager = null;
+            SystemManager systems = Global.Get<SystemManager>();
+            if (_gameManager != null)
+            {
+                systems.UnregisterSystem(_gameManager);
+                _gameManager = null;
+            }
+
+            if (_simulationKernel != null)
+            {
+                _simulationKernel.StopSession();
+                systems.UnregisterSystem(_simulationKernel);
+                _simulationKernel = null;
+            }
+        }
+
+        private ISimulationKernel CreateKernel()
+        {
+            return SessionRole == BattleSessionRole.Client
+                ? new ClientSimulationKernel()
+                : new HostSimulationKernel();
         }
 
         #endregion
