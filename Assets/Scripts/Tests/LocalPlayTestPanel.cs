@@ -2,6 +2,8 @@ using System;
 using Core;
 using Framework;
 using GamePlay;
+using GamePlay.Battle;
+using GamePlay.GameSession;
 using GamePlay.Simulator;
 using Network;
 using UnityEngine;
@@ -9,22 +11,40 @@ using UnityEngine;
 namespace Tests
 {
     /// <summary>
-    /// 单机链路调试面板：经 GameManager 开始/停止本地会话。
+    /// 单机链路调试面板：经战局管理器建房、开战、换关、结束对局。
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class LocalPlayTestPanel : MonoBehaviour
     {
-        private GameManager _gameManager;
+        private BattleManager _battleManager;
         private GUIStyle _titleStyle;
         private GUIStyle _statusStyle;
         private string _lastError;
 
-        private void StartSession()
+        private GameManager Gameplay => _battleManager?.ActiveRoom?.GameManager;
+
+        private void StartPlay()
         {
-            if (_gameManager == null) return;
+            if (_battleManager == null) return;
             try
             {
-                _lastError = _gameManager.StartLocal() ? string.Empty : "无法启动单机：会话已在进行中，或原型不可用。";
+                if (!_battleManager.HasActiveRoom && !_battleManager.CreateLocalRoom())
+                {
+                    _lastError = "无法创建房间。";
+                    return;
+                }
+
+                BattleRoom room = _battleManager.ActiveRoom;
+                if (!room.TryGetPlayerByConnection(BattleManager.LOCAL_CONNECTION_ID, out _) &&
+                    !_battleManager.AdmitLocal(out _))
+                {
+                    _lastError = "本机进房失败。";
+                    return;
+                }
+
+                _lastError = _battleManager.StartMatch()
+                    ? string.Empty
+                    : "无法开战：已在对局中、无名册、无 GameCore，或原型不可用。";
             }
             catch (Exception exception)
             {
@@ -33,21 +53,32 @@ namespace Tests
             }
         }
 
-        private void StopSession()
+        private void EndMatch()
         {
-            _gameManager?.Stop();
+            _battleManager?.EndMatch();
+            _lastError = string.Empty;
+        }
+
+        private void Dissolve()
+        {
+            _battleManager?.Dissolve();
             _lastError = string.Empty;
         }
 
         private void DrawStatus()
         {
-            LocalSimulationHost localHost = Global.Get<LocalSimulationHost>();
+            BattleRoom room = _battleManager?.ActiveRoom;
+            LocalSimulationHost localHost = room?.SimulationHost ?? Global.Get<LocalSimulationHost>();
             Simulator simulator = localHost?.Simulator;
             NetServer server = Global.Get<NetServer>();
             NetClient client = Global.Get<NetClient>();
+            GameManager gameplay = Gameplay;
 
             bool sessionRunning = localHost != null && localHost.IsSessionRunning;
-            GUILayout.Label($"玩法相位：{_gameManager?.Phase.ToString() ?? "无"}", _statusStyle);
+            GUILayout.Label($"对局：{(room != null && room.HasMatch ? "进行中" : "未开战")}", _statusStyle);
+            GUILayout.Label($"关卡相位：{gameplay?.Phase.ToString() ?? "无"}", _statusStyle);
+            GUILayout.Label($"房间：{(_battleManager?.HasActiveRoom == true ? "活动" : "无")} 成员：{room?.MemberCount ?? 0}",
+                _statusStyle);
             GUILayout.Label($"单机会话：{(sessionRunning ? "运行中" : "未启动")}", _statusStyle);
             GUILayout.Label($"本地实体：{(localHost?.LocalEntityId ?? 0)}");
             GUILayout.Label($"模拟 Tick：{simulator?.CurrentTick ?? 0}");
@@ -68,8 +99,8 @@ namespace Tests
                 return;
             }
 
-            _gameManager = systemManager.GetSystem<GameManager>() ??
-                systemManager.RegisterSystem<GameManager>();
+            _battleManager = systemManager.GetSystem<BattleManager>();
+            if (_battleManager == null) _lastError = "GameCore 未注册 BattleManager。";
         }
 
         private void OnGUI()
@@ -81,18 +112,22 @@ namespace Tests
             };
             _statusStyle ??= new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
 
-            LocalSimulationHost localHost = Global.Get<LocalSimulationHost>();
-            bool sessionRunning = localHost != null && localHost.IsSessionRunning;
+            BattleRoom room = _battleManager?.ActiveRoom;
+            bool hasMatch = room != null && room.HasMatch;
+            bool inLevel = Gameplay != null && Gameplay.Phase == GameplayPhase.InLevel;
 
-            GUILayout.BeginArea(new Rect(16f, 340f, 360f, 280f), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(16f, 340f, 360f, 360f), GUI.skin.box);
             GUILayout.Label("单机模拟测试", _titleStyle);
             GUILayout.Space(8f);
 
-            GUI.enabled = !sessionRunning;
-            if (GUILayout.Button("开始单机", GUILayout.Height(36f))) StartSession();
+            GUI.enabled = _battleManager != null && !hasMatch;
+            if (GUILayout.Button("开始单机", GUILayout.Height(36f))) StartPlay();
 
-            GUI.enabled = sessionRunning;
-            if (GUILayout.Button("停止单机", GUILayout.Height(30f))) StopSession();
+            GUI.enabled = hasMatch;
+            if (GUILayout.Button("结束对局", GUILayout.Height(30f))) EndMatch();
+
+            GUI.enabled = _battleManager != null && _battleManager.HasActiveRoom;
+            if (GUILayout.Button("解散房间", GUILayout.Height(30f))) Dissolve();
             GUI.enabled = true;
 
             GUILayout.Space(8f);
@@ -102,7 +137,7 @@ namespace Tests
 
         private void OnDestroy()
         {
-            _gameManager?.Stop();
+            _battleManager?.Dissolve();
         }
 
         #endregion

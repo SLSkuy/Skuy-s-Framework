@@ -7,22 +7,22 @@
 ## Requirements
 
 ### Requirement: Local session starts without multiplayer
-系统 SHALL 提供可启动的单机会话。启动后 MUST 注册并运行模拟核，MUST 生成恰好一个 LocalPlay 角色并对其附身。单机会话 MUST NOT 要求网络客户端或服务端处于运行状态。单机会话 MUST NOT 以已删除的角色复制子系统或已删除的联机 Manager 作为世界时钟或互斥对象；互斥由玩法会话编排器「同时至多一局」保证。
+系统 SHALL 提供可启动的单机模拟会话。启动后 MUST 注册并运行模拟核，MUST 生成恰好一个 LocalPlay 角色并对其附身。单机模拟会话 MUST NOT 要求网络客户端或服务端处于运行状态。单机模拟会话 MUST NOT 以已删除的角色复制子系统或已删除的联机 Manager 作为世界时钟或互斥对象；同时至多一套单机世界由活动房间互斥保证。
 
 #### Scenario: Start local play spawns possessed pawn
-- **WHEN** 调用方经玩法会话编排器启动单机会话且原型可用
+- **WHEN** 调用方经战局管理器开战且原型可用且本机已在活动房间中
 - **THEN** 场景中存在一个 LocalPlay 角色，该角色被附身，并且随后的设备移动输入会改变其模拟位置
 
 #### Scenario: Local play does not start net stack
-- **WHEN** 单机会话启动成功
+- **WHEN** 单机模拟会话启动成功
 - **THEN** 网络客户端与网络服务端 MUST NOT 仅因该启动而被拉起
 
 ### Requirement: Local play is started by gameplay orchestrator
-单机会话的启动与停止 SHALL 由玩法会话编排器发起。测试面板或其他调用方 MUST 请求编排器，MUST NOT 在编排器之外直接启动单机模拟会话作为正式玩法入口。
+单机模拟会话的启动与停止 SHALL 由房间开战与结束对局发起，且 MUST 发生在活动房间已存在且本机已加入之后。测试面板或其他调用方 MUST 请求战局管理器，MUST NOT 在房间开战之外直接启动单机模拟会话作为正式玩法入口。
 
 #### Scenario: Panel starts via orchestrator
-- **WHEN** 调用方从单机测试面板请求开始单机且编排器空闲
-- **THEN** 单机会话 MUST 启动，且该启动 MUST 经过玩法会话编排器
+- **WHEN** 调用方从单机测试面板请求开始单机且当前房间未开战
+- **THEN** 单机模拟会话 MUST 启动，且该启动 MUST 经过战局管理器的开战路径
 
 ### Requirement: Local session samples device input each tick
 单机会话启动并附身本地角色后，MUST 将该会话的本机设备意图来源挂到该角色的注册槽。每个模拟步长 MUST 由模拟核向各槽位收集快照再构建命令并步进。未挂来源的可步进实体 MUST 使用空输入快照。运行时 MUST NOT 存在玩家/AI 实体控制器类型；采样 MUST NOT 经过已删除的控制器组件，MUST NOT 再写入独立命令邮箱，MUST NOT 依赖模拟核上的全局设备字段。
@@ -36,14 +36,14 @@
 - **THEN** MUST NOT 存在玩家控制器、实体控制器基类或 AI 控制器类型，原型上 MUST NOT 残留对应组件
 
 ### Requirement: Local session stop cleans up
-停止单机会话 MUST 停止模拟步进、注销并销毁本会话生成的角色、解除附身。停止 MUST 由玩法会话编排器发起。停止后 MUST 允许再次经编排器启动新的单机会话。
+停止单机模拟会话 MUST 停止模拟步进、注销并销毁本会话生成的角色、解除附身。停止 MUST 由房间结束对局发起。停止单机世界 MUST NOT 单独作为解散房间的替代；解散房间由战局管理器显式执行。结束对局后 MUST 允许再次对同一房间开战。
 
 #### Scenario: Stop destroys local pawn
-- **WHEN** 运行中的单机会话经编排器被停止
+- **WHEN** 运行中的单机模拟会话经结束对局被停止
 - **THEN** 本会话生成的角色 MUST 从场景移除，且后续帧 MUST NOT 再推进已销毁实例
 
 #### Scenario: Restart after stop
-- **WHEN** 单机会话停止后再次经编排器启动
+- **WHEN** 对局结束后再次经战局管理器开战
 - **THEN** 系统 MUST 再次生成并附身一个 LocalPlay 角色
 
 ### Requirement: Presentation side effects on possess

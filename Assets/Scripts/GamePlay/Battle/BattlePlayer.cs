@@ -1,7 +1,7 @@
 namespace GamePlay.Battle
 {
     /// <summary>
-    /// 战局内的玩家实体，标识独立于传输连接。
+    /// 房间内的玩家实体，标识独立于传输连接。
     /// </summary>
     public sealed class BattlePlayer
     {

@@ -1,54 +1,49 @@
 using Framework;
+using GamePlay.Battle;
 using GamePlay.Simulator;
 
-namespace GamePlay
+namespace GamePlay.GameSession
 {
     /// <summary>
-    /// 游戏管理器，管理整个游戏的生命周期
+    /// 战局内流程：仅在房间开战之后由房间持有，不创建房间。
     /// </summary>
     public sealed class GameManager : SubSystemBase
     {
-        private LocalSimulationHost _localHost;
+        private readonly BattleRoom _room;
+        private readonly LocalSimulationHost _simulationHost;
+
+        public GameManager(BattleRoom room, LocalSimulationHost simulationHost)
+        {
+            _room = room;
+            _simulationHost = simulationHost;
+        }
 
         #region 属性
         public override int Priority => 200;
-        public GameplayState Phase { get; private set; } = GameplayState.Idle;
+        public GameplayPhase Phase { get; private set; } = GameplayPhase.Idle;
         #endregion
 
         /// <summary>
-        /// 开始单机一局。进行中再次调用失败。
+        /// 对局已启动模拟后进入关卡进行中。
         /// </summary>
-        public bool StartLocal()
+        public void BeginMatch()
         {
-            if (Phase == GameplayState.InPlay) return false;
-            if (Phase == GameplayState.Ending) return false;
-
-            _localHost = new LocalSimulationHost();
-            Global.Register(_localHost);
-            
-            if (!_localHost.StartSession()) return false;
-
-            Phase = GameplayState.InPlay;
-            return true;
+            Phase = GameplayPhase.InLevel;
         }
 
         /// <summary>
-        /// 结束当前玩法会话并回到空闲。暂停应用状态不会调用此方法。
+        /// 对局结束时复位相位。不解散房间、不停止模拟（由房间 EndMatch 处理）。
         /// </summary>
-        public void Stop()
+        public void NotifyMatchEnded()
         {
-            if (Phase == GameplayState.Idle) return;
-
-            Phase = GameplayState.Ending;
-            _localHost?.StopSession();
-            Phase = GameplayState.Idle;
+            Phase = GameplayPhase.Idle;
         }
 
-        #region 生命周期
+        #region 子系统生命周期
 
         public override void Destroy()
         {
-            Stop();
+            NotifyMatchEnded();
         }
 
         #endregion

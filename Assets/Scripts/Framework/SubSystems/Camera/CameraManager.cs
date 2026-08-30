@@ -17,7 +17,8 @@ namespace Framework
         
         public override void Init()
         {
-            _cameraRoot = new GameObject("CameraRoot").transform;
+            _cameraRoot = new GameObject("[CameraRoot]").transform;
+            Object.DontDestroyOnLoad(_cameraRoot);
             
             // 读取摄像机配置
             CameraConfig config = CameraConfig.Instance;
