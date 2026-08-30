@@ -9,13 +9,13 @@ namespace GamePlay.Battle
         {
             PlayerId = playerId;
             ClientId = clientId;
-            Phase = BattlePlayerPhase.Active;
+            State = BattlePlayerState.Active;
         }
 
         #region 属性
         public uint PlayerId { get; }
         public uint ClientId { get; }
-        public BattlePlayerPhase Phase { get; internal set; }
+        public BattlePlayerState State { get; internal set; }
         #endregion
     }
 }

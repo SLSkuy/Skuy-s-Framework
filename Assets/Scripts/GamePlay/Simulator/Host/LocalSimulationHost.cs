@@ -25,10 +25,10 @@ namespace GamePlay.Simulator
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
-            if (GameCore.Instance == null) return false;
+            if (!GameCore.Instance) return false;
 
             GameObject prefab = PlayerSpawner.LoadPrefab();
-            if (prefab == null) return false;
+            if (!prefab) return false;
 
             EntityObjectIdentity identity = PlayerSpawner.Spawn(prefab, Vector3.up,
                 "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
@@ -60,7 +60,7 @@ namespace GamePlay.Simulator
             IsSessionRunning = false;
         }
 
-        #region 子系统生命周期
+        #region 生命周期
 
         public override void Init()
         {
