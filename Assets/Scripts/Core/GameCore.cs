@@ -19,11 +19,6 @@ namespace Core
         public CameraManager CameraMgr { get; private set; }
         #endregion
 
-        #region 游戏状态
-        public GameState CurrentState => GameStateMgr.CurrentState;
-        public bool IsPaused => GameStateMgr.IsPaused();
-        #endregion
-
         #region 本地输入
         public LocalInputProvider LocalInput { get; private set; }
         #endregion
@@ -126,22 +121,16 @@ namespace Core
 
         private void Update()
         {
-            if (IsPaused) return;
-
             SystemMgr.Update(Time.deltaTime);
         }
 
         private void LateUpdate()
         {
-            if (IsPaused) return;
-
             SystemMgr.LateUpdate();
         }
 
         private void FixedUpdate()
         {
-            if (IsPaused) return;
-
             SystemMgr.FixedUpdate(Time.fixedDeltaTime);
         }
 

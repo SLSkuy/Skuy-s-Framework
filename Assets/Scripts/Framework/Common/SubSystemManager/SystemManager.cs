@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Framework
 {
@@ -10,11 +9,13 @@ namespace Framework
     {
         public override int Priority => (int)SubSystemPriority.SystemManager;
         private readonly List<ISubSystem> _subSystems = new();
-        private readonly List<ISubSystem> _systems2Add = new();
         private readonly List<ISubSystem> _systems2Remove = new();
+        private bool _isTicking;
+        private bool _needsSort;
 
         /// <summary>
-        /// 注册并实例化管理子系统
+        /// 注册并实例化子系统。返回时已完成 <see cref="ISubSystem._Init"/>，可立刻调用内部逻辑。
+        /// 若注册发生在当前 Tick 遍历中，新系统从下一轮循环开始参与 Update。
         /// </summary>
         /// <typeparam name="T">子系统类型</typeparam>
         public T RegisterSystem<T>() where T : class, ISubSystem, new()
@@ -25,11 +26,27 @@ namespace Framework
         }
 
         /// <summary>
-        /// 注册并管理子系统
+        /// 注册并管理子系统。返回时已完成初始化。
         /// </summary>
         public void RegisterSystem(ISubSystem system)
         {
-            _systems2Add.Add(system);
+            if (system == null) return;
+            if (_subSystems.Contains(system)) return;
+
+            if (!system.IsInitialized)
+            {
+                system._Init();
+            }
+
+            _subSystems.Add(system);
+            if (_isTicking)
+            {
+                _needsSort = true;
+            }
+            else
+            {
+                SortSystems();
+            }
         }
 
         /// <summary>
@@ -43,11 +60,18 @@ namespace Framework
         }
 
         /// <summary>
-        /// 注销子系统
+        /// 注销子系统。当前 Tick 结束后再销毁，避免遍历中途抽走正在更新的系统。
         /// </summary>
         public void UnregisterSystem(ISubSystem system)
         {
+            if (system == null) return;
+            if (_systems2Remove.Contains(system)) return;
+
             _systems2Remove.Add(system);
+            if (!_isTicking)
+            {
+                RemoveSystem();
+            }
         }
 
         /// <summary>
@@ -73,31 +97,7 @@ namespace Framework
         private void SortSystems()
         {
             _subSystems.Sort((x, y) => x.Priority.CompareTo(y.Priority));
-        }
-
-        /// <summary>
-        /// 并入待注册的系统
-        /// </summary>
-        private void AddSystem()
-        {
-            if (_systems2Add.Count <= 0) return;
-
-            foreach (var system in _systems2Add)
-            {
-                if (_subSystems.Contains(system))
-                {
-                    continue;
-                }
-
-                if (!system.IsInitialized)
-                {
-                    system._Init();
-                }
-
-                _subSystems.Add(system);
-            }
-            _systems2Add.Clear();
-            SortSystems();
+            _needsSort = false;
         }
 
         /// <summary>
@@ -125,28 +125,44 @@ namespace Framework
             SortSystems();
         }
 
+        /// <summary>
+        /// 循环外延迟处理，避免破环循环结构
+        /// </summary>
+        private void EndTick()
+        {
+            _isTicking = false;
+            RemoveSystem();
+            if (_needsSort)
+            {
+                SortSystems();
+            }
+        }
+
         #region 生命周期
 
         public override void Update(float deltaTime)
         {
             if (!IsInitialized) return;
 
-            foreach (var system in _subSystems)
+            _isTicking = true;
+            int count = _subSystems.Count;
+            for (int i = 0; i < count; i++)
             {
-                system.Update(deltaTime);
+                _subSystems[i].Update(deltaTime);
             }
 
-            AddSystem();
-            RemoveSystem();
+            EndTick();
         }
 
         public override void LateUpdate()
         {
             if (!IsInitialized) return;
 
-            foreach (var system in _subSystems)
+            _isTicking = true;
+            int count = _subSystems.Count;
+            for (int i = 0; i < count; i++)
             {
-                system.LateUpdate();
+                _subSystems[i].LateUpdate();
             }
         }
 
@@ -154,9 +170,11 @@ namespace Framework
         {
             if (!IsInitialized) return;
 
-            foreach (var system in _subSystems)
+            _isTicking = true;
+            int count = _subSystems.Count;
+            for (int i = 0; i < count; i++)
             {
-                system.FixedUpdate(fixedDeltaTime);
+                _subSystems[i].FixedUpdate(fixedDeltaTime);
             }
         }
 
@@ -167,8 +185,9 @@ namespace Framework
                 _subSystems[i]._Destroy();
             }
             _subSystems.Clear();
-            _systems2Add.Clear();
             _systems2Remove.Clear();
+            _isTicking = false;
+            _needsSort = false;
         }
 
         #endregion
