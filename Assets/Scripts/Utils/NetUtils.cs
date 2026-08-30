@@ -76,14 +76,13 @@ namespace Utils
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 注册消息类型的Protobuf Parser，用于反序列化
+        /// 按消息类型注册反序列化 Parser 已登记。同一事件只注册一次。
         /// </summary>
-        public static void RegisterParser(NetEvent evt, MessageParser parser)
+        public static void RegisterParser<T>(NetEvent evt) where T : class, IMessage, new()
         {
-            if (Parsers.TryAdd(evt, parser))
-            {
-                Debug.Log($"[Net] 注册事件 {evt}");   
-            }
+            if (Parsers.ContainsKey(evt)) return;
+            Parsers[evt] = new T().Descriptor.Parser;
+            Debug.Log($"[Net] 注册事件 {evt}");  
         }
 
         #endregion

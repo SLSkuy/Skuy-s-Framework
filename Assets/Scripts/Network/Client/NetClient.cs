@@ -3,7 +3,6 @@ using Events;
 using Framework;
 using Google.Protobuf;
 using NetConnect;
-using NetSync;
 using UnityEngine;
 using Utils;
 using Ping = NetConnect.Ping;
@@ -41,11 +40,6 @@ namespace Network
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
         private NetClientConfig _clientConfig;
-        private INetHandler<Pong> _pongHandler;
-        private INetHandler<Ping> _serverPingHandler;
-        private INetHandler<Chat_Test> _debugChatHandler;
-        private INetHandler<Client_Reliable_Connect_Response> _reliableConnectHandler;
-        private INetHandler<Heart_Beat_Response> _heartBeatHandler;
 
         // ========== 连接标识 ==========
         private uint _clientId;
@@ -130,19 +124,19 @@ namespace Network
         }
         
         /// <summary>
-        /// 登记客户端消息处理器（按实例，可多播）。
+        /// 登记客户端消息回调（按方法组，可多播）。
         /// </summary>
-        public void RegisterHandler<T>(NetEvent eventId, INetHandler<T> handler) where T : class, IMessage, new()
+        public void RegisterHandler<T>(NetEvent eventId, Action<T> callback) where T : class, IMessage, new()
         {
-            _messageProcessor?.Register(eventId, handler);
+            _messageProcessor?.Register(eventId, callback);
         }
 
         /// <summary>
-        /// 按处理器实例注销。
+        /// 从指定事件拆除客户端回调。
         /// </summary>
-        public void UnregisterHandler(object handler)
+        public void UnregisterHandler<T>(NetEvent eventId, Action<T> callback)
         {
-            _messageProcessor?.Unregister(handler);
+            _messageProcessor?.Unregister(eventId, callback);
         }
 
         #region 消息发送
@@ -430,21 +424,11 @@ namespace Network
 
         public override void BindEvents()
         {
-            _pongHandler = new DelegateNetHandler<Pong>(HandlePong);
-            _serverPingHandler = new DelegateNetHandler<Ping>(HandleServerPing);
-            _debugChatHandler = new DelegateNetHandler<Chat_Test>(HandleDebugChat);
-            _reliableConnectHandler = new DelegateNetHandler<Client_Reliable_Connect_Response>(HandleReliableConnectResponse);
-            _heartBeatHandler = new DelegateNetHandler<Heart_Beat_Response>(HandleHeartBeatResponse);
-
-            RegisterHandler(NetEvent.PONG, _pongHandler);
-            RegisterHandler(NetEvent.PING, _serverPingHandler);
-            RegisterHandler(NetEvent.CHAT_TEST, _debugChatHandler);
-            RegisterHandler(NetEvent.RELIABLE_CONNECT_RESPONSE, _reliableConnectHandler);
-            RegisterHandler(NetEvent.HEART_BEAT_RESPONSE, _heartBeatHandler);
-            NetUtils.RegisterParser(NetEvent.PLAYER_INPUT, Player_Input.Parser);
-            NetUtils.RegisterParser(NetEvent.WORLD_SNAPSHOT, World_Snapshot.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_REQUEST, Game_Join_Request.Parser);
-            NetUtils.RegisterParser(NetEvent.GAME_JOIN_RESPONSE, Game_Join_Response.Parser);
+            RegisterHandler<Pong>(NetEvent.PONG, HandlePong);
+            RegisterHandler<Ping>(NetEvent.PING, HandleServerPing);
+            RegisterHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
+            RegisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
+            RegisterHandler<Heart_Beat_Response>(NetEvent.HEART_BEAT_RESPONSE, HandleHeartBeatResponse);
         }
 
         public override void Update(float deltaTime)
@@ -492,35 +476,15 @@ namespace Network
                 _fastTransport = null;
             }
             
-            UnregisterHandler(_pongHandler);
-            UnregisterHandler(_serverPingHandler);
-            UnregisterHandler(_debugChatHandler);
-            UnregisterHandler(_reliableConnectHandler);
-            UnregisterHandler(_heartBeatHandler);
-            _pongHandler = null;
-            _serverPingHandler = null;
-            _debugChatHandler = null;
-            _reliableConnectHandler = null;
-            _heartBeatHandler = null;
+            UnregisterHandler<Pong>(NetEvent.PONG, HandlePong);
+            UnregisterHandler<Ping>(NetEvent.PING, HandleServerPing);
+            UnregisterHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
+            UnregisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
+            UnregisterHandler<Heart_Beat_Response>(NetEvent.HEART_BEAT_RESPONSE, HandleHeartBeatResponse);
             _messageProcessor = null;
             _clientConfig = null;
         }
 
         #endregion
-
-        private sealed class DelegateNetHandler<T> : INetHandler<T> where T : class, IMessage, new()
-        {
-            private readonly Action<T> _callback;
-
-            public DelegateNetHandler(Action<T> callback)
-            {
-                _callback = callback;
-            }
-
-            public void Handle(T message)
-            {
-                _callback(message);
-            }
-        }
     }
 }

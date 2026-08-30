@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Events;
 using Google.Protobuf;
 using Utils;
@@ -7,16 +8,15 @@ using Utils;
 namespace Network
 {
     /// <summary>
-    /// 网络消息分发：按事件保存处理器实例列表，支持多播与按实例注销。
+    /// 按事件标识分发已解码消息。同一事件可挂多条回调，按事件与回调成对注销。
     /// </summary>
     public sealed class MessageProcessor
     {
-        private readonly Dictionary<NetEvent, List<object>> _clientHandlers = new();
-        private readonly Dictionary<NetEvent, List<object>> _serverHandlers = new();
-        private readonly Dictionary<object, HandlerBinding> _bindings = new();
+        private readonly Dictionary<NetEvent, List<Binding>> _clientBindings = new();
+        private readonly Dictionary<NetEvent, List<Binding>> _serverBindings = new();
 
         /// <summary>
-        /// 分发客户端消息到该事件上所有仍登记的处理器。
+        /// 分发客户端消息。
         /// </summary>
         public void HandleMessage(NetEvent evt, IMessage message)
         {
@@ -32,79 +32,109 @@ namespace Network
         }
 
         /// <summary>
-        /// 登记客户端处理器。同一实例重复登记为无操作。
+        /// 将客户端回调挂到指定事件。同一对重复登记为无操作。
         /// </summary>
-        public void Register<T>(NetEvent eventId, INetHandler<T> handler) where T : class, IMessage, new()
+        public void Register<T>(NetEvent eventId, Action<T> callback) where T : class, IMessage, new()
         {
-            if (handler == null) return;
-            Bind(eventId, handler, server: false, (_, msg) => handler.Handle((T)msg));
-            NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
+            if (callback == null) return;
+            AssertNotAnonymous(callback);
+            if (!Add(eventId, callback, server: false, (_, msg) => callback((T)msg))) return;
+            NetUtils.RegisterParser<T>(eventId);
         }
 
         /// <summary>
-        /// 登记服务端处理器。同一实例重复登记为无操作。
+        /// 将服务端回调挂到指定事件。同一对重复登记为无操作。
         /// </summary>
-        public void RegisterServer<T>(NetEvent eventId, IServerNetHandler<T> handler) where T : class, IMessage, new()
+        public void RegisterServer<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
         {
-            if (handler == null) return;
-            Bind(eventId, handler, server: true, (id, msg) => handler.Handle(id, (T)msg));
-            NetUtils.RegisterParser(eventId, new T().Descriptor.Parser);
+            if (callback == null) return;
+            AssertNotAnonymous(callback);
+            if (!Add(eventId, callback, server: true, (id, msg) => callback(id, (T)msg))) return;
+            NetUtils.RegisterParser<T>(eventId);
         }
 
         /// <summary>
-        /// 按处理器实例注销。未登记过的实例为无操作。
+        /// 从指定事件拆除客户端回调。未登记为无操作。
         /// </summary>
-        public void Unregister(object handler)
+        public void Unregister<T>(NetEvent eventId, Action<T> callback)
         {
-            if (handler == null) return;
-            if (!_bindings.Remove(handler, out HandlerBinding binding)) return;
-
-            Dictionary<NetEvent, List<object>> map = binding.Server ? _serverHandlers : _clientHandlers;
-            if (!map.TryGetValue(binding.EventId, out List<object> list)) return;
-            list.Remove(handler);
+            Remove(eventId, callback, server: false);
         }
 
-        private void Bind(NetEvent eventId, object handler, bool server, Action<uint, IMessage> invoke)
+        /// <summary>
+        /// 从指定事件拆除服务端回调。未登记为无操作。
+        /// </summary>
+        public void UnregisterServer<T>(NetEvent eventId, Action<uint, T> callback)
         {
-            if (_bindings.ContainsKey(handler)) return;
+            Remove(eventId, callback, server: true);
+        }
 
-            Dictionary<NetEvent, List<object>> map = server ? _serverHandlers : _clientHandlers;
-            if (!map.TryGetValue(eventId, out List<object> list))
+        private bool Add(NetEvent eventId, Delegate callback, bool server, Action<uint, IMessage> invoke)
+        {
+            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(eventId, out List<Binding> list))
             {
-                list = new List<object>();
+                list = new List<Binding>();
                 map[eventId] = list;
             }
 
-            list.Add(handler);
-            _bindings[handler] = new HandlerBinding(eventId, server, invoke);
+            if (IndexOf(list, callback) >= 0) return false;
+            list.Add(new Binding(callback, invoke));
+            return true;
+        }
+
+        private void Remove(NetEvent eventId, Delegate callback, bool server)
+        {
+            if (callback == null) return;
+            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(eventId, out List<Binding> list)) return;
+
+            int index = IndexOf(list, callback);
+            if (index < 0) return;
+            list.RemoveAt(index);
         }
 
         private void Dispatch(NetEvent evt, uint senderId, IMessage message, bool server)
         {
-            Dictionary<NetEvent, List<object>> map = server ? _serverHandlers : _clientHandlers;
-            if (!map.TryGetValue(evt, out List<object> list) || list.Count == 0) return;
+            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(evt, out List<Binding> list) || list.Count == 0) return;
 
-            object[] snapshot = list.ToArray();
-            for (int i = 0; i < snapshot.Length; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                object handler = snapshot[i];
-                if (_bindings.TryGetValue(handler, out HandlerBinding binding))
-                {
-                    binding.Invoke(senderId, message);
-                }
+                list[i].Invoke(senderId, message);
             }
         }
 
-        private readonly struct HandlerBinding
+        private static int IndexOf(List<Binding> list, Delegate callback)
         {
-            public readonly NetEvent EventId;
-            public readonly bool Server;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Callback.Equals(callback)) return i;
+            }
+
+            return -1;
+        }
+
+        private static void AssertNotAnonymous(Delegate callback)
+        {
+#if UNITY_EDITOR
+            UnityEngine.Debug.Assert(
+                callback.Method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), inherit: false).Length == 0,
+                "Adding anonymous delegates as network callbacks is not supported (you wouldn't be able to unregister them later).");
+#endif
+        }
+
+        /// <summary>
+        /// 槽位：Callback 用于按方法组注销；Invoke 在登记时闭包具体 T，分发时直接调用。
+        /// </summary>
+        private readonly struct Binding
+        {
+            public readonly Delegate Callback;
             public readonly Action<uint, IMessage> Invoke;
 
-            public HandlerBinding(NetEvent eventId, bool server, Action<uint, IMessage> invoke)
+            public Binding(Delegate callback, Action<uint, IMessage> invoke)
             {
-                EventId = eventId;
-                Server = server;
+                Callback = callback;
                 Invoke = invoke;
             }
         }

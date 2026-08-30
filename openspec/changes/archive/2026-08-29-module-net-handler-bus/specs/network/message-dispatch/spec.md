@@ -1,10 +1,4 @@
-# network/message-dispatch Specification
-
-## Purpose
-
-把到达的业务网络消息路由到可独立注册与注销的处理器，使玩法只与处理器及窄门面交互，而不覆盖整条事件槽或直接操作传输入口。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Multiple handlers per event
 系统 SHALL 允许同一消息事件同时登记多条回调。后登记 MUST NOT 覆盖或丢弃先登记的回调。分发时 MUST 将同一条已解码消息交给该事件上所有仍登记的回调。客户端回调与服务端回调 MUST 使用分开的登记表，MUST NOT 混在同一张表中分发。
@@ -16,6 +10,14 @@
 #### Scenario: Second register does not replace first
 - **WHEN** 事件 A 已有回调甲，再登记回调乙到事件 A
 - **THEN** 甲 MUST 仍保持登记
+
+## REMOVED Requirements
+
+### Requirement: Unregister by handler instance
+**Reason**: 以处理器实例为唯一登记键时，同一实例无法挂到多个事件，也无法按单条回调精确拆除。
+**Migration**: 改为按 `(事件, 回调)` 登记与注销；需要卸掉某模块全部监听时拆除该模块 Bind 过的全部对。
+
+## ADDED Requirements
 
 ### Requirement: Bind event id to a specific callback
 调用方 SHALL 将消息事件标识与一条具体回调成对登记。同一事件标识 MUST 能同时绑定多条不同回调。同一 `(事件, 回调)` 重复登记 MUST 为无操作。客户端回调签名 MUST 只接收已解码消息；服务端回调签名 MUST 另含发送方连接标识。
@@ -56,17 +58,3 @@
 #### Scenario: One command one handler type is forbidden
 - **WHEN** 检查玩法业务接收入口
 - **THEN** MUST NOT 存在「一个消息事件对应一个独立业务处理器类型」的接收入口（测试替身除外）
-
-### Requirement: Business handlers do not use transport entry
-业务消息处理器 SHALL 只通过消息分发入口接收已解码消息（服务端含发送方连接标识）。处理器处理业务时 MUST NOT 查询连接表、MUST NOT 启停传输、MUST NOT 按会话标识直接向传输层发送。需要回包或广播时 MUST 使用与传输解耦的发送门面。
-
-#### Scenario: Handler cannot require server transport
-- **WHEN** 某业务处理器处理一条加入或离开相关消息
-- **THEN** 该处理路径 MUST 不读取传输服务端子系统的连接表或会话绑定
-
-### Requirement: Connection protocol stays in transport
-心跳、Ping/Pong 与可靠连接握手类消息 SHALL 仍由传输层内部处理。它们 MUST NOT 登记为玩法业务处理器，MUST NOT 进入战局或玩法会话编排。
-
-#### Scenario: Heartbeat does not reach battle
-- **WHEN** 客户端发出心跳请求且传输层正在运行
-- **THEN** 战局会话 MUST NOT 因该心跳而创建、更新或移除玩家
