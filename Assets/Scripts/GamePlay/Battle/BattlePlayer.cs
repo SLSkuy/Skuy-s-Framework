@@ -5,16 +5,14 @@ namespace GamePlay.Battle
     /// </summary>
     public sealed class BattlePlayer
     {
-        public BattlePlayer(uint playerId, uint clientId)
+        public BattlePlayer(uint playerId)
         {
             PlayerId = playerId;
-            ClientId = clientId;
             State = BattlePlayerState.Active;
         }
 
         #region 属性
         public uint PlayerId { get; }
-        public uint ClientId { get; }
         public BattlePlayerState State { get; internal set; }
         #endregion
     }

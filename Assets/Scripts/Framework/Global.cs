@@ -21,12 +21,22 @@ namespace Framework
             SubSystems[system.GetType()] = system;
         }
 
+        public static T Register<T>() where T : class, ISubSystem, new()
+        {
+            return Get<SystemManager>().RegisterSystem<T>();
+        }
+
         /// <summary>
         /// 由 SubSystemBase 内部调用，外部不应直接使用
         /// </summary>
-        public static void Unregister(Type type)
+        public static void Unregister(ISubSystem system)
         {
-            SubSystems.Remove(type);
+            SubSystems.Remove(system.GetType());
+        }
+
+        public static void Unregister<T>() where T : class, ISubSystem, new()
+        {
+            Get<SystemManager>().UnregisterSystem<T>();
         }
 
         /// <summary>

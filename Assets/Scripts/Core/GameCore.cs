@@ -1,6 +1,5 @@
 using UnityEngine;
 using Framework;
-using GamePlay.Battle;
 
 namespace Core
 {
@@ -13,7 +12,6 @@ namespace Core
         public ResourceManager ResourceMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public GameStateManager GameStateMgr { get; private set; }
-        public BattleManager BattleMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
@@ -57,7 +55,6 @@ namespace Core
             
             // 游戏状态管理模块
             GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
-            BattleMgr = SystemMgr.RegisterSystem<BattleManager>();
         }
 
         /// <summary>

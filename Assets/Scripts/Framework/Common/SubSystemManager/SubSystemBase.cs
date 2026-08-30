@@ -68,7 +68,7 @@ namespace Framework
             Destroy();
             
             // 自动从全局服务定位器注销
-            Global.Unregister(GetType());
+            Global.Unregister(this);
             
             IsInitialized = false;
             Debug.Log($"[{GetType().Name}] 销毁");
