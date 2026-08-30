@@ -10,12 +10,10 @@ namespace GamePlay.Battle
     public sealed class BattleServerHandler
     {
         private readonly NetServer _server;
-        private readonly BattleSession _battle;
 
-        public BattleServerHandler(NetServer server, BattleSession battle)
+        public BattleServerHandler(NetServer server)
         {
             _server = server;
-            _battle = battle;
         }
 
         #region 消息绑定
@@ -46,20 +44,7 @@ namespace GamePlay.Battle
 
         private void OnGameJoinRequest(uint senderId, Game_Join_Request message)
         {
-            if (message == null)
-            {
-                _battle.TryJoin(senderId, out _);
-                return;
-            }
 
-            uint clientId = message.ClientId != 0 ? message.ClientId : senderId;
-            if (message.ClientId != 0 && message.ClientId != senderId)
-            {
-                _battle.RejectJoin(senderId);
-                return;
-            }
-
-            _battle.TryJoin(clientId, out _);
         }
 
         #endregion
