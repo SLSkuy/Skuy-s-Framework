@@ -36,7 +36,7 @@ namespace Tests
 
                 BattleRoom room = _battleManager.ActiveRoom;
                 if (!room.TryGetPlayerByConnection(BattleManager.LOCAL_CONNECTION_ID, out _) &&
-                    !_battleManager.AdmitLocal(out _))
+                    !_battleManager.AdmitLocal())
                 {
                     _lastError = "本机进房失败。";
                     return;

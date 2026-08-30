@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +10,8 @@ namespace Framework
     {
         public override int Priority => (int)SubSystemPriority.SystemManager;
         private readonly List<ISubSystem> _subSystems = new();
+        private readonly List<ISubSystem> _systems2Add = new();
+        private readonly List<ISubSystem> _systems2Remove = new();
 
         /// <summary>
         /// 注册并实例化管理子系统
@@ -28,29 +29,7 @@ namespace Framework
         /// </summary>
         public void RegisterSystem(ISubSystem system)
         {
-            Type sysType = system.GetType();
-            foreach (var s in _subSystems)
-            {
-                if (s.GetType() == sysType)
-                {
-                    Debug.LogWarning($"[SystemManager] {sysType.Name} already registered!");
-                    return;
-                }
-            }
-            
-            if (_subSystems.Contains(system))
-            {
-                Debug.LogWarning($"[{GetType().Name}] System {system.GetType().Name} already registered!");
-                return;
-            }
-            
-            if (!system.IsInitialized)
-            {
-                system._Init();
-            }
-            
-            _subSystems.Add(system);
-            SortSystems();
+            _systems2Add.Add(system);
         }
 
         /// <summary>
@@ -62,24 +41,13 @@ namespace Framework
             T system = GetSystem<T>();
             UnregisterSystem(system);
         }
-        
+
         /// <summary>
         /// 注销子系统
         /// </summary>
         public void UnregisterSystem(ISubSystem system)
         {
-            if (!_subSystems.Contains(system))
-            {
-                return;
-            }
-
-            if (system.IsInitialized)
-            {
-                system._Destroy();
-            }
-
-            _subSystems.Remove(system);
-            SortSystems();
+            _systems2Remove.Add(system);
         }
 
         /// <summary>
@@ -107,22 +75,75 @@ namespace Framework
             _subSystems.Sort((x, y) => x.Priority.CompareTo(y.Priority));
         }
 
+        /// <summary>
+        /// 并入待注册的系统
+        /// </summary>
+        private void AddSystem()
+        {
+            if (_systems2Add.Count <= 0) return;
+
+            foreach (var system in _systems2Add)
+            {
+                if (_subSystems.Contains(system))
+                {
+                    continue;
+                }
+
+                if (!system.IsInitialized)
+                {
+                    system._Init();
+                }
+
+                _subSystems.Add(system);
+            }
+            _systems2Add.Clear();
+            SortSystems();
+        }
+
+        /// <summary>
+        /// 清除注销的系统
+        /// </summary>
+        private void RemoveSystem()
+        {
+            if (_systems2Remove.Count <= 0) return;
+
+            foreach (var system in _systems2Remove)
+            {
+                if (!_subSystems.Contains(system))
+                {
+                    continue;
+                }
+
+                if (system.IsInitialized)
+                {
+                    system._Destroy();
+                }
+
+                _subSystems.Remove(system);
+            }
+            _systems2Remove.Clear();
+            SortSystems();
+        }
+
         #region 生命周期
 
         public override void Update(float deltaTime)
         {
             if (!IsInitialized) return;
-            
+
             foreach (var system in _subSystems)
             {
                 system.Update(deltaTime);
             }
+
+            AddSystem();
+            RemoveSystem();
         }
 
         public override void LateUpdate()
         {
             if (!IsInitialized) return;
-            
+
             foreach (var system in _subSystems)
             {
                 system.LateUpdate();
@@ -146,6 +167,8 @@ namespace Framework
                 _subSystems[i]._Destroy();
             }
             _subSystems.Clear();
+            _systems2Add.Clear();
+            _systems2Remove.Clear();
         }
 
         #endregion

@@ -40,9 +40,9 @@ namespace GamePlay.Battle
         /// <summary>
         /// 本机假连接进房。
         /// </summary>
-        public bool AdmitLocal(out uint playerId)
+        public bool AdmitLocal()
         {
-            return Admit(LOCAL_CONNECTION_ID, out playerId);
+            return Admit(LOCAL_CONNECTION_ID, out _);
         }
 
         /// <summary>

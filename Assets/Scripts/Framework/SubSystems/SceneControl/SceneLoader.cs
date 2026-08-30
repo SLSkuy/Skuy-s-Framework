@@ -40,8 +40,7 @@ namespace Framework
         {
             if (_isLoading)
             {
-                Debug.LogWarning(
-                    $"[SceneLoader] 正在加载 '{_loadingSceneName}'，忽略重复请求 '{sceneName}'");
+                Debug.LogWarning($"[SceneLoader] 正在加载 '{_loadingSceneName}'，忽略重复请求 '{sceneName}'");
                 return;
             }
 
@@ -57,7 +56,8 @@ namespace Framework
             _currentOperation = null;
 
             // 显示将要加载的界面
-            Global.Get<UIManager>().ShowUI("LoadingProgressBar");
+            // TODO: 加载动画
+            // Global.Get<UIManager>().ShowUI("LoadingProgressBar");
         }
 
         public override void Update(float deltaTime)
