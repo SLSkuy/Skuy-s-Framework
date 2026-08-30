@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using Core;
 using Framework;
 using GamePlay.GameSession;
 using GamePlay.Simulator;
-using UnityEngine;
 
 namespace GamePlay.Battle
 {
@@ -34,6 +32,7 @@ namespace GamePlay.Battle
         public GameManager GameManager => _gameManager;
         public LocalSimulationHost SimulationHost => _simulationHost;
         public bool HasMatch => _gameManager != null;
+        public string PlaySceneName { get; set; }
         #endregion
 
         /// <summary>
@@ -49,12 +48,12 @@ namespace GamePlay.Battle
             BattlePlayer player = new(playerId, connectionId);
             _playersById[playerId] = player;
             _playerIdByConnectionId[connectionId] = playerId;
-            
+
             // 若房间还没有房主，则第一个加入的玩家就是房主
             if (HostPlayerId == 0) HostPlayerId = playerId;
             return true;
         }
-        
+
         /// <summary>
         /// 通过连接ID获取玩家实体
         /// </summary>
@@ -68,8 +67,6 @@ namespace GamePlay.Battle
         /// <summary>
         /// 离开战局房间
         /// </summary>
-        /// <param name="connectionId"></param>
-        /// <returns></returns>
         public bool Leave(uint connectionId)
         {
             if (!_playerIdByConnectionId.Remove(connectionId, out uint playerId)) return false;
@@ -83,7 +80,7 @@ namespace GamePlay.Battle
         }
 
         /// <summary>
-        /// 开战：创建并登记 GameManager 与单机模拟核。已开战或无名册时失败。
+        /// 开战：创建并登记 GameManager 与权威模拟核，按当时名册生成实体。
         /// </summary>
         public bool StartMatch()
         {
@@ -91,8 +88,6 @@ namespace GamePlay.Battle
             if (MemberCount == 0) return false;
 
             SystemManager systems = Global.Get<SystemManager>();
-            if (systems == null) return false;
-
             LocalSimulationHost host = new();
             systems.RegisterSystem(host);
             if (!host.StartSession())
@@ -118,14 +113,14 @@ namespace GamePlay.Battle
             if (_gameManager != null)
             {
                 _gameManager.NotifyMatchEnded();
-                systems?.UnregisterSystem(_gameManager);
+                systems.UnregisterSystem(_gameManager);
                 _gameManager = null;
             }
 
             if (_simulationHost != null)
             {
                 _simulationHost.StopSession();
-                systems?.UnregisterSystem(_simulationHost);
+                systems.UnregisterSystem(_simulationHost);
                 _simulationHost = null;
             }
         }

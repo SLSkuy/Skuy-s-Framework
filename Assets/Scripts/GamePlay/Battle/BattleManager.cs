@@ -1,4 +1,5 @@
 using Framework;
+using Network;
 
 namespace GamePlay.Battle
 {
@@ -9,6 +10,8 @@ namespace GamePlay.Battle
     {
         public const uint LOCAL_CONNECTION_ID = 1000;
 
+        private BattleServerHandler _serverHandler;
+        private NetServer _netServer;
         private uint _nextRoomId = 1;
 
         #region 属性
@@ -38,27 +41,23 @@ namespace GamePlay.Battle
         }
 
         /// <summary>
-        /// 本机假连接进房。
-        /// </summary>
-        public bool AdmitLocal()
-        {
-            return Admit(LOCAL_CONNECTION_ID, out _);
-        }
-
-        /// <summary>
         /// 连接离开。未加入则为无操作。
         /// </summary>
         public void Leave(uint connectionId)
         {
-            ActiveRoom?.Leave(connectionId);
-        }
+            if (!HasActiveRoom) return;
 
-        /// <summary>
-        /// 本机假连接离开。
-        /// </summary>
-        public void LeaveLocal()
-        {
-            Leave(LOCAL_CONNECTION_ID);
+            bool wasHost = false;
+            if (ActiveRoom.TryGetPlayerByConnection(connectionId, out BattlePlayer player))
+            {
+                wasHost = player.PlayerId == ActiveRoom.HostPlayerId;
+            }
+
+            ActiveRoom.Leave(connectionId);
+            if (wasHost)
+            {
+                Dissolve();
+            }
         }
 
         /// <summary>
@@ -88,10 +87,34 @@ namespace GamePlay.Battle
             ActiveRoom = null;
         }
 
+        private void HandleClientRemoved(uint connectionId)
+        {
+            Leave(connectionId);
+        }
+
         #region 子系统生命周期
+
+        public override void Init()
+        {
+            _serverHandler = new BattleServerHandler(this);
+        }
+
+        public override void BindEvents()
+        {
+            _netServer = Global.Get<NetServer>();
+            _netServer.OnClientRemoved += HandleClientRemoved;
+            _serverHandler.Bind();
+        }
 
         public override void Destroy()
         {
+            _serverHandler.Unbind();
+            if (_netServer != null)
+            {
+                _netServer.OnClientRemoved -= HandleClientRemoved;
+                _netServer = null;
+            }
+
             Dissolve();
         }
 

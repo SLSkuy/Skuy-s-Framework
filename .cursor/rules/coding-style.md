@@ -6,7 +6,7 @@ alwaysApply: false
 
 # C# Coding Style
 
-C# naming, style, and member order. Folders and namespaces: `architecture.md`.
+C# naming, style, and member order. Folders and namespaces: `architecture.md`. Data flow and no `EnsureXxx` guards: `data-flow.md`.
 
 Use C#, 4-space indent, braces on their own line. Types/methods: `PascalCase`. Locals/parameters: `camelCase`. Update existing XML summaries and comments in place; keep banner comments on their field groups.
 

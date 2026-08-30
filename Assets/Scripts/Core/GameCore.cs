@@ -85,31 +85,6 @@ namespace Core
 #endif
         }
 
-        /// <summary>
-        /// 主菜单单机入口：确保本机房间后加载玩法场景，就绪则开战。
-        /// </summary>
-        public void StartLocalPlay()
-        {
-            if(!BattleMgr.CreateLocalRoom()) return;
-            if(!BattleMgr.AdmitLocal()) return;
-            
-            EventBus.Get<SceneLoadEvent.Completed>().AddListener(OnGameplaySceneLoaded);
-            Global.LoadScene("GameScene");
-        }
-
-        /// <summary>
-        /// 主菜单联机入口。本阶段无业务。
-        /// </summary>
-        public void StartMultiPlay()
-        {
-            
-        }
-
-        private void OnGameplaySceneLoaded(SceneLoadEvent.CompletedData data)
-        {
-            BattleMgr.StartMatch();
-        }
-
         #endregion
 
         #region 生命周期

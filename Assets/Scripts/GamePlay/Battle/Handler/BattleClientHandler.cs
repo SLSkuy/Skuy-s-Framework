@@ -1,4 +1,6 @@
+using Core;
 using Events;
+using Framework;
 using NetSync;
 using Network;
 
@@ -9,28 +11,26 @@ namespace GamePlay.Battle
     /// </summary>
     public sealed class BattleClientHandler
     {
-        private readonly NetClient _client;
-
-        public BattleClientHandler(NetClient client)
-        {
-            _client = client;
-        }
+        private NetClient _client;
 
         #region 消息绑定
 
         public void Bind()
         {
             Unbind();
+            _client = Global.Get<NetClient>();
             _client.RegisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
         }
 
         public void Unbind()
         {
+            if (_client == null) return;
             _client.UnregisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
+            _client = null;
         }
 
         #endregion
-        
+
         #region 发送消息
 
         /// <summary>

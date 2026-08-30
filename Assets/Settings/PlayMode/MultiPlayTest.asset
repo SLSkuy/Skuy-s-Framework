@@ -15,43 +15,51 @@ MonoBehaviour:
   m_Description: 
   m_EnableEditors: 1
   m_MainEditorInstance:
-    Name: Main Editor
-    <CorrespondingNodeId>k__BackingField: Main Editor|0_run
-    m_Nodes:
-    - Main Editor|0_run
-    - Main Editor|0_deploy
-    m_Role: 3
-    m_PlayerTag: 
-    m_InitialScene: {fileID: 102900000, guid: 138e6181301c8d64daddbae28f92cd8e, type: 3}
-  m_EditorInstances:
-  - Name: Player 2
-    <CorrespondingNodeId>k__BackingField: Player 2|1_run
-    m_Nodes:
-    - Player 2|1_run
-    - Player 2|1_deploy
+    Name: Editor
+    <CorrespondingNodeId>k__BackingField: 
+    m_Nodes: []
     m_Role: 1
     m_PlayerTag: 
     m_InitialScene: {fileID: 0}
-    m_AdvancedConfiguration:
-      StreamLogsToMainEditor: 0
-      LogsColor: {r: 0.3643, g: 0.581, b: 0.8679, a: 1}
-  - Name: Player 3
-    <CorrespondingNodeId>k__BackingField: Player 3|2_run
-    m_Nodes:
-    - Player 3|2_run
-    - Player 3|2_deploy
-    m_Role: 1
-    m_PlayerTag: 
-    m_InitialScene: {fileID: 0}
-    m_AdvancedConfiguration:
-      StreamLogsToMainEditor: 0
-      LogsColor: {r: 0.3643, g: 0.581, b: 0.8679, a: 1}
+    PlayerInstanceIndex: 0
+  m_EditorInstances: []
   m_LocalInstances: []
-  m_RemoteInstances: []
   m_MainEditorInstanceObsolete:
     rid: -2
+  m_SerializedVersion: 1
+  m_Settings:
+    m_ExtensionsHash:
+      serializedVersion: 2
+      Hash: c16915d1f789adfc5d3631ffc39c502e
+    m_InstanceItems:
+    - rid: 2370193712767303910
+    - rid: 2370193712767303911
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 2370193712767303910
+      type: {class: 'InstanceItem`2[[Unity.Multiplayer.PlayMode.Editor.MainEditorController, UnityEditor.MultiplayerModule],[Unity.Multiplayer.PlayMode.Editor.MainEditorController/InstanceSettings, UnityEditor.MultiplayerModule]]', ns: Unity.Multiplayer.PlayMode.Editor, asm: UnityEditor.MultiplayerModule}
+      data:
+        m_Id: ecd775cde6ca409b96a5f01ca743360f
+        m_Name: Main Editor
+        m_RunMode: 0
+        m_Settings:
+          PlayerTag: 
+          RoleMask: 3
+          InitialScene: {fileID: 102900000, guid: 8b808815bda83444ba449ffa2452f7af, type: 3}
+        m_Decorators: []
+    - rid: 2370193712767303911
+      type: {class: 'InstanceItem`2[[Unity.Multiplayer.PlayMode.Editor.CloneEditorController, UnityEditor.MultiplayerModule],[Unity.Multiplayer.PlayMode.Editor.CloneEditorController/InstanceSettings, UnityEditor.MultiplayerModule]]', ns: Unity.Multiplayer.PlayMode.Editor, asm: UnityEditor.MultiplayerModule}
+      data:
+        m_Id: dd3f75b638fc4cc1bcb4c5af14e1440e
+        m_Name: Player 2
+        m_RunMode: 0
+        m_Settings:
+          PlayerTag: 
+          RoleMask: 1
+          PlayerInstanceIndex: 1
+          StreamLogsToMainEditor: 0
+          LogsColor: {r: 0.3643, g: 0.581, b: 0.8679, a: 1}
+        m_Decorators: []
