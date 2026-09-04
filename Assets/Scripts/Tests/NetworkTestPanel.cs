@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Tests
 {
     /// <summary>
-    /// 网络传输测试面板 - 用于测试Host/Client通信
+    /// 网络传输测试面板，仅调试用。正式进游戏由大厅流程登记战局与网络，本面板不得作为会话主人。
     /// </summary>
     public class NetworkTestPanel : MonoBehaviour
     {

@@ -3,6 +3,9 @@ using Framework;
 
 namespace Core
 {
+    /// <summary>
+    /// 游戏核心逻辑管理器，不负责游戏流程的处理，只负责工具的管理
+    /// </summary>
     public class GameCore : MonoSingleton<GameCore>
     {
         #region 子系统
@@ -11,22 +14,15 @@ namespace Core
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
-        public GameStateManager GameStateMgr { get; private set; }
+        public LocalInputManager LocalInputMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
         #endregion
 
-        #region 本地输入
-        public LocalInputProvider LocalInput { get; private set; }
-        #endregion
-
         private void InitializeGameCore()
         {
             Application.targetFrameRate = 60;
-
-            // 注册本地输入
-            LocalInput = gameObject.AddComponent<LocalInputProvider>();
 
             InitSubSystems();
             InitDataProxy();
@@ -40,21 +36,17 @@ namespace Core
         /// </summary>
         private void InitSubSystems()
         {
-            // 初始化子系统管理模块
             SystemMgr = new SystemManager();
             SystemMgr._Init();
-            
-            // 框架模块
+
             ResourceMgr = SystemMgr.RegisterSystem<ResourceManager>();
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();
             TimerMgr = SystemMgr.RegisterSystem<TimerManager>();
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
+            LocalInputMgr = SystemMgr.RegisterSystem<LocalInputManager>();
             UIMgr = SystemMgr.RegisterSystem<UIManager>();
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
-            
-            // 游戏状态管理模块
-            GameStateMgr = SystemMgr.RegisterSystem<GameStateManager>();
         }
 
         /// <summary>
@@ -68,18 +60,6 @@ namespace Core
         private void InitUI()
         {
             // TODO: 初始化全局UI
-        }
-
-        /// <summary>
-        /// 退出游戏
-        /// </summary>
-        public void QuitGame()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
         }
 
         #endregion
@@ -117,7 +97,6 @@ namespace Core
         /// </summary>
         private void OnApplicationQuit()
         {
-            // 先清理所有的子模块
             ShutDown();
         }
 

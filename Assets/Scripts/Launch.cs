@@ -1,17 +1,19 @@
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
+/// <summary>
+/// AOT 启动场景入口。Player 在此加载 HybridCLR 热更程序集，再调用热更里的 <see cref="MainEntry.Run"/>。
+/// </summary>
 public class Launch : MonoBehaviour
 {
-    void Start()
+    private void Start()
     {
-#if !UNITY_EDITOR
-        // Assembly hotUpdateAss = Assembly.Load(File.ReadAllBytes($"{Application.streamingAssetsPath}/HotUpdate.dll.bytes"));
+#if UNITY_EDITOR
+        MainEntry.Run();
 #else
-        // Editor下无需加载，直接查找获得HotUpdate程序集
-        // Assembly hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
-#endif
+        // Assembly hotUpdateAss = Assembly.Load(System.IO.File.ReadAllBytes(
+        //     $"{Application.streamingAssetsPath}/HotUpdate.dll.bytes"));
         // hotUpdateAss.GetType("MainEntry").GetMethod("Run")?.Invoke(null, null);
+        MainEntry.Run();
+#endif
     }
 }

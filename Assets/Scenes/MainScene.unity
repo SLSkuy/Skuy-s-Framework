@@ -301,51 +301,51 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5770420667590145498, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5770420667590145498, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5770420667590145498, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5770420667590145498, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -225
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6421956715953159023, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6421956715953159023, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6421956715953159023, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6421956715953159023, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -91.666664
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6939915838421896538, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6939915838421896538, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6939915838421896538, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6939915838421896538, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -158.33333
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7834114185603859291, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_Name
@@ -353,19 +353,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7855864264570842659, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7855864264570842659, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7855864264570842659, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7855864264570842659, guid: c9740216d488cfa43908c814de2d3b13, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -25
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -387,8 +387,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1789597559}
   - component: {fileID: 1789597560}
+  - component: {fileID: 1789597561}
   m_Layer: 0
-  m_Name: GameCore
+  m_Name: '[GameRoot]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -420,7 +421,19 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ab121c4526cac5a4095d3a27fefff2d2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.GameCore
+  m_EditorClassIdentifier: Skuy.Core::Core.GameCore
+--- !u!114 &1789597561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789597558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c638a782c80098f4c92855ee95a982fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Procedure.ProcedureManager
 --- !u!1 &1856375603
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,5 +670,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 330830341}
   - {fileID: 2104921249}
-  - {fileID: 1789597559}
   - {fileID: 1856375607}
+  - {fileID: 1789597559}

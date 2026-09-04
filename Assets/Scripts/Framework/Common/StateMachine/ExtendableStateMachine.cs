@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Framework.StateMachine
+namespace Framework
 {
     /// <summary>
     /// 可拓展状态机，需要创建静态类并声明静态状态变量标识

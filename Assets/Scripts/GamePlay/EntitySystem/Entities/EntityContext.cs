@@ -1,4 +1,4 @@
-using Framework.StateMachine;
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Framework.StateMachine
+namespace Framework
 {
     /// <summary>
     /// 泛型状态机

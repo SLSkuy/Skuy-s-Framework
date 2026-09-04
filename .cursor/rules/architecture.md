@@ -7,6 +7,7 @@ alwaysApply: false
 # Architecture
 
 Project structure, namespaces, and patterns. C# naming and member order: `coding-style.md`.
+Data flow and no `EnsureXxx` guards: `data-flow.md`.
 
 ## Project Structure
 
@@ -16,7 +17,7 @@ Runtime code lives under `Assets/Scripts`. Entry points `Launch.cs` and `MainEnt
 | Folder            | Role                                                                                            |
 | ----------------- | ----------------------------------------------------------------------------------------------- |
 | `Framework/`      | `Common/`, `SubSystems/`, `Input/`, ECS `Navigation/`, `Event/`                                 |
-| `GamePlay/`       | `EntitySystem/`, `MultiPlaySystem/`, `Protocol/Generated/`, `Proxy/`                            |
+| `GamePlay/`       | `Procedure/`, `Battle/`, `GameSession/`, `Simulator/`, `EntitySystem/`, `MultiPlaySystem/`, `Protocol/Generated/` |
 | `Network/`        | `Client/`, `Server/`, `Transport/` (`Kcp/`, `Tcp/`), `Config/`, `Interface/`, `Protocol/`       |
 | `Events/`         | Cross-module event enums (`NetEvent`)                                                           |
 | `Utils/`          | Stateless helpers (`MathUtils`, `GridUtils`, `NetUtils`, `TransformUtils`, `DataStruct/KDTree`) |
@@ -45,20 +46,26 @@ namespace GamePlay.EntitySystem
 
 | Namespace                  | Purpose                                   | Examples                                                       |
 | -------------------------- | ----------------------------------------- | -------------------------------------------------------------- |
-| `Framework`                | Services, singleton, subsystems, `Global` | `Global`, `MonoSingleton`, `SubSystemBase`, `GameStateManager` |
+| `Framework`                | Services, singleton, subsystems, `Global` | `Global`, `MonoSingleton`, `SubSystemBase`, `LocalInputManager` |
 | `Framework.Core`           | UI controller base                        | `UIController`                                                 |
 | `Framework.StateMachine`   | State machine                             | `IState`, `EnumStateBase`                                      |
 | `Network`                  | Client/server and messages                | `NetClient`, `NetServer`                                       |
 | `Events`                   | Cross-module event enums                  | `NetEvent`                                                     |
-| `EventProcess`             | Event bus (`EventBus.Get<T>()`)           | —                                                              |
+| `GamePlay.Procedure`       | 玩法流程（菜单/大厅/对局）                 | `ProcedureManager`, `GameProcedure`                            |
+| `GamePlay.Battle`          | 战局会话                                  | `BattleManager`, `BattleRoom`                                  |
 | `GamePlay.EntitySystem`    | Entities, FSM, simulation                 | `EntityCharacter`, `EntityBaseState`                           |
 | `GamePlay.MultiPlaySystem` | Replication, prediction, interpolation    | `CharacterReplicationSystem`, `NetworkObjectIdentity`          |
 | `Utils`                    | Stateless utilities                       | `MathUtils`                                                    |
-| `NetConnect`               | Low-level connections                     | —                                                              |
+| `NetConnect`               | Generated connect protocol                | —                                                              |
 | *(global)*                 | Scene entry points only                   | `Launch`, `MainEntry`                                          |
 
+## Composition and lifetimes
 
-
+- **HybridCLR:** `Launch` (AOT) loads the hot-update assembly and invokes `MainEntry.Run`. `MainEntry` only switches to `MainScene`; it MUST NOT register gameplay systems.
+- **Shell (`GameCore`):** composition root for process-lifetime Framework modules only (resource, pool, timer, data proxy, scene, local input, UI, camera). Do not register `BattleManager`, `GameManager`, simulation kernels, `NetServer`, or `NetClient`. Do not reference `GamePlay` types.
+- **Procedure (`GamePlay.Procedure`):** a scene object beside `GameCore` (`ProcedureManager` MonoBehaviour). It owns Menu → Lobby → Match and ticks itself. UI uses `ProcedureManager.Instance` (`StartLocal` / `HostMultiplayer` / `JoinRemote` / `RequestStartMatch` / `LeaveSession`). UI MUST NOT `Global.Get<BattleManager>()`.
+- **Three lifetimes:** process = `GameCore` register list; session = Lobby registers `BattleManager` (and network via battle APIs), Menu unregisters it; match = `BattleRoom.StartMatch` / `EndMatch` for `GameManager` and kernels. `BattleRoom` is not a subsystem.
+- **Assemblies:** `Skuy.Core` → `Skuy.Framework` only. `Skuy.Framework` and `Skuy.Core` MUST NOT reference `Skuy.GamePlay`. `Skuy.GamePlay` → Framework + Network (+ Events/Utils/Protocol). `Skuy.Tests` is debug-only and is not the session owner.
 
 ## Patterns
 
@@ -70,4 +77,3 @@ namespace GamePlay.EntitySystem
 - **Network transport:** `NetClient` / `NetServer` are `SubSystemBase`; transports implement `IClientTransport` / `IServerTransport` under `Network/Transport/`; messages use Google.Protobuf.
 - **Scene glue:** `EntityCharacter`, `UIController`, `NetworkObjectIdentity` only bridge Unity lifecycle; do not put reusable core logic in them.
 - **Migration:** new code goes in the approved target folder/assembly. Do not extend legacy sync files or compatibility shims.
-

@@ -23,6 +23,7 @@ namespace GamePlay.Battle
 
         #region 属性
         public override int Priority => 150;
+        public BattleRoom ActiveRoom => _activeRoom;
         #endregion
 
         #region 房间管理
@@ -42,7 +43,11 @@ namespace GamePlay.Battle
         {
             TryOpenRoom(true);
             
-            _netServer = Global.Get<NetServer>();
+            if (!Global.TryGet(out _netServer))
+            {
+                _netServer = Global.Register<NetServer>();
+            }
+
             _netServer.OnClientRemoved += HandleClientRemoved;
             
             _serverHandler.Bind();
@@ -56,6 +61,7 @@ namespace GamePlay.Battle
             _serverHandler.Unbind();
             _netServer.OnClientRemoved -= HandleClientRemoved;
             _netServer.StopServer();
+            Global.Unregister<NetServer>();
             _netServer = null;
         }
 
@@ -77,6 +83,7 @@ namespace GamePlay.Battle
 
             _clientHandler.Unbind();
             _netClient.StopClient();
+            Global.Unregister<NetClient>();
             _netClient = null;
         }
         
@@ -85,11 +92,13 @@ namespace GamePlay.Battle
             if (_activeRoom != null) return false;
 
             BattleRoom room = new(BattleSessionRole.Host, acceptsRemoteJoin);
-            if (!room.TryAdmit(LOCAL_CONNECTION_ID))
+            uint playerId = _nextPlayerId++;
+            if (!room.TryAdmit(playerId))
             {
                 return false;
             }
 
+            _playerId[LOCAL_CONNECTION_ID] = playerId;
             _activeRoom = room;
             return true;
         }
@@ -167,6 +176,8 @@ namespace GamePlay.Battle
 
         public override void Init()
         {
+            _playerId = new Dictionary<uint, uint>();
+            _nextPlayerId = 1;
             _serverHandler = new BattleServerHandler(this);
             _clientHandler = new BattleClientHandler(this);
         }

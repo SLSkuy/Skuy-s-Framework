@@ -103,12 +103,15 @@ namespace Framework
         }
 
         /// <summary>
-        /// 切换游戏状态
+        /// 退出游戏。UI 与流程不要依赖壳类型。
         /// </summary>
-        /// <param name="state"></param>
-        public static void ChangeState(GameState state)
+        public static void QuitGame()
         {
-            Get<GameStateManager>()?.ChangeState(state);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            UnityEngine.Application.Quit();
+#endif
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Framework.StateMachine
+namespace Framework
 {
     /// <summary>
     /// 可拓展状态机基类

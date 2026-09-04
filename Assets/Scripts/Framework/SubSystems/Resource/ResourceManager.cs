@@ -308,6 +308,7 @@ namespace Framework
 
         #region 资源释放
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 释放资源
         /// </summary>
@@ -349,6 +350,7 @@ namespace Framework
             DoUnload(key, info);
         }
         
+        // ReSharper disable Unity.PerformanceAnalysis
         private void DoUnload(string key, ResourceInfo info)
         {
             Debug.Log($"[ResourceManager] Unload Resource : {key}");

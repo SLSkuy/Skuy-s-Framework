@@ -1,4 +1,4 @@
-﻿namespace Framework.StateMachine
+﻿namespace Framework
 {
     /// <summary>
     /// 状态接口

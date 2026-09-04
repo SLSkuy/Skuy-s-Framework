@@ -14,7 +14,7 @@ namespace Framework
         TimerManager = -120,
         DataProxyManager = -100,
         SceneLoader = -50,
-        GameStateManager = 0,
+        LocalInputManager = -40,
         UIManager = 5000,
         CameraManager = 10000,
     }

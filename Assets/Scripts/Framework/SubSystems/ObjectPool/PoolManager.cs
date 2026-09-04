@@ -11,8 +11,6 @@ namespace Framework
     /// </summary>
     public sealed class PoolManager : SubSystemBase
     {
-        public override int Priority => (int)SubSystemPriority.PoolManager;
-
         private readonly Dictionary<string, Queue<GameObject>> _monoPools = new();
         private readonly Dictionary<GameObject, string> _objectKeyMap = new();
         private readonly Dictionary<Type, object> _purePools = new();
@@ -20,13 +18,17 @@ namespace Framework
         private ResourceManager _resourceManager;
         private Transform _poolRoot;
 
+        #region 属性
+        public override int Priority => (int)SubSystemPriority.PoolManager;
+        #endregion
+
         public override void Init()
         {
+            GameObject gameRoot = GameObject.Find("[GameRoot]");
+            _poolRoot = new GameObject("[PoolManager]").transform;
+            _poolRoot.SetParent(gameRoot.transform);
+            
             _resourceManager = Global.Get<ResourceManager>();
-
-            GameObject root = new("[PoolManager]");
-            Object.DontDestroyOnLoad(root);
-            _poolRoot = root.transform;
         }
 
         #region Mono object pool

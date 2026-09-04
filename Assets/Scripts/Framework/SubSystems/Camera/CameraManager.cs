@@ -38,7 +38,6 @@ namespace Framework
             }
             
             SwitchTo(GameCameraState.Normal);
-            Debug.Log("[CameraManager]初始化");
         }
         
         /// <summary>

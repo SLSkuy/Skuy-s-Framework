@@ -1,4 +1,3 @@
-using Core;
 using Framework;
 using GamePlay.EntitySystem;
 using UnityEngine;
@@ -25,7 +24,6 @@ namespace GamePlay.Simulator
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
-            if (!GameCore.Instance) return false;
 
             GameObject prefab = PlayerSpawner.LoadPrefab();
             if (!prefab) return false;
@@ -33,12 +31,12 @@ namespace GamePlay.Simulator
             EntityObjectIdentity identity = PlayerSpawner.Spawn(prefab, Vector3.up,
                 "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
             _pawn = identity.gameObject;
-            
+
             _simulator.Register(identity, identity.GetComponent<EntityCharacter>());
-            _simulator.SetInputSource(LOCAL_PLAYER_ID, GameCore.Instance.LocalInput);
+            _simulator.SetInputSource(LOCAL_PLAYER_ID, Global.Get<LocalInputManager>().Provider);
             _simulator.StartClock();
 
-            GameCore.Instance.CameraMgr.SetTarget(_pawn.transform.Find("orientation"));
+            Global.Get<CameraManager>().SetTarget(_pawn.transform.Find("orientation"));
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             IsSessionRunning = true;
