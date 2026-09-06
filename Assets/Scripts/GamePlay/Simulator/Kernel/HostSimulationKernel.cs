@@ -43,8 +43,6 @@ namespace GamePlay.Simulator
             _simulator.StartClock();
 
             Global.Get<CameraManager>().SetTarget(_pawn.transform.Find("orientation"));
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
             IsSessionRunning = true;
             return true;
         }
@@ -59,8 +57,6 @@ namespace GamePlay.Simulator
             Object.Destroy(_pawn);
             _pawn = null;
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
             IsSessionRunning = false;
         }
 

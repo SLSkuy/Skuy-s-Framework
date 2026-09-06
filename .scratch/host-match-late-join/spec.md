@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # 房主即开战与中途入座
 

@@ -79,7 +79,8 @@ Keep related fields together. Regions only where listed.
 4. Properties — `#region 属性`
 5. Events — `#region 事件`
 6. Methods — public API first, private helpers after; do not region ordinary methods
-7. Lifecycle last — `#region 生命周期` (MonoBehaviour) or `#region 子系统生命周期` (`SubSystemBase`)
+7. Lifecycle — `#region 生命周期` (MonoBehaviour) or `#region 子系统生命周期` (`SubSystemBase`)
+8. Net Handler Last — `#region 网络消息处理`
 
 Reference: `NetworkObjectIdentity.cs`. Preserve legacy feature regions in `EntityCharacter.cs`; do not copy them into new files.
 

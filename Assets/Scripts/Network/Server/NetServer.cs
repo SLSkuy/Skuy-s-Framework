@@ -256,6 +256,11 @@ namespace Network
             if (_clientManager.UnBindReliableSession(transportSessionId, out uint clientId, Time.time))
             {
                 Debug.Log($"[NetServer] Reliable session {transportSessionId} unbound from client {clientId}");
+                if (_clientManager.TryGetFastSessionId(clientId, out uint fastSessionId))
+                {
+                    _fastTransport.Disconnect(fastSessionId);
+                }
+
                 return;
             }
 
@@ -455,6 +460,8 @@ namespace Network
 
         public override void BindEvents()
         {
+            NetUtils.RegisterParser<Client_Reliable_Connect_Request>(NetEvent.RELIABLE_CONNECT_REQUEST);
+            NetUtils.RegisterParser<Client_Fast_Connect_Request>(NetEvent.FAST_CONNECT_REQUEST);
             RegisterHandler<Ping>(NetEvent.PING, HandlePing);
             RegisterHandler<Pong>(NetEvent.PONG, HandleClientPong);
             RegisterHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);

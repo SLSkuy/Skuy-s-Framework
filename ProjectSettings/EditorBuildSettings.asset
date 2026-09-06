@@ -14,10 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameScene.unity
     guid: 8d0127b3dffe68346af154bb68dae45a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Dev/Network/TransportTest.unity
     guid: 6d257bdb9416612408f7ed3cd47b78a8
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Dev/Network/SyncTest.unity
     guid: 138e6181301c8d64daddbae28f92cd8e
   m_configObjects:

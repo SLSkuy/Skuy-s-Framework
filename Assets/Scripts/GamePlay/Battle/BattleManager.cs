@@ -31,6 +31,7 @@ namespace GamePlay.Battle
         
         #region 事件
         public event Action<bool> JoinSettled;
+        public event Action SessionEnded;
         #endregion
 
         #region 房间管理
@@ -59,19 +60,22 @@ namespace GamePlay.Battle
             }
 
             _netServer.OnClientRemoved += HandleClientRemoved;
-            
             _serverHandler.Bind();
             _netServer.StartServer();
         }
         
+        /// <summary>
+        /// 主机关闭
+        /// </summary>
         private void StopHost()
         {
             if (_netServer == null) return;
-
-            _serverHandler.Unbind();
+            
             _netServer.OnClientRemoved -= HandleClientRemoved;
+            _serverHandler.Unbind();
             _netServer.StopServer();
             Global.Unregister<NetServer>();
+            
             _netServer = null;
         }
 
@@ -80,12 +84,18 @@ namespace GamePlay.Battle
         /// </summary>
         public void JoinRemoteRoom()
         {
-            _netClient = Global.Register<NetClient>();
+            if (!Global.TryGet(out _netClient))
+            {
+                _netClient = Global.Register<NetClient>();
+            }
 
             _clientHandler.Bind();
             _netClient.StartReliableConnect();
         }
 
+        /// <summary>
+        /// 客户端关闭连接
+        /// </summary>
         private void StopClient()
         {
             if (_netClient == null) return;
@@ -93,24 +103,30 @@ namespace GamePlay.Battle
             _clientHandler.Unbind();
             _netClient.StopClient();
             Global.Unregister<NetClient>();
+            
             _netClient = null;
         }
         
+        /// <summary>
+        /// 尝试开启战局房间
+        /// </summary>
+        /// <param name="acceptsRemoteJoin"></param>
+        /// <returns></returns>
         private bool TryOpenRoom(bool acceptsRemoteJoin)
         {
             if (_activeRoom != null) return false;
 
             int capacity = acceptsRemoteJoin ? BattleRoom.DEFAULT_CAPACITY : BattleRoom.LOCAL_CAPACITY;
             BattleRoom room = new(BattleSessionRole.Host, acceptsRemoteJoin, capacity);
-            uint playerId = _nextPlayerId++;
-            if (!room.TryAdmit(playerId))
-            {
-                return false;
-            }
+            
+            uint playerId = _nextPlayerId;
+            if (!room.TryAdmit(playerId)) return false;
 
+            _nextPlayerId++;
             _playerId[LOCAL_CONNECTION_ID] = playerId;
             room.SubmitMatch();
             _activeRoom = room;
+            
             return true;
         }
 
@@ -144,11 +160,16 @@ namespace GamePlay.Battle
         {
             if (_activeRoom == null) return false;
             if (connectionId != LOCAL_CONNECTION_ID && !_activeRoom.AcceptsRemoteJoin) return false;
+            if (_playerId.ContainsKey(connectionId)) return false;
+            if (_activeRoom.MemberCount >= _activeRoom.Capacity) return false;
 
-            uint playerId = _nextPlayerId++;
+            uint playerId = _nextPlayerId;
+            if (!_activeRoom.TryAdmit(playerId)) return false;
+
+            _nextPlayerId++;
             _playerId[connectionId] = playerId;
             
-            return _activeRoom.TryAdmit(playerId);
+            return true;
         }
 
         /// <summary>
@@ -157,24 +178,22 @@ namespace GamePlay.Battle
         public void Leave(uint connectionId)
         {
             if (_activeRoom == null) return;
+            if (!_playerId.Remove(connectionId, out uint playerId)) return;
 
-            uint playerId = _playerId[connectionId];
             bool wasHost = playerId == _activeRoom.HostPlayerId;
-            
             if (wasHost)
             {
                 Dissolve();
+                return;
             }
-            else
-            {
-                _activeRoom.Leave(playerId);
-            }
+
+            _activeRoom.Leave(playerId);
         }
 
         /// <summary>
         /// 解散活动房间并停止本进程为此房启动的网络。
         /// </summary>
-        public void Dissolve()
+        private void Dissolve()
         {
             if (_activeRoom != null)
             {
@@ -183,7 +202,11 @@ namespace GamePlay.Battle
                 _activeRoom = null;
             }
 
-            // 关闭当前连接
+            if (_netServer != null)
+            {
+                _serverHandler.BroadcastRoster(new Game_Join_Response { Accepted = false });
+            }
+
             StopHost();
             StopClient();
         }
@@ -192,8 +215,8 @@ namespace GamePlay.Battle
 
         public override void Init()
         {
-            _playerId = new Dictionary<uint, uint>();
             _nextPlayerId = 1;
+            _playerId = new Dictionary<uint, uint>();
             _serverHandler = new BattleServerHandler(this);
             _clientHandler = new BattleClientHandler(this);
         }
@@ -206,6 +229,29 @@ namespace GamePlay.Battle
         #endregion
 
         #region 网络消息处理
+        
+        /// <summary>
+        /// 客户端断连处理
+        /// </summary>
+        private void HandleClientRemoved(uint connectionId)
+        {
+            Leave(connectionId);
+
+            Game_Join_Response response = new() { Accepted = _activeRoom != null };
+            if (_activeRoom != null)
+            {
+                response.HostPlayerId = _activeRoom.HostPlayerId;
+                response.InMatch = _activeRoom.IsMatchSubmitted;
+                List<uint> roster = new();
+                _activeRoom.CopyPlayerIds(roster);
+                response.PlayerIds.AddRange(roster);
+            }
+
+            if (response.Accepted)
+            {
+                _serverHandler.BroadcastRoster(response);
+            }
+        }
 
         public Game_Join_Response HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
         {
@@ -231,24 +277,29 @@ namespace GamePlay.Battle
             return response;
         }
 
-        /// <summary>
-        /// 客户端断连处理
-        /// </summary>
-        private void HandleClientRemoved(uint connectionId)
-        {
-            Leave(connectionId);
-        }
-
         public void HandleGameJoinResponse(Game_Join_Response response)
         {
             if (!response.Accepted)
             {
+                if (_activeRoom != null)
+                {
+                    // 关闭已经创建的房间
+                    bool hadSession = _activeRoom != null || _netClient != null;
+                    Dissolve();
+                    if (hadSession)
+                    {
+                        SessionEnded?.Invoke();
+                    }
+                    return;
+                }
+
                 HandleJoinFailed();
                 return;
             }
 
             if (_activeRoom != null)
             {
+                _activeRoom.ApplyRoster(response.HostPlayerId, response.PlayerIds, response.InMatch);
                 return;
             }
 

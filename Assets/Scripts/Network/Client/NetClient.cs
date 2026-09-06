@@ -58,7 +58,12 @@ namespace Network
         private float _pingAccumulator;
         private int _pingMissCount;
         private float _lastRtt;
+        private bool _connectionFailed;
         // ========== RTT ==========
+
+        #region 事件
+        public event Action ConnectionFailed;
+        #endregion
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
@@ -189,6 +194,10 @@ namespace Network
         private void HandleTransportError(string error)
         {
             Debug.LogError("[NetClient] Transport error: " + error);
+            if (_clientId == 0)
+            {
+                _connectionFailed = true;
+            }
         }
 
         #endregion
@@ -366,6 +375,13 @@ namespace Network
         /// </summary>
         private void HandleDisconnected()
         {
+            if (_clientId == 0)
+            {
+                StopClient();
+                _connectionFailed = true;
+                return;
+            }
+
             if (_clientConfig.autoReconnect) TryReconnect();
             else StopClient();
         }
@@ -435,6 +451,13 @@ namespace Network
         {
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
+
+            if (_connectionFailed)
+            {
+                _connectionFailed = false;
+                ConnectionFailed?.Invoke();
+                return;
+            }
 
             // 重连逻辑优先，不受 _clientId==0 影响
             // 避免首次握手前断线导致 _tryReconnect=true 却永远不执行 DoReconnect

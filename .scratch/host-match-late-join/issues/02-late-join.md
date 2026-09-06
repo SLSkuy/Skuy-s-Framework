@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 菜单开战进关（本机房与房主）
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 加入请求不得用对方自报的传输身份作为名册键；玩家身份由房主分配
 - [x] 加入响应包含：是否接受、自己的玩家身份、房主玩家身份、完整名册、对局已开始（开听之后为真）
@@ -15,8 +15,13 @@
 - [x] 拒绝、连接失败或房间不存在时回到菜单，拆掉客户端网络，无活动房间
 - [x] 测试通过向战局管理器注入加入请求/响应对外断言名册与对局已提交；UI 仍只对流程核心发意图
 
+## Answer
+
+加入方被接受前不建房间。加入响应带 accepted、房主分配的 playerId、hostPlayerId、完整名册、inMatch；忽略请求里自报的传输身份。接受后写入名册、提交对局、切关并挂客户端核且不 spawn。失败或拒绝则拆掉客户端网络并回菜单。
+
 ## Comments
 
 - 接缝：战局管理器会话 API（`HandleGameJoinRequest` / `HandleGameJoinResponse` / `HandleJoinFailed`），流程核心只发加入意图。
 - `Game_Join_Response` 现含 accepted、playerId、hostPlayerId、playerIds、inMatch。房主分配玩家身份，忽略请求里的 `clientId`。
 - 加入方接受前不建房间；接受后按响应写入名册并提交对局。失败拆掉 `NetClient`。流程在接受后进对局切关，开战挂客户端核且不 spawn。
+

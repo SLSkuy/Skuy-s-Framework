@@ -11,7 +11,7 @@ namespace GamePlay.Battle
     /// </summary>
     public sealed class BattleClientHandler
     {
-        private BattleManager _battle;
+        private readonly BattleManager _battle;
         private NetClient _client;
 
         public BattleClientHandler(BattleManager battle)
@@ -25,6 +25,7 @@ namespace GamePlay.Battle
         {
             Unbind();
             _client = Global.Get<NetClient>();
+            _client.ConnectionFailed += HandleConnectionFailed;
             _client.RegisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             _client.RegisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
         }
@@ -32,6 +33,8 @@ namespace GamePlay.Battle
         public void Unbind()
         {
             if (_client == null) return;
+
+            _client.ConnectionFailed -= HandleConnectionFailed;
             _client.UnregisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             _client.UnregisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
             _client = null;
@@ -62,6 +65,11 @@ namespace GamePlay.Battle
         private void HandleGameJoinResponse(Game_Join_Response message)
         {
             _battle.HandleGameJoinResponse(message);
+        }
+
+        private void HandleConnectionFailed()
+        {
+            _battle.HandleJoinFailed();
         }
 
         #endregion

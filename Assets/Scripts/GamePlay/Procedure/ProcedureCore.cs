@@ -20,6 +20,7 @@ namespace GamePlay.Procedure
 
         #region 属性
         public GameProcedure CurrentProcedure => _fsm.CurrentState;
+        public bool SessionIsHost => Global.TryGet(out BattleManager battle) && battle.ActiveRoom is { SessionRole: BattleSessionRole.Host };
         #endregion
 
         /// <summary>
@@ -55,6 +56,8 @@ namespace GamePlay.Procedure
 
             battle.JoinSettled -= HandleJoinSettled;
             battle.JoinSettled += HandleJoinSettled;
+            battle.SessionEnded -= HandleSessionEnded;
+            battle.SessionEnded += HandleSessionEnded;
             battle.JoinRemoteRoom();
         }
 
@@ -161,6 +164,7 @@ namespace GamePlay.Procedure
             if (Global.TryGet(out BattleManager battle))
             {
                 battle.JoinSettled -= HandleJoinSettled;
+                battle.SessionEnded -= HandleSessionEnded;
             }
 
             Global.Unregister<BattleManager>();
@@ -186,6 +190,16 @@ namespace GamePlay.Procedure
             }
 
             TearDownSession();
+        }
+
+        private void HandleSessionEnded()
+        {
+            if (Global.TryGet(out BattleManager battle))
+            {
+                battle.SessionEnded -= HandleSessionEnded;
+            }
+
+            _fsm.ChangeState(GameProcedure.Menu);
         }
 
         private void OpenHostSession(bool acceptsRemoteJoin)
@@ -242,6 +256,8 @@ namespace GamePlay.Procedure
             }
 
             _matchHud.enabled = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         private void HideMatchHud()

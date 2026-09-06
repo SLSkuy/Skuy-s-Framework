@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局常驻调试 HUD：名册与解散。只对流程核心发意图。
+    /// 对局常驻调试 HUD：名册、加入方离开、房主解散。只对流程核心发意图。
     /// </summary>
     public sealed class MatchDebugHud : MonoBehaviour
     {
@@ -18,9 +18,12 @@ namespace GamePlay.Procedure
                 return;
             }
 
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            GUI.depth = -1000;
             procedures.CopyRosterPlayerIds(_roster);
-            GUILayout.BeginArea(new Rect(12f, 12f, 280f, 160f), GUI.skin.box);
-            GUILayout.Label("名册");
+            GUILayout.BeginArea(new Rect(12f, 12f, 320f, 200f), GUI.skin.box);
+            GUILayout.Label("对局名册");
             if (_roster.Count == 0)
             {
                 GUILayout.Label("(空)");
@@ -33,7 +36,9 @@ namespace GamePlay.Procedure
                 }
             }
 
-            if (GUILayout.Button("解散") || Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F5)
+            string leaveLabel = procedures.SessionIsHost ? "解散" : "离开";
+            bool f5Pressed = Event.current is { type: EventType.KeyDown, keyCode: KeyCode.F5 };
+            if (GUILayout.Button(leaveLabel) || f5Pressed)
             {
                 procedures.LeaveSession();
             }

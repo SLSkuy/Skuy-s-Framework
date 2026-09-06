@@ -24,7 +24,6 @@ namespace GamePlay.Battle
         {
             Unbind();
             _server = Global.Get<NetServer>();
-            
             _server.RegisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
         }
 
@@ -39,17 +38,33 @@ namespace GamePlay.Battle
         #endregion
 
         #region 发送消息
-
-        private void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
-        {
-            SendGameJoinResponse(connectionId, _battle.HandleGameJoinRequest(connectionId, request));
-        }
-
+        
         public void SendGameJoinResponse(uint connectionId, Game_Join_Response response)
         {
             _server.SendReliable(connectionId, NetEvent.GAME_JOIN_RESPONSE, response);
         }
+
+        public void BroadcastRoster(Game_Join_Response response)
+        {
+            if (_server == null) return;
+
+            _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
+        }
         
+        #endregion
+
+        #region 接收消息
+
+        private void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
+        {
+            Game_Join_Response response = _battle.HandleGameJoinRequest(connectionId, request);
+            SendGameJoinResponse(connectionId, response);
+            if (response.Accepted)
+            {
+                _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
+            }
+        }
+
         #endregion
     }
 }
