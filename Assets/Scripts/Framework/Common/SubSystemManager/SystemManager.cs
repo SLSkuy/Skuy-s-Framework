@@ -107,7 +107,7 @@ namespace Framework
         {
             while (_systems2Remove.Count > 0)
             {
-                ISubSystem system = _systems2Remove[_systems2Remove.Count - 1];
+                ISubSystem system = _systems2Remove[^1];
                 _systems2Remove.RemoveAt(_systems2Remove.Count - 1);
                 if (!_subSystems.Contains(system))
                 {

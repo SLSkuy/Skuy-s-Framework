@@ -7,6 +7,7 @@ namespace Framework
         public abstract int Priority { get; }
         public bool IsInitialized { get; private set; }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 内置初始化方法，不应该被重写
         /// </summary>
@@ -54,6 +55,7 @@ namespace Framework
 
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 内置销毁方法，不应该被重写
         /// </summary>

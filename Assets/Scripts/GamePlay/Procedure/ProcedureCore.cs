@@ -151,15 +151,12 @@ namespace GamePlay.Procedure
             _sessionIntent = SessionIntent.None;
             HideMatchHud();
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
-            if (Global.TryGet(out BattleManager _))
-            {
-                Global.Unregister<BattleManager>();
-            }
+            Global.Unregister<BattleManager>();
 
-            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading ||
+            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading || 
                 SceneManager.GetActiveScene().name != MenuSceneName)
             {
-                SceneManager.LoadScene(MenuSceneName);
+                Global.LoadScene(MenuSceneName);
             }
         }
 

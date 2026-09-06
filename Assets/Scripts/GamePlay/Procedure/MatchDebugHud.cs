@@ -33,7 +33,7 @@ namespace GamePlay.Procedure
                 }
             }
 
-            if (GUILayout.Button("解散") || Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+            if (GUILayout.Button("解散") || Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F5)
             {
                 procedures.LeaveSession();
             }
