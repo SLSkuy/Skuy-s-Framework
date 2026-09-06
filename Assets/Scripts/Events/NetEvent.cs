@@ -22,6 +22,8 @@ namespace Events
         // 游戏同步
         GAME_JOIN_REQUEST,
         GAME_JOIN_RESPONSE,
+        GAME_LEAVE_REQUEST,
+        GAME_LEAVE_NOTIFY,
         PLAYER_INPUT,
         WORLD_SNAPSHOT,
     }

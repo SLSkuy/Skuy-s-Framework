@@ -41,6 +41,7 @@ namespace Framework
         private bool _isLoading;
         private bool _isActivating;
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public void LoadScene(string sceneName)
         {
             if (_isLoading)

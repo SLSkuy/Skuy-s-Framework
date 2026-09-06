@@ -100,6 +100,11 @@ namespace GamePlay.Battle
         {
             if (_netClient == null) return;
 
+            if (_activeRoom != null)
+            {
+                _clientHandler.SendGameLeaveRequest();
+            }
+
             _clientHandler.Unbind();
             _netClient.StopClient();
             Global.Unregister<NetClient>();
@@ -143,14 +148,6 @@ namespace GamePlay.Battle
             }
 
             return _activeRoom.StartMatch();
-        }
-
-        /// <summary>
-        /// 结束对局，房间名册保留。
-        /// </summary>
-        public void StopBattle()
-        {
-            _activeRoom?.EndMatch();
         }
 
         /// <summary>
@@ -204,7 +201,7 @@ namespace GamePlay.Battle
 
             if (_netServer != null)
             {
-                _serverHandler.BroadcastRoster(new Game_Join_Response { Accepted = false });
+                _serverHandler.BroadcastLeave(new Game_Leave_Notify { Dissolved = true });
             }
 
             StopHost();
@@ -235,22 +232,36 @@ namespace GamePlay.Battle
         /// </summary>
         private void HandleClientRemoved(uint connectionId)
         {
+            Game_Leave_Notify notify = HandleGameLeaveRequest(connectionId);
+            if (!notify.Dissolved && notify.PlayerId != 0)
+            {
+                _serverHandler.BroadcastLeave(notify);
+            }
+        }
+
+        public Game_Leave_Notify HandleGameLeaveRequest(uint connectionId)
+        {
+            Game_Leave_Notify notify = new();
+            if (_activeRoom == null || !_playerId.TryGetValue(connectionId, out uint playerId))
+            {
+                notify.Dissolved = _activeRoom == null;
+                return notify;
+            }
+
+            notify.PlayerId = playerId;
             Leave(connectionId);
-
-            Game_Join_Response response = new() { Accepted = _activeRoom != null };
-            if (_activeRoom != null)
+            notify.Dissolved = _activeRoom == null;
+            if (_activeRoom == null)
             {
-                response.HostPlayerId = _activeRoom.HostPlayerId;
-                response.InMatch = _activeRoom.IsMatchSubmitted;
-                List<uint> roster = new();
-                _activeRoom.CopyPlayerIds(roster);
-                response.PlayerIds.AddRange(roster);
+                return notify;
             }
 
-            if (response.Accepted)
-            {
-                _serverHandler.BroadcastRoster(response);
-            }
+            notify.HostPlayerId = _activeRoom.HostPlayerId;
+            notify.InMatch = _activeRoom.IsMatchSubmitted;
+            List<uint> roster = new();
+            _activeRoom.CopyPlayerIds(roster);
+            notify.PlayerIds.AddRange(roster);
+            return notify;
         }
 
         public Game_Join_Response HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
@@ -281,18 +292,6 @@ namespace GamePlay.Battle
         {
             if (!response.Accepted)
             {
-                if (_activeRoom != null)
-                {
-                    // 关闭已经创建的房间
-                    bool hadSession = _activeRoom != null || _netClient != null;
-                    Dissolve();
-                    if (hadSession)
-                    {
-                        SessionEnded?.Invoke();
-                    }
-                    return;
-                }
-
                 HandleJoinFailed();
                 return;
             }
@@ -307,6 +306,31 @@ namespace GamePlay.Battle
             room.ApplyRoster(response.HostPlayerId, response.PlayerIds, response.InMatch);
             _activeRoom = room;
             JoinSettled?.Invoke(true);
+        }
+
+        /// <summary>
+        /// 客户端接收房间变动消息
+        /// </summary>
+        public void HandleGameLeaveNotify(Game_Leave_Notify notify)
+        {
+            if (notify.Dissolved)
+            {
+                bool hadSession = _activeRoom != null || _netClient != null;
+                Dissolve();
+                if (hadSession)
+                {
+                    SessionEnded?.Invoke();
+                }
+
+                return;
+            }
+
+            if (_activeRoom == null)
+            {
+                return;
+            }
+
+            _activeRoom.ApplyRoster(notify.HostPlayerId, notify.PlayerIds, notify.InMatch);
         }
 
         public void HandleJoinFailed()

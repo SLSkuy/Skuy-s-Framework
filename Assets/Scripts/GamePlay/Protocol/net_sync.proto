@@ -67,3 +67,16 @@ message Game_Join_Response {
   bool inMatch = 5;
 }
 // ========== 加入游戏 ==========
+
+// ========== 离开房间 ==========
+message Game_Leave_Request {
+}
+
+message Game_Leave_Notify {
+  uint32 playerId = 1;
+  uint32 hostPlayerId = 2;
+  repeated uint32 playerIds = 3;
+  bool inMatch = 4;
+  bool dissolved = 5;
+}
+// ========== 离开房间 ==========

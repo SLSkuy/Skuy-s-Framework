@@ -25,6 +25,7 @@ namespace GamePlay.Battle
             Unbind();
             _server = Global.Get<NetServer>();
             _server.RegisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
+            _server.RegisterHandler<Game_Leave_Request>(NetEvent.GAME_LEAVE_REQUEST, HandleGameLeaveRequest);
         }
 
         public void Unbind()
@@ -32,6 +33,7 @@ namespace GamePlay.Battle
             if (_server == null) return;
             
             _server.UnregisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
+            _server.UnregisterHandler<Game_Leave_Request>(NetEvent.GAME_LEAVE_REQUEST, HandleGameLeaveRequest);
             _server = null;
         }
 
@@ -50,6 +52,13 @@ namespace GamePlay.Battle
 
             _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
         }
+
+        public void BroadcastLeave(Game_Leave_Notify notify)
+        {
+            if (_server == null) return;
+
+            _server.BroadcastReliable(NetEvent.GAME_LEAVE_NOTIFY, notify);
+        }
         
         #endregion
 
@@ -62,6 +71,15 @@ namespace GamePlay.Battle
             if (response.Accepted)
             {
                 _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
+            }
+        }
+
+        private void HandleGameLeaveRequest(uint connectionId, Game_Leave_Request request)
+        {
+            Game_Leave_Notify notify = _battle.HandleGameLeaveRequest(connectionId);
+            if (!notify.Dissolved && notify.PlayerId != 0)
+            {
+                BroadcastLeave(notify);
             }
         }
 

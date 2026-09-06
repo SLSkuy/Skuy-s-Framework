@@ -62,37 +62,6 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 房主请求开战。
-        /// </summary>
-        public void RequestStartMatch()
-        {
-            if (!Global.TryGet(out BattleManager battle))
-            {
-                return;
-            }
-
-            if (battle.ActiveRoom == null)
-            {
-                return;
-            }
-
-            if (battle.ActiveRoom.SessionRole != BattleSessionRole.Host)
-            {
-                return;
-            }
-
-            _fsm.ChangeState(GameProcedure.Match);
-        }
-
-        /// <summary>
-        /// 结束对局即解散，回到菜单。
-        /// </summary>
-        public void EndMatch()
-        {
-            LeaveSession();
-        }
-
-        /// <summary>
         /// 解散会话并回到菜单。
         /// </summary>
         public void LeaveSession()
@@ -148,14 +117,11 @@ namespace GamePlay.Procedure
         internal void OnMatchExited()
         {
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
-            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
-            {
-                return;
-            }
-
-            battle.StopBattle();
         }
 
+        /// <summary>
+        /// 关闭当前存在的战局会话
+        /// </summary>
         internal void TearDownSession()
         {
             _sessionIntent = SessionIntent.None;
