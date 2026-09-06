@@ -99,5 +99,17 @@ namespace Framework
         {
             
         }
+
+        #region 生命周期
+
+        protected void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+        }
+
+        #endregion
     }
 }

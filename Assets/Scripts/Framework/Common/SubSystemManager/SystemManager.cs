@@ -105,10 +105,10 @@ namespace Framework
         /// </summary>
         private void RemoveSystem()
         {
-            if (_systems2Remove.Count <= 0) return;
-
-            foreach (var system in _systems2Remove)
+            while (_systems2Remove.Count > 0)
             {
+                ISubSystem system = _systems2Remove[_systems2Remove.Count - 1];
+                _systems2Remove.RemoveAt(_systems2Remove.Count - 1);
                 if (!_subSystems.Contains(system))
                 {
                     continue;
@@ -121,7 +121,7 @@ namespace Framework
 
                 _subSystems.Remove(system);
             }
-            _systems2Remove.Clear();
+
             SortSystems();
         }
 
@@ -180,9 +180,14 @@ namespace Framework
 
         public override void Destroy()
         {
-            for (int i = _subSystems.Count - 1; i >= 0; i--)
+            List<ISubSystem> snapshot = new(_subSystems);
+            for (int i = snapshot.Count - 1; i >= 0; i--)
             {
-                _subSystems[i]._Destroy();
+                ISubSystem system = snapshot[i];
+                if (system.IsInitialized)
+                {
+                    system._Destroy();
+                }
             }
             _subSystems.Clear();
             _systems2Remove.Clear();

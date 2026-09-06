@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using Framework;
 using GamePlay.Battle;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GamePlay.Procedure
 {
@@ -9,32 +11,35 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
+        public const string MenuSceneName = "MainScene";
+        public const string LevelSceneName = "GameScene";
+
         private EnumStateMachine<GameProcedure> _fsm;
         private SessionIntent _sessionIntent;
-        private bool _startMatchWhenLobbyReady;
+        private MatchDebugHud _matchHud;
 
         #region 属性
         public GameProcedure CurrentProcedure => _fsm.CurrentState;
         #endregion
 
         /// <summary>
-        /// 单机：大厅建不接远端的房间后立即开战。
+        /// 本机玩：建本机房并进入对局，切关后再开战。
         /// </summary>
         public void StartLocal()
         {
             _sessionIntent = SessionIntent.Local;
-            _startMatchWhenLobbyReady = true;
-            _fsm.ChangeState(GameProcedure.Lobby);
+            OpenHostSession(false);
+            _fsm.ChangeState(GameProcedure.Match);
         }
 
         /// <summary>
-        /// 多人开房：建可加入房间并停在大厅。
+        /// 开多人：本机入座、开听、对局已提交，切关后再开战。
         /// </summary>
         public void HostMultiplayer()
         {
             _sessionIntent = SessionIntent.Host;
-            _startMatchWhenLobbyReady = false;
-            _fsm.ChangeState(GameProcedure.Lobby);
+            OpenHostSession(true);
+            _fsm.ChangeState(GameProcedure.Match);
         }
 
         /// <summary>
@@ -43,7 +48,6 @@ namespace GamePlay.Procedure
         public void JoinRemote()
         {
             _sessionIntent = SessionIntent.Join;
-            _startMatchWhenLobbyReady = false;
             _fsm.ChangeState(GameProcedure.Lobby);
         }
 
@@ -71,16 +75,11 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 结束对局但保留房间，回到大厅。
+        /// 结束对局即解散，回到菜单。
         /// </summary>
         public void EndMatch()
         {
-            if (CurrentProcedure != GameProcedure.Match)
-            {
-                return;
-            }
-
-            _fsm.ChangeState(GameProcedure.Lobby);
+            LeaveSession();
         }
 
         /// <summary>
@@ -89,6 +88,20 @@ namespace GamePlay.Procedure
         public void LeaveSession()
         {
             _fsm.ChangeState(GameProcedure.Menu);
+        }
+
+        /// <summary>
+        /// 供常驻 HUD 读取名册，不把战局管理器交给界面。
+        /// </summary>
+        public void CopyRosterPlayerIds(List<uint> buffer)
+        {
+            buffer.Clear();
+            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
+            {
+                return;
+            }
+
+            battle.ActiveRoom.CopyPlayerIds(buffer);
         }
 
         internal void OnLobbyEntered()
@@ -103,36 +116,29 @@ namespace GamePlay.Procedure
                 return;
             }
 
-            switch (_sessionIntent)
+            if (_sessionIntent == SessionIntent.Join)
             {
-                case SessionIntent.Local:
-                    battle.CreateLocalRoom();
-                    break;
-                case SessionIntent.Host:
-                    battle.CreateHostRoom();
-                    break;
-                case SessionIntent.Join:
-                    battle.JoinRemoteRoom();
-                    break;
+                battle.JoinRemoteRoom();
             }
         }
 
         internal void OnMatchEntered()
         {
-            if (!Global.Get<BattleManager>().StartBattle())
+            EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoaded);
+            ShowMatchHud();
+            if (SceneManager.GetActiveScene().name == LevelSceneName)
             {
-                _fsm.ChangeState(GameProcedure.Lobby);
+                StartBattleAfterLevelReady();
+                return;
             }
+
+            Global.LoadScene(LevelSceneName);
         }
 
         internal void OnMatchExited()
         {
-            if (!Global.TryGet(out BattleManager battle))
-            {
-                return;
-            }
-
-            if (battle.ActiveRoom == null)
+            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
+            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
             {
                 return;
             }
@@ -143,13 +149,82 @@ namespace GamePlay.Procedure
         internal void TearDownSession()
         {
             _sessionIntent = SessionIntent.None;
-            _startMatchWhenLobbyReady = false;
+            HideMatchHud();
+            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
+            if (Global.TryGet(out BattleManager _))
+            {
+                Global.Unregister<BattleManager>();
+            }
+
+            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading ||
+                SceneManager.GetActiveScene().name != MenuSceneName)
+            {
+                SceneManager.LoadScene(MenuSceneName);
+            }
+        }
+
+        private void OpenHostSession(bool acceptsRemoteJoin)
+        {
             if (!Global.TryGet(out BattleManager battle))
+            {
+                battle = Global.Register<BattleManager>();
+            }
+
+            if (battle.ActiveRoom != null)
             {
                 return;
             }
 
-            Global.Unregister<BattleManager>();
+            if (acceptsRemoteJoin)
+            {
+                battle.CreateHostRoom();
+            }
+            else
+            {
+                battle.CreateLocalRoom();
+            }
+        }
+
+        private void HandleLevelLoaded(SceneLoadEvent.CompletedData data)
+        {
+            if (data.SceneName != LevelSceneName)
+            {
+                return;
+            }
+
+            StartBattleAfterLevelReady();
+        }
+
+        private void StartBattleAfterLevelReady()
+        {
+            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
+            {
+                _fsm.ChangeState(GameProcedure.Menu);
+                return;
+            }
+
+            if (!battle.StartBattle())
+            {
+                _fsm.ChangeState(GameProcedure.Menu);
+            }
+        }
+
+        private void ShowMatchHud()
+        {
+            if (_matchHud == null)
+            {
+                _matchHud = gameObject.AddComponent<MatchDebugHud>();
+            }
+
+            _matchHud.enabled = true;
+        }
+
+        private void HideMatchHud()
+        {
+            if (_matchHud != null)
+            {
+                _matchHud.enabled = false;
+            }
         }
 
         #region 生命周期
@@ -166,13 +241,6 @@ namespace GamePlay.Procedure
         private void Update()
         {
             _fsm.Update(Time.deltaTime);
-            if (!_startMatchWhenLobbyReady || CurrentProcedure != GameProcedure.Lobby)
-            {
-                return;
-            }
-
-            _startMatchWhenLobbyReady = false;
-            RequestStartMatch();
         }
 
         private void FixedUpdate()

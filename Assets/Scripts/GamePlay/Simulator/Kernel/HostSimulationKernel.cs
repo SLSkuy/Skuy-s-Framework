@@ -9,8 +9,8 @@ namespace GamePlay.Simulator
     /// </summary>
     public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private const uint LOCAL_PLAYER_ID = 1;
-
+        private readonly uint _localPlayerId;
+        private readonly EntityObjectRole _pawnRole;
         private Simulator _simulator;
         private GameObject _pawn;
 
@@ -18,8 +18,14 @@ namespace GamePlay.Simulator
         public override int Priority => 500;
         public Simulator Simulator => _simulator;
         public bool IsSessionRunning { get; private set; }
-        public uint LocalEntityId => IsSessionRunning ? LOCAL_PLAYER_ID : 0;
+        public uint LocalEntityId => IsSessionRunning ? _localPlayerId : 0;
         #endregion
+
+        public HostSimulationKernel(uint localPlayerId, EntityObjectRole pawnRole)
+        {
+            _localPlayerId = localPlayerId;
+            _pawnRole = pawnRole;
+        }
 
         public bool StartSession()
         {
@@ -29,11 +35,11 @@ namespace GamePlay.Simulator
             if (!prefab) return false;
 
             EntityObjectIdentity identity = PlayerSpawner.Spawn(prefab, Vector3.up,
-                "LocalPlayer", LOCAL_PLAYER_ID, EntityObjectRole.LocalPlay, 0);
+                "LocalPlayer", _localPlayerId, _pawnRole, 0);
             _pawn = identity.gameObject;
 
             _simulator.Register(identity, identity.GetComponent<EntityCharacter>());
-            _simulator.SetInputSource(LOCAL_PLAYER_ID, Global.Get<LocalInputManager>().Provider);
+            _simulator.SetInputSource(_localPlayerId, Global.Get<LocalInputManager>().Provider);
             _simulator.StartClock();
 
             Global.Get<CameraManager>().SetTarget(_pawn.transform.Find("orientation"));
@@ -47,8 +53,8 @@ namespace GamePlay.Simulator
         {
             if (!IsSessionRunning) return;
 
-            _simulator.SetInputSource(LOCAL_PLAYER_ID, null);
-            _simulator.Unregister(LOCAL_PLAYER_ID);
+            _simulator.SetInputSource(_localPlayerId, null);
+            _simulator.Unregister(_localPlayerId);
             _simulator.StopClock();
             Object.Destroy(_pawn);
             _pawn = null;
@@ -58,7 +64,7 @@ namespace GamePlay.Simulator
             IsSessionRunning = false;
         }
 
-        #region 生命周期
+        #region 子系统生命周期
 
         public override void Init()
         {

@@ -18,6 +18,11 @@ namespace Framework
         public bool IsCompleted { get; private set; }
 
         /// <summary>
+        /// 是否正在加载场景（含最短展示时间）。
+        /// </summary>
+        public bool IsLoading => _isLoading;
+
+        /// <summary>
         /// 视觉上的最短加载时间
         /// </summary>
         private const float MIN_LOAD_DURATION = 1.5f;

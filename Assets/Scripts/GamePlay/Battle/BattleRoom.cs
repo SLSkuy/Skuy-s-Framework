@@ -11,6 +11,7 @@ namespace GamePlay.Battle
     public sealed class BattleRoom
     {
         public const int DEFAULT_CAPACITY = 4;
+        public const int LOCAL_CAPACITY = 1;
 
         private readonly Dictionary<uint, BattlePlayer> _playersById = new();
         private GameManager _gameManager;
@@ -28,7 +29,28 @@ namespace GamePlay.Battle
         public int Capacity { get; }
         public uint HostPlayerId { get; private set; }
         public bool AcceptsRemoteJoin { get; }
+        public int MemberCount => _playersById.Count;
+        public bool IsMatchSubmitted { get; private set; }
         #endregion
+
+        public bool ContainsPlayer(uint playerId)
+        {
+            return _playersById.ContainsKey(playerId);
+        }
+
+        public void CopyPlayerIds(List<uint> buffer)
+        {
+            buffer.Clear();
+            foreach (uint playerId in _playersById.Keys)
+            {
+                buffer.Add(playerId);
+            }
+        }
+
+        internal void SubmitMatch()
+        {
+            IsMatchSubmitted = true;
+        }
 
         #region 玩家管理
 
@@ -83,6 +105,11 @@ namespace GamePlay.Battle
         /// </summary>
         public bool StartMatch()
         {
+            if (_simulationKernel != null)
+            {
+                return _simulationKernel.IsSessionRunning;
+            }
+
             SystemManager systems = Global.Get<SystemManager>();
             ISimulationKernel kernel = CreateKernel();
             systems.RegisterSystem(kernel);
@@ -121,7 +148,8 @@ namespace GamePlay.Battle
         {
             return SessionRole == BattleSessionRole.Client
                 ? new ClientSimulationKernel()
-                : new HostSimulationKernel();
+                : new HostSimulationKernel(HostPlayerId,
+                    AcceptsRemoteJoin ? EntityObjectRole.Authority : EntityObjectRole.LocalPlay);
         }
 
         #endregion
