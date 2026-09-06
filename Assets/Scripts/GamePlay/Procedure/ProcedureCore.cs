@@ -43,12 +43,19 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 加入远端：建客户端房间并停在大厅。
+        /// 加入远端：先连接，被接受前没有房间；接受后才进入对局。
         /// </summary>
         public void JoinRemote()
         {
             _sessionIntent = SessionIntent.Join;
-            _fsm.ChangeState(GameProcedure.Lobby);
+            if (!Global.TryGet(out BattleManager battle))
+            {
+                battle = Global.Register<BattleManager>();
+            }
+
+            battle.JoinSettled -= HandleJoinSettled;
+            battle.JoinSettled += HandleJoinSettled;
+            battle.JoinRemoteRoom();
         }
 
         /// <summary>
@@ -151,6 +158,11 @@ namespace GamePlay.Procedure
             _sessionIntent = SessionIntent.None;
             HideMatchHud();
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
+            if (Global.TryGet(out BattleManager battle))
+            {
+                battle.JoinSettled -= HandleJoinSettled;
+            }
+
             Global.Unregister<BattleManager>();
 
             if (Global.TryGet(out SceneLoader loader) && loader.IsLoading || 
@@ -158,6 +170,22 @@ namespace GamePlay.Procedure
             {
                 Global.LoadScene(MenuSceneName);
             }
+        }
+
+        private void HandleJoinSettled(bool accepted)
+        {
+            if (Global.TryGet(out BattleManager battle))
+            {
+                battle.JoinSettled -= HandleJoinSettled;
+            }
+
+            if (accepted)
+            {
+                _fsm.ChangeState(GameProcedure.Match);
+                return;
+            }
+
+            TearDownSession();
         }
 
         private void OpenHostSession(bool acceptsRemoteJoin)

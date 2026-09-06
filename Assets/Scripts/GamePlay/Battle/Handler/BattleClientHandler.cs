@@ -61,7 +61,7 @@ namespace GamePlay.Battle
 
         private void HandleGameJoinResponse(Game_Join_Response message)
         {
-            
+            _battle.HandleGameJoinResponse(message);
         }
 
         #endregion

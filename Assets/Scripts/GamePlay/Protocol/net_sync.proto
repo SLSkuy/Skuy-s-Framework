@@ -61,5 +61,9 @@ message Game_Join_Request {
 
 message Game_Join_Response {
   bool accepted = 1;
+  uint32 playerId = 2;
+  uint32 hostPlayerId = 3;
+  repeated uint32 playerIds = 4;
+  bool inMatch = 5;
 }
 // ========== 加入游戏 ==========

@@ -25,14 +25,14 @@ namespace GamePlay.Battle
             Unbind();
             _server = Global.Get<NetServer>();
             
-            _server.RegisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, _battle.HandleGameJoinRequest);
+            _server.RegisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
         }
 
         public void Unbind()
         {
             if (_server == null) return;
             
-            _server.UnregisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, _battle.HandleGameJoinRequest);
+            _server.UnregisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
             _server = null;
         }
 
@@ -40,9 +40,13 @@ namespace GamePlay.Battle
 
         #region 发送消息
 
-        public void SendGameJoinResponse(uint connectionId, bool accepted)
+        private void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
         {
-            Game_Join_Response response = new() { Accepted = accepted, };
+            SendGameJoinResponse(connectionId, _battle.HandleGameJoinRequest(connectionId, request));
+        }
+
+        public void SendGameJoinResponse(uint connectionId, Game_Join_Response response)
+        {
             _server.SendReliable(connectionId, NetEvent.GAME_JOIN_RESPONSE, response);
         }
         

@@ -6,8 +6,7 @@ alwaysApply: false
 
 # Architecture
 
-Project structure, namespaces, and patterns. C# naming and member order: `coding-style.md`.
-Data flow and no `EnsureXxx` guards: `data-flow.md`.
+Project structure, namespaces, and patterns. C# naming, member order, and data-flow guards: `coding-style.md`.
 
 ## Project Structure
 

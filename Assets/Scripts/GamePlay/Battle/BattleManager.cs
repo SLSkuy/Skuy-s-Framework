@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Framework;
 using NetSync;
@@ -26,6 +27,10 @@ namespace GamePlay.Battle
         public BattleRoom ActiveRoom => _activeRoom;
         public bool IsMatchSubmitted => _activeRoom is { IsMatchSubmitted: true };
         public bool IsListening => _netServer is { IsRunning: true };
+        #endregion
+        
+        #region 事件
+        public event Action<bool> JoinSettled;
         #endregion
 
         #region 房间管理
@@ -75,7 +80,6 @@ namespace GamePlay.Battle
         /// </summary>
         public void JoinRemoteRoom()
         {
-            _activeRoom = new BattleRoom(BattleSessionRole.Client, false);
             _netClient = Global.Register<NetClient>();
 
             _clientHandler.Bind();
@@ -203,9 +207,28 @@ namespace GamePlay.Battle
 
         #region 网络消息处理
 
-        public void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
+        public Game_Join_Response HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
         {
-            _serverHandler.SendGameJoinResponse(connectionId, Admit(connectionId));
+            bool accepted = Admit(connectionId);
+            
+            Game_Join_Response response = new() { Accepted = accepted };
+            if (!accepted || _activeRoom == null)
+            {
+                return response;
+            }
+
+            if (_playerId.TryGetValue(connectionId, out uint playerId))
+            {
+                response.PlayerId = playerId;
+            }
+
+            response.HostPlayerId = _activeRoom.HostPlayerId;
+            response.InMatch = _activeRoom.IsMatchSubmitted;
+            List<uint> roster = new();
+            _activeRoom.CopyPlayerIds(roster);
+            response.PlayerIds.AddRange(roster);
+
+            return response;
         }
 
         /// <summary>
@@ -214,6 +237,36 @@ namespace GamePlay.Battle
         private void HandleClientRemoved(uint connectionId)
         {
             Leave(connectionId);
+        }
+
+        public void HandleGameJoinResponse(Game_Join_Response response)
+        {
+            if (!response.Accepted)
+            {
+                HandleJoinFailed();
+                return;
+            }
+
+            if (_activeRoom != null)
+            {
+                return;
+            }
+
+            BattleRoom room = new(BattleSessionRole.Client, false);
+            room.ApplyRoster(response.HostPlayerId, response.PlayerIds, response.InMatch);
+            _activeRoom = room;
+            JoinSettled?.Invoke(true);
+        }
+
+        public void HandleJoinFailed()
+        {
+            if (_activeRoom != null)
+            {
+                return;
+            }
+
+            StopClient();
+            JoinSettled?.Invoke(false);
         }
 
         #endregion

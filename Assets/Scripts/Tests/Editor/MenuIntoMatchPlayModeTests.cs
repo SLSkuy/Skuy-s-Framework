@@ -4,6 +4,7 @@ using Framework;
 using GamePlay.Battle;
 using GamePlay.Procedure;
 using GamePlay.Simulator;
+using NetSync;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -114,6 +115,51 @@ namespace Tests.Editor
             Assert.AreEqual(GameProcedure.Menu, ProcedureCore.Instance.CurrentProcedure);
             Assert.IsFalse(Global.TryGet(out BattleManager _));
             Assert.AreEqual(1, Object.FindObjectsByType<GameCore>(FindObjectsSortMode.None).Length);
+        }
+
+        [UnityTest]
+        public IEnumerator JoinRemote_FailedJoinReturnsToMenuWithoutRoom()
+        {
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("TCP connect failed"));
+            ProcedureCore.Instance.JoinRemote();
+            yield return null;
+
+            Assert.AreNotEqual(GameProcedure.Lobby, ProcedureCore.Instance.CurrentProcedure);
+            Assert.IsTrue(Global.TryGet(out BattleManager battle));
+            Assert.IsNull(battle.ActiveRoom);
+
+            battle.HandleJoinFailed();
+            yield return null;
+
+            Assert.AreEqual(GameProcedure.Menu, ProcedureCore.Instance.CurrentProcedure);
+            Assert.IsFalse(Global.TryGet(out BattleManager _));
+        }
+
+        [UnityTest]
+        public IEnumerator AcceptedJoin_EntersMatchWithoutSpawningPawn()
+        {
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("TCP connect failed"));
+            ProcedureCore.Instance.JoinRemote();
+            yield return null;
+
+            Assert.AreEqual(GameProcedure.Menu, ProcedureCore.Instance.CurrentProcedure);
+            BattleManager battle = Global.Get<BattleManager>();
+            Game_Join_Response response = new()
+            {
+                Accepted = true,
+                PlayerId = 2,
+                HostPlayerId = 1,
+                InMatch = true,
+            };
+            response.PlayerIds.Add(1);
+            response.PlayerIds.Add(2);
+            battle.HandleGameJoinResponse(response);
+            yield return null;
+
+            Assert.AreEqual(GameProcedure.Match, ProcedureCore.Instance.CurrentProcedure);
+            yield return WaitForScene(LevelScene);
+
+            Assert.AreEqual(0, Object.FindObjectsByType<EntityObjectIdentity>(FindObjectsSortMode.None).Length);
         }
 
         private static IEnumerator WaitForScene(string sceneName)

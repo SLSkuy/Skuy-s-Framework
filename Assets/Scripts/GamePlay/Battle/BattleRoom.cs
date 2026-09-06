@@ -51,6 +51,18 @@ namespace GamePlay.Battle
         {
             IsMatchSubmitted = true;
         }
+        
+        internal void ApplyRoster(uint hostPlayerId, IEnumerable<uint> playerIds, bool matchSubmitted)
+        {
+            ClearMembers();
+            foreach (uint playerId in playerIds)
+            {
+                TryAdmit(playerId);
+            }
+
+            HostPlayerId = hostPlayerId;
+            IsMatchSubmitted = matchSubmitted;
+        }
 
         #region 玩家管理
 

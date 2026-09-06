@@ -1,12 +1,12 @@
 ---
-description: C# naming, member order, regions, and file organization
+description: C# naming, member order, regions, file organization, and data-flow (no EnsureXxx)
 globs: Assets/Scripts/**/*.cs
 alwaysApply: false
 ---
 
 # C# Coding Style
 
-C# naming, style, and member order. Folders and namespaces: `architecture.md`. Data flow and no `EnsureXxx` guards: `data-flow.md`.
+C# naming, style, member order, and data-flow guards. Folders, namespaces, and patterns: `architecture.md`.
 
 Use C#, 4-space indent, braces on their own line. Types/methods: `PascalCase`. Locals/parameters: `camelCase`. Update existing XML summaries and comments in place; keep banner comments on their field groups.
 
@@ -91,3 +91,29 @@ Reference: `NetworkObjectIdentity.cs`. Preserve legacy feature regions in `Entit
 - Use `[Header]`, `[Tooltip]`, `[SerializeField]`, `[RequireComponent]`, `[DisallowMultipleComponent]` where they fit.
 - Match the surrounding file for `var` vs explicit types and expression-bodied members.
 
+## Data Flow, Not Defensive Code
+
+Trace producer → store → consumer before writing. Put invariants on the owner of the data. Do not hide broken wiring with protective helpers.
+
+### Forbidden
+
+- `EnsureXxx` / `GuardXxx` / `GetOrCreateXxx` that silently create or skip when state is missing
+- Null / empty checks on every hop that swallow a missing setup and `return`
+- Defaulting absent inputs so the caller never sees the bug
+
+```csharp
+// ❌ BAD — hides that Init never ran
+private EntityCharacter EnsureCharacter()
+{
+    if (_character == null)
+        _character = new EntityCharacter();
+    return _character;
+}
+
+// ❌ BAD — consumer papers over a missing producer
+public void Tick()
+{
+    if (_simulation == null || _registry == null) return;
+    _simulation.Step(_registry);
+}
+```
