@@ -3,7 +3,7 @@ using Framework;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：开战与收局对象。
+    /// 对局流程：切关卡，就绪后开战。
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<GameProcedure>
     {

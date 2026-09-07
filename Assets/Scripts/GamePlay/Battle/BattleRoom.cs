@@ -6,7 +6,7 @@ using GamePlay.Simulator;
 namespace GamePlay.Battle
 {
     /// <summary>
-    /// 游戏房间：跨关卡存活的聚会。开战之后持有 GameManager 与模拟核。
+    /// 房间：跨关卡存活的名册。开战之后持有模拟核与 GameManager。不加载场景。
     /// </summary>
     public sealed class BattleRoom
     {

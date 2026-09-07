@@ -50,7 +50,7 @@ namespace GamePlay.EntitySystem
 | `Framework.StateMachine`   | State machine                             | `IState`, `EnumStateBase`                                      |
 | `Network`                  | Client/server and messages                | `NetClient`, `NetServer`                                       |
 | `Events`                   | Cross-module event enums                  | `NetEvent`                                                     |
-| `GamePlay.Procedure`       | 玩法流程（菜单/大厅/对局）                 | `ProcedureManager`, `GameProcedure`                            |
+| `GamePlay.Procedure`       | 玩法流程（菜单/对局）                       | `ProcedureCore`, `GameProcedure`                               |
 | `GamePlay.Battle`          | 战局会话                                  | `BattleManager`, `BattleRoom`                                  |
 | `GamePlay.EntitySystem`    | Entities, FSM, simulation                 | `EntityCharacter`, `EntityBaseState`                           |
 | `GamePlay.MultiPlaySystem` | Replication, prediction, interpolation    | `CharacterReplicationSystem`, `NetworkObjectIdentity`          |
@@ -62,8 +62,8 @@ namespace GamePlay.EntitySystem
 
 - **HybridCLR:** `Launch` (AOT) loads the hot-update assembly and invokes `MainEntry.Run`. `MainEntry` only switches to `MainScene`; it MUST NOT register gameplay systems.
 - **Shell (`GameCore`):** composition root for process-lifetime Framework modules only (resource, pool, timer, data proxy, scene, local input, UI, camera). Do not register `BattleManager`, `GameManager`, simulation kernels, `NetServer`, or `NetClient`. Do not reference `GamePlay` types.
-- **Procedure (`GamePlay.Procedure`):** a scene object beside `GameCore` (`ProcedureManager` MonoBehaviour). It owns Menu → Lobby → Match and ticks itself. UI uses `ProcedureManager.Instance` (`StartLocal` / `HostMultiplayer` / `JoinRemote` / `RequestStartMatch` / `LeaveSession`). UI MUST NOT `Global.Get<BattleManager>()`.
-- **Three lifetimes:** process = `GameCore` register list; session = Lobby registers `BattleManager` (and network via battle APIs), Menu unregisters it; match = `BattleRoom.StartMatch` / `EndMatch` for `GameManager` and kernels. `BattleRoom` is not a subsystem.
+- **Procedure (`GamePlay.Procedure`):** a scene object beside `GameCore` (`ProcedureCore` MonoBehaviour). Player-visible states are Menu and Match only; there is no lobby. It ticks itself, loads scenes, and is the UI intent entry (`StartLocal` / `HostMultiplayer` / `JoinRemote` / `LeaveSession`). It MUST NOT start `NetServer` / `NetClient`. UI MUST NOT `Global.Get<BattleManager>()`.
+- **Three lifetimes:** process = `GameCore` register list; session = Menu/join intents register `BattleManager` (network via battle APIs), Menu teardown unregisters it; match = after the level scene is ready, `BattleRoom.StartMatch` / `EndMatch` for kernels and `GameManager`. `BattleRoom` is not a subsystem. Host listen starts when the host room is created, before the kernel.
 - **Assemblies:** `Skuy.Core` → `Skuy.Framework` only. `Skuy.Framework` and `Skuy.Core` MUST NOT reference `Skuy.GamePlay`. `Skuy.GamePlay` → Framework + Network (+ Events/Utils/Protocol). `Skuy.Tests` is debug-only and is not the session owner.
 
 ## Patterns

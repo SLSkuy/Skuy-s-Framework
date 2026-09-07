@@ -13,6 +13,7 @@ namespace GamePlay.Procedure
     {
         private EnumStateMachine<GameProcedure> _fsm;
         private MatchDebugHud _matchHud;
+        private bool _joinInFlight;
 
         #region 属性
         public GameProcedure CurrentProcedure => _fsm.CurrentState;
@@ -24,6 +25,11 @@ namespace GamePlay.Procedure
         /// </summary>
         public void StartLocal()
         {
+            if (_joinInFlight)
+            {
+                return;
+            }
+
             OpenHostSession(false);
             _fsm.ChangeState(GameProcedure.Match);
         }
@@ -33,6 +39,11 @@ namespace GamePlay.Procedure
         /// </summary>
         public void HostMultiplayer()
         {
+            if (_joinInFlight)
+            {
+                return;
+            }
+
             OpenHostSession(true);
             _fsm.ChangeState(GameProcedure.Match);
         }
@@ -42,24 +53,36 @@ namespace GamePlay.Procedure
         /// </summary>
         public void JoinRemote()
         {
+            if (_joinInFlight)
+            {
+                return;
+            }
+
             if (!Global.TryGet(out BattleManager battle))
             {
                 battle = Global.Register<BattleManager>();
             }
-            
+
+            _joinInFlight = true;
             battle.JoinSettled += HandleJoinSettled;
             battle.SessionEnded += HandleSessionEnded;
             battle.JoinRemoteRoom();
         }
 
         /// <summary>
-        /// 解散会话并回到菜单。
+        /// 解散会话并回到菜单。加入尚未完成时取消加入。
         /// </summary>
         public void LeaveSession()
         {
+            if (_joinInFlight)
+            {
+                TearDownSession();
+                return;
+            }
+
             _fsm.ChangeState(GameProcedure.Menu);
         }
-        
+
         private void OpenHostSession(bool acceptsRemoteJoin)
         {
             if (!Global.TryGet(out BattleManager battle))
@@ -72,6 +95,7 @@ namespace GamePlay.Procedure
                 return;
             }
 
+            battle.SessionEnded += HandleSessionEnded;
             if (acceptsRemoteJoin)
             {
                 battle.CreateHostRoom();
@@ -83,7 +107,7 @@ namespace GamePlay.Procedure
         }
 
         #region 流程控制
-        
+
         public void OnMatchEntered()
         {
             EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoaded);
@@ -96,17 +120,18 @@ namespace GamePlay.Procedure
 
             Global.LoadScene(GameConstants.LEVEL_SCENE_NAME);
         }
-        
+
         public void OnMatchExited()
         {
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
         }
-        
+
         /// <summary>
         /// 关闭当前存在的战局会话
         /// </summary>
         public void TearDownSession()
         {
+            _joinInFlight = false;
             HideMatchHud();
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
             if (Global.TryGet(out BattleManager battle))
@@ -117,7 +142,7 @@ namespace GamePlay.Procedure
 
             Global.Unregister<BattleManager>();
 
-            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading || 
+            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading ||
                 SceneManager.GetActiveScene().name != GameConstants.MENU_SCENE_NAME)
             {
                 Global.LoadScene(GameConstants.MENU_SCENE_NAME);
@@ -125,7 +150,7 @@ namespace GamePlay.Procedure
         }
 
         #endregion
-        
+
         // ========== HUD调试 ==========
         // ========== HUD调试 ==========
         // ========== HUD调试 ==========
@@ -140,7 +165,7 @@ namespace GamePlay.Procedure
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
-        
+
         /// <summary>
         /// 供常驻 HUD 读取名册，不把战局管理器交给界面。
         /// </summary>
@@ -171,7 +196,6 @@ namespace GamePlay.Procedure
         {
             _fsm = new EnumStateMachine<GameProcedure>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
-            _fsm.RegisterState(new ProcedureLobbyState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
             _fsm.ChangeState(GameProcedure.Menu);
         }
@@ -197,14 +221,14 @@ namespace GamePlay.Procedure
 
         private void HandleLevelLoaded(SceneLoadEvent.CompletedData data)
         {
-            if (data.SceneName != GameConstants.MENU_SCENE_NAME)
+            if (CurrentProcedure != GameProcedure.Match || data.SceneName != GameConstants.LEVEL_SCENE_NAME)
             {
                 return;
             }
 
             StartBattleAfterLevelReady();
         }
-        
+
         private void StartBattleAfterLevelReady()
         {
             if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
@@ -218,13 +242,13 @@ namespace GamePlay.Procedure
                 _fsm.ChangeState(GameProcedure.Menu);
             }
         }
-        
+
         /// <summary>
         /// 处理房间加入流程
         /// </summary>
-        /// <param name="accepted"></param>
         private void HandleJoinSettled(bool accepted)
         {
+            _joinInFlight = false;
             if (Global.TryGet(out BattleManager battle))
             {
                 battle.JoinSettled -= HandleJoinSettled;

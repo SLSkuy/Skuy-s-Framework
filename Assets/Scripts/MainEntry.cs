@@ -8,7 +8,7 @@ public class MainEntry
     private const string MAIN_SCENE = "MainScene";
 
     /// <summary>
-    /// 热更程序集启动：切到带 GameCore 与 ProcedureManager 的主场景。
+    /// 热更程序集启动：切到带 GameCore 与 ProcedureCore 的主场景。
     /// </summary>
     public static void Run()
     {

@@ -7,7 +7,7 @@ using Network;
 namespace GamePlay.Battle
 {
     /// <summary>
-    /// 战局管理器：本进程建房、入房、开战入口，以及网络启停。名册与对局对象在房间内。
+    /// 战局会话：建房、入座、网络启停与解散。不加载场景。名册与对局寿命在房间内。
     /// </summary>
     public sealed class BattleManager : SubSystemBase
     {
@@ -135,7 +135,7 @@ namespace GamePlay.Battle
         #endregion
 
         /// <summary>
-        /// 开启战局
+        /// 关卡就绪后开战：房间内创建模拟核并登记 GameManager。
         /// </summary>
         public bool StartBattle()
         {
