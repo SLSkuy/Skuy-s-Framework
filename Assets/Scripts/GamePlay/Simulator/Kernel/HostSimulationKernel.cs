@@ -1,6 +1,4 @@
 using Framework;
-using GamePlay.EntitySystem;
-using UnityEngine;
 
 namespace GamePlay.Simulator
 {
@@ -9,10 +7,7 @@ namespace GamePlay.Simulator
     /// </summary>
     public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private readonly uint _hostPlayerId;
-        private readonly EntityObjectRole _pawnRole;
         private Simulator _simulator;
-        private GameObject _pawn;
 
         #region 属性
         public override int Priority => 500;
@@ -20,28 +15,11 @@ namespace GamePlay.Simulator
         public bool IsSessionRunning { get; private set; }
         #endregion
 
-        public HostSimulationKernel(uint hostPlayerId, EntityObjectRole pawnRole)
-        {
-            _hostPlayerId = hostPlayerId;
-            _pawnRole = pawnRole;
-        }
-
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
-
-            GameObject prefab = PlayerSpawner.LoadPrefab();
-            if (!prefab) return false;
-
-            EntityObjectIdentity identity = PlayerSpawner.Spawn(prefab, Vector3.up,
-                "LocalPlayer", _hostPlayerId, _pawnRole, 0);
-            _pawn = identity.gameObject;
-
-            _simulator.Register(identity, identity.GetComponent<EntityCharacter>());
-            _simulator.SetInputSource(_hostPlayerId, Global.Get<LocalInputManager>().Provider);
+            
             _simulator.StartClock();
-
-            Global.Get<CameraManager>().SetTarget(_pawn.transform.Find("orientation"));
             IsSessionRunning = true;
             return true;
         }
@@ -50,12 +28,7 @@ namespace GamePlay.Simulator
         {
             if (!IsSessionRunning) return;
 
-            _simulator.SetInputSource(_hostPlayerId, null);
-            _simulator.Unregister(_hostPlayerId);
             _simulator.StopClock();
-            Object.Destroy(_pawn);
-            _pawn = null;
-
             IsSessionRunning = false;
         }
 

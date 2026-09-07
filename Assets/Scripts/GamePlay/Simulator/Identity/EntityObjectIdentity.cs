@@ -25,10 +25,6 @@ namespace GamePlay.Simulator
         public bool IsLocalPlay => role == EntityObjectRole.LocalPlay;
         #endregion
 
-        #region 事件
-        public event Action<EntityObjectRole, EntityObjectRole> RoleChanged;
-        #endregion
-
         /// <summary>
         /// 初始化网络对象身份
         /// </summary>
@@ -42,18 +38,7 @@ namespace GamePlay.Simulator
 
             entityId = objectId;
             ownerClientId = ownerId;
-            SetRole(newRole);
-        }
-
-        /// <summary>
-        /// 设置网络模拟模式
-        /// </summary>
-        public void SetRole(EntityObjectRole newRole)
-        {
-            EntityObjectRole oldRole = role;
-            bool roleChanged = oldRole != newRole;
             role = newRole;
-            if (roleChanged) RoleChanged?.Invoke(oldRole, newRole);
         }
     }
 }

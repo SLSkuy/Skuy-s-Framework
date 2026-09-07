@@ -148,8 +148,7 @@ namespace GamePlay.Battle
         {
             return SessionRole == BattleSessionRole.Client
                 ? new ClientSimulationKernel()
-                : new HostSimulationKernel(HostPlayerId,
-                    AcceptsRemoteJoin ? EntityObjectRole.Authority : EntityObjectRole.LocalPlay);
+                : new HostSimulationKernel();
         }
 
         #endregion

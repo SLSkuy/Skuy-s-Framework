@@ -12,7 +12,6 @@ namespace GamePlay.Procedure
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
         private EnumStateMachine<GameProcedure> _fsm;
-        private SessionIntent _sessionIntent;
         private MatchDebugHud _matchHud;
 
         #region 属性
@@ -25,7 +24,6 @@ namespace GamePlay.Procedure
         /// </summary>
         public void StartLocal()
         {
-            _sessionIntent = SessionIntent.Local;
             OpenHostSession(false);
             _fsm.ChangeState(GameProcedure.Match);
         }
@@ -35,7 +33,6 @@ namespace GamePlay.Procedure
         /// </summary>
         public void HostMultiplayer()
         {
-            _sessionIntent = SessionIntent.Host;
             OpenHostSession(true);
             _fsm.ChangeState(GameProcedure.Match);
         }
@@ -45,7 +42,6 @@ namespace GamePlay.Procedure
         /// </summary>
         public void JoinRemote()
         {
-            _sessionIntent = SessionIntent.Join;
             if (!Global.TryGet(out BattleManager battle))
             {
                 battle = Global.Register<BattleManager>();
@@ -87,24 +83,6 @@ namespace GamePlay.Procedure
         }
 
         #region 流程控制
-
-        public void OnLobbyEntered()
-        {
-            if (!Global.TryGet(out BattleManager battle))
-            {
-                battle = Global.Register<BattleManager>();
-            }
-
-            if (battle.ActiveRoom != null)
-            {
-                return;
-            }
-
-            if (_sessionIntent == SessionIntent.Join)
-            {
-                battle.JoinRemoteRoom();
-            }
-        }
         
         public void OnMatchEntered()
         {
@@ -129,7 +107,6 @@ namespace GamePlay.Procedure
         /// </summary>
         public void TearDownSession()
         {
-            _sessionIntent = SessionIntent.None;
             HideMatchHud();
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
             if (Global.TryGet(out BattleManager battle))

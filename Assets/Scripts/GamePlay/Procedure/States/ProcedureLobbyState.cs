@@ -16,10 +16,5 @@ namespace GamePlay.Procedure
         {
             _procedures = procedures;
         }
-
-        public override void Enter()
-        {
-            _procedures.OnLobbyEntered();
-        }
     }
 }
