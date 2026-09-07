@@ -17,7 +17,6 @@ namespace GamePlay.Simulator
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
         public bool IsRunning => _tickSystem is { IsRunning: true };
-        public int RegisteredEntityCount => _entityRegistry?.Count ?? 0;
         #endregion
 
         #region 事件
@@ -139,15 +138,6 @@ namespace GamePlay.Simulator
         }
 
         #endregion
-
-        public void ForEachRegistered(Action<EntityObjectIdentity, EntityCharacter> visitor)
-        {
-            if (visitor == null || _entityRegistry == null) return;
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                visitor(pair.Value.Identity, pair.Value.Character);
-            }
-        }
 
         #region 生命周期
 

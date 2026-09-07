@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GamePlay.Procedure
@@ -8,8 +7,6 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class MatchDebugHud : MonoBehaviour
     {
-        private readonly List<uint> _roster = new();
-
         private void OnGUI()
         {
             ProcedureCore procedures = ProcedureCore.Instance;
@@ -21,18 +18,18 @@ namespace GamePlay.Procedure
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             GUI.depth = -1000;
-            procedures.CopyRosterPlayerIds(_roster);
+            uint[] roster = procedures.GetRosterPlayerIds();
             GUILayout.BeginArea(new Rect(12f, 12f, 320f, 200f), GUI.skin.box);
             GUILayout.Label("对局名册");
-            if (_roster.Count == 0)
+            if (roster.Length == 0)
             {
                 GUILayout.Label("(空)");
             }
             else
             {
-                for (int i = 0; i < _roster.Count; i++)
+                for (int i = 0; i < roster.Length; i++)
                 {
-                    GUILayout.Label($"玩家 {_roster[i]}");
+                    GUILayout.Label($"玩家 {roster[i]}");
                 }
             }
 

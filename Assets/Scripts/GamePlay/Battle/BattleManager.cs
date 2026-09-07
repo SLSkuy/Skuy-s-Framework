@@ -25,8 +25,6 @@ namespace GamePlay.Battle
         #region 属性
         public override int Priority => 150;
         public BattleRoom ActiveRoom => _activeRoom;
-        public bool IsMatchSubmitted => _activeRoom is { IsMatchSubmitted: true };
-        public bool IsListening => _netServer is { IsRunning: true };
         #endregion
         
         #region 事件
@@ -129,7 +127,6 @@ namespace GamePlay.Battle
 
             _nextPlayerId++;
             _playerId[LOCAL_CONNECTION_ID] = playerId;
-            room.SubmitMatch();
             _activeRoom = room;
             
             return true;
@@ -257,10 +254,7 @@ namespace GamePlay.Battle
             }
 
             notify.HostPlayerId = _activeRoom.HostPlayerId;
-            notify.InMatch = _activeRoom.IsMatchSubmitted;
-            List<uint> roster = new();
-            _activeRoom.CopyPlayerIds(roster);
-            notify.PlayerIds.AddRange(roster);
+            notify.PlayerIds.AddRange(_activeRoom.GetPlayerIds());
             return notify;
         }
 
@@ -280,10 +274,7 @@ namespace GamePlay.Battle
             }
 
             response.HostPlayerId = _activeRoom.HostPlayerId;
-            response.InMatch = _activeRoom.IsMatchSubmitted;
-            List<uint> roster = new();
-            _activeRoom.CopyPlayerIds(roster);
-            response.PlayerIds.AddRange(roster);
+            response.PlayerIds.AddRange(_activeRoom.GetPlayerIds());
 
             return response;
         }
@@ -298,14 +289,25 @@ namespace GamePlay.Battle
 
             if (_activeRoom != null)
             {
-                _activeRoom.ApplyRoster(response.HostPlayerId, response.PlayerIds, response.InMatch);
+                _activeRoom.ApplyRoster(response.HostPlayerId, response.PlayerIds);
                 return;
             }
 
             BattleRoom room = new(BattleSessionRole.Client, false);
-            room.ApplyRoster(response.HostPlayerId, response.PlayerIds, response.InMatch);
+            room.ApplyRoster(response.HostPlayerId, response.PlayerIds);
             _activeRoom = room;
             JoinSettled?.Invoke(true);
+        }
+        
+        public void HandleJoinFailed()
+        {
+            if (_activeRoom != null)
+            {
+                return;
+            }
+
+            StopClient();
+            JoinSettled?.Invoke(false);
         }
 
         /// <summary>
@@ -330,18 +332,7 @@ namespace GamePlay.Battle
                 return;
             }
 
-            _activeRoom.ApplyRoster(notify.HostPlayerId, notify.PlayerIds, notify.InMatch);
-        }
-
-        public void HandleJoinFailed()
-        {
-            if (_activeRoom != null)
-            {
-                return;
-            }
-
-            StopClient();
-            JoinSettled?.Invoke(false);
+            _activeRoom.ApplyRoster(notify.HostPlayerId, notify.PlayerIds);
         }
 
         #endregion

@@ -30,38 +30,26 @@ namespace GamePlay.Battle
         public uint HostPlayerId { get; private set; }
         public bool AcceptsRemoteJoin { get; }
         public int MemberCount => _playersById.Count;
-        public bool IsMatchSubmitted { get; private set; }
         #endregion
-
-        public bool ContainsPlayer(uint playerId)
-        {
-            return _playersById.ContainsKey(playerId);
-        }
-
-        public void CopyPlayerIds(List<uint> buffer)
-        {
-            buffer.Clear();
-            foreach (uint playerId in _playersById.Keys)
-            {
-                buffer.Add(playerId);
-            }
-        }
-
-        internal void SubmitMatch()
-        {
-            IsMatchSubmitted = true;
-        }
         
-        internal void ApplyRoster(uint hostPlayerId, IEnumerable<uint> playerIds, bool matchSubmitted)
+        public uint[] GetPlayerIds()
+        {
+            uint[] playerIds = new uint[_playersById.Count];
+            _playersById.Keys.CopyTo(playerIds, 0);
+            return playerIds;
+        }
+
+        /// <summary>
+        /// 应用远端发来的名单快照
+        /// </summary>
+        public void ApplyRoster(uint hostPlayerId, IEnumerable<uint> playerIds)
         {
             ClearMembers();
+            HostPlayerId = hostPlayerId;
             foreach (uint playerId in playerIds)
             {
                 TryAdmit(playerId);
             }
-
-            HostPlayerId = hostPlayerId;
-            IsMatchSubmitted = matchSubmitted;
         }
 
         #region 玩家管理

@@ -49,5 +49,14 @@ namespace GamePlay.Simulator
         }
 
         #endregion
+
+        #region 网络消息处理
+
+        public void HandleWorldSnapshot()
+        {
+            
+        }
+
+        #endregion
     }
 }

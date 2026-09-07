@@ -45,13 +45,12 @@ namespace NetSync {
             "HgoWbGFzdFByb2Nlc3NlZElucHV0VGljaxgLIAEoDSJgCg5Xb3JsZF9TbmFw",
             "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SOAoTY2hhcmFjdGVyX3NuYXBz",
             "aG90cxgCIAMoCzIbLk5ldFN5bmMuQ2hhcmFjdGVyX1NuYXBzaG90IiUKEUdh",
-            "bWVfSm9pbl9SZXF1ZXN0EhAKCGNsaWVudElkGAEgASgNInIKEkdhbWVfSm9p",
+            "bWVfSm9pbl9SZXF1ZXN0EhAKCGNsaWVudElkGAEgASgNImEKEkdhbWVfSm9p",
             "bl9SZXNwb25zZRIQCghhY2NlcHRlZBgBIAEoCBIQCghwbGF5ZXJJZBgCIAEo",
-            "DRIUCgxob3N0UGxheWVySWQYAyABKA0SEQoJcGxheWVySWRzGAQgAygNEg8K",
-            "B2luTWF0Y2gYBSABKAgiFAoSR2FtZV9MZWF2ZV9SZXF1ZXN0InIKEUdhbWVf",
-            "TGVhdmVfTm90aWZ5EhAKCHBsYXllcklkGAEgASgNEhQKDGhvc3RQbGF5ZXJJ",
-            "ZBgCIAEoDRIRCglwbGF5ZXJJZHMYAyADKA0SDwoHaW5NYXRjaBgEIAEoCBIR",
-            "CglkaXNzb2x2ZWQYBSABKAhiBnByb3RvMw=="));
+            "DRIUCgxob3N0UGxheWVySWQYAyABKA0SEQoJcGxheWVySWRzGAQgAygNIhQK",
+            "EkdhbWVfTGVhdmVfUmVxdWVzdCJhChFHYW1lX0xlYXZlX05vdGlmeRIQCghw",
+            "bGF5ZXJJZBgBIAEoDRIUCgxob3N0UGxheWVySWQYAiABKA0SEQoJcGxheWVy",
+            "SWRzGAMgAygNEhEKCWRpc3NvbHZlZBgFIAEoCGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -62,9 +61,9 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Character_Snapshot), global::NetSync.Character_Snapshot.Parser, new[]{ "EntityId", "OwnerClientId", "SnapshotTick", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "IsGrounded", "LastProcessedInputTick" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "CharacterSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, new[]{ "ClientId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted", "PlayerId", "HostPlayerId", "PlayerIds", "InMatch" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted", "PlayerId", "HostPlayerId", "PlayerIds" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Leave_Request), global::NetSync.Game_Leave_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Leave_Notify), global::NetSync.Game_Leave_Notify.Parser, new[]{ "PlayerId", "HostPlayerId", "PlayerIds", "InMatch", "Dissolved" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Leave_Notify), global::NetSync.Game_Leave_Notify.Parser, new[]{ "PlayerId", "HostPlayerId", "PlayerIds", "Dissolved" }, null, null, null, null)
           }));
     }
     #endregion
@@ -2489,7 +2488,6 @@ namespace NetSync {
       playerId_ = other.playerId_;
       hostPlayerId_ = other.hostPlayerId_;
       playerIds_ = other.playerIds_.Clone();
-      inMatch_ = other.inMatch_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2546,18 +2544,6 @@ namespace NetSync {
       get { return playerIds_; }
     }
 
-    /// <summary>Field number for the "inMatch" field.</summary>
-    public const int InMatchFieldNumber = 5;
-    private bool inMatch_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool InMatch {
-      get { return inMatch_; }
-      set {
-        inMatch_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -2577,7 +2563,6 @@ namespace NetSync {
       if (PlayerId != other.PlayerId) return false;
       if (HostPlayerId != other.HostPlayerId) return false;
       if(!playerIds_.Equals(other.playerIds_)) return false;
-      if (InMatch != other.InMatch) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2589,7 +2574,6 @@ namespace NetSync {
       if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
       if (HostPlayerId != 0) hash ^= HostPlayerId.GetHashCode();
       hash ^= playerIds_.GetHashCode();
-      if (InMatch != false) hash ^= InMatch.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2621,10 +2605,6 @@ namespace NetSync {
         output.WriteUInt32(HostPlayerId);
       }
       playerIds_.WriteTo(output, _repeated_playerIds_codec);
-      if (InMatch != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(InMatch);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2648,10 +2628,6 @@ namespace NetSync {
         output.WriteUInt32(HostPlayerId);
       }
       playerIds_.WriteTo(ref output, _repeated_playerIds_codec);
-      if (InMatch != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(InMatch);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -2672,9 +2648,6 @@ namespace NetSync {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(HostPlayerId);
       }
       size += playerIds_.CalculateSize(_repeated_playerIds_codec);
-      if (InMatch != false) {
-        size += 1 + 1;
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -2697,9 +2670,6 @@ namespace NetSync {
         HostPlayerId = other.HostPlayerId;
       }
       playerIds_.Add(other.playerIds_);
-      if (other.InMatch != false) {
-        InMatch = other.InMatch;
-      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -2732,10 +2702,6 @@ namespace NetSync {
             playerIds_.AddEntriesFrom(input, _repeated_playerIds_codec);
             break;
           }
-          case 40: {
-            InMatch = input.ReadBool();
-            break;
-          }
         }
       }
     #endif
@@ -2766,10 +2732,6 @@ namespace NetSync {
           case 34:
           case 32: {
             playerIds_.AddEntriesFrom(ref input, _repeated_playerIds_codec);
-            break;
-          }
-          case 40: {
-            InMatch = input.ReadBool();
             break;
           }
         }
@@ -2971,7 +2933,6 @@ namespace NetSync {
       playerId_ = other.playerId_;
       hostPlayerId_ = other.hostPlayerId_;
       playerIds_ = other.playerIds_.Clone();
-      inMatch_ = other.inMatch_;
       dissolved_ = other.dissolved_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -3017,18 +2978,6 @@ namespace NetSync {
       get { return playerIds_; }
     }
 
-    /// <summary>Field number for the "inMatch" field.</summary>
-    public const int InMatchFieldNumber = 4;
-    private bool inMatch_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool InMatch {
-      get { return inMatch_; }
-      set {
-        inMatch_ = value;
-      }
-    }
-
     /// <summary>Field number for the "dissolved" field.</summary>
     public const int DissolvedFieldNumber = 5;
     private bool dissolved_;
@@ -3059,7 +3008,6 @@ namespace NetSync {
       if (PlayerId != other.PlayerId) return false;
       if (HostPlayerId != other.HostPlayerId) return false;
       if(!playerIds_.Equals(other.playerIds_)) return false;
-      if (InMatch != other.InMatch) return false;
       if (Dissolved != other.Dissolved) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -3071,7 +3019,6 @@ namespace NetSync {
       if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
       if (HostPlayerId != 0) hash ^= HostPlayerId.GetHashCode();
       hash ^= playerIds_.GetHashCode();
-      if (InMatch != false) hash ^= InMatch.GetHashCode();
       if (Dissolved != false) hash ^= Dissolved.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -3100,10 +3047,6 @@ namespace NetSync {
         output.WriteUInt32(HostPlayerId);
       }
       playerIds_.WriteTo(output, _repeated_playerIds_codec);
-      if (InMatch != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(InMatch);
-      }
       if (Dissolved != false) {
         output.WriteRawTag(40);
         output.WriteBool(Dissolved);
@@ -3127,10 +3070,6 @@ namespace NetSync {
         output.WriteUInt32(HostPlayerId);
       }
       playerIds_.WriteTo(ref output, _repeated_playerIds_codec);
-      if (InMatch != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(InMatch);
-      }
       if (Dissolved != false) {
         output.WriteRawTag(40);
         output.WriteBool(Dissolved);
@@ -3152,9 +3091,6 @@ namespace NetSync {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(HostPlayerId);
       }
       size += playerIds_.CalculateSize(_repeated_playerIds_codec);
-      if (InMatch != false) {
-        size += 1 + 1;
-      }
       if (Dissolved != false) {
         size += 1 + 1;
       }
@@ -3177,9 +3113,6 @@ namespace NetSync {
         HostPlayerId = other.HostPlayerId;
       }
       playerIds_.Add(other.playerIds_);
-      if (other.InMatch != false) {
-        InMatch = other.InMatch;
-      }
       if (other.Dissolved != false) {
         Dissolved = other.Dissolved;
       }
@@ -3209,10 +3142,6 @@ namespace NetSync {
           case 26:
           case 24: {
             playerIds_.AddEntriesFrom(input, _repeated_playerIds_codec);
-            break;
-          }
-          case 32: {
-            InMatch = input.ReadBool();
             break;
           }
           case 40: {
@@ -3245,10 +3174,6 @@ namespace NetSync {
           case 26:
           case 24: {
             playerIds_.AddEntriesFrom(ref input, _repeated_playerIds_codec);
-            break;
-          }
-          case 32: {
-            InMatch = input.ReadBool();
             break;
           }
           case 40: {

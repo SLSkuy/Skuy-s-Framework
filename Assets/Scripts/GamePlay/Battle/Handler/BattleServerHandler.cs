@@ -46,17 +46,8 @@ namespace GamePlay.Battle
             _server.SendReliable(connectionId, NetEvent.GAME_JOIN_RESPONSE, response);
         }
 
-        public void BroadcastRoster(Game_Join_Response response)
-        {
-            if (_server == null) return;
-
-            _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
-        }
-
         public void BroadcastLeave(Game_Leave_Notify notify)
         {
-            if (_server == null) return;
-
             _server.BroadcastReliable(NetEvent.GAME_LEAVE_NOTIFY, notify);
         }
         
