@@ -1,0 +1,5 @@
+interface:
+  display_name: "Implement Direct"
+  short_description: "Build tickets without TDD, production code first"
+policy:
+  allow_implicit_invocation: false
