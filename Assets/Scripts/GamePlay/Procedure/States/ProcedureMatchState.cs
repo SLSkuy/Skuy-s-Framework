@@ -3,7 +3,7 @@ using Framework;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：切关卡，就绪后开战。
+    /// 对局流程：由玩法粘合点加载关卡并启动模拟核。
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<GameProcedure>
     {
@@ -20,11 +20,6 @@ namespace GamePlay.Procedure
         public override void Enter()
         {
             _procedures.OnMatchEntered();
-        }
-
-        public override void Exit()
-        {
-            _procedures.OnMatchExited();
         }
     }
 }

@@ -1,7 +1,7 @@
 namespace GamePlay.GameSession
 {
     /// <summary>
-    /// 战局内关卡流程相位。仅在房间开战、持有 GameManager 期间有意义。
+    /// 对局内关卡流程相位。仅在玩法粘合点持有期间有意义。
     /// </summary>
     public enum GameplayPhase
     {

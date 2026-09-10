@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: done
 
 # 合并房间进名册对象，玩法粘合点分开
 

@@ -112,6 +112,7 @@ Do not introduce helpers or branches whose purpose is to hide a broken invariant
 
 * `EnsureXxx`
 * `GuardXxx`
+* `XxxIfNeeded`
 * `GetOrCreateXxx` when missing state indicates incorrect setup
 * `TryGet` / `TryFind` used only to avoid accessing a required dependency
 * Null checks that only convert a broken dependency into an early `return`

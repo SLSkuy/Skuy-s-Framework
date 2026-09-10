@@ -3,19 +3,19 @@ using Framework;
 using NetSync;
 using Network;
 
-namespace GamePlay.Battle
+namespace GamePlay.Room
 {
     /// <summary>
     /// 战局服务端模块：加入请求收发封装，自行登记与拆除回调。
     /// </summary>
-    public sealed class BattleServerHandler
+    public sealed class RoomServerHandler
     {
-        private readonly BattleManager _battle;
+        private readonly RoomManager _room;
         private NetServer _server;
 
-        public BattleServerHandler(BattleManager battle)
+        public RoomServerHandler(RoomManager room)
         {
-            _battle = battle;
+            _room = room;
         }
 
         #region 消息绑定
@@ -57,7 +57,7 @@ namespace GamePlay.Battle
 
         private void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
         {
-            Game_Join_Response response = _battle.HandleGameJoinRequest(connectionId, request);
+            Game_Join_Response response = _room.HandleGameJoinRequest(connectionId, request);
             SendGameJoinResponse(connectionId, response);
             if (response.Accepted)
             {
@@ -67,7 +67,7 @@ namespace GamePlay.Battle
 
         private void HandleGameLeaveRequest(uint connectionId, Game_Leave_Request request)
         {
-            Game_Leave_Notify notify = _battle.HandleGameLeaveRequest(connectionId);
+            Game_Leave_Notify notify = _room.HandleGameLeaveRequest(connectionId);
             if (!notify.Dissolved && notify.PlayerId != 0)
             {
                 BroadcastLeave(notify);

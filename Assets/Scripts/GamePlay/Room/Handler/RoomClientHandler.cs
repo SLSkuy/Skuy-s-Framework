@@ -4,19 +4,19 @@ using NetConnect;
 using NetSync;
 using Network;
 
-namespace GamePlay.Battle
+namespace GamePlay.Room
 {
     /// <summary>
     /// 战局客户端模块：加入与离开请求发送，加入响应与离开通知接收。
     /// </summary>
-    public sealed class BattleClientHandler
+    public sealed class RoomClientHandler
     {
-        private readonly BattleManager _battle;
+        private readonly RoomManager _room;
         private NetClient _client;
 
-        public BattleClientHandler(BattleManager battle)
+        public RoomClientHandler(RoomManager room)
         {
-            _battle = battle;
+            _room = room;
         }
 
         #region 消息绑定
@@ -71,17 +71,17 @@ namespace GamePlay.Battle
 
         private void HandleGameJoinResponse(Game_Join_Response message)
         {
-            _battle.HandleGameJoinResponse(message);
+            _room.HandleGameJoinResponse(message);
         }
 
         private void HandleGameLeaveNotify(Game_Leave_Notify message)
         {
-            _battle.HandleGameLeaveNotify(message);
+            _room.HandleGameLeaveNotify(message);
         }
 
         private void HandleConnectionFailed()
         {
-            _battle.HandleJoinFailed();
+            _room.HandleJoinFailed();
         }
 
         #endregion

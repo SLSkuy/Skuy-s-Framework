@@ -1,6 +1,7 @@
 using Core;
 using Framework;
-using GamePlay.Battle;
+using GamePlay.GameSession;
+using GamePlay.Room;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,66 +12,54 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
+        private ProcedureJoinClientHandler _joinClientHandler;
         private EnumStateMachine<GameProcedure> _fsm;
         private MatchDebugHud _matchHud;
         private bool _joinInFlight;
-
+        
         #region 属性
         public GameProcedure CurrentProcedure => _fsm.CurrentState;
-        public bool SessionIsHost => Global.TryGet(out BattleManager battle) && battle.ActiveRoom is { SessionRole: BattleSessionRole.Host };
+        public bool SessionIsHost => Global.TryGet(out RoomManager battle) && battle.IsInMatch && 
+                                     battle.SessionRole == SessionRole.Host;
         #endregion
 
         /// <summary>
-        /// 本机玩：建本机房并进入对局，切关后再开战。
+        /// 本机玩：建本机对局并进入对局。
         /// </summary>
         public void StartLocal()
         {
-            if (_joinInFlight)
-            {
-                return;
-            }
+            if (_joinInFlight) return;
 
             OpenHostSession(false);
             _fsm.ChangeState(GameProcedure.Match);
         }
 
         /// <summary>
-        /// 开多人：本机入座、开听、对局已提交，切关后再开战。
+        /// 开多人：本机入座、开听、对局已提交，进入对局。
         /// </summary>
         public void HostMultiplayer()
         {
-            if (_joinInFlight)
-            {
-                return;
-            }
+            if (_joinInFlight) return;
 
             OpenHostSession(true);
             _fsm.ChangeState(GameProcedure.Match);
         }
 
         /// <summary>
-        /// 加入远端：先连接，被接受前没有房间；接受后才进入对局。
+        /// 加入远端：先连接，被接受前仍在菜单且没有对局；接受后才登记名册与玩法粘合点。
         /// </summary>
         public void JoinRemote()
         {
-            if (_joinInFlight)
-            {
-                return;
-            }
-
-            if (!Global.TryGet(out BattleManager battle))
-            {
-                battle = Global.Register<BattleManager>();
-            }
+            if (_joinInFlight) return;
 
             _joinInFlight = true;
-            battle.JoinSettled += HandleJoinSettled;
-            battle.SessionEnded += HandleSessionEnded;
-            battle.JoinRemoteRoom();
+            _joinClientHandler = new ProcedureJoinClientHandler();
+            _joinClientHandler.JoinSettled += HandleJoinSettled;
+            _joinClientHandler.StartJoin();
         }
 
         /// <summary>
-        /// 解散会话并回到菜单。加入尚未完成时取消加入。
+        /// 解散对局并回到菜单。加入尚未完成时取消加入。
         /// </summary>
         public void LeaveSession()
         {
@@ -85,12 +74,12 @@ namespace GamePlay.Procedure
 
         private void OpenHostSession(bool acceptsRemoteJoin)
         {
-            if (!Global.TryGet(out BattleManager battle))
+            if (!Global.TryGet(out RoomManager battle))
             {
-                battle = Global.Register<BattleManager>();
+                battle = Global.Register<RoomManager>();
             }
 
-            if (battle.ActiveRoom != null)
+            if (battle.IsInMatch)
             {
                 return;
             }
@@ -98,49 +87,64 @@ namespace GamePlay.Procedure
             battle.SessionEnded += HandleSessionEnded;
             if (acceptsRemoteJoin)
             {
+                // 创建主机房间
                 battle.CreateHostRoom();
             }
             else
             {
+                // 创建本地房间
                 battle.CreateLocalRoom();
             }
+
+            LaunchGame(SessionRole.Host);
+        }
+
+        /// <summary>
+        /// 打开游戏管理器，正式开启游戏
+        /// </summary>
+        private void LaunchGame(SessionRole role)
+        {
+            if (!Global.TryGet(out GameManager gameManager))
+            {
+                gameManager = Global.Register<GameManager>();
+            }
+
+            gameManager.InitMatch(role);
         }
 
         #region 流程控制
 
         public void OnMatchEntered()
         {
-            EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoaded);
             ShowMatchHud();
-            if (SceneManager.GetActiveScene().name == GameConstants.LEVEL_SCENE_NAME)
+            if (!Global.Get<GameManager>().EnterMatch())
             {
-                StartBattleAfterLevelReady();
-                return;
+                _fsm.ChangeState(GameProcedure.Menu);
             }
-
-            Global.LoadScene(GameConstants.LEVEL_SCENE_NAME);
-        }
-
-        public void OnMatchExited()
-        {
-            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
         }
 
         /// <summary>
-        /// 关闭当前存在的战局会话
+        /// 关闭当前存在的对局，或取消尚未完成的加入。
         /// </summary>
         public void TearDownSession()
         {
             _joinInFlight = false;
             HideMatchHud();
-            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoaded);
-            if (Global.TryGet(out BattleManager battle))
+            
+            if (_joinClientHandler != null)
             {
-                battle.JoinSettled -= HandleJoinSettled;
+                _joinClientHandler.JoinSettled -= HandleJoinSettled;
+                _joinClientHandler.CancelJoin();
+                _joinClientHandler = null;    
+            }
+            
+            if (Global.TryGet(out RoomManager battle))
+            {
                 battle.SessionEnded -= HandleSessionEnded;
             }
 
-            Global.Unregister<BattleManager>();
+            Global.Unregister<GameManager>();
+            Global.Unregister<RoomManager>();
 
             if (Global.TryGet(out SceneLoader loader) && loader.IsLoading ||
                 SceneManager.GetActiveScene().name != GameConstants.MENU_SCENE_NAME)
@@ -171,12 +175,12 @@ namespace GamePlay.Procedure
         /// </summary>
         public uint[] GetRosterPlayerIds()
         {
-            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
+            if (!Global.TryGet(out RoomManager battle) || !battle.IsInMatch)
             {
                 return System.Array.Empty<uint>();
             }
 
-            return battle.ActiveRoom.GetPlayerIds();
+            return battle.GetPlayerIds();
         }
 
         private void HideMatchHud()
@@ -219,43 +223,17 @@ namespace GamePlay.Procedure
 
         #region 回调处理
 
-        private void HandleLevelLoaded(SceneLoadEvent.CompletedData data)
-        {
-            if (CurrentProcedure != GameProcedure.Match || data.SceneName != GameConstants.LEVEL_SCENE_NAME)
-            {
-                return;
-            }
-
-            StartBattleAfterLevelReady();
-        }
-
-        private void StartBattleAfterLevelReady()
-        {
-            if (!Global.TryGet(out BattleManager battle) || battle.ActiveRoom == null)
-            {
-                _fsm.ChangeState(GameProcedure.Menu);
-                return;
-            }
-
-            if (!battle.StartBattle())
-            {
-                _fsm.ChangeState(GameProcedure.Menu);
-            }
-        }
-
-        /// <summary>
-        /// 处理房间加入流程
-        /// </summary>
         private void HandleJoinSettled(bool accepted)
         {
             _joinInFlight = false;
-            if (Global.TryGet(out BattleManager battle))
-            {
-                battle.JoinSettled -= HandleJoinSettled;
-            }
 
             if (accepted)
             {
+                _joinClientHandler.JoinSettled -= HandleJoinSettled;
+                _joinClientHandler = null;
+                
+                Global.Get<RoomManager>().SessionEnded += HandleSessionEnded;
+                LaunchGame(SessionRole.Client);
                 _fsm.ChangeState(GameProcedure.Match);
                 return;
             }
@@ -263,12 +241,9 @@ namespace GamePlay.Procedure
             TearDownSession();
         }
 
-        /// <summary>
-        /// 处理会话关闭流程
-        /// </summary>
         private void HandleSessionEnded()
         {
-            if (Global.TryGet(out BattleManager battle))
+            if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
             }
