@@ -36,6 +36,7 @@ namespace Framework
             GameCore.Instance.StartCoroutine(InitPackage());
         }
         
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 初始化资源包
         /// </summary>
@@ -135,21 +136,25 @@ namespace Framework
 
         #region 资源管理方法
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public AssetHandle Load<T>(string location) where T : Object
         {
             return _package.LoadAssetSync<T>(location);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public AssetHandle LoadAsync<T>(string location) where T : Object
         {
             return _package.LoadAssetAsync<T>(location);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public void ClearUnused()
         {
             GameCore.Instance.StartCoroutine(ClearUnusedAssets());
         }
         
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 清理没有使用的资源文件
         /// </summary>
@@ -171,11 +176,13 @@ namespace Framework
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public void ClearAll()
         {
             GameCore.Instance.StartCoroutine(ClearAllAssets());
         }
         
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 清理所有的缓存资源文件
         /// </summary>
@@ -196,6 +203,7 @@ namespace Framework
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 同步关闭 YooAsset：停掉本策略挂起的协程并销毁资源系统。
         /// </summary>
