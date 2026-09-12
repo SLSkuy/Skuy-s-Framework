@@ -25,8 +25,24 @@ _Avoid_: 单机旁路, 本机房, 无房间本地玩
 _Avoid_: 游戏场景当启动器, 第二个 GameCore（历史残留）
 
 **关卡控制**：
-对局里负责加载与切换关卡。不是玩法粘合点，也不管名册和连接。
-_Avoid_: 菜单流程, 大厅
+对局里负责何时加载与切换关卡（进度、事件、最短展示）。不是玩法粘合点，也不管名册和连接。场景 IO 由 `SceneLoader` 负责，与资源门面无关。
+_Avoid_: 菜单流程, 大厅, 资源策略兼做关卡流程
+
+**资源门面**：
+进程级资源入口，持有当前资源策略，对外给统一 API。只负责资源加载与卸载。不缓存资源对象、不维护第二套引用计数、不实例化 GameObject。已实现为 `AssetManager`（`Assets/Scripts/Framework/ResourceManager/`），未登记进程壳；`Global` 仍走旧 `ResourceManager`。
+_Avoid_: ResourceManager（指新系统时）, 二次缓存, 资源系统兼做实例化
+
+**资源策略**：
+实现了资源加载接口的模块。负责加载、卸载与句柄生命周期。门面不代替它做缓存。实例化不属于资源策略。契约接口为 `IAssetProvider`；尚无内置 Resources / YooAsset 实现，由模块注入。
+_Avoid_: Loader（旧 `IResourceLoader` 只做 IO）, 资源加载器（口语可以，文档用资源策略）
+
+**资源位置**：
+一次加载请求的身份：`location` 必填，`package` 可空。`package` 只给策略做路由，不是热更/下载 API。类型名为 `AssetLocation`。
+_Avoid_: path 与 key 混称, 资源路径（口语可以，文档用资源位置）
+
+**资源句柄**：
+一次加载的所有权凭证。创建即可持有，状态为加载中 / 成功 / 失败；成功才视为有效。失败也返回句柄，不抛、不返回 null。释放即放弃所有权（进行中的加载视为取消）。第一期不做取消令牌、不做批量加载、不做门面托管缓存。类型名为 `AssetHandle<T>`（可等待）。场景加载不在本期资源门面范围内。
+_Avoid_: GetAsset, ManagedCache, ResourceHandle（旧类型）, CancellationToken（资源加载）
 
 **房主**：
 名册上的主持玩家，且本机作为 listen-server 开听。房主退出对局则解散。不做房主迁移。
