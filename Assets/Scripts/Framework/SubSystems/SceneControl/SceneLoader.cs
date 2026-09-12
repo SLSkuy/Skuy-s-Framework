@@ -104,7 +104,8 @@ namespace Framework
                 _isLoading = false;
                 _currentSceneName = _loadingSceneName;
                 IsCompleted = true;
-                
+
+                Global.Get<SpawnManager>().Clear();
                 Global.Get<ResourceManager>().ClearAll();
                 DispatchCompleted();
             }

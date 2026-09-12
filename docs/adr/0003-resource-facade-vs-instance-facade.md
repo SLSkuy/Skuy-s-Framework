@@ -4,4 +4,4 @@
 
 **Considered Options**: 一个门面兼做加载和实例化；封装句柄去掉 Instantiate；保留对外的 prefab PoolManager；调用方手动 Dispose 句柄。
 
-**Consequences**: 类型名为 `InstantiationManager`。全局空闲超时 30 秒。`InstantiateAsync` 即使池命中也延到下一帧完成。`Global` 的 Load 与 Instantiate 分属两扇门面。纯 C# 池仍由 PoolManager 对外。不提供预热。UI 根与 CameraManager 改接线不在本决策的实现切片里。
+**Consequences**: 类型名为 `InstantiationManager`。全局空闲超时 30 秒。`InstantiateAsync` 池命中当帧完成，需要加载时至少下一帧完成。`Global` 的 Load 与 Instantiate 分属两扇门面。纯 C# 池仍由 PoolManager 对外。不提供预热。UI 根与 CameraManager 改接线不在本决策的实现切片里。

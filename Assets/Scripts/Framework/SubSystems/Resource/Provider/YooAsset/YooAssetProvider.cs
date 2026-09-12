@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Core;
 using UnityEngine;
 using YooAsset;
@@ -15,6 +16,10 @@ namespace Framework
         private readonly EPlayMode _playMode;
         private readonly string _packageName; 
         private string _packageVersion;
+
+        #region 事件
+        public event Action InitCompleted;
+        #endregion
         
         public YooAssetProvider(string packageName, EPlayMode playMode)
         {
@@ -30,7 +35,7 @@ namespace Framework
         {
             GameCore.Instance.StartCoroutine(InitPackage());
         }
-
+        
         /// <summary>
         /// 初始化资源包
         /// </summary>
@@ -84,6 +89,7 @@ namespace Framework
             yield return UpdatePackageManifest(_package, _packageVersion);
             
             Debug.Log($"[{GetType()}] 资源包初始化完成");
+            InitCompleted?.Invoke();
         }
 
         /// <summary>

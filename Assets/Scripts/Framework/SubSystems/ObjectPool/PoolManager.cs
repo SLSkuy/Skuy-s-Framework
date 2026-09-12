@@ -1,175 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Framework
 {
     /// <summary>
-    /// Global object pool service. It pools prefab instances and delegates prefab loading/lifetime to ResourceManager.
+    /// 进程级纯 C# 对象池。不按资源位置取还 GameObject，不向资源门面要实例。
     /// </summary>
     public sealed class PoolManager : SubSystemBase
     {
-        private readonly Dictionary<string, Queue<GameObject>> _monoPools = new();
-        private readonly Dictionary<GameObject, string> _objectKeyMap = new();
         private readonly Dictionary<Type, object> _purePools = new();
-
-        private ResourceManager _resourceManager;
-        private Transform _poolRoot;
 
         #region 属性
         public override int Priority => (int)SubSystemPriority.PoolManager;
         #endregion
-
-        public override void Init()
-        {
-            GameObject gameRoot = GameObject.Find("[GameRoot]");
-            _poolRoot = new GameObject("[PoolManager]").transform;
-            _poolRoot.SetParent(gameRoot.transform);
-            
-            _resourceManager = Global.Get<ResourceManager>();
-        }
-
-        #region Mono object pool
-
-        public GameObject Get(string key, Vector3 position = default, Quaternion rotation = default, Transform parent = null)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                Debug.LogError("[PoolManager] Get failed: resource key is null or empty.");
-                return null;
-            }
-
-            if (!_monoPools.TryGetValue(key, out Queue<GameObject> pool))
-            {
-                pool = new Queue<GameObject>();
-                _monoPools[key] = pool;
-            }
-
-            GameObject obj = null;
-            while (pool.Count > 0 && !obj)
-            {
-                obj = pool.Dequeue();
-            }
-
-            if (!obj)
-            {
-                // obj = _resourceManager.Instantiate(key, position, rotation, parent);
-                if (!obj) return null;
-                _objectKeyMap[obj] = key;
-                return obj;
-            }
-
-            obj.transform.SetParent(!parent ? _poolRoot : parent);
-            obj.transform.SetPositionAndRotation(position, rotation);
-            obj.SetActive(true);
-            return obj;
-        }
-
-        public T Get<T>(string key, Vector3 position = default, Quaternion rotation = default, Transform parent = null) where T : Component
-        {
-            GameObject obj = Get(key, position, rotation, parent);
-            return obj ? obj.GetComponent<T>() : null;
-        }
-
-        public void Prewarm(string key, int count, Transform parent = null)
-        {
-            if (string.IsNullOrEmpty(key) || count <= 0) return;
-
-            List<GameObject> instances = new(count);
-            for (int i = 0; i < count; i++)
-            {
-                GameObject obj = Get(key, parent: parent);
-                if (!obj) continue;
-                instances.Add(obj);
-            }
-
-            foreach (GameObject obj in instances)
-            {
-                Release(obj);
-            }
-        }
-
-        public void Release(GameObject obj)
-        {
-            if (!obj) return;
-
-            if (!_objectKeyMap.TryGetValue(obj, out string key))
-            {
-                Debug.LogError("[PoolManager] Object was not created by this pool, destroying it directly.");
-                Object.Destroy(obj);
-                return;
-            }
-
-            if (!_monoPools.TryGetValue(key, out Queue<GameObject> pool))
-            {
-                pool = new Queue<GameObject>();
-                _monoPools[key] = pool;
-            }
-
-            obj.SetActive(false);
-            obj.transform.SetParent(_poolRoot);
-            pool.Enqueue(obj);
-        }
-
-        public void ClearPool(string key)
-        {
-            ClearPoolInternal(key, true);
-        }
-
-        private void ClearPoolInternal(string key, bool clearUnusedAssets)
-        {
-            if (string.IsNullOrEmpty(key)) return;
-
-            if (_monoPools.TryGetValue(key, out Queue<GameObject> pool))
-            {
-                while (pool.Count > 0)
-                {
-                    GameObject obj = pool.Dequeue();
-                    if (!obj) continue;
-                    _objectKeyMap.Remove(obj);
-                    Object.Destroy(obj);
-                }
-
-                _monoPools.Remove(key);
-            }
-
-            // _resourceManager?.ReleaseManagedCache(key);
-            if (clearUnusedAssets)
-            {
-                _resourceManager?.ClearUnused();
-            }
-        }
-
-        public void ClearPoolsByPrefix(string keyPrefix)
-        {
-            if (string.IsNullOrEmpty(keyPrefix)) return;
-
-            List<string> keys = _monoPools.Keys
-                .Where(key => key.StartsWith(keyPrefix, StringComparison.Ordinal))
-                .ToList();
-
-            foreach (string key in keys)
-            {
-                ClearPool(key);
-            }
-        }
-
-        public void ClearAllMonoPools()
-        {
-            foreach (string key in _monoPools.Keys.ToList())
-            {
-                ClearPoolInternal(key, false);
-            }
-
-            _objectKeyMap.Clear();
-            _resourceManager?.ClearUnused();
-        }
-
-        #endregion
-
-        #region Pure C# object pool
 
         public void RegisterPool<T>(Func<T> createFunc, Action<T> onGet = null, Action<T> onRelease = null,
             Action<T> onDestroy = null, int defaultCapacity = 0, int maxCount = 32) where T : class
@@ -240,25 +84,11 @@ namespace Framework
             _purePools.Clear();
         }
 
-        #endregion
-
-        public void ClearAll()
-        {
-            ClearAllMonoPools();
-            ClearAllPools();
-        }
-
+        #region 子系统生命周期
         public override void Destroy()
         {
-            ClearAll();
-
-            if (_poolRoot)
-            {
-                Object.Destroy(_poolRoot.gameObject);
-                _poolRoot = null;
-            }
-            
-            _resourceManager = null;
+            ClearAllPools();
         }
+        #endregion
     }
 }

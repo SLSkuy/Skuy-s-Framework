@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -32,6 +31,13 @@ namespace Framework
         }
         #endregion
 
+        #region 事件
+        /// <summary>
+        /// 资源系统准备完毕
+        /// </summary>
+        public event Action OnResourceReady;
+        #endregion
+
         /// <summary>
         /// 注入资源策略，只能调用一次。
         /// </summary>
@@ -43,9 +49,12 @@ namespace Framework
             if (provider == null)
                 throw new ArgumentNullException(nameof(provider));
 
-            provider.Init();
+            
             _provider = provider;
+            _provider.InitCompleted += () => OnResourceReady?.Invoke();
             _providerInjected = true;
+            
+            provider.Init();
         }
 
         /// <summary>

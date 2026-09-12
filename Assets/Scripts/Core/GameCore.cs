@@ -13,6 +13,7 @@ namespace Core
         public TimerManager TimerMgr { get; private set; }
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
+        public SpawnManager SpawnMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public LocalInputManager LocalInputMgr { get; private set; }
         public SceneLoader SceneMgr { get; private set; }
@@ -25,25 +26,32 @@ namespace Core
         private void InitializeGameCore()
         {
             _config = GameCoreConfig.Instance;
-
             Application.targetFrameRate = _config.targetFrame;
 
+            SystemMgr = new SystemManager();
+            SystemMgr._Init();
+            
+            // 资源核心模块加载完毕之后再加载其他系统
+            ResourceMgr = SystemMgr.RegisterSystem<ResourceManager>();
+            ResourceMgr.SetProvider(new YooAssetProvider(_config.defaultPackageName, _config.resourceMode));
+            ResourceMgr.OnResourceReady += InitSystems;
+        }
+
+        #region Global
+
+        private void InitSystems()
+        {
             InitSubSystems();
             InitDataProxy();
             InitUI();
         }
-
-        #region Global
 
         /// <summary>
         /// 初始化所有子系统
         /// </summary>
         private void InitSubSystems()
         {
-            SystemMgr = new SystemManager();
-            SystemMgr._Init();
-
-            ResourceMgr = SystemMgr.RegisterSystem<ResourceManager>();
+            SpawnMgr = SystemMgr.RegisterSystem<SpawnManager>();
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();
             TimerMgr = SystemMgr.RegisterSystem<TimerManager>();
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();
@@ -92,8 +100,9 @@ namespace Core
 
         protected override void Destroy()
         {
-            Global.Clear();
+            ResourceMgr.OnResourceReady -= InitSystems;
             SystemMgr.Destroy();
+            Global.Clear();
         }
 
         /// <summary>

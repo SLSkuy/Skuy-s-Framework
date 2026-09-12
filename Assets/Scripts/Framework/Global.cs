@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -127,6 +129,30 @@ namespace Framework
         public static AssetHandle LoadAsync<T>(string path) where T : Object
         {
             return Get<ResourceManager>().LoadAsync<T>(path);
+        }
+
+        /// <summary>
+        /// 按资源位置同步生成 GameObject
+        /// </summary>
+        public static GameObject Instantiate(string location, InstantiateOptions options = default)
+        {
+            return Get<SpawnManager>().Instantiate(location, options);
+        }
+        
+        /// <summary>
+        /// 按资源位置异步生成 GameObject
+        /// </summary>
+        public static Task<GameObject> InstantiateAsync(string location, InstantiateOptions options = default)
+        {
+            return Get<SpawnManager>().InstantiateAsync(location, options);
+        }
+
+        /// <summary>
+        /// 回收由实例门面生成的实例。
+        /// </summary>
+        public static void Release(GameObject instance)
+        {
+            Get<SpawnManager>().Release(instance);
         }
 
         public static void LoadScene(string sceneName)

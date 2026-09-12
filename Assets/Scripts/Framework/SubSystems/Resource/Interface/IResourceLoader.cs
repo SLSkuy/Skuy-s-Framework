@@ -1,3 +1,4 @@
+using System;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -8,6 +9,8 @@ namespace Framework
     /// </summary>
     public interface IResourceLoader
     {
+        event Action InitCompleted;
+        
         /// <summary>
         /// 初始化资源提供器
         /// </summary>

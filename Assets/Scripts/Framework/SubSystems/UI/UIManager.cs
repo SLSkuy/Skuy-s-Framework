@@ -5,6 +5,7 @@ using Framework.Panel;
 using Framework.Window;
 using UnityEngine;
 using UnityEngine.UI;
+using YooAsset;
 using Object = UnityEngine.Object;
 
 namespace Framework
@@ -35,8 +36,8 @@ namespace Framework
         public override void Init()
         {
             // 获取UI容器
-            _container = Global.Instantiate("UI/UIManager").transform;
-            _container.name = "[UIRoot]";
+            _container = Global.Instantiate("UI_UIManager", new InstantiateOptions(true)).transform;
+            _container.name = "[UIManager]";
             Object.DontDestroyOnLoad(_container);
             
             // 初始化Panel层级管理器
@@ -71,7 +72,13 @@ namespace Framework
             
             _graphicRaycaster = _container.GetComponent<GraphicRaycaster>();
         }
-        
+
+        public override void Destroy()
+        {
+            // 释放资源
+            Global.Release(_container.gameObject);
+        }
+
         #endregion
         
         #region 框架对外暴露方法

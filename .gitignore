@@ -116,3 +116,7 @@ tools
 .vsconfig
 *.slnx
 *.lscache
+
+# 资源打包
+Bundles/
+StreamingAssets/

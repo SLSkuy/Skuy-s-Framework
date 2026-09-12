@@ -17,7 +17,7 @@ Respect: `CONTEXT.md`, `docs/adr/0003-resource-facade-vs-instance-facade.md`.
 1. As a 玩法系统, I want 用资源位置同步生成一个 GameObject, so that 我不必先 Load 再自己 Instantiate。
 2. As a 玩法系统, I want 生成时指定父节点、位置和旋转, so that 实例直接出现在世界里该在的地方。
 3. As a 玩法系统, I want 用资源位置异步生成 GameObject, so that 首次加载预制体时不会卡在同步路径上。
-4. As a 玩法系统, I want InstantiateAsync 在池里已有空闲实例时也等到下一帧才拿到对象, so that 同步命中和首次加载不会混成两种时序。
+4. As a 玩法系统, I want InstantiateAsync 在池里已有空闲实例时当帧拿到对象, so that 命中不必再等一帧。
 5. As a 玩法系统, I want 同一资源位置第二次生成尽量复用已还池的实例, so that 不会每个子弹都重新 Instantiate。
 6. As a 玩法系统, I want Release 一个由实例门面生成的对象后它从世界上消失但还能再被借出, so that 回收是否还池由门面决定，而不是我 Destroy。
 7. As a 玩法系统, I want 还池后的对象处于未激活并离开原父节点, so that 不会继续留在关卡层级里被看见或被场景卸掉时连带搞乱。
@@ -54,7 +54,7 @@ Respect: `CONTEXT.md`, `docs/adr/0003-resource-facade-vs-instance-facade.md`.
 38. As a 测试, I want 只通过实例门面的对外生成/回收/清空/超时行为断言对错, so that 不必打开内部字典或去 spy 资源门面调用次序。
 39. As a 测试, I want 用测试资源策略注入资源门面来提供可实例化的预制体, so that 不必在测试里启动完整热更管线。
 40. As a 测试, I want 推进实例门面的帧更新来验证 30 秒空闲卸句柄, so that 超时是可观测行为而不是睡真实半分钟的手动步骤（测试可将时间加速或连续喂 deltaTime）。
-41. As a 测试, I want InstantiateAsync 的完成发生在至少一帧之后, so that 「永远推迟到下一帧」是对外契约。
+41. As a 测试, I want 需要加载的 InstantiateAsync 的完成发生在至少一帧之后, so that 首次加载的时序可观测；池命中当帧完成。
 42. As a 测试, I want 同一资源位置还池后再同步 Instantiate 拿到的是可用实例, so that 池命中不必再走失败的加载。
 43. As a 调用方, I want 空资源位置（空字符串）被当成失败并打日志返回空, so that 与缺资源同一类预期失败。
 44. As a 调用方, I want 对已 Release 的实例再次 Release 被当成外源/非法并打日志忽略, so that 双 Release 不会把池结构打乱。
@@ -75,7 +75,7 @@ Respect: `CONTEXT.md`, `docs/adr/0003-resource-facade-vs-instance-facade.md`.
 - 内部按资源位置一份池。池未命中才加载并 Instantiate；命中则取出空闲实例、激活并放到请求的父节点/位姿。Release 将实例失活、挂回门面自己的池根、记入空闲。调用方不 Dispose 预制体句柄。
 - 资源句柄保持 Yoo 原类型、门面不二次封装。业务不直接对该句柄 Instantiate/Dispose 只靠约定与本切片的正确入口，不靠换返回类型强制。
 - 借出计数：某资源位置借出 > 0 时不计空闲超时。借出变为 0 后用子系统 Update 累加时间；期间再次借出则清零。全局唯一超时为 30 秒（所有资源位置相同）。超时：销毁该位置空闲实例并 Dispose 对应预制体句柄。之后再生成视为首次加载。
-- InstantiateAsync：无论池命中还是需要加载，都在至少下一帧才把实例交给调用方（测试用喂 deltaTime/等一帧观察，不测内部调度器类型）。
+- InstantiateAsync：池命中当帧把实例交给调用方；需要加载时至少下一帧完成（测试用喂 deltaTime/等一帧观察加载路径，不测内部调度器类型）。
 - 预期失败（空资源位置、加载失败、无法实例化）：错误日志 + 返回 null。资源门面未注入策略等初始化不变量仍由资源门面按现有方式失败，实例门面不得改成「缺资源」。
 - Release 外源对象、空引用、或不在借出表中的对象：错误日志并忽略，不 Destroy。
 - 切场景：场景加载器在完成加载、调用资源门面卸光之前，先清空实例门面。不得只 ClearAll 资源而留下实例门面的句柄与池。
@@ -85,7 +85,7 @@ Respect: `CONTEXT.md`, `docs/adr/0003-resource-facade-vs-instance-facade.md`.
 
 ## Testing Decisions
 
-- 只测对外行为：给定资源位置，Instantiate / InstantiateAsync 是否得到可用实例、Release 后能否再借出、借出未还时超时不得卸掉、还清后满 30 秒不得再拿到旧空闲实例（应重新生成或等价于句柄已释放后的新生命周期）、切场景清空后旧实例不可用、失败返回空且不抛成「缺资源以外的初始化异常」、InstantiateAsync 至少一帧后完成。不测私有字典、不测是否调用了某一句 Yoo API 名字、不 spy 资源门面方法次序。
+- 只测对外行为：给定资源位置，Instantiate / InstantiateAsync 是否得到可用实例、Release 后能否再借出、借出未还时超时不得卸掉、还清后满 30 秒不得再拿到旧空闲实例（应重新生成或等价于句柄已释放后的新生命周期）、切场景清空后旧实例不可用、失败返回空且不抛成「缺资源以外的初始化异常」、需要加载的 InstantiateAsync 至少一帧后完成、池命中当帧完成。不测私有字典、不测是否调用了某一句 Yoo API 名字、不 spy 资源门面方法次序。
 - **接缝（仅此一条）：实例门面的对外 API（含其 Update 所表现的空闲超时，以及供场景加载器调用的清空）。** 资源门面用已有策略注入点配测试替身，以便提供可实例化的预制体；断言仍打在实例门面上，不把资源门面变成第二条接缝。
 - 仓库几乎没有对等的资源 EditMode 范本。新测试放在测试程序集，面向实例门面。若 EditMode 无法构造可用的 Yoo 资源句柄，允许 PlayMode 夹具预制体，但接缝高度不变。
 - 超时测试通过连续向子系统 Update 喂时间，不要 `WaitForSeconds(30)` 作为主路径。
