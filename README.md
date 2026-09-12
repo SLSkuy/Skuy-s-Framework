@@ -1,6 +1,6 @@
 <div align="center">
 
-# **游戏开发框架**
+# **Skuy's Framework**
 
 [![Unity](https://img.shields.io/badge/Unity-6000.5.6f1-57b9d3.svg?logo=unity&style=flat-square)](https://unity.com/)
 [![URP](https://img.shields.io/badge/URP-17.5.0-2296F3.svg?style=flat-square)](https://unity.com/srp/universal-render-pipeline)
@@ -13,7 +13,7 @@
 
 ## 项目简介
 
-一套个人Unity开发框架，苦逼迭代中
+个人Unity开发框架，苦逼迭代中，想憋一个大的)
 
 ---
 
