@@ -1,4 +1,5 @@
 using System;
+using YooAsset;
 using Object = UnityEngine.Object;
 
 namespace Framework
@@ -33,7 +34,7 @@ namespace Framework
         /// <summary>
         /// 注入资源策略，只能调用一次。
         /// </summary>
-        public void Init(IAssetProvider provider)
+        public void SetProvider(IAssetProvider provider)
         {
             if (_providerInjected)
                 throw new InvalidOperationException("Asset provider has already been injected.");
@@ -41,25 +42,24 @@ namespace Framework
             if (provider == null)
                 throw new ArgumentNullException(nameof(provider));
 
+            provider.Init();
             _provider = provider;
             _providerInjected = true;
         }
 
         /// <summary>
-        /// 按资源位置同步加载，返回终态句柄。
+        /// 按资源位置同步加载，返回 YooAsset 资源句柄。
         /// </summary>
-        public AssetHandle<T> Load<T>(AssetLocation location) where T : Object
+        public AssetHandle Load<T>(string location) where T : Object
         {
-            ValidateLocation(location);
             return ActiveProvider.Load<T>(location);
         }
 
         /// <summary>
-        /// 按资源位置异步加载，立即返回加载中句柄。
+        /// 按资源位置异步加载，返回 YooAsset 资源句柄。
         /// </summary>
-        public AssetHandle<T> LoadAsync<T>(AssetLocation location) where T : Object
+        public AssetHandle LoadAsync<T>(string location) where T : Object
         {
-            ValidateLocation(location);
             return ActiveProvider.LoadAsync<T>(location);
         }
 
@@ -75,12 +75,6 @@ namespace Framework
                 _provider.ClearAll();
                 _providerShutdown = true;
             }
-        }
-
-        private void ValidateLocation(AssetLocation location)
-        {
-            if (string.IsNullOrEmpty(location.Location))
-                throw new ArgumentException($"[{GetType()}] Asset location is required.", nameof(location));
         }
     }
 }

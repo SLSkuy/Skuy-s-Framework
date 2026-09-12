@@ -41,7 +41,7 @@ _Avoid_: Loader（旧 `IResourceLoader` 只做 IO）, 资源加载器（口语�
 _Avoid_: path 与 key 混称, 资源路径（口语可以，文档用资源位置）
 
 **资源句柄**：
-一次加载的所有权凭证。创建即可持有，状态为加载中 / 成功 / 失败；成功才视为有效。失败也返回句柄，不抛、不返回 null。释放即放弃所有权（进行中的加载视为取消）。第一期不做取消令牌、不做批量加载、不做门面托管缓存。类型名为 `AssetHandle<T>`（可等待）。场景加载不在本期资源门面范围内。
+一次加载的所有权凭证，由 YooAsset 的 `AssetHandle` 表达加载状态与释放。门面与策略只转发，不二次封装。场景加载不在本期资源门面范围内。
 _Avoid_: GetAsset, ManagedCache, ResourceHandle（旧类型）, CancellationToken（资源加载）
 
 **房主**：

@@ -1,3 +1,4 @@
+using YooAsset;
 using Object = UnityEngine.Object;
 
 namespace Framework
@@ -8,14 +9,19 @@ namespace Framework
     public interface IAssetProvider
     {
         /// <summary>
-        /// 按资源位置同步加载，返回终态句柄（成功或失败，永不 null）。
+        /// 初始化资源提供器
         /// </summary>
-        AssetHandle<T> Load<T>(AssetLocation location) where T : Object;
+        void Init();
+        
+        /// <summary>
+        /// 按资源位置同步加载
+        /// </summary>
+        AssetHandle Load<T>(string location) where T : Object;
 
         /// <summary>
-        /// 按资源位置异步加载，立即返回加载中句柄（成功或失败后终态，永不 null）。
+        /// 按资源位置异步加载
         /// </summary>
-        AssetHandle<T> LoadAsync<T>(AssetLocation location) where T : Object;
+        AssetHandle LoadAsync<T>(string location) where T : Object;
 
         /// <summary>
         /// 卸未使用资源，语义由策略定义。

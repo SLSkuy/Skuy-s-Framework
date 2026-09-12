@@ -11,6 +11,7 @@ namespace Framework
     /// </summary>
     public class YooAssetProvider : IAssetProvider
     {
+        private ResourcePackage _package;
         private readonly EPlayMode _playMode;
         private readonly string _packageName; 
         private string _packageVersion;
@@ -37,8 +38,8 @@ namespace Framework
         private IEnumerator InitPackage()
         {
             // 创建资源包实例
-            if (!YooAssets.TryGetPackage(_packageName, out var package))
-                package = YooAssets.CreatePackage(_packageName);
+            if (!YooAssets.TryGetPackage(_packageName, out _package))
+                _package = YooAssets.CreatePackage(_packageName);
 
             InitializePackageOperation initializationOperation = null;
             
@@ -51,7 +52,7 @@ namespace Framework
                 {
                     EditorFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters(packageRoot)
                 };
-                initializationOperation = package.InitializePackageAsync(createParameters);
+                initializationOperation = _package.InitializePackageAsync(createParameters);
             }
             
             // 离线打包模式
@@ -61,14 +62,14 @@ namespace Framework
                 {
                     BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters()
                 };
-                initializationOperation = package.InitializePackageAsync(createParameters);
+                initializationOperation = _package.InitializePackageAsync(createParameters);
             }
             
             yield return initializationOperation;
             
             if(initializationOperation is { Status: EOperationStatus.Succeeded })
             {
-                Debug.Log($"[{GetType()}] 资源包初始化成功！");
+                Debug.Log($"[{GetType()}] 资源包加载成功");
             }
             else if(initializationOperation != null)
             {
@@ -79,8 +80,10 @@ namespace Framework
                 Debug.LogError($"[{GetType()}] 错误的资源加载模式：{_playMode}");
             }
 
-            yield return UpdatePackageVersion(package);
-            yield return UpdatePackageManifest(package, _packageVersion);
+            yield return UpdatePackageVersion(_package);
+            yield return UpdatePackageManifest(_package, _packageVersion);
+            
+            Debug.Log($"[{GetType()}] 资源包初始化完成");
         }
 
         /// <summary>
@@ -94,9 +97,8 @@ namespace Framework
             if (operation.Status == EOperationStatus.Succeeded)
             {
                 //请求成功
-                
                 _packageVersion = operation.PackageVersion;
-                Debug.Log($"Request package Version : {_packageVersion}");
+                Debug.Log($"[{GetType()}] 资源包版本信息 : {_packageVersion}");
             }
             else
             {
@@ -113,7 +115,11 @@ namespace Framework
             var operation = package.LoadPackageManifestAsync(new LoadPackageManifestOptions(packageVersion, 60));
             yield return operation;
 
-            if (operation.Status != EOperationStatus.Succeeded)
+            if (operation.Status == EOperationStatus.Succeeded)
+            {
+                Debug.Log($"[{GetType()}] 资源包清单加载完成");
+            }
+            else
             {
                 //更新失败
                 Debug.LogError(operation.Error);
@@ -122,14 +128,14 @@ namespace Framework
 
         #region 资源管理方法
 
-        public AssetHandle<T> Load<T>(AssetLocation location) where T : Object
+        public AssetHandle Load<T>(string location) where T : Object
         {
-            return null;
+            return _package.LoadAssetSync<T>(location);
         }
 
-        public AssetHandle<T> LoadAsync<T>(AssetLocation location) where T : Object
+        public AssetHandle LoadAsync<T>(string location) where T : Object
         {
-            return null;
+            return _package.LoadAssetAsync<T>(location);
         }
 
         public void ClearUnused()

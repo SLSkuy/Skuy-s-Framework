@@ -18,7 +18,7 @@ MonoBehaviour:
   Packages:
   - PackageName: DefaultPackage
     PackageDesc: 
-    EnableAddressable: 0
+    EnableAddressable: 1
     SupportExtensionless: 1
     LocationToLower: 0
     IncludeAssetGUID: 0
@@ -33,7 +33,7 @@ MonoBehaviour:
       - CollectPath: Assets/ResourcesAB/Prefabs/Entity
         CollectorGUID: 0e95a05b1365c1f49acf91993745ddd5
         CollectorType: 0
-        AddressRuleName: AddressByFileName
+        AddressRuleName: AddressByGroupAndFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 
