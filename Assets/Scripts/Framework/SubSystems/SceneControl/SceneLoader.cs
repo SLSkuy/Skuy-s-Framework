@@ -105,7 +105,7 @@ namespace Framework
                 _currentSceneName = _loadingSceneName;
                 IsCompleted = true;
                 
-                Global.Get<ResourceManager>().ClearUnused();
+                Global.Get<ResourceManager>().ClearAll();
                 DispatchCompleted();
             }
         }

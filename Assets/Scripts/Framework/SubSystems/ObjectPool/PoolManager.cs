@@ -55,7 +55,7 @@ namespace Framework
 
             if (!obj)
             {
-                obj = _resourceManager.Instantiate(key, position, rotation, parent);
+                // obj = _resourceManager.Instantiate(key, position, rotation, parent);
                 if (!obj) return null;
                 _objectKeyMap[obj] = key;
                 return obj;
@@ -135,7 +135,7 @@ namespace Framework
                 _monoPools.Remove(key);
             }
 
-            _resourceManager?.ReleaseManagedCache(key);
+            // _resourceManager?.ReleaseManagedCache(key);
             if (clearUnusedAssets)
             {
                 _resourceManager?.ClearUnused();

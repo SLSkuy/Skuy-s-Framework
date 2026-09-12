@@ -9,7 +9,7 @@ namespace Framework
     /// <summary>
     /// 基于YooAsset实现的资源加载内核
     /// </summary>
-    public class YooAssetProvider : IAssetProvider
+    public class YooAssetProvider : IResourceLoader
     {
         private ResourcePackage _package;
         private readonly EPlayMode _playMode;

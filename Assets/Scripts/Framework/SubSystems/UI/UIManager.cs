@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Framework.Core;
 using Framework.Panel;
 using Framework.Window;
@@ -20,8 +19,6 @@ namespace Framework
         
         #region 内部成员
         
-        // string -> UIConfig
-        private readonly Dictionary<string, UIConfig> _uiConfigs = new();
         private readonly Dictionary<string, GameObject> _uiObj = new();
         
         // UI类别层级管理器
@@ -73,49 +70,6 @@ namespace Framework
             }
             
             _graphicRaycaster = _container.GetComponent<GraphicRaycaster>();
-        }
-
-        /// <summary>
-        /// 实例化并注册UI配置中的所有UI界面
-        /// </summary>
-        public void RegisterUIConfig(UIConfig config)
-        {
-            if (_uiConfigs.TryAdd(config.uiSceneName, config))
-            {
-                foreach (var entry in config.uiToRegister)
-                {
-                    var res = GetUIRes(config.uiSceneName, entry.uiName);
-                    if (res == null)
-                    {
-                        Debug.LogError($"[UIFramework] {GetUIPath(config.uiSceneName, entry.uiName)} 路径下不存在UI预制体 : {entry.uiName}");
-                        return;
-                    }
-                    
-                    GameObject obj = Object.Instantiate(res);
-                    IUIController controller = obj.GetComponent<IUIController>();
-                    RegisterUI(controller.UIControllerID, controller, obj.transform);
-                    if(!entry.isEnableOnRegister)controller.Hide();
-                    _uiObj[entry.uiName] = obj;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 销毁UI配置中的所有UI界面
-        /// </summary>
-        public void UnregisterUIConfig(string uiSceneName)
-        {
-            if (_uiConfigs.TryGetValue(uiSceneName, out var config))
-            {
-                foreach (var entry in config.uiToRegister)
-                {
-                    UnregisterUI(entry.uiName);
-                    Object.Destroy(_uiObj[entry.uiName]);
-                    _uiObj.Remove(entry.uiName);
-                }
-
-                _uiConfigs.Remove(uiSceneName);
-            }
         }
         
         #endregion
@@ -300,23 +254,6 @@ namespace Framework
                 return _panelLayer.GetUIController(id);
             }
             return null;
-        }
-
-        private readonly StringBuilder _sb = new();
-        private string GetUIPath(string uiScene, string uiControllerID)
-        {
-            _sb.Clear();
-            _sb.Append("UI/Prefabs/");
-            _sb.Append(uiScene);
-            _sb.Append("/");
-            _sb.Append(uiControllerID);
-            return _sb.ToString();
-        }
-
-        private GameObject GetUIRes(string uiScene,string uiControllerID)
-        {
-            var prefab = Global.GetAsset<GameObject>(GetUIPath(uiScene, uiControllerID));
-            return prefab;
         }
         
         #endregion

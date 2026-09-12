@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
+using YooAsset;
 using Object = UnityEngine.Object;
 
 namespace Framework
@@ -115,71 +114,19 @@ namespace Framework
         }
 
         /// <summary>
-        /// 获取托管资源。外部不需要保存句柄，资源由 ResourceManager 自动回收。
+        /// 同步加载资源
         /// </summary>
-        public static T GetAsset<T>(string path) where T : Object
+        public static AssetHandle Load<T>(string path) where T : Object
         {
-            return Get<ResourceManager>()?.GetAsset<T>(path);
-        }
-
-        /// <summary>
-        /// 批量获取托管资源，适合配置表、ScriptableObject 数据目录
-        /// </summary>
-        public static IReadOnlyList<T> GetAllAssets<T>(string path) where T : Object
-        {
-            return Get<ResourceManager>()?.LoadAllAssets<T>(path);
-        }
-
-        /// <summary>
-        /// 旧资源加载方法，需要在退出时手动调用Dispose清空资源，不推荐使用
-        /// </summary>
-        /// <param name="path"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static ResourceHandle<T> Load<T>(string path) where T : Object
-        {
-            return Get<ResourceManager>()?.Load<T>(path);
-        }
-
-        /// <summary>
-        /// 实例化托管 Prefab，实例销毁时自动释放资源引用
-        /// </summary>
-        public static GameObject Instantiate(string path, Transform parent = null, bool worldPositionStays = false)
-        {
-            return Get<ResourceManager>()?.Instantiate(path, parent, worldPositionStays);
-        }
-
-        /// <summary>
-        /// 实例化托管 Prefab，实例销毁时自动释放资源引用
-        /// </summary>
-        public static GameObject Instantiate(string path, Vector3 position, Quaternion rotation, Transform parent = null)
-        {
-            return Get<ResourceManager>()?.Instantiate(path, position, rotation, parent);
-        }
-
-        /// <summary>
-        /// 释放托管缓存，仅清除 ResourceManager 的缓存保留标记，不销毁业务对象实例
-        /// </summary>
-        public static void Release(string path)
-        {
-            Get<ResourceManager>()?.ReleaseManagedCache(path);
-        }
-
-        /// <summary>
-        /// 按路径释放资源，适用于释放整组资源
-        /// </summary>
-        /// <param name="prefix"></param>
-        public static void ReleaseByPrefix(string prefix)
-        {
-            Get<ResourceManager>()?.ReleaseManagedCacheByPrefix(prefix);
+            return Get<ResourceManager>().Load<T>(path);
         }
 
         /// <summary>
         /// 异步加载资源
         /// </summary>
-        public static Task<ResourceHandle<T>> LoadResourceAsync<T>(string path) where T : Object
+        public static AssetHandle LoadAsync<T>(string path) where T : Object
         {
-            return Get<ResourceManager>()?.LoadAsync<T>(path);
+            return Get<ResourceManager>().LoadAsync<T>(path);
         }
 
         public static void LoadScene(string sceneName)
