@@ -148,6 +148,14 @@ namespace Framework
         }
 
         /// <summary>
+        /// 按资源位置同步生成不进池的 GameObject。Release 时销毁。
+        /// </summary>
+        public static GameObject InstantiateUnpooled(string location, InstantiateOptions options = default)
+        {
+            return Get<SpawnManager>().InstantiateUnpooled(location, options);
+        }
+
+        /// <summary>
         /// 回收由实例门面生成的实例。
         /// </summary>
         public static void Release(GameObject instance)

@@ -14,8 +14,8 @@ namespace Core
         public int targetFrame = 60;
         
         [Header("资源加载")] 
-        public float clearUnusedIdleTime = 30f;
         public EPlayMode resourceMode = EPlayMode.EditorSimulateMode;
+        public float clearUnusedIdleTime = 30f;
         public string defaultPackageName = "DefaultPackage";
     }
 }

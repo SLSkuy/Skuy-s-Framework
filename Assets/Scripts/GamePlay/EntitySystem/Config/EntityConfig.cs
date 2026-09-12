@@ -1,10 +1,9 @@
-using Framework;
 using UnityEngine;
 
 namespace GamePlay.EntitySystem
 {
     [CreateAssetMenu(fileName = "EntityConfig", menuName = "GamePlay/EntityConfig")]
-    public class EntityConfig : ScriptableObjectSingleton<EntityConfig>
+    public class EntityConfig : ScriptableObject
     {
         [Header("基础运动属性")]
         public float walkSpeed = 3f;

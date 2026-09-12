@@ -36,7 +36,7 @@ namespace Framework
         public override void Init()
         {
             // 获取UI容器
-            _container = Global.Instantiate("UI_UIManager", new InstantiateOptions(true)).transform;
+            _container = Global.InstantiateUnpooled("UI_UIManager", new InstantiateOptions(true)).transform;
             _container.name = "[UIManager]";
             Object.DontDestroyOnLoad(_container);
             
@@ -75,8 +75,11 @@ namespace Framework
 
         public override void Destroy()
         {
-            // 释放资源
-            Global.Release(_container.gameObject);
+            // 防止Unity对GameObject销毁顺序不同
+            if (_container)
+            {
+                Global.Release(_container.gameObject);
+            }
         }
 
         #endregion

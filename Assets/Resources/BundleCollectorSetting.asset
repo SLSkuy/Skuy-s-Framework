@@ -30,7 +30,7 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ResourcesAB/Prefabs/Entity
+      - CollectPath: Assets/Prefabs/Entity
         CollectorGUID: 0e95a05b1365c1f49acf91993745ddd5
         CollectorType: 0
         AddressRuleName: AddressByGroupAndFileName
@@ -56,7 +56,7 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ResourcesAB/Prefabs/UI
+      - CollectPath: Assets/Prefabs/UI
         CollectorGUID: 5714e7f9dd3148b4e818ba933b7e2d51
         CollectorType: 0
         AddressRuleName: AddressByGroupAndFileName

@@ -1,5 +1,4 @@
-﻿using Framework;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Network
 {
@@ -7,7 +6,7 @@ namespace Network
     /// KCP传输配置
     /// </summary>
     [CreateAssetMenu(fileName = "KcpTransportConfig", menuName = "Network/KcpTransportConfig")]
-    public class KcpTransportConfig : ScriptableObjectSingleton<KcpTransportConfig>
+    public class KcpTransportConfig : ScriptableObject
     {
         [Header("KCP传输配置")]
         public uint conv = 1;

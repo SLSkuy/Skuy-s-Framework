@@ -1,4 +1,3 @@
-using Framework;
 using UnityEngine;
 
 namespace GamePlay.Simulator
@@ -7,7 +6,7 @@ namespace GamePlay.Simulator
     /// 模拟属性设置
     /// </summary>
     [CreateAssetMenu(fileName = "SimulationConfig", menuName = "GamePlay/MultiPlay/SimulationConfig")]
-    public class SimulationConfig : ScriptableObjectSingleton<SimulationConfig>
+    public class SimulationConfig : ScriptableObject
     {
         [Header("权威模拟")]
         [Min(1)] public int simulationTickRate = 32;

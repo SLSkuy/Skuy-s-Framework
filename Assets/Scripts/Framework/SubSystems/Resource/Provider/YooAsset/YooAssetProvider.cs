@@ -74,15 +74,15 @@ namespace Framework
             
             if(initializationOperation is { Status: EOperationStatus.Succeeded })
             {
-                Debug.Log($"[{GetType()}] 资源包加载成功");
+                Debug.Log($"[{GetType().Name}] 资源包加载成功");
             }
             else if(initializationOperation != null)
             {
-                Debug.LogError($"[{GetType()}] 资源包初始化失败：{initializationOperation.Error}");
+                Debug.LogError($"[{GetType().Name}] 资源包初始化失败：{initializationOperation.Error}");
             }
             else
             {
-                Debug.LogError($"[{GetType()}] 不受支持的资源加载模式：{_playMode}");
+                Debug.LogError($"[{GetType().Name}] 不受支持的资源加载模式：{_playMode}");
                 yield break;
             }
 
@@ -105,7 +105,7 @@ namespace Framework
             {
                 //请求成功
                 _packageVersion = operation.PackageVersion;
-                Debug.Log($"[{GetType()}] 资源包版本信息 : {_packageVersion}");
+                Debug.Log($"[{GetType().Name}] 资源包版本信息 : {_packageVersion}");
             }
             else
             {
@@ -124,7 +124,7 @@ namespace Framework
 
             if (operation.Status == EOperationStatus.Succeeded)
             {
-                Debug.Log($"[{GetType()}] 资源包清单加载完成");
+                Debug.Log($"[{GetType().Name}] 资源包清单加载完成");
             }
             else
             {
@@ -162,7 +162,7 @@ namespace Framework
             if (operation.Status == EOperationStatus.Succeeded)
             {
                 //清理成功
-                Debug.Log($"[{GetType()}] 已清理所有未使用的资源文件");
+                Debug.Log($"[{GetType().Name}] 已清理所有未使用的资源文件");
             }
             else
             {
@@ -187,7 +187,7 @@ namespace Framework
             if (operation.Status == EOperationStatus.Succeeded)
             {
                 //清理成功
-                Debug.Log($"[{GetType()}] 已清理所有缓存文件");
+                Debug.Log($"[{GetType().Name}] 已清理所有缓存文件");
             }
             else
             {
@@ -203,6 +203,8 @@ namespace Framework
         {
             YooAssets.Destroy();
             _package = null;
+            
+            Debug.Log($"[{GetType().Name}] 销毁所有缓存文件");
         }
 
         #endregion

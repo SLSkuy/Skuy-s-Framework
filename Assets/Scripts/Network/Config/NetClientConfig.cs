@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Framework;
 
 namespace Network
 {
@@ -7,7 +6,7 @@ namespace Network
     /// 客户端网络配置
     /// </summary>
     [CreateAssetMenu(fileName = "NetClientConfig", menuName = "Network/NetClientConfig")]
-    public class NetClientConfig : ScriptableObjectSingleton<NetClientConfig>
+    public class NetClientConfig : ScriptableObject
     {
         [Header("服务器配置")]
         public string ip = "127.0.0.1";

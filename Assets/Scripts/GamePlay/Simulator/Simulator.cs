@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Framework;
 using GamePlay.EntitySystem;
+using YooAsset;
 
 namespace GamePlay.Simulator
 {
@@ -10,6 +11,7 @@ namespace GamePlay.Simulator
     /// </summary>
     public sealed class Simulator
     {
+        private AssetHandle _configHandle;
         private TickSystem _tickSystem;
         private EntityRegistry _entityRegistry;
         private readonly Dictionary<uint, EntityCommand> _tickCommands = new();
@@ -143,7 +145,9 @@ namespace GamePlay.Simulator
 
         public void Init()
         {
-            SimulationConfig config = SimulationConfig.Instance;
+            _configHandle = Global.Load<SimulationConfig>("Config_SimulationConfig");
+            SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
+                
             _entityRegistry = new EntityRegistry();
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tickSystem.Tick += HandleTick;
@@ -156,6 +160,8 @@ namespace GamePlay.Simulator
 
         public void Destroy()
         {
+            _configHandle.Dispose();
+            
             if (_tickSystem != null)
             {
                 _tickSystem.Tick -= HandleTick;

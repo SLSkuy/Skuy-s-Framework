@@ -5,6 +5,7 @@ using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
 using Utils;
+using YooAsset;
 using Ping = NetConnect.Ping;
 
 namespace Network
@@ -31,6 +32,7 @@ namespace Network
         private MessageProcessor _messageProcessor;
         private ClientManager _clientManager;
         private NetServerConfig _serverConfig;
+        private AssetHandle _assetHandle;
         private float _serverPingAccumulator;
 
         #region 事件
@@ -440,7 +442,10 @@ namespace Network
 
         public override void Init()
         {
-            _serverConfig = NetServerConfig.Instance;
+            // 获取数据配置
+            _assetHandle = Global.Load<NetServerConfig>("Config_NetServerConfig");
+            _serverConfig = _assetHandle.AssetObject as NetServerConfig;
+            
             _messageProcessor = new MessageProcessor();
             _clientManager = new ClientManager();
             _clientManager.OnClientRemoved += HandleClientRemoved;
@@ -478,6 +483,8 @@ namespace Network
 
         public override void Destroy()
         {
+            _assetHandle.Dispose();
+            
             if (_fastTransport != null)
             {
                 _fastTransport.OnDataReceived -= HandleFastDataReceived;

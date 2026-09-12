@@ -9,377 +9,551 @@ using Object = UnityEngine.Object;
 namespace Framework
 {
     /// <summary>
-    /// 按资源位置生成与回收 GameObject，内部池化
+    /// 按资源位置生成与回收 GameObject
     /// </summary>
     public sealed class SpawnManager : SubSystemBase
     {
-        private ResourceManager _resourceManager;
-        private Transform _poolRoot;
-        private readonly Dictionary<string, AssetHandle> _handles = new();
-        private readonly Dictionary<string, Queue<GameObject>> _idle = new();
-        private readonly Dictionary<GameObject, string> _lent = new();
-        private readonly Dictionary<string, float> _idleElapsed = new();
-        private readonly List<PendingInstantiate> _pending = new();
-        private readonly List<string> _idleUnloadScratch = new();
-        private float _idleUnloadSeconds;
+        #region 内部类型
 
-        private sealed class PendingInstantiate
+        /// <summary>
+        /// 一个资源位置对应的实例化池
+        /// </summary>
+        private sealed class SpawnEntry
         {
-            public string location;
-            public InstantiateOptions options;
-            public readonly TaskCompletionSource<GameObject> completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            public AssetHandle handle;
-            public bool failed;
-            public bool seenUpdate;
+            /// <summary>
+            /// 该资源位置对应的预制体句柄
+            /// </summary>
+            public AssetHandle Handle;
+
+            /// <summary>
+            /// 当前空闲实例
+            /// </summary>
+            public readonly Queue<GameObject> Idle = new();
+
+            /// <summary>
+            /// 当前借出的实例数量
+            /// </summary>
+            public int LentCount;
+
+            /// <summary>
+            /// 当前等待资源加载的请求数量
+            /// </summary>
+            public int PendingCount;
+
+            /// <summary>
+            /// 资源完全空闲后的累计时间
+            /// </summary>
+            public float IdleElapsed;
         }
 
-        #region 属性
-        public override int Priority => (int)SubSystemPriority.InstantiationManager;
+        /// <summary>
+        /// 等待完成的异步实例化请求
+        /// </summary>
+        private sealed class PendingInstantiate
+        {
+            public readonly string Location;
+            public readonly InstantiateOptions Options;
+            public readonly TaskCompletionSource<GameObject> Completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            
+            public PendingInstantiate(string location, InstantiateOptions options)
+            {
+                Location = location;
+                Options = options;
+            }
+        }
+
         #endregion
+
+        #region 字段
+
+        private ResourceManager _resourceManager;
+        private Transform _poolRoot;
+
+        /// <summary>
+        /// 按资源位置管理资源句柄、对象池以及相关状态
+        /// </summary>
+        private readonly Dictionary<string, SpawnEntry> _entries = new();
+
+        /// <summary>
+        /// 记录当前借出的实例及其所属资源池
+        /// </summary>
+        private readonly Dictionary<GameObject, SpawnEntry> _lent = new();
+
+        /// <summary>
+        /// 不进池的实例：Release 时销毁
+        /// </summary>
+        private readonly HashSet<GameObject> _unpooled = new();
+
+        /// <summary>
+        /// 等待资源加载完成的异步实例化请求
+        /// </summary>
+        private readonly List<PendingInstantiate> _pending = new();
+
+        /// <summary>
+        /// 空闲资源卸载检查的临时列表
+        /// </summary>
+        private readonly List<string> _unloadScratch = new();
+
+        private float _idleUnloadSeconds;
+
+        #endregion
+
+        #region 属性
+
+        public override int Priority => (int)SubSystemPriority.InstantiationManager;
+
+        #endregion
+
+        #region 公共接口
 
         /// <summary>
         /// 按资源位置同步生成实例。
         /// </summary>
         public GameObject Instantiate(string location, InstantiateOptions options = default)
         {
-            return InstantiateFromLocation(location, options, 
-                instance => instance.transform.SetParent(null));
+            return InstantiateFromLocation(location, options, instance => instance.transform.SetParent(null));
         }
 
         /// <summary>
-        /// 按资源位置异步生成实例。池命中当帧完成；需要加载时至少等到下一次子系统 Update。
+        /// 按资源位置异步生成实例。
         /// </summary>
         public Task<GameObject> InstantiateAsync(string location, InstantiateOptions options = default)
         {
-            return InstantiateAsyncFromLocation(location, default,
-                instance => instance.transform.SetParent(null));
+            return InstantiateAsyncFromLocation(location, options);
         }
 
         /// <summary>
-        /// 将实例门面生成的对象还池。外源、空引用或重复 Release 会打错误日志并忽略。
+        /// 按资源位置同步生成不进池的实例。
+        /// Release 时销毁；切场景 Clear 不会回收。
+        /// </summary>
+        public GameObject InstantiateUnpooled(string location, InstantiateOptions options = default)
+        {
+            if (!ValidateLocation(location)) return null;
+
+            AssetHandle handle = ResolveHandleForUnpooled(location, out bool disposeHandle);
+            if (handle == null) return null;
+
+            GameObject instance = handle.InstantiateSync(options);
+            if (disposeHandle) handle.Dispose();
+
+            if (!instance)
+            {
+                LogInstantiateFailed(location);
+                return null;
+            }
+
+            _unpooled.Add(instance);
+            return instance;
+        }
+
+        /// <summary>
+        /// 回收由本管理器生成的实例。
+        /// 池化实例还池；不进池实例销毁。外源、空引用或重复 Release 会记录错误并忽略。
         /// </summary>
         public void Release(GameObject instance)
         {
             if (!instance)
             {
-                Debug.LogError("[InstantiationManager] Release ignored: instance is null.");
+                Debug.LogError($"[{nameof(SpawnManager)}] Release ignored: instance is null.");
                 return;
             }
 
-            if (!_lent.Remove(instance, out string location))
+            if (_unpooled.Remove(instance))
             {
-                Debug.LogError("[InstantiationManager] Release ignored: instance was not created by the instance facade.");
+                DestroyInstance(instance);
+                return;
+            }
+
+            if (!_lent.Remove(instance, out SpawnEntry entry))
+            {
+                Debug.LogError($"[{nameof(SpawnManager)}] Release ignored: instance was not created by the instance facade.");
                 return;
             }
 
             instance.SetActive(false);
             instance.transform.SetParent(_poolRoot);
-            if (!_idle.TryGetValue(location, out Queue<GameObject> idle))
-            {
-                idle = new Queue<GameObject>();
-                _idle[location] = idle;
-            }
+            entry.Idle.Enqueue(instance);
+            entry.LentCount--;
 
-            idle.Enqueue(instance);
-            if (!IsLocationBusy(location) && !_idleElapsed.ContainsKey(location))
-                _idleElapsed[location] = 0f;
+            if (entry.LentCount == 0 && entry.PendingCount == 0) entry.IdleElapsed = 0f;
         }
 
         /// <summary>
-        /// 销毁全部借出与空闲实例，并释放预制体句柄。切场景与子系统销毁走这条清空。
+        /// 销毁全部借出与空闲实例，并释放所有资源句柄
         /// </summary>
         public void Clear()
         {
-            for (int i = 0; i < _pending.Count; i++)
-            {
-                PendingInstantiate pending = _pending[i];
-                if (pending.handle != null && !_handles.ContainsValue(pending.handle))
-                    pending.handle.Dispose();
-                pending.completion.TrySetResult(null);
-            }
-
-            _pending.Clear();
-
-            foreach (GameObject instance in _lent.Keys)
-                DestroyInstance(instance);
-
-            _lent.Clear();
-
-            foreach (Queue<GameObject> idle in _idle.Values)
-            {
-                while (idle.Count > 0)
-                    DestroyInstance(idle.Dequeue());
-            }
-
-            _idle.Clear();
-
-            foreach (AssetHandle handle in _handles.Values)
-                handle.Dispose();
-
-            _handles.Clear();
-            _idleElapsed.Clear();
+            ClearPending();
+            ClearLentInstances();
+            ClearIdleInstances();
+            ClearEntries();
+            
+            Debug.Log($"[{nameof(SpawnManager)}] 已清空所有池化对象");
         }
 
+        #endregion
+
+        #region 同步实例化
+
         /// <summary>
-        /// 同步执行预制体实例化操作
+        /// 同步执行预制体实例化。
         /// </summary>
-        private GameObject InstantiateFromLocation(string location, InstantiateOptions options,
-            Action<GameObject> activateIdle)
+        private GameObject InstantiateFromLocation(string location, InstantiateOptions options, Action<GameObject> activate)
         {
-            if (string.IsNullOrEmpty(location))
-            {
-                Debug.LogError("[InstantiationManager] Instantiate failed: asset location is empty.");
-                return null;
-            }
+            if (!ValidateLocation(location)) return null;
 
-            if (TryDequeueIdle(location, out GameObject pooled))
-            {
-                activateIdle(pooled);
-                pooled.SetActive(true);
-                _lent[pooled] = location;
-                StopIdleTimer(location);
-                return pooled;
-            }
+            GameObject pooled = RentFromPool(location, activate);
+            if (pooled) return pooled;
 
-            AssetHandle handle = LoadPrefabHandle(location, false);
-            if (handle == null)
-                return null;
+            SpawnEntry entry = GetOrCreateEntry(location);
+            AssetHandle handle = GetOrLoadHandle(location, entry, false);
 
-            GameObject instance = handle.InstantiateSync(options);
-            if (!instance)
-            {
-                Debug.LogError($"[InstantiationManager] Instantiate failed: '{location}'.");
-                return null;
-            }
+            if (handle == null) return null;
 
-            _lent[instance] = location;
-            StopIdleTimer(location);
-            return instance;
+            return InstantiateFromHandle(entry, handle, options);
         }
 
-        
+        #endregion
+
+        #region 异步实例化
+
         /// <summary>
-        /// 异步执行预制体实例化操作
+        /// 异步执行预制体实例化。
         /// </summary>
-        private Task<GameObject> InstantiateAsyncFromLocation(string location, InstantiateOptions options,
-            Action<GameObject> activateIdle)
+        private Task<GameObject> InstantiateAsyncFromLocation(string location, InstantiateOptions options)
         {
-            if (string.IsNullOrEmpty(location))
-            {
-                PendingInstantiate empty = new()
-                {
-                    location = location,
-                    failed = true,
-                };
-                _pending.Add(empty);
-                return empty.completion.Task;
-            }
+            if (!ValidateLocation(location)) return Task.FromResult<GameObject>(null);
 
-            if (TryDequeueIdle(location, out GameObject pooled))
-            {
-                activateIdle(pooled);
-                pooled.SetActive(true);
-                _lent[pooled] = location;
-                StopIdleTimer(location);
-                return Task.FromResult(pooled);
-            }
+            GameObject pooled = RentFromPool(location, instance => instance.transform.SetParent(null));
+            if (pooled) return Task.FromResult(pooled);
 
-            PendingInstantiate pending = new()
-            {
-                location = location,
-                options = options,
-            };
+            SpawnEntry entry = GetOrCreateEntry(location);
+            PendingInstantiate pending = new(location, options);
 
-            AssetHandle handle = LoadPrefabHandle(location, true);
+            entry.PendingCount++;
+
+            AssetHandle handle = GetOrLoadHandle(location, entry, true);
             if (handle == null)
             {
-                pending.failed = true;
-            }
-            else
-            {
-                if (!handle.IsDone)
-                    pending.handle = handle;
-                StopIdleTimer(location);
+                entry.PendingCount--;
+                pending.Completion.TrySetResult(null);
+                RemoveEntryIfUnused(location, entry);
+                return pending.Completion.Task;
             }
 
             _pending.Add(pending);
-            return pending.completion.Task;
+            return pending.Completion.Task;
         }
 
+        /// <summary>
+        /// 尝试完成一个异步实例化请求。
+        /// </summary>
         private bool TryCompletePending(PendingInstantiate pending)
         {
-            if (pending.failed || string.IsNullOrEmpty(pending.location))
+            if (!_entries.TryGetValue(pending.Location, out SpawnEntry entry))
             {
-                LogInstantiateFailed(pending.location);
-                pending.completion.TrySetResult(null);
+                pending.Completion.TrySetResult(null);
                 return true;
             }
 
-            AssetHandle handle = pending.handle ?? LoadPrefabHandle(pending.location, true);
+            AssetHandle handle = entry.Handle;
             if (handle == null)
             {
-                LogInstantiateFailed(pending.location);
-                pending.completion.TrySetResult(null);
+                entry.PendingCount--;
+                LogInstantiateFailed(pending.Location);
+                pending.Completion.TrySetResult(null);
+                RemoveEntryIfUnused(pending.Location, entry);
                 return true;
             }
 
             if (!handle.IsDone)
-            {
-                pending.handle = handle;
                 return false;
-            }
 
             if (handle.AssetObject is not GameObject)
             {
-                LogInstantiateFailed(pending.location);
-                if (!_handles.ContainsValue(handle))
-                    handle.Dispose();
-                pending.completion.TrySetResult(null);
+                entry.PendingCount--;
+                LogInstantiateFailed(pending.Location);
+                handle.Dispose();
+                entry.Handle = null;
+                pending.Completion.TrySetResult(null);
+                RemoveEntryIfUnused(pending.Location, entry);
                 return true;
             }
 
-            _handles[pending.location] = handle;
+            GameObject instance = InstantiateFromHandle(entry, handle, pending.Options);
+            entry.PendingCount--;
 
-            GameObject instance = handle.InstantiateSync(pending.options);
             if (!instance)
             {
-                LogInstantiateFailed(pending.location);
-                pending.completion.TrySetResult(null);
+                LogInstantiateFailed(pending.Location);
+                pending.Completion.TrySetResult(null);
+                RemoveEntryIfUnused(pending.Location, entry);
                 return true;
             }
 
-            _lent[instance] = pending.location;
-            StopIdleTimer(pending.location);
-            pending.completion.TrySetResult(instance);
+            pending.Completion.TrySetResult(instance);
             return true;
+        }
+
+        #endregion
+
+        #region 对象池
+
+        /// <summary>
+        /// 尝试从对象池借出一个实例。
+        /// </summary>
+        private GameObject RentFromPool(string location, Action<GameObject> activate)
+        {
+            if (!_entries.TryGetValue(location, out SpawnEntry entry)) return null;
+
+            while (entry.Idle.Count > 0)
+            {
+                GameObject instance = entry.Idle.Dequeue();
+
+                if (!instance)
+                    continue;
+
+                activate(instance);
+                instance.SetActive(true);
+
+                entry.LentCount++;
+                _lent[instance] = entry;
+                entry.IdleElapsed = 0f;
+
+                return instance;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 从资源句柄实例化 GameObject，并登记为借出实例。
+        /// </summary>
+        private GameObject InstantiateFromHandle(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
+        {
+            GameObject instance = handle.InstantiateSync(options);
+            if (!instance) return null;
+
+            entry.LentCount++;
+            _lent[instance] = entry;
+
+            return instance;
+        }
+
+        #endregion
+
+        #region 资源管理
+
+        /// <summary>
+        /// 获取或加载指定资源位置的预制体句柄。
+        /// </summary>
+        private AssetHandle GetOrLoadHandle(string location, SpawnEntry entry, bool async)
+        {
+            if (entry.Handle != null) return entry.Handle;
+            AssetHandle handle = async ? _resourceManager.LoadAsync<GameObject>(location) : _resourceManager.Load<GameObject>(location);
+
+            if (handle == null || !handle.IsValid)
+            {
+                if (!async) LogInstantiateFailed(location);
+                return null;
+            }
+            
+            entry.Handle = handle;
+            if (!handle.IsDone) return handle;
+            if (handle.AssetObject is not GameObject)
+            {
+                if (!async)
+                    LogInstantiateFailed(location);
+
+                handle.Dispose();
+                entry.Handle = null;
+                return null;
+            }
+
+            return handle;
+        }
+
+        /// <summary>
+        /// 不进池实例化使用已缓存的预制体句柄，否则加载一次并在实例化后释放。
+        /// </summary>
+        private AssetHandle ResolveHandleForUnpooled(string location, out bool disposeHandle)
+        {
+            if (_entries.TryGetValue(location, out SpawnEntry entry) && entry.Handle != null && entry.Handle.IsValid
+                && entry.Handle.IsDone && entry.Handle.AssetObject is GameObject)
+            {
+                disposeHandle = false;
+                return entry.Handle;
+            }
+
+            AssetHandle handle = _resourceManager.Load<GameObject>(location);
+            if (handle == null || !handle.IsValid || handle.AssetObject is not GameObject)
+            {
+                LogInstantiateFailed(location);
+                handle?.Dispose();
+                disposeHandle = false;
+                return null;
+            }
+
+            disposeHandle = true;
+            return handle;
+        }
+
+        /// <summary>
+        /// 卸载一个已经完全空闲的资源池。
+        /// </summary>
+        private void UnloadEntry(string location, SpawnEntry entry)
+        {
+            while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue());
+            entry.Handle?.Dispose();
+            entry.Handle = null;
+
+            _entries.Remove(location);
+        }
+
+        /// <summary>
+        /// 当资源池已经没有任何使用者时移除资源池。
+        /// </summary>
+        private void RemoveEntryIfUnused(string location, SpawnEntry entry)
+        {
+            if (entry.LentCount > 0 || entry.PendingCount > 0 || entry.Idle.Count > 0)
+                return;
+
+            if (_entries.TryGetValue(location, out SpawnEntry current) && ReferenceEquals(current, entry))
+            {
+                entry.Handle?.Dispose();
+                entry.Handle = null;
+                _entries.Remove(location);
+            }
+        }
+
+        #endregion
+
+        #region Pending
+
+        /// <summary>
+        /// 清理所有等待中的异步实例化请求。
+        /// </summary>
+        private void ClearPending()
+        {
+            for (int i = 0; i < _pending.Count; i++)
+            {
+                PendingInstantiate pending = _pending[i];
+
+                if (pending.Completion.Task.IsCompleted)
+                    continue;
+
+                pending.Completion.TrySetResult(null);
+            }
+
+            _pending.Clear();
+        }
+
+        #endregion
+
+        #region 空闲卸载
+
+        private void TickIdleUnload(float deltaTime)
+        {
+            _unloadScratch.Clear();
+
+            foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
+            {
+                SpawnEntry entry = pair.Value;
+
+                if (entry.LentCount > 0 || entry.PendingCount > 0)
+                {
+                    entry.IdleElapsed = 0f;
+                    continue;
+                }
+
+                if (entry.Idle.Count == 0)
+                {
+                    entry.IdleElapsed = 0f;
+                    continue;
+                }
+
+                entry.IdleElapsed += deltaTime;
+
+                if (entry.IdleElapsed >= _idleUnloadSeconds) _unloadScratch.Add(pair.Key);
+            }
+
+            foreach (var location in _unloadScratch)
+            {
+                if (!_entries.TryGetValue(location, out SpawnEntry entry)) continue;
+                if (entry.LentCount > 0 || entry.PendingCount > 0) continue;
+                UnloadEntry(location, entry);
+            }
+
+            _unloadScratch.Clear();
+        }
+
+        #endregion
+
+        #region 查询
+
+        private SpawnEntry GetOrCreateEntry(string location)
+        {
+            if (_entries.TryGetValue(location, out SpawnEntry entry)) return entry;
+            entry = new SpawnEntry();
+            _entries.Add(location, entry);
+
+            return entry;
+        }
+
+        private static bool ValidateLocation(string location)
+        {
+            if (!string.IsNullOrEmpty(location)) return true;
+            
+            LogInstantiateFailed(location);
+            return false;
         }
 
         private static void LogInstantiateFailed(string location)
         {
             if (string.IsNullOrEmpty(location))
-                Debug.LogError("[InstantiationManager] Instantiate failed: asset location is empty.");
+                Debug.LogError("[SpawnManager] Instantiate failed: asset location is empty.");
             else
-                Debug.LogError($"[InstantiationManager] Instantiate failed: '{location}'.");
+                Debug.LogError($"[SpawnManager] Instantiate failed: '{location}'.");
         }
 
-        private bool TryDequeueIdle(string location, out GameObject instance)
+        #endregion
+
+        #region 清理
+
+        private void ClearLentInstances()
         {
-            instance = null;
-            if (!_idle.TryGetValue(location, out Queue<GameObject> idle))
-                return false;
-
-            while (idle.Count > 0)
-            {
-                instance = idle.Dequeue();
-                if (instance)
-                    return true;
-                instance = null;
-            }
-
-            return false;
+            foreach (GameObject instance in _lent.Keys) DestroyInstance(instance);
+            
+            _lent.Clear();
         }
 
-        private void StopIdleTimer(string location)
+        private void ClearIdleInstances()
         {
-            _idleElapsed.Remove(location);
+            foreach (SpawnEntry entry in _entries.Values)
+            {
+                while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue());
+            }
         }
 
-        private bool IsLocationBusy(string location)
+        private void ClearEntries()
         {
-            foreach (string lentLocation in _lent.Values)
-            {
-                if (lentLocation == location)
-                    return true;
-            }
+            foreach (SpawnEntry entry in _entries.Values)
+                entry.Handle?.Dispose();
 
-            for (int i = 0; i < _pending.Count; i++)
-            {
-                PendingInstantiate pending = _pending[i];
-                if (!pending.failed && pending.location == location)
-                    return true;
-            }
-
-            return false;
+            _entries.Clear();
         }
 
-        private void TickIdleUnload(float deltaTime)
+        private void ClearUnpooledInstances()
         {
-            _idleUnloadScratch.Clear();
-            foreach (string location in _handles.Keys)
-                _idleUnloadScratch.Add(location);
+            foreach (GameObject instance in _unpooled)
+                DestroyInstance(instance);
 
-            for (int i = 0; i < _idleUnloadScratch.Count; i++)
-            {
-                string location = _idleUnloadScratch[i];
-                if (IsLocationBusy(location))
-                {
-                    StopIdleTimer(location);
-                    continue;
-                }
-
-                _idleElapsed.TryGetValue(location, out float elapsed);
-                elapsed += deltaTime;
-                if (elapsed < _idleUnloadSeconds)
-                {
-                    _idleElapsed[location] = elapsed;
-                    continue;
-                }
-
-                UnloadIdleLocation(location);
-            }
-
-            _idleUnloadScratch.Clear();
-        }
-
-        private void UnloadIdleLocation(string location)
-        {
-            if (_idle.TryGetValue(location, out Queue<GameObject> idle))
-            {
-                while (idle.Count > 0)
-                    DestroyInstance(idle.Dequeue());
-                _idle.Remove(location);
-            }
-
-            _handles[location].Dispose();
-            _handles.Remove(location);
-            StopIdleTimer(location);
-        }
-
-        private AssetHandle LoadPrefabHandle(string location, bool async)
-        {
-            if (_handles.TryGetValue(location, out AssetHandle cached))
-                return cached;
-
-            AssetHandle handle = async
-                ? _resourceManager.LoadAsync<GameObject>(location)
-                : _resourceManager.Load<GameObject>(location);
-
-            if (handle == null || !handle.IsValid)
-            {
-                if (!async)
-                    LogInstantiateFailed(location);
-                return null;
-            }
-
-            if (!handle.IsDone)
-                return handle;
-
-            if (handle.AssetObject is not GameObject)
-            {
-                if (!async)
-                    LogInstantiateFailed(location);
-                handle.Dispose();
-                return null;
-            }
-
-            _handles[location] = handle;
-            return handle;
+            _unpooled.Clear();
         }
 
         private static void DestroyInstance(GameObject instance)
         {
-            if (!instance)
-                return;
+            if (!instance) return;
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -388,36 +562,40 @@ namespace Framework
                 return;
             }
 #endif
+            
             Object.Destroy(instance);
         }
 
+        #endregion
+
         #region 子系统生命周期
+
         public override void Init()
         {
             _resourceManager = Global.Get<ResourceManager>();
-            _poolRoot = new GameObject("[InstantiationManager]").transform;
+
+            _poolRoot = new GameObject($"[{nameof(SpawnManager)}]").transform;
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
 
-            // 初始化资源清除缓存
             _idleUnloadSeconds = GameCoreConfig.Instance.clearUnusedIdleTime;
         }
 
         public override void Update(float deltaTime)
         {
-            int submitted = _pending.Count;
-            for (int i = 0; i < submitted; i++)
-                _pending[i].seenUpdate = true;
+            int pendingCount = _pending.Count;
 
-            for (int i = 0; i < _pending.Count;)
+            for (int i = 0; i < pendingCount;)
             {
                 PendingInstantiate pending = _pending[i];
-                if (!pending.seenUpdate || !TryCompletePending(pending))
+
+                if (!TryCompletePending(pending))
                 {
                     i++;
                     continue;
                 }
 
                 _pending.RemoveAt(i);
+                pendingCount--;
             }
 
             TickIdleUnload(deltaTime);
@@ -426,6 +604,8 @@ namespace Framework
         public override void Destroy()
         {
             Clear();
+            ClearUnpooledInstances();
+
             if (_poolRoot)
             {
                 DestroyInstance(_poolRoot.gameObject);
@@ -434,6 +614,7 @@ namespace Framework
 
             _resourceManager = null;
         }
+
         #endregion
     }
 }

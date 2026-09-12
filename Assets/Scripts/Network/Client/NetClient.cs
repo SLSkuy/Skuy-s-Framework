@@ -5,6 +5,7 @@ using Google.Protobuf;
 using NetConnect;
 using UnityEngine;
 using Utils;
+using YooAsset;
 using Ping = NetConnect.Ping;
 
 namespace Network
@@ -40,6 +41,7 @@ namespace Network
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
         private NetClientConfig _clientConfig;
+        private AssetHandle _assetHandle;
 
         // ========== 连接标识 ==========
         private uint _clientId;
@@ -424,7 +426,10 @@ namespace Network
 
         public override void Init()
         {
-            _clientConfig = NetClientConfig.Instance;
+            // 获取数据配置
+            _assetHandle = Global.Load<NetClientConfig>("Config_NetClientConfig");
+            _clientConfig = _assetHandle.AssetObject as NetClientConfig;
+            
             _messageProcessor = new MessageProcessor();
 
             _reliableTransport = new TcpClientTransport();
@@ -483,6 +488,8 @@ namespace Network
 
         public override void Destroy()
         {
+            _assetHandle.Dispose();
+            
             if (_reliableTransport != null)
             {
                 _reliableTransport.OnDataReceived -= HandleDataReceived;

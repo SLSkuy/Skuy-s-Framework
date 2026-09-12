@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Net;
 using System.Net.Sockets.Kcp;
+using Framework;
 
 namespace Network
 {
@@ -19,7 +20,7 @@ namespace Network
 
         public KcpSession(EndPoint remoteEndPoint, Action<KcpSession, byte[], int> output, uint conv = 0)
         {
-            KcpTransportConfig config = KcpTransportConfig.Instance;
+            KcpTransportConfig config = Global.Load<KcpTransportConfig>("Config_KcpTransportConfig").AssetObject as KcpTransportConfig;
             Conv = conv > 0 ? conv : config.conv;
             RemoteEndPoint = remoteEndPoint;
             _output = output;

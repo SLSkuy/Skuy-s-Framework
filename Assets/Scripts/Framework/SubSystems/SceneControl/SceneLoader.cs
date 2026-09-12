@@ -106,7 +106,7 @@ namespace Framework
                 IsCompleted = true;
 
                 Global.Get<SpawnManager>().Clear();
-                Global.Get<ResourceManager>().ClearAll();
+                Global.Get<ResourceManager>().ClearUnused();
                 DispatchCompleted();
             }
         }
