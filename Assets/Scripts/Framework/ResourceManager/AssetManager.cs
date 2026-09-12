@@ -66,13 +66,13 @@ namespace Framework
         /// <summary>
         /// 卸未使用资源，转发给当前资源策略。
         /// </summary>
-        public void UnloadUnused() => ActiveProvider.UnloadUnused();
+        public void UnloadUnused() => ActiveProvider.ClearUnused();
 
         public override void Destroy()
         {
             if (_providerInjected && !_providerShutdown)
             {
-                _provider.Shutdown();
+                _provider.ClearAll();
                 _providerShutdown = true;
             }
         }

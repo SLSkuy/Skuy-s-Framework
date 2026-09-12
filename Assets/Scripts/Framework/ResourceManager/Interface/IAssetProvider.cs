@@ -20,11 +20,11 @@ namespace Framework
         /// <summary>
         /// 卸未使用资源，语义由策略定义。
         /// </summary>
-        void UnloadUnused();
+        void ClearUnused();
 
         /// <summary>
         /// 关闭策略并卸掉仍存活的加载。
         /// </summary>
-        void Shutdown();
+        void ClearAll();
     }
 }

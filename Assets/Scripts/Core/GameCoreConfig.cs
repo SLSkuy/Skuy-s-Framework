@@ -15,5 +15,6 @@ namespace Core
         
         [Header("资源加载")] 
         public EPlayMode resourceMode = EPlayMode.EditorSimulateMode;
+        public string defaultPackageName = "DefaultPackage";
     }
 }
