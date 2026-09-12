@@ -2,7 +2,7 @@ using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Framework
+namespace Utils.DataStruct
 {
     /// <summary>
     /// KD-Tree定义

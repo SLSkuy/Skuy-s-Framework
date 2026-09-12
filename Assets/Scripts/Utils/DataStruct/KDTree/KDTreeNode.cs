@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace Framework
+namespace Utils.DataStruct
 {
     /// <summary>
     /// KD-Tree节点划分轴选择

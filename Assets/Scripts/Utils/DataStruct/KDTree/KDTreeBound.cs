@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace Framework
+namespace Utils.DataStruct
 {
     /// <summary>
     /// KD-Tree包围盒定义

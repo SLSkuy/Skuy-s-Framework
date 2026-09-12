@@ -1,9 +1,10 @@
-﻿using Unity.Collections;
+﻿using GamePlay.Navigation;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace Framework
+namespace Utils
 {
     /// <summary>
     /// 网格坐标转换工具

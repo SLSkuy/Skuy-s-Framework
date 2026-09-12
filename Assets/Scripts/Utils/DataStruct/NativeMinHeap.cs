@@ -1,7 +1,7 @@
 ﻿using System;
 using Unity.Collections;
 
-namespace Framework
+namespace Utils.DataStruct
 {
     /// <summary>
     /// 泛型最小堆（Min-Heap）数据结构，基于 NativeArray 实现，可在 Burst 编译的 Job 中使用。
