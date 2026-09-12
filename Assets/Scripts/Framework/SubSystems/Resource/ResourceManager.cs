@@ -77,7 +77,7 @@ namespace Framework
         /// 卸未使用资源，转发给当前资源策略。
         /// </summary>
         public void ClearUnused() => ActiveProvider.ClearUnused();
-        
+
         /// <summary>
         /// 清空所有资源
         /// </summary>
@@ -87,7 +87,7 @@ namespace Framework
         {
             if (_providerInjected && !_providerShutdown)
             {
-                _provider.ClearAll();
+                _provider.Shutdown();
                 _providerShutdown = true;
             }
         }

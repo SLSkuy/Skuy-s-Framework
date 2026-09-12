@@ -399,7 +399,7 @@ namespace Framework
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
 
             // 初始化资源清除缓存
-            _idleUnloadSeconds = GameCoreConfig.Instance.unLoadIdleTime;
+            _idleUnloadSeconds = GameCoreConfig.Instance.clearUnusedIdleTime;
         }
 
         public override void Update(float deltaTime)

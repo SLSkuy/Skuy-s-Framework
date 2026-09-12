@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: GameCoreConfig
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameCoreConfig
   targetFrame: 60
-  resourceMode: 2
+  clearUnusedIdleTime: 30
+  resourceMode: 1
   defaultPackageName: DefaultPackage

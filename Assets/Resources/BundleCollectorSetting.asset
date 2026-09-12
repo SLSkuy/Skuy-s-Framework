@@ -59,7 +59,7 @@ MonoBehaviour:
       - CollectPath: Assets/ResourcesAB/Prefabs/UI
         CollectorGUID: 5714e7f9dd3148b4e818ba933b7e2d51
         CollectorType: 0
-        AddressRuleName: AddressByFolderAndFileName
+        AddressRuleName: AddressByGroupAndFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 

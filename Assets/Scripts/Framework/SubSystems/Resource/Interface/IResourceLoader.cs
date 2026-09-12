@@ -32,8 +32,13 @@ namespace Framework
         void ClearUnused();
 
         /// <summary>
-        /// 关闭策略并卸掉仍存活的加载。
+        /// 卸掉仍存活的加载
         /// </summary>
         void ClearAll();
+
+        /// <summary>
+        /// 同步关闭策略并销毁底层资源系统
+        /// </summary>
+        void Shutdown();
     }
 }

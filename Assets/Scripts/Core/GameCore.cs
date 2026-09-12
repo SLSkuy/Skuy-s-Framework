@@ -100,6 +100,8 @@ namespace Core
 
         protected override void Destroy()
         {
+            StopAllCoroutines();
+            
             ResourceMgr.OnResourceReady -= InitSystems;
             SystemMgr.Destroy();
             Global.Clear();

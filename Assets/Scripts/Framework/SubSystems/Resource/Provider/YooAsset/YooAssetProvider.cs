@@ -14,7 +14,7 @@ namespace Framework
     {
         private ResourcePackage _package;
         private readonly EPlayMode _playMode;
-        private readonly string _packageName; 
+        private readonly string _packageName;
         private string _packageVersion;
 
         #region 事件
@@ -55,7 +55,7 @@ namespace Framework
                 var packageRoot = buildResult.PackageRootDirectory;
                 var createParameters = new EditorSimulateModeOptions
                 {
-                    EditorFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters(packageRoot)
+                    EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot)
                 };
                 initializationOperation = _package.InitializePackageAsync(createParameters);
             }
@@ -82,7 +82,8 @@ namespace Framework
             }
             else
             {
-                Debug.LogError($"[{GetType()}] 错误的资源加载模式：{_playMode}");
+                Debug.LogError($"[{GetType()}] 不受支持的资源加载模式：{_playMode}");
+                yield break;
             }
 
             yield return UpdatePackageVersion(_package);
@@ -154,8 +155,7 @@ namespace Framework
         /// </summary>
         private IEnumerator ClearUnusedAssets()
         {
-            var package = YooAssets.GetPackage(_packageName);
-            var operation = package.UnloadUnusedAssetsAsync();
+            var operation = _package.UnloadUnusedAssetsAsync();
             operation.WaitForCompletion(); //支持同步操作
             yield return operation;
 
@@ -181,8 +181,7 @@ namespace Framework
         /// </summary>
         private IEnumerator ClearAllAssets()
         {
-            var package = YooAssets.GetPackage(_packageName);
-            var operation = package.UnloadAllAssetsAsync();
+            var operation = _package.UnloadAllAssetsAsync();
             yield return operation;
             
             if (operation.Status == EOperationStatus.Succeeded)
@@ -195,6 +194,15 @@ namespace Framework
                 //清理失败
                 Debug.LogError(operation.Error);
             }
+        }
+
+        /// <summary>
+        /// 同步关闭 YooAsset：停掉本策略挂起的协程并销毁资源系统。
+        /// </summary>
+        public void Shutdown()
+        {
+            YooAssets.Destroy();
+            _package = null;
         }
 
         #endregion
