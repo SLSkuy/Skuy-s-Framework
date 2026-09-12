@@ -20,9 +20,13 @@ namespace Core
         public CameraManager CameraMgr { get; private set; }
         #endregion
 
+        private GameCoreConfig _config;
+
         private void InitializeGameCore()
         {
-            Application.targetFrameRate = 60;
+            _config = GameCoreConfig.Instance;
+
+            Application.targetFrameRate = _config.targetFrame;
 
             InitSubSystems();
             InitDataProxy();
