@@ -55,9 +55,9 @@ namespace Core
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();
             TimerMgr = SystemMgr.RegisterSystem<TimerManager>();
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();
+            UIMgr = SystemMgr.RegisterSystem<UIManager>();
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             LocalInputMgr = SystemMgr.RegisterSystem<LocalInputManager>();
-            UIMgr = SystemMgr.RegisterSystem<UIManager>();
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
         }
 

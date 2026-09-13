@@ -3,7 +3,6 @@ using Framework;
 using GamePlay.GameSession;
 using GamePlay.Room;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GamePlay.Procedure
 {
@@ -145,12 +144,7 @@ namespace GamePlay.Procedure
 
             Global.Unregister<GameManager>();
             Global.Unregister<RoomManager>();
-
-            if (Global.TryGet(out SceneLoader loader) && loader.IsLoading ||
-                SceneManager.GetActiveScene().name != GameConstants.MENU_SCENE_NAME)
-            {
-                Global.LoadScene(GameConstants.MENU_SCENE_NAME);
-            }
+            Global.LoadScene(GameConstants.MENU_SCENE_NAME);
         }
 
         #endregion

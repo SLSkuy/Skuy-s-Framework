@@ -190,6 +190,11 @@ namespace Framework
             }
         }
 
+        public void RegisterUI(IUIController uiController, Transform uiTransform)
+        {
+            RegisterUI(uiController.UIControllerID, uiController, uiTransform);
+        }
+
         public void RegisterUI(string id, IUIController uiController, Transform uiTransform)
         {
             switch (uiController)
@@ -207,6 +212,17 @@ namespace Framework
                     break;
             }
         }
+        
+        public void UnregisterUI(string id)
+        {
+            IUIController uiController = GetUIController(id);
+            UnregisterUI(id, uiController);
+        }
+
+        public void UnregisterUI(IUIController uiController)
+        {
+            UnregisterUI(uiController.UIControllerID, uiController);
+        }
 
         public void UnregisterUI(string id, IUIController uiController)
         {
@@ -222,12 +238,6 @@ namespace Framework
                     Debug.LogError($"[UIFramework] {id} is not registered");
                     break;
             }
-        }
-
-        public void UnregisterUI(string id)
-        {
-            IUIController uiController = GetUIController(id);
-            UnregisterUI(id, uiController);
         }
 
         public void HideAllUI(bool animate = true)

@@ -14,9 +14,9 @@ namespace Framework
         PoolManager = -150,
         TimerManager = -120,
         DataProxyManager = -100,
-        SceneLoader = -50,
         LocalInputManager = -40,
         UIManager = 5000,
+        SceneLoader = 6000,
         CameraManager = 10000,
     }
 }
