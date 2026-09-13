@@ -137,14 +137,15 @@ namespace GamePlay.Procedure
                 _joinClientHandler = null;    
             }
             
+            // 开启过房间后才注销子模块
             if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
+                
+                Global.Unregister<GameManager>();
+                Global.Unregister<RoomManager>();
+                Global.LoadScene(GameConstants.MENU_SCENE_NAME);
             }
-
-            Global.Unregister<GameManager>();
-            Global.Unregister<RoomManager>();
-            Global.LoadScene(GameConstants.MENU_SCENE_NAME);
         }
 
         #endregion
