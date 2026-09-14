@@ -5,7 +5,7 @@ using GamePlay.Simulation;
 using UnityEngine;
 using YooAsset;
 
-namespace GamePlay.GameSession
+namespace GamePlay.GameCore
 {
     /// <summary>
     /// 对局期本机 pawn 子模块：关卡完成后由粘合点转发，不订阅场景加载器。
@@ -44,7 +44,6 @@ namespace GamePlay.GameSession
 
             // 绑定摄像机
             Global.Get<CameraManager>().SetTarget(instance.transform.Find("orientation"));
-            Cursor.lockState = CursorLockMode.Locked;
             
             instance.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             _instance = instance;

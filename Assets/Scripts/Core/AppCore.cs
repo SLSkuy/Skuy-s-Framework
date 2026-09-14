@@ -6,7 +6,7 @@ namespace Core
     /// <summary>
     /// 游戏核心逻辑管理器，不负责游戏流程的处理，只负责工具的管理
     /// </summary>
-    public class GameCore : MonoSingleton<GameCore>
+    public class AppCore : MonoSingleton<AppCore>
     {
         #region 子系统
         public SystemManager SystemMgr { get; private set; }
@@ -21,11 +21,11 @@ namespace Core
         public CameraManager CameraMgr { get; private set; }
         #endregion
 
-        private GameCoreConfig _config;
+        private AppCoreConfig _config;
 
         private void InitializeGameCore()
         {
-            _config = GameCoreConfig.Instance;
+            _config = AppCoreConfig.Instance;
             Application.targetFrameRate = _config.targetFrame;
 
             SystemMgr = new SystemManager();

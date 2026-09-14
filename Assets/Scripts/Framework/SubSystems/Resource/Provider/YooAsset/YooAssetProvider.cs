@@ -33,7 +33,7 @@ namespace Framework
         /// </summary>
         public void Init()
         {
-            GameCore.Instance.StartCoroutine(InitPackage());
+            AppCore.Instance.StartCoroutine(InitPackage());
         }
         
         // ReSharper disable Unity.PerformanceAnalysis
@@ -151,7 +151,7 @@ namespace Framework
         // ReSharper disable Unity.PerformanceAnalysis
         public void ClearUnused()
         {
-            GameCore.Instance.StartCoroutine(ClearUnusedAssets());
+            AppCore.Instance.StartCoroutine(ClearUnusedAssets());
         }
         
         // ReSharper disable Unity.PerformanceAnalysis
@@ -179,7 +179,7 @@ namespace Framework
         // ReSharper disable Unity.PerformanceAnalysis
         public void ClearAll()
         {
-            GameCore.Instance.StartCoroutine(ClearAllAssets());
+            AppCore.Instance.StartCoroutine(ClearAllAssets());
         }
         
         // ReSharper disable Unity.PerformanceAnalysis

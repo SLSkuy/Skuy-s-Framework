@@ -1,7 +1,9 @@
 using Core;
 using Framework;
-using GamePlay.GameSession;
+using GamePlay.GameCore;
 using GamePlay.Room;
+using NetSync;
+using Network;
 using UnityEngine;
 
 namespace GamePlay.Procedure
@@ -52,9 +54,36 @@ namespace GamePlay.Procedure
             if (_joinInFlight) return;
 
             _joinInFlight = true;
-            _joinClientHandler = new ProcedureJoinClientHandler();
-            _joinClientHandler.JoinSettled += HandleJoinSettled;
-            _joinClientHandler.StartJoin();
+            NetClient client = Global.Register<NetClient>();
+            _joinClientHandler.Bind();
+            client.StartReliableConnect();
+        }
+
+        /// <summary>
+        /// 加入响应到达：拒绝则结束加入；接受则接管名册并进入对局。
+        /// </summary>
+        public void CompleteJoin(Game_Join_Response response)
+        {
+            _joinClientHandler.Unbind();
+            if (!response.Accepted)
+            {
+                FailJoin();
+                return;
+            }
+
+            _joinInFlight = false;
+            RoomManager room = Global.Register<RoomManager>();
+            room.CompleteClientJoin(response);
+            room.SessionEnded += HandleSessionEnded;
+            _fsm.ChangeState(GameProcedure.Match);
+        }
+
+        /// <summary>
+        /// 连接失败或加入被拒。
+        /// </summary>
+        public void FailJoin()
+        {
+            TearDownSession();
         }
 
         /// <summary>
@@ -110,16 +139,18 @@ namespace GamePlay.Procedure
         /// </summary>
         public void TearDownSession()
         {
+            bool joining = _joinInFlight;
             _joinInFlight = false;
             HideMatchHud();
-            
-            if (_joinClientHandler != null)
+
+            _joinClientHandler.Unbind();
+            if (joining)
             {
-                _joinClientHandler.JoinSettled -= HandleJoinSettled;
-                _joinClientHandler.CancelJoin();
-                _joinClientHandler = null;    
+                Global.Get<NetClient>().StopClient();
+                Global.Unregister<NetClient>();
+                return;
             }
-            
+
             // 开启过房间后才注销子模块
             if (Global.TryGet(out RoomManager battle))
             {
@@ -127,7 +158,7 @@ namespace GamePlay.Procedure
                 
                 Global.Unregister<GameManager>();
                 Global.Unregister<RoomManager>();
-                Global.LoadScene(GameConstants.MENU_SCENE_NAME);
+                Global.LoadScene(GlobalConstants.MENU_SCENE_NAME);
             }
         }
 
@@ -174,6 +205,7 @@ namespace GamePlay.Procedure
 
         protected override void Init()
         {
+            _joinClientHandler = new ProcedureJoinClientHandler(this);
             _fsm = new EnumStateMachine<GameProcedure>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
@@ -198,23 +230,6 @@ namespace GamePlay.Procedure
         #endregion
 
         #region 回调处理
-
-        private void HandleJoinSettled(bool accepted)
-        {
-            _joinInFlight = false;
-
-            if (accepted)
-            {
-                _joinClientHandler.JoinSettled -= HandleJoinSettled;
-                _joinClientHandler = null;
-                
-                Global.Get<RoomManager>().SessionEnded += HandleSessionEnded;
-                _fsm.ChangeState(GameProcedure.Match);
-                return;
-            }
-
-            TearDownSession();
-        }
 
         private void HandleOrchestrationFailed()
         {

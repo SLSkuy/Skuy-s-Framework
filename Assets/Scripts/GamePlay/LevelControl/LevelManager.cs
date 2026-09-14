@@ -33,7 +33,7 @@ namespace GamePlay.LevelControl
         /// </summary>
         public void LoadMatchLevel()
         {
-            LoadLevel(GameConstants.LEVEL_SCENE_NAME);
+            LoadLevel(GlobalConstants.LEVEL_SCENE_NAME);
         }
     }
 }

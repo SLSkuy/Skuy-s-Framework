@@ -1,4 +1,5 @@
 using Framework;
+using UnityEngine;
 
 namespace GamePlay.Procedure
 {
@@ -19,6 +20,8 @@ namespace GamePlay.Procedure
 
         public override void Enter()
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            
             _procedures.OnMatchEntered();
         }
     }

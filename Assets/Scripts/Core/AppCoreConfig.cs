@@ -7,8 +7,8 @@ namespace Core
     /// <summary>
     /// 全局游戏设置
     /// </summary>
-    [CreateAssetMenu(fileName = "GameCoreConfig", menuName = "GameCore/GameCoreConfig")]
-    public class GameCoreConfig : ScriptableObjectSingleton<GameCoreConfig>
+    [CreateAssetMenu(fileName = "AppCoreConfig", menuName = "AppCore/AppCoreConfig")]
+    public class AppCoreConfig : ScriptableObjectSingleton<AppCoreConfig>
     {
         [Header("游戏基础设置")] 
         public int targetFrame = 60;

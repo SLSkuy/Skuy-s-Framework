@@ -577,7 +577,7 @@ namespace Framework
             _poolRoot = new GameObject($"[{nameof(SpawnManager)}]").transform;
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
 
-            _idleUnloadSeconds = GameCoreConfig.Instance.clearUnusedIdleTime;
+            _idleUnloadSeconds = AppCoreConfig.Instance.clearUnusedIdleTime;
         }
 
         public override void Update(float deltaTime)

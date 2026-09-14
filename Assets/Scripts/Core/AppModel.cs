@@ -6,7 +6,7 @@ namespace Core
     /// 全局游戏数据（存档、玩家进度等）
     /// </summary>
     [Serializable]
-    public class GameModel
+    public class AppModel
     {
         #region 玩家基础数据
         public string playerName;
@@ -16,7 +16,7 @@ namespace Core
         public DateTime LastPlayTime;
         #endregion
 
-        public GameModel()
+        public AppModel()
         {
             playerName = "Player";
             LastPlayTime = DateTime.Now;

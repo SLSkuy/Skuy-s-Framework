@@ -1,4 +1,4 @@
-namespace GamePlay.GameSession
+namespace GamePlay.GameCore
 {
     /// <summary>
     /// 对局内关卡流程相位。仅在玩法粘合点持有期间有意义。

@@ -5,7 +5,7 @@ using GamePlay.LevelControl;
 using GamePlay.Room;
 using GamePlay.Simulation;
 
-namespace GamePlay.GameSession
+namespace GamePlay.GameCore
 {
     /// <summary>
     /// 玩法粘合点：编排模拟核与关卡控制，不持有名册、不 Admit、不开听。
@@ -93,7 +93,7 @@ namespace GamePlay.GameSession
 
         private void HandleLevelLoadCompleted(SceneLoadEvent.CompletedData data)
         {
-            if (data.SceneName != GameConstants.LEVEL_SCENE_NAME)
+            if (data.SceneName != GlobalConstants.LEVEL_SCENE_NAME)
             {
                 return;
             }
@@ -109,7 +109,7 @@ namespace GamePlay.GameSession
 
         private void HandleLevelLoadFailed(SceneLoadEvent.FailedData data)
         {
-            if (data.SceneName != GameConstants.LEVEL_SCENE_NAME)
+            if (data.SceneName != GlobalConstants.LEVEL_SCENE_NAME)
             {
                 return;
             }
