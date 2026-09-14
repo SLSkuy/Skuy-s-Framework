@@ -9,11 +9,11 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程核心，与 GameCore 同级，UI 意图入口，并拥有会话级登记
+    /// 玩法流程核心，控制游戏整体流程
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
-        private ProcedureJoinClientHandler _joinClientHandler;
+        private ProcedureHandler _handler;
         private EnumStateMachine<GameProcedure> _fsm;
         private MatchDebugHud _matchHud;
         private bool _joinInFlight;
@@ -55,7 +55,7 @@ namespace GamePlay.Procedure
 
             _joinInFlight = true;
             NetClient client = Global.Register<NetClient>();
-            _joinClientHandler.Bind();
+            _handler.Bind();
             client.StartReliableConnect();
         }
 
@@ -64,7 +64,7 @@ namespace GamePlay.Procedure
         /// </summary>
         public void CompleteJoin(Game_Join_Response response)
         {
-            _joinClientHandler.Unbind();
+            _handler.Unbind();
             if (!response.Accepted)
             {
                 FailJoin();
@@ -143,9 +143,10 @@ namespace GamePlay.Procedure
             _joinInFlight = false;
             HideMatchHud();
 
-            _joinClientHandler.Unbind();
+            _handler.Unbind();
             if (joining)
             {
+                // 加入过程中还没有房间管理器，需要手动关闭连接
                 Global.Get<NetClient>().StopClient();
                 Global.Unregister<NetClient>();
                 return;
@@ -205,7 +206,7 @@ namespace GamePlay.Procedure
 
         protected override void Init()
         {
-            _joinClientHandler = new ProcedureJoinClientHandler(this);
+            _handler = new ProcedureHandler(this);
             _fsm = new EnumStateMachine<GameProcedure>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));

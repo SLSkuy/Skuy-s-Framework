@@ -9,12 +9,12 @@ namespace GamePlay.Procedure
     /// <summary>
     /// 菜单加入阶段：可靠连接与加入请求收发，被接受前不创建名册对象。
     /// </summary>
-    public sealed class ProcedureJoinClientHandler
+    public sealed class ProcedureHandler
     {
         private readonly ProcedureCore _procedure;
         private NetClient _client;
 
-        public ProcedureJoinClientHandler(ProcedureCore procedure)
+        public ProcedureHandler(ProcedureCore procedure)
         {
             _procedure = procedure;
         }
@@ -44,10 +44,7 @@ namespace GamePlay.Procedure
 
         #region 发送消息
 
-        /// <summary>
-        /// 填充并发送加入请求。
-        /// </summary>
-        public void SendGameJoinRequest()
+        private void SendGameJoinRequest()
         {
             Game_Join_Request request = new() { ClientId = _client.ClientId };
             _client.SendReliable(NetEvent.GAME_JOIN_REQUEST, request);

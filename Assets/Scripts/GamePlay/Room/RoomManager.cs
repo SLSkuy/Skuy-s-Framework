@@ -342,28 +342,12 @@ namespace GamePlay.Room
 
         public void HandleGameJoinResponse(Game_Join_Response response)
         {
-            if (!response.Accepted)
-            {
-                HandleJoinFailed();
-                return;
-            }
-
-            if (!_isInMatch)
+            if (!response.Accepted || !_isInMatch)
             {
                 return;
             }
 
             ApplyRoster(response.HostPlayerId, response.PlayerIds);
-        }
-
-        public void HandleJoinFailed()
-        {
-            if (_isInMatch)
-            {
-                return;
-            }
-
-            StopClient();
         }
 
         public void HandleGameLeaveNotify(Game_Leave_Notify notify)
