@@ -1,4 +1,4 @@
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 实体对象身份枚举

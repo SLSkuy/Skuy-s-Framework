@@ -14,9 +14,7 @@ namespace GamePlay.Procedure
             {
                 return;
             }
-
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            
             GUI.depth = -1000;
             uint[] roster = procedures.GetRosterPlayerIds();
             GUILayout.BeginArea(new Rect(12f, 12f, 320f, 200f), GUI.skin.box);

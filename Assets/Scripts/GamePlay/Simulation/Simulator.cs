@@ -4,7 +4,7 @@ using Framework;
 using GamePlay.EntitySystem;
 using YooAsset;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 模拟核：持有唯一 Tick、实体注册表与步进调度。由 Host 子系统持有并驱动。

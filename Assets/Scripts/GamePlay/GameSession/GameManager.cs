@@ -1,7 +1,9 @@
+using System;
+using Core;
 using Framework;
 using GamePlay.LevelControl;
 using GamePlay.Room;
-using GamePlay.Simulator;
+using GamePlay.Simulation;
 
 namespace GamePlay.GameSession
 {
@@ -11,45 +13,47 @@ namespace GamePlay.GameSession
     public sealed class GameManager : SubSystemBase
     {
         private ISimulationKernel _simulationKernel;
-        private SessionRole _sessionRole;
+        private Action _orchestrationFailed;
+        private bool _orchestrationHasFailed;
 
         #region 属性
         public override int Priority => 200;
         public GameplayPhase Phase { get; private set; } = GameplayPhase.Idle;
         #endregion
 
+        #region 事件
         /// <summary>
-        /// 进入对局时登记玩法粘合点，不加载关卡、不启动模拟核。
+        /// 切关或启核失败。流程核作为门闩离开对局；粘合点不反向调用离开。
         /// </summary>
-        public void InitMatch(SessionRole sessionRole)
+        public event Action OrchestrationFailed
         {
-            _sessionRole = sessionRole;
-            Phase = GameplayPhase.Idle;
-        }
-
-        /// <summary>
-        /// 进入对局流程态：由关卡控制加载关卡，并启动模拟核。
-        /// </summary>
-        public bool EnterMatch()
-        {
-            var levelControl = Global.Register<LevelManager>();
-            Phase = GameplayPhase.ChangingLevel;
-            levelControl.LoadMatchLevel();
-
-            if (!StartSimulation())
+            add
             {
-                Phase = GameplayPhase.Idle;
-                return false;
+                _orchestrationFailed += value;
+                if (_orchestrationHasFailed)
+                {
+                    value();
+                }
+            }
+            remove => _orchestrationFailed -= value;
+        }
+        #endregion
+
+        private void ReportOrchestrationFailed()
+        {
+            if (_orchestrationHasFailed)
+            {
+                return;
             }
 
-            Phase = GameplayPhase.InLevel;
-            return true;
+            _orchestrationHasFailed = true;
+            _orchestrationFailed?.Invoke();
         }
 
         /// <summary>
         /// 启动模拟核。可以晚于开听，但不是玩家可感知的第二道门闩。
         /// </summary>
-        private bool StartSimulation()
+        private bool StartSimulation(SessionRole sessionRole)
         {
             if (_simulationKernel != null)
             {
@@ -57,9 +61,7 @@ namespace GamePlay.GameSession
             }
 
             SystemManager systems = Global.Get<SystemManager>();
-            ISimulationKernel kernel = _sessionRole == SessionRole.Client
-                ? new ClientSimulationKernel()
-                : new HostSimulationKernel();
+            ISimulationKernel kernel = sessionRole == SessionRole.Client ? new ClientSimulationKernel() : new HostSimulationKernel();
             systems.RegisterSystem(kernel);
             if (!kernel.StartSession())
             {
@@ -84,14 +86,65 @@ namespace GamePlay.GameSession
                 _simulationKernel = null;
             }
 
+            Global.Unregister<LocalPawnModule>();
             Global.Unregister<LevelManager>();
             Phase = GameplayPhase.Idle;
         }
 
+        private void HandleLevelLoadCompleted(SceneLoadEvent.CompletedData data)
+        {
+            if (data.SceneName != GameConstants.LEVEL_SCENE_NAME)
+            {
+                return;
+            }
+
+            if (_orchestrationHasFailed)
+            {
+                return;
+            }
+
+            Phase = GameplayPhase.InLevel;
+            Global.Get<LocalPawnModule>().HandleMatchLevelCompleted();
+        }
+
+        private void HandleLevelLoadFailed(SceneLoadEvent.FailedData data)
+        {
+            if (data.SceneName != GameConstants.LEVEL_SCENE_NAME)
+            {
+                return;
+            }
+
+            ReportOrchestrationFailed();
+        }
+
         #region 子系统生命周期
+
+        public override void Init()
+        {
+            SessionRole sessionRole = Global.Get<RoomManager>().SessionRole;
+            LevelManager levelControl = Global.Register<LevelManager>();
+            Phase = GameplayPhase.ChangingLevel;
+            levelControl.LoadMatchLevel();
+            if (!StartSimulation(sessionRole))
+            {
+                ReportOrchestrationFailed();
+                return;
+            }
+
+            Global.Register<LocalPawnModule>();
+        }
+
+        public override void BindEvents()
+        {
+            EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoadCompleted);
+            EventBus.Get<SceneLoadEvent.Failed>().AddListener(HandleLevelLoadFailed);
+        }
 
         public override void Destroy()
         {
+            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoadCompleted);
+            EventBus.Get<SceneLoadEvent.Failed>().RemoveListener(HandleLevelLoadFailed);
+            _orchestrationFailed = null;
             ExitMatch();
         }
 

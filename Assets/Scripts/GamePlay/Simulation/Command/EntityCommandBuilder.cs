@@ -2,7 +2,7 @@ using Framework;
 using GamePlay.EntitySystem;
 using Utils;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 将输入状态转换为每 Tick 完整命令，并在命令边界计算按钮边沿。

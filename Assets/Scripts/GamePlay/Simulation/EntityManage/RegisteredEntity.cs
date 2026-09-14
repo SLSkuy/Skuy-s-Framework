@@ -1,7 +1,7 @@
 ﻿using Framework;
 using GamePlay.EntitySystem;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 模拟注册槽：身份、角色、命令边沿；收集时把输入源快照转为命令。

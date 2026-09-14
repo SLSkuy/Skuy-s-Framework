@@ -68,6 +68,10 @@ _Avoid_: 客户, 账号, Client（指人时）
 名册上的一位成员，身份是房主分配的 `playerId`，独立于传输连接。玩家 pawn 的 `entityId` 等于 `playerId`。
 _Avoid_: 连接, clientId（传输的不是玩家）
 
+**附身**：
+把本机输入源接到一名玩家 pawn。不是独立的玩家控制器类型，也不等于生成 pawn。
+_Avoid_: PlayerController（作为类型）, 绑定控制器（口语可以，文档用附身）
+
 **连接**：
 传输层上的一条链路，键为 `connectionId`。连接可以对应一名玩家，但不是玩家。
 _Avoid_: 玩家, peer（文档用连接）

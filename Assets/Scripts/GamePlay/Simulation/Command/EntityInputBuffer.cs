@@ -2,7 +2,7 @@ using System;
 using Framework;
 using GamePlay.EntitySystem;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 角色输入缓冲：服务端按客户端 Tick 做窗口校验与顺序消费，并构建每 Tick 命令

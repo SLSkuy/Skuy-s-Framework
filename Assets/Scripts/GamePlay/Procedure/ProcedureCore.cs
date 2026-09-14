@@ -94,21 +94,6 @@ namespace GamePlay.Procedure
                 // 创建本地房间
                 battle.CreateLocalRoom();
             }
-
-            LaunchGame(SessionRole.Host);
-        }
-
-        /// <summary>
-        /// 打开游戏管理器，正式开启游戏
-        /// </summary>
-        private void LaunchGame(SessionRole role)
-        {
-            if (!Global.TryGet(out GameManager gameManager))
-            {
-                gameManager = Global.Register<GameManager>();
-            }
-
-            gameManager.InitMatch(role);
         }
 
         #region 流程控制
@@ -116,10 +101,8 @@ namespace GamePlay.Procedure
         public void OnMatchEntered()
         {
             ShowMatchHud();
-            if (!Global.Get<GameManager>().EnterMatch())
-            {
-                _fsm.ChangeState(GameProcedure.Menu);
-            }
+            GameManager gameplay = Global.Register<GameManager>();
+            gameplay.OrchestrationFailed += HandleOrchestrationFailed;
         }
 
         /// <summary>
@@ -161,8 +144,6 @@ namespace GamePlay.Procedure
             }
 
             _matchHud.enabled = true;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
         }
 
         /// <summary>
@@ -191,7 +172,7 @@ namespace GamePlay.Procedure
 
         #region 生命周期
 
-        private void Start()
+        protected override void Init()
         {
             _fsm = new EnumStateMachine<GameProcedure>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
@@ -228,12 +209,16 @@ namespace GamePlay.Procedure
                 _joinClientHandler = null;
                 
                 Global.Get<RoomManager>().SessionEnded += HandleSessionEnded;
-                LaunchGame(SessionRole.Client);
                 _fsm.ChangeState(GameProcedure.Match);
                 return;
             }
 
             TearDownSession();
+        }
+
+        private void HandleOrchestrationFailed()
+        {
+            LeaveSession();
         }
 
         private void HandleSessionEnded()

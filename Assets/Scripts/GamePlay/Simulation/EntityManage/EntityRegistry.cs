@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using GamePlay.EntitySystem;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 模拟器实体注册器，统一管理需要进行模拟管理的所有实体

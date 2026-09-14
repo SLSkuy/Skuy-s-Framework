@@ -1,13 +1,13 @@
 using Framework;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 战局模拟核：开战时由房间按会话角色创建，负责时钟与实体会话。
+    /// 模拟核：由玩法粘合点按会话角色创建，负责时钟与实体会话。
     /// </summary>
     public interface ISimulationKernel : ISubSystem
     {
-        Simulator Simulator { get; }
+        Simulation.Simulator Simulator { get; }
         bool IsSessionRunning { get; }
 
         bool StartSession();

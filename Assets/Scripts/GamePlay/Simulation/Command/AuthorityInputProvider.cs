@@ -1,6 +1,6 @@
 using Framework;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 权威网络意图来源：窗口入队，收集口只交出下一拍 InputState。

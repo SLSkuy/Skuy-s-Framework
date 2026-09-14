@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 模拟属性设置

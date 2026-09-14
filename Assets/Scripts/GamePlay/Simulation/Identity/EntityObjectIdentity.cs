@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 对象身份识别器，决定如何进行模拟

@@ -1,6 +1,6 @@
 using System;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 固定步长 Tick 模块，支持追帧，避免每帧时长超过Tick时长

@@ -1,23 +1,25 @@
 using Framework;
 
-namespace GamePlay.Simulator
+namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 客户端模拟核占位：预测与快照接入前只维持会话，不驱动权威步进。
+    /// 主机权威模拟核：持有 Simulator 与时钟。
     /// </summary>
-    public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
+    public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private Simulator _simulator;
+        private Simulation.Simulator _simulator;
 
         #region 属性
         public override int Priority => 500;
-        public Simulator Simulator => _simulator;
+        public Simulation.Simulator Simulator => _simulator;
         public bool IsSessionRunning { get; private set; }
         #endregion
 
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
+            
+            _simulator.StartClock();
             IsSessionRunning = true;
             return true;
         }
@@ -25,6 +27,8 @@ namespace GamePlay.Simulator
         public void StopSession()
         {
             if (!IsSessionRunning) return;
+
+            _simulator.StopClock();
             IsSessionRunning = false;
         }
 
@@ -32,7 +36,7 @@ namespace GamePlay.Simulator
 
         public override void Init()
         {
-            _simulator = new Simulator();
+            _simulator = new Simulation.Simulator();
             _simulator.Init();
         }
 
@@ -52,7 +56,7 @@ namespace GamePlay.Simulator
 
         #region 网络消息处理
 
-        public void HandleWorldSnapshot()
+        public void HandlePlayerInput()
         {
             
         }

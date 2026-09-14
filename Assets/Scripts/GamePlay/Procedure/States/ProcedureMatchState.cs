@@ -3,7 +3,7 @@ using Framework;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：由玩法粘合点加载关卡并启动模拟核。
+    /// 对局流程：进入时登记玩法粘合点，由粘合点自己切关并启核。
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<GameProcedure>
     {
