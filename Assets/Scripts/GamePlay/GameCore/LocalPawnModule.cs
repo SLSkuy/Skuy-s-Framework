@@ -8,7 +8,7 @@ using YooAsset;
 namespace GamePlay.GameCore
 {
     /// <summary>
-    /// 对局期本机 pawn 子模块：关卡完成后由粘合点转发，不订阅场景加载器。
+    /// 对局期本机 pawn 子模块：关卡完成后由对局流程态转发，不订阅场景加载器。
     /// </summary>
     public sealed class LocalPawnModule : SubSystemBase
     {
@@ -55,7 +55,12 @@ namespace GamePlay.GameCore
         public override void Init()
         {
             _sessionRole = Global.Get<RoomManager>().SessionRole;
-            _simulator = Global.Get<HostSimulationKernel>().Simulator;
+            if (_sessionRole == SessionRole.Client)
+            {
+                return;
+            }
+
+            _simulator = Global.Get<HostSimulationKernel>().SimulationKernal;
         }
 
         public override void Destroy()

@@ -7,11 +7,11 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private Simulation.Simulator _simulator;
+        private Simulator _simulator;
 
         #region 属性
         public override int Priority => 500;
-        public Simulation.Simulator Simulator => _simulator;
+        public Simulator SimulationKernal => _simulator;
         public bool IsSessionRunning { get; private set; }
         #endregion
 

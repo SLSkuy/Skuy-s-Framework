@@ -1,5 +1,7 @@
 # 对局态登记粘合点，本机 pawn 晚于关卡完成
 
+**Status**: 登记 `GameManager` 作为粘合点、以及 `OrchestrationFailed` / `GameplayPhase` 由 [ADR-0005](./0005-match-state-orchestrates-no-game-manager.md) 取代；本机 pawn 晚于关卡完成、加入方本刀不 spawn、对局可早于 pawn 仍有效。
+
 菜单意图只建名册。进入对局流程态才登记 `GameManager`；粘合点自己向名册读会话角色，切关并启核。Procedure 不调用 `InitMatch` / `EnterMatch`。关卡 `SceneLoadEvent.Completed` 之后，粘合点再通知 `LocalPawnModule`：仅房主与本机玩用 `HostPlayerId` 经实例门面生成 `NetPlayer`，登记模拟核并附身，出生在原点。加入方本刀不 spawn。启核或切关失败由粘合点发出编排失败，Procedure 作为门闩 `LeaveSession`。
 
 **Considered Options**: Procedure 点名 `EnterMatch`（门闩兼玩法编排）；pawn 放进模拟核或关卡控制；等关卡就绪再开钟（第二道开战门闩）；每个进程生成本机 pawn / 按名册全员 spawn。

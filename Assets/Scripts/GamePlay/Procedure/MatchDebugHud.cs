@@ -10,7 +10,7 @@ namespace GamePlay.Procedure
         private void OnGUI()
         {
             ProcedureCore procedures = ProcedureCore.Instance;
-            if (procedures == null || procedures.CurrentProcedure != GameProcedure.Match)
+            if (procedures == null || procedures.CurrentProcedureState != ProcedureState.Match)
             {
                 return;
             }

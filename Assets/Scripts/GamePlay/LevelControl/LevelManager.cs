@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 namespace GamePlay.LevelControl
 {
     /// <summary>
-    /// 对局里负责加载与切换关卡。不编排玩法，不管名册和连接。
+    /// 对局里负责加载与切换关卡。不管名册和连接。
     /// </summary>
     public class LevelManager : SubSystemBase
     {

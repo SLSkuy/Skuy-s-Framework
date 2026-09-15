@@ -1,6 +1,5 @@
 using Core;
 using Framework;
-using GamePlay.GameCore;
 using GamePlay.Room;
 using NetSync;
 using Network;
@@ -9,17 +8,17 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程核心，控制游戏整体流程
+    /// 玩法流程核心：菜单与对局门闩，界面意图入口。
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
         private ProcedureHandler _handler;
-        private EnumStateMachine<GameProcedure> _fsm;
+        private EnumStateMachine<ProcedureState> _fsm;
         private MatchDebugHud _matchHud;
         private bool _joinInFlight;
         
         #region 属性
-        public GameProcedure CurrentProcedure => _fsm.CurrentState;
+        public ProcedureState CurrentProcedureState => _fsm.CurrentState;
         public bool SessionIsHost => Global.TryGet(out RoomManager battle) && battle.IsInMatch && 
                                      battle.SessionRole == SessionRole.Host;
         #endregion
@@ -32,7 +31,7 @@ namespace GamePlay.Procedure
             if (_joinInFlight) return;
 
             OpenHostSession(false);
-            _fsm.ChangeState(GameProcedure.Match);
+            _fsm.ChangeState(ProcedureState.Match);
         }
 
         /// <summary>
@@ -43,11 +42,11 @@ namespace GamePlay.Procedure
             if (_joinInFlight) return;
 
             OpenHostSession(true);
-            _fsm.ChangeState(GameProcedure.Match);
+            _fsm.ChangeState(ProcedureState.Match);
         }
 
         /// <summary>
-        /// 加入远端：先连接，被接受前仍在菜单且没有对局；接受后才登记名册与玩法粘合点。
+        /// 加入远端：先连接，被接受前仍在菜单且没有对局；接受后才登记名册并进入对局。
         /// </summary>
         public void JoinRemote()
         {
@@ -75,7 +74,7 @@ namespace GamePlay.Procedure
             RoomManager room = Global.Register<RoomManager>();
             room.CompleteClientJoin(response);
             room.SessionEnded += HandleSessionEnded;
-            _fsm.ChangeState(GameProcedure.Match);
+            _fsm.ChangeState(ProcedureState.Match);
         }
 
         /// <summary>
@@ -97,7 +96,7 @@ namespace GamePlay.Procedure
                 return;
             }
 
-            _fsm.ChangeState(GameProcedure.Menu);
+            _fsm.ChangeState(ProcedureState.Menu);
         }
 
         private void OpenHostSession(bool acceptsRemoteJoin)
@@ -130,12 +129,10 @@ namespace GamePlay.Procedure
         public void OnMatchEntered()
         {
             ShowMatchHud();
-            GameManager gameplay = Global.Register<GameManager>();
-            gameplay.OrchestrationFailed += HandleOrchestrationFailed;
         }
 
         /// <summary>
-        /// 关闭当前存在的对局，或取消尚未完成的加入。
+        /// 取消尚未完成的加入，或拆除名册并加载菜单入口。玩法对象由对局态离开时拆除。
         /// </summary>
         public void TearDownSession()
         {
@@ -146,18 +143,14 @@ namespace GamePlay.Procedure
             _handler.Unbind();
             if (joining)
             {
-                // 加入过程中还没有房间管理器，需要手动关闭连接
                 Global.Get<NetClient>().StopClient();
                 Global.Unregister<NetClient>();
                 return;
             }
 
-            // 开启过房间后才注销子模块
             if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
-                
-                Global.Unregister<GameManager>();
                 Global.Unregister<RoomManager>();
                 Global.LoadScene(GlobalConstants.MENU_SCENE_NAME);
             }
@@ -207,10 +200,10 @@ namespace GamePlay.Procedure
         protected override void Init()
         {
             _handler = new ProcedureHandler(this);
-            _fsm = new EnumStateMachine<GameProcedure>();
+            _fsm = new EnumStateMachine<ProcedureState>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
-            _fsm.ChangeState(GameProcedure.Menu);
+            _fsm.ChangeState(ProcedureState.Menu);
         }
 
         private void Update()
@@ -232,11 +225,6 @@ namespace GamePlay.Procedure
 
         #region 回调处理
 
-        private void HandleOrchestrationFailed()
-        {
-            LeaveSession();
-        }
-
         private void HandleSessionEnded()
         {
             if (Global.TryGet(out RoomManager battle))
@@ -244,7 +232,7 @@ namespace GamePlay.Procedure
                 battle.SessionEnded -= HandleSessionEnded;
             }
 
-            _fsm.ChangeState(GameProcedure.Menu);
+            _fsm.ChangeState(ProcedureState.Menu);
         }
 
         #endregion
