@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Framework;
 using GamePlay.EntitySystem;
 using YooAsset;
@@ -21,15 +20,8 @@ namespace GamePlay.Simulation
         public bool IsRunning => _tickSystem is { IsRunning: true };
         #endregion
 
-        #region 事件
-        /// <summary>
-        /// 核时钟推进后转发；在本拍 Dispatch 之后触发，禁止再 new TickSystem。
-        /// </summary>
-        public event Action<uint, float> Tick;
-        #endregion
-
         #region Tick管理
-
+        
         public void StartClock()
         {
             if (IsRunning) return;
@@ -43,12 +35,14 @@ namespace GamePlay.Simulation
 
         private void HandleTick(uint tick, float deltaTime)
         {
+            PrepareSimulationTick();
             DispatchTick(tick, deltaTime);
-            Tick?.Invoke(tick, deltaTime);
+            CaptureAuthorityTick();
         }
 
         /// <summary>
-        /// 处理Tick逻辑。Replica 不收集、不 Step。
+        /// 处理Tick逻辑，进行模拟步进
+        /// Replica 不收集、不 Step
         /// </summary>
         private void DispatchTick(uint tick, float deltaTime)
         {
@@ -68,6 +62,61 @@ namespace GamePlay.Simulation
                 if (!_tickCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
                 pair.Value.Character.Step(tick, deltaTime, command);
             }
+        }
+
+        #endregion
+
+        #region 插值处理
+
+        /// <summary>
+        /// 获取模拟步进前的Tick状态
+        /// </summary>
+        private void PrepareSimulationTick()
+        {
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                RegisteredEntity entity = pair.Value;
+                if (!ShouldPresent(entity)) continue;
+                entity.Character.PrepareSimulationTick();
+            }
+        }
+
+        /// <summary>
+        /// 获取模拟步进后的Tick状态
+        /// </summary>
+        private void CaptureAuthorityTick()
+        {
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                RegisteredEntity entity = pair.Value;
+                if (!ShouldPresent(entity)) continue;
+                entity.Character.CaptureAuthorityAfterTick();
+            }
+        }
+
+        /// <summary>
+        /// 插值步进流程
+        /// </summary>
+        private void PresentVisualPoses()
+        {
+            float alpha = _tickSystem.InterpolationAlpha;
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                RegisteredEntity entity = pair.Value;
+                if (!ShouldPresent(entity)) continue;
+                entity.Character.PresentVisualPose(alpha);
+            }
+        }
+
+        /// <summary>
+        /// 判断实体是否应该进行插值
+        /// 只有主机端上的玩家和客户端上的主控玩家需要进行步进插值
+        /// </summary>
+        private static bool ShouldPresent(RegisteredEntity entity)
+        {
+            if (!entity.Character || !entity.Character.IsInitialized) return false;
+            if (entity.Identity && entity.Identity.IsReplica) return false;
+            return true;
         }
 
         #endregion
@@ -147,7 +196,6 @@ namespace GamePlay.Simulation
         {
             _configHandle = Global.Load<SimulationConfig>("Config_SimulationConfig");
             SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
-                
             _entityRegistry = new EntityRegistry();
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tickSystem.Tick += HandleTick;
@@ -155,12 +203,18 @@ namespace GamePlay.Simulation
 
         public void Update(float deltaTime)
         {
-            if(IsRunning) _tickSystem.Update(deltaTime);
+            if (!IsRunning) return;
+            
+            _tickSystem.Update(deltaTime);
+            
+            // 处理步进插值
+            PresentVisualPoses();
         }
 
         public void Destroy()
         {
-            _configHandle.Dispose();
+            _configHandle?.Dispose();
+            _configHandle = null;
             
             if (_tickSystem != null)
             {
@@ -168,8 +222,6 @@ namespace GamePlay.Simulation
                 _tickSystem.Stop();
                 _tickSystem = null;
             }
-
-            Tick = null;
 
             _tickCommands.Clear();
             _entityRegistry?.Clear();

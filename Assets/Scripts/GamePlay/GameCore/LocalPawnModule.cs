@@ -43,7 +43,7 @@ namespace GamePlay.GameCore
             _simulator.SetInputSource(hostPlayerId, Global.Get<LocalInputManager>().Provider);
 
             // 绑定摄像机
-            Global.Get<CameraManager>().SetTarget(instance.transform.Find("orientation"));
+            Global.Get<CameraManager>().SetTarget(instance.transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/orientation"));
             
             instance.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             _instance = instance;

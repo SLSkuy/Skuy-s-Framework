@@ -16,6 +16,17 @@ namespace GamePlay.Simulation
         public uint CurrentTick { get; private set; }
         public float TickDeltaTime => (float)_tickDeltaTime;
         public int TickRate { get; }
+        
+        public float InterpolationAlpha
+        {
+            get
+            {
+                double alpha = _accumulator / _tickDeltaTime;
+                if (alpha > 1d) return 1f;
+                if (alpha < 0d) return 0f;
+                return (float)alpha;
+            }
+        }
         #endregion
 
         #region 事件

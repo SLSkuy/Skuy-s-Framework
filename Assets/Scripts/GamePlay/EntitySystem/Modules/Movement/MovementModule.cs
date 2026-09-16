@@ -41,7 +41,7 @@ namespace GamePlay.EntitySystem
         {
             _config = config;
             _locomotionSpeed = _config.walkSpeed;
-            _mesh = transform.Find(MESH_CHILD_NAME);
+            _mesh = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{MESH_CHILD_NAME}");
             _controller = GetComponent<CharacterController>();
         }
 
@@ -56,6 +56,8 @@ namespace GamePlay.EntitySystem
             transform.position = position;
 
             if (wasEnabled) _controller.enabled = true;
+
+            Target.ForceToAuthority();
         }
 
         /// <summary>

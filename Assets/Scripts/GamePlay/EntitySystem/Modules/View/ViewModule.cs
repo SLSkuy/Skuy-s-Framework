@@ -30,7 +30,7 @@ namespace GamePlay.EntitySystem
         public void Init(EntityConfig config)
         {
             _config = config;
-            _orientation = transform.Find(ORIENTATION_CHILD_NAME);
+            _orientation = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{ORIENTATION_CHILD_NAME}");
             Vector3 euler = _orientation.rotation.eulerAngles;
             _yaw = euler.y;
             _pitch = MathUtils.NormalizePitch(euler.x);

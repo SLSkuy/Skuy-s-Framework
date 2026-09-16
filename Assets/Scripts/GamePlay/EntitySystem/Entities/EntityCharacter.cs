@@ -17,6 +17,7 @@ namespace GamePlay.EntitySystem
         private bool _isInitialized;
         
         // 能力组件
+        private EntityVisualPresentation _visualPresentation;
         private EntitySimulation _simulation;
         private MovementModule _movementModule;
         private ViewModule _viewModule;
@@ -45,7 +46,7 @@ namespace GamePlay.EntitySystem
         private void OnDestroy()
         {
             // 释放引用的资源
-            _assetHandle.Dispose();
+            _assetHandle?.Dispose();
         }
 
         protected virtual void InitConfig()
@@ -69,6 +70,9 @@ namespace GamePlay.EntitySystem
             _viewModule = gameObject.GetOrAddComponent<ViewModule>();
             _viewModule.Init(config);
             _viewModule.Bind(this);
+
+            _visualPresentation = gameObject.GetOrAddComponent<EntityVisualPresentation>();
+            _visualPresentation.Init();
         }
         
         /// <summary>
@@ -104,6 +108,38 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
+        /// 步进前归位画面节点与权威旋转。
+        /// </summary>
+        public void PrepareSimulationTick()
+        {
+            _visualPresentation.PrepareSimulation();
+        }
+
+        /// <summary>
+        /// 步进后收录权威位姿。
+        /// </summary>
+        public void CaptureAuthorityAfterTick()
+        {
+            _visualPresentation.CaptureAuthority();
+        }
+
+        /// <summary>
+        /// 按残差写出画面位姿。
+        /// </summary>
+        public void PresentVisualPose(float alpha)
+        {
+            _visualPresentation.Present(alpha);
+        }
+
+        /// <summary>
+        /// 画面立刻对齐权威位姿。
+        /// </summary>
+        public void ForceToAuthority()
+        {
+            _visualPresentation.SnapToAuthority();
+        }
+
+        /// <summary>
         /// 获取回退状态
         /// </summary>
         public EntityRollbackState CaptureRollbackState()
@@ -117,6 +153,7 @@ namespace GamePlay.EntitySystem
         public void RestoreRollbackState(in EntityRollbackState state)
         {
             _simulation.RestoreRollbackState(state);
+            _visualPresentation.SnapToAuthority();
         }
 
         #endregion
