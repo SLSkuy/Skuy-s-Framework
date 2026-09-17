@@ -100,7 +100,7 @@ namespace Framework
 
         #region 属性
 
-        public override int Priority => (int)SubSystemPriority.InstantiationManager;
+        public override int Priority => (int)SubSystemPriority.SpawnManager;
 
         #endregion
 

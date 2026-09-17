@@ -1,5 +1,6 @@
 using UnityEngine;
 using Framework;
+using Framework.SubSystems;
 
 namespace Core
 {
@@ -16,8 +17,9 @@ namespace Core
         public SpawnManager SpawnMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public LocalInputManager LocalInputMgr { get; private set; }
-        public SceneLoader SceneMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
+        public SceneLoader SceneMgr { get; private set; }
+        public AudioManager AudioMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
         #endregion
 
@@ -58,6 +60,7 @@ namespace Core
             UIMgr = SystemMgr.RegisterSystem<UIManager>();
             SceneMgr = SystemMgr.RegisterSystem<SceneLoader>();
             LocalInputMgr = SystemMgr.RegisterSystem<LocalInputManager>();
+            AudioMgr = SystemMgr.RegisterSystem<AudioManager>();
             CameraMgr = SystemMgr.RegisterSystem<CameraManager>();
         }
 
@@ -85,7 +88,7 @@ namespace Core
 
         private void Update()
         {
-            SystemMgr.Update(Time.deltaTime);
+            SystemMgr.Update(Time.unscaledDeltaTime);
         }
 
         private void LateUpdate()
@@ -95,7 +98,7 @@ namespace Core
 
         private void FixedUpdate()
         {
-            SystemMgr.FixedUpdate(Time.fixedDeltaTime);
+            SystemMgr.FixedUpdate(Time.fixedUnscaledDeltaTime);
         }
 
         protected override void Destroy()
