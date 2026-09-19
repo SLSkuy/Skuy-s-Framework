@@ -61,7 +61,6 @@ namespace GamePlay.Procedure
 
         private void HandleGameJoinResponse(Game_Join_Response message)
         {
-            Unbind();
             _procedure.HandleGameJoinResponse(message);
         }
 

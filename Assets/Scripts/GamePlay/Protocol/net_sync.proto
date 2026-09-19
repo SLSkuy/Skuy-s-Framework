@@ -79,16 +79,4 @@ message World_Snapshot {
     uint32 snapshotTick = 1;
     repeated Player_Snapshot player_snapshots = 2;
 }
-
-// 世界在场：与名册分离。可靠有序。加入方先处理 Join_Response 再收这些。
-message Entity_Spawn {
-  uint32 entityId = 1;
-  uint32 ownerPlayerId = 2;
-  Vec3 position = 3;
-  Quat rotation = 4;
-}
-
-message Entity_Despawn {
-  uint32 entityId = 1;
-}
 // ========== 状态同步 ==========
