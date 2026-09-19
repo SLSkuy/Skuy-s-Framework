@@ -28,6 +28,8 @@ namespace GamePlay.Procedure
             EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoadCompleted);
             EventBus.Get<SceneLoadEvent.Failed>().AddListener(HandleLevelLoadFailed);
             
+            Global.Register<LevelManager>().LoadMatchLevel();
+            
             SessionRole sessionRole = Global.Get<RoomManager>().SessionRole;
             SystemManager systems = Global.Get<SystemManager>();
             ISimulationKernel kernel = sessionRole == SessionRole.Client ? new ClientSimulationKernel() : new HostSimulationKernel();
@@ -38,8 +40,6 @@ namespace GamePlay.Procedure
                 return false;
             }
             _simulationKernel = kernel;
-            
-            Global.Register<LevelManager>().LoadMatchLevel();
             
             return true;
         }

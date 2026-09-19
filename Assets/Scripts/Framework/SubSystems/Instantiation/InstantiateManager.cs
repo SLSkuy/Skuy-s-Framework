@@ -11,7 +11,7 @@ namespace Framework
     /// <summary>
     /// 按资源位置生成与回收 GameObject
     /// </summary>
-    public sealed class SpawnManager : SubSystemBase
+    public sealed class InstantiateManager : SubSystemBase
     {
         #region 内部类型
 
@@ -154,7 +154,7 @@ namespace Framework
         {
             if (!instance)
             {
-                Debug.LogError($"[{nameof(SpawnManager)}] Release ignored: instance is null.");
+                Debug.LogError($"[{nameof(InstantiateManager)}] Release ignored: instance is null.");
                 return;
             }
 
@@ -166,7 +166,7 @@ namespace Framework
 
             if (!_lent.Remove(instance, out SpawnEntry entry))
             {
-                Debug.LogError($"[{nameof(SpawnManager)}] Release ignored: instance was not created by the instance facade.");
+                Debug.LogError($"[{nameof(InstantiateManager)}] Release ignored: instance was not created by the instance facade.");
                 return;
             }
 
@@ -178,6 +178,7 @@ namespace Framework
             if (entry.LentCount == 0 && entry.PendingCount == 0) entry.IdleElapsed = 0f;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 销毁全部借出与空闲实例，并释放所有资源句柄
         /// </summary>
@@ -188,7 +189,7 @@ namespace Framework
             ClearIdleInstances();
             ClearEntries();
             
-            Debug.Log($"[{nameof(SpawnManager)}] 已清空所有池化对象");
+            Debug.Log($"[{nameof(InstantiateManager)}] 已清空所有池化对象");
         }
 
         #endregion
@@ -508,6 +509,7 @@ namespace Framework
             return false;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private static void LogInstantiateFailed(string location)
         {
             if (string.IsNullOrEmpty(location))
@@ -574,7 +576,7 @@ namespace Framework
         {
             _resourceManager = Global.Get<ResourceManager>();
 
-            _poolRoot = new GameObject($"[{nameof(SpawnManager)}]").transform;
+            _poolRoot = new GameObject($"[{nameof(InstantiateManager)}]").transform;
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
 
             _idleUnloadSeconds = AppCoreConfig.Instance.clearUnusedIdleTime;

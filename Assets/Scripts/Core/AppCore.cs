@@ -14,7 +14,7 @@ namespace Core
         public TimerManager TimerMgr { get; private set; }
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
-        public SpawnManager SpawnMgr { get; private set; }
+        public InstantiateManager InstantiateMgr { get; private set; }
         public PoolManager PoolMgr { get; private set; }
         public LocalInputManager LocalInputMgr { get; private set; }
         public UIManager UIMgr { get; private set; }
@@ -53,7 +53,7 @@ namespace Core
         /// </summary>
         private void InitSubSystems()
         {
-            SpawnMgr = SystemMgr.RegisterSystem<SpawnManager>();
+            InstantiateMgr = SystemMgr.RegisterSystem<InstantiateManager>();
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();
             TimerMgr = SystemMgr.RegisterSystem<TimerManager>();
             DataProxyMgr = SystemMgr.RegisterSystem<DataProxyManager>();

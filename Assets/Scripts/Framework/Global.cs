@@ -136,7 +136,7 @@ namespace Framework
         /// </summary>
         public static GameObject Instantiate(string location, InstantiateOptions options = default)
         {
-            return Get<SpawnManager>().Instantiate(location, options);
+            return Get<InstantiateManager>().Instantiate(location, options);
         }
         
         /// <summary>
@@ -144,7 +144,7 @@ namespace Framework
         /// </summary>
         public static Task<GameObject> InstantiateAsync(string location, InstantiateOptions options = default)
         {
-            return Get<SpawnManager>().InstantiateAsync(location, options);
+            return Get<InstantiateManager>().InstantiateAsync(location, options);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Framework
         /// </summary>
         public static GameObject InstantiateUnpooled(string location, InstantiateOptions options = default)
         {
-            return Get<SpawnManager>().InstantiateUnpooled(location, options);
+            return Get<InstantiateManager>().InstantiateUnpooled(location, options);
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Framework
         /// </summary>
         public static void Release(GameObject instance)
         {
-            Get<SpawnManager>().Release(instance);
+            Get<InstantiateManager>().Release(instance);
         }
 
         public static void LoadScene(string sceneName)

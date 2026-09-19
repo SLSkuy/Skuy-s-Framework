@@ -115,7 +115,7 @@ namespace Framework
         {
             CurrentProgress = 1f;
             _currentSceneName = _loadingSceneName;
-            Global.Get<SpawnManager>().Clear();
+            Global.Get<InstantiateManager>().Clear();
             Global.Get<ResourceManager>().ClearUnused();
             _isHolding = true;
             _holdElapsed = 0f;
