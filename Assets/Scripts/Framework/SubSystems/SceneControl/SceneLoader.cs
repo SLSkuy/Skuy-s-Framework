@@ -1,10 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Framework
 {
     /// <summary>
-    /// 场景 IO：发出 Started/Completed/Failed，维护视觉进度与最短展示。不认识加载面板。
+    /// 场景 IO：维护视觉进度与最短展示。不认识加载面板，也不认识关卡。
     /// </summary>
     public class SceneLoader : SubSystemBase
     {
@@ -34,6 +35,12 @@ namespace Framework
         public bool IsLoading => _isLoading;
         #endregion
 
+        #region 事件
+        public event Action<string> Started;
+        public event Action<string> Completed;
+        public event Action<string, string> Failed;
+        #endregion
+
         // ReSharper disable Unity.PerformanceAnalysis
         public void LoadScene(string sceneName)
         {
@@ -61,10 +68,7 @@ namespace Framework
             _holdElapsed = 0f;
             CurrentProgress = 0f;
 
-            EventBus.Get<SceneLoadEvent.Started>().Dispatch(new SceneLoadEvent.StartedData
-            {
-                SceneName = _loadingSceneName
-            });
+            Started?.Invoke(_loadingSceneName);
         }
 
         public override void Update(float deltaTime)
@@ -127,10 +131,7 @@ namespace Framework
             _isActivating = false;
             _isHolding = false;
             IsCompleted = true;
-            EventBus.Get<SceneLoadEvent.Completed>().Dispatch(new SceneLoadEvent.CompletedData
-            {
-                SceneName = _currentSceneName
-            });
+            Completed?.Invoke(_currentSceneName);
         }
 
         private void FailLoading(string errorMessage)
@@ -140,11 +141,7 @@ namespace Framework
             _isHolding = false;
             _currentOperation = null;
             IsCompleted = false;
-            EventBus.Get<SceneLoadEvent.Failed>().Dispatch(new SceneLoadEvent.FailedData
-            {
-                SceneName = _loadingSceneName,
-                ErrorMessage = errorMessage
-            });
+            Failed?.Invoke(_loadingSceneName, errorMessage);
         }
     }
 }

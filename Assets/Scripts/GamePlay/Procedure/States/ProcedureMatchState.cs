@@ -1,4 +1,3 @@
-using Core;
 using Framework;
 using GamePlay.LevelControl;
 using GamePlay.Room;
@@ -8,11 +7,12 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：进入时登记关卡控制、模拟核、实体工厂与在场导演；离开时先回收实体再停核。
+    /// 对局流程：进入时登记关卡控制与模拟核；关卡就绪后再生成本机 pawn。离开时拆除它们。
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<ProcedureState>
     {
         private readonly ProcedureCore _procedures;
+        private LevelManager _levels;
         private ISimulationKernel _simulationKernel;
 
         public override int StateKey => (int)ProcedureState.Match;
@@ -25,11 +25,10 @@ namespace GamePlay.Procedure
         
         private bool StartGameplay()
         {
-            EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoadCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().AddListener(HandleLevelLoadFailed);
-            
-            Global.Register<LevelManager>().LoadMatchLevel();
-            
+            _levels = Global.Register<LevelManager>();
+            _levels.Completed += HandleLevelLoadCompleted;
+            _levels.Failed += HandleLevelLoadFailed;
+
             SessionRole sessionRole = Global.Get<RoomManager>().SessionRole;
             SystemManager systems = Global.Get<SystemManager>();
             ISimulationKernel kernel = sessionRole == SessionRole.Client ? new ClientSimulationKernel() : new HostSimulationKernel();
@@ -40,17 +39,21 @@ namespace GamePlay.Procedure
                 return false;
             }
             _simulationKernel = kernel;
-            
+
+            _levels.LoadMatchLevel();
             return true;
         }
 
         private void StopGameplay()
         {
-            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoadCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().RemoveListener(HandleLevelLoadFailed);
-            
-            Global.Unregister<LevelManager>();
-            
+            if (_levels != null)
+            {
+                _levels.Completed -= HandleLevelLoadCompleted;
+                _levels.Failed -= HandleLevelLoadFailed;
+                Global.Unregister<LevelManager>();
+                _levels = null;
+            }
+
             if (_simulationKernel != null)
             {
                 _simulationKernel.StopSession();
@@ -80,23 +83,13 @@ namespace GamePlay.Procedure
 
         #region 事件回调
 
-        private void HandleLevelLoadCompleted(SceneLoadEvent.CompletedData data)
+        private void HandleLevelLoadCompleted(string sceneName)
         {
-            if (data.SceneName != GlobalConstants.LEVEL_SCENE_NAME)
-            {
-                return;
-            }
-
             // TODO: 关卡加载完成，委托生成玩家实体
         }
 
-        private void HandleLevelLoadFailed(SceneLoadEvent.FailedData data)
+        private void HandleLevelLoadFailed(string sceneName, string errorMessage)
         {
-            if (data.SceneName != GlobalConstants.LEVEL_SCENE_NAME)
-            {
-                return;
-            }
-
             _stateMachine.ChangeState(ProcedureState.Menu);
         }
 

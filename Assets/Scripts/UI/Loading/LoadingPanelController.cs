@@ -22,14 +22,16 @@ namespace UI.Loading
 
         protected override void AddListener()
         {
-            EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().AddListener(HandleFailed);
+            SceneLoader sceneLoader = Global.Get<SceneLoader>();
+            sceneLoader.Completed += HandleCompleted;
+            sceneLoader.Failed += HandleFailed;
         }
 
         protected override void RemoveListener()
         {
-            EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleCompleted);
-            EventBus.Get<SceneLoadEvent.Failed>().RemoveListener(HandleFailed);
+            SceneLoader sceneLoader = Global.Get<SceneLoader>();
+            sceneLoader.Completed -= HandleCompleted;
+            sceneLoader.Failed -= HandleFailed;
             base.RemoveListener();
         }
 
@@ -52,12 +54,12 @@ namespace UI.Loading
             progressFill.fillAmount = _sceneLoader.CurrentProgress;
         }
 
-        private void HandleCompleted(SceneLoadEvent.CompletedData data)
+        private void HandleCompleted(string sceneName)
         {
             Hide();
         }
 
-        private void HandleFailed(SceneLoadEvent.FailedData data)
+        private void HandleFailed(string sceneName, string errorMessage)
         {
             Hide();
         }
