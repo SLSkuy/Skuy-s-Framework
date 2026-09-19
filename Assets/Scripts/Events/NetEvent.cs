@@ -19,12 +19,17 @@ namespace Events
         PING,
         PONG,
 
-        // 游戏同步
+        // 房间玩家管理
         GAME_JOIN_REQUEST,
         GAME_JOIN_RESPONSE,
         GAME_LEAVE_REQUEST,
         GAME_LEAVE_NOTIFY,
+        GAME_PLAYER_JOINED,
+        
+        // 状态同步
         PLAYER_INPUT,
         WORLD_SNAPSHOT,
+        ENTITY_SPAWN,
+        ENTITY_DESPAWN,
     }
 }

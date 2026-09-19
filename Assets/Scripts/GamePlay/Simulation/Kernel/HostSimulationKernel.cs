@@ -36,7 +36,7 @@ namespace GamePlay.Simulation
 
         public override void Init()
         {
-            _simulator = new Simulation.Simulator();
+            _simulator = new Simulator();
             _simulator.Init();
         }
 

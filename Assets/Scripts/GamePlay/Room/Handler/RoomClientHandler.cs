@@ -24,16 +24,16 @@ namespace GamePlay.Room
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.RegisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
-            _client.RegisterHandler<Game_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.RegisterHandler<Game_Player_Joined>(NetEvent.GAME_PLAYER_JOINED, HandlePlayerJoined);
+            _client.RegisterHandler<Game_Player_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
         }
 
         public void Unbind()
         {
             if (_client == null) return;
 
-            _client.UnregisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
-            _client.UnregisterHandler<Game_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.UnregisterHandler<Game_Player_Joined>(NetEvent.GAME_PLAYER_JOINED, HandlePlayerJoined);
+            _client.UnregisterHandler<Game_Player_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
             _client = null;
         }
 
@@ -50,12 +50,12 @@ namespace GamePlay.Room
 
         #region 接受消息
 
-        private void HandleGameJoinResponse(Game_Join_Response message)
+        private void HandlePlayerJoined(Game_Player_Joined message)
         {
-            _room.HandleGameJoinResponse(message);
+            // TODO: 处理新加入的玩家消息            
         }
 
-        private void HandleGameLeaveNotify(Game_Leave_Notify message)
+        private void HandleGameLeaveNotify(Game_Player_Leave_Notify message)
         {
             _room.HandleGameLeaveNotify(message);
         }

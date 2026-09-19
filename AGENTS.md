@@ -17,4 +17,4 @@ Single-context: one CONTEXT.md and docs/adr/ at the repo root. See `docs/agents/
 Persistent project rules live in `.cursor/rules/` (apply when editing `Assets/Scripts/**/*.cs`):
 
 - `architecture.md` — project structure, namespaces, composition/lifetimes, patterns
-- `coding-style.md` — C# naming, member order, regions, and data-flow (no `EnsureXxx` / silent guards)
+- `coding-style.md` — C# naming, member order, regions, network Handler split, and data-flow (no `EnsureXxx` / silent guards)

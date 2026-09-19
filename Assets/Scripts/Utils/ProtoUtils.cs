@@ -78,11 +78,11 @@ namespace Utils
             };
         }
 
-        public static Character_Snapshot ToCharacterSnapshotMessage(in EntityRollbackState state,
+        public static Player_Snapshot ToPlayerSnapshot(in EntityRollbackState state,
             uint entityId, uint ownerClientId, uint snapshotTick, uint lastProcessedInputTick)
         {
             MovementRollbackState movement = state.movementState;
-            return new Character_Snapshot
+            return new Player_Snapshot
             {
                 EntityId = entityId,
                 SnapshotTick = snapshotTick,
@@ -98,7 +98,7 @@ namespace Utils
             };
         }
 
-        public static EntityRollbackState ToRollbackState(Character_Snapshot snapshot)
+        public static EntityRollbackState ToRollbackState(Player_Snapshot snapshot)
         {
             Quaternion viewRotation = ToUnity(snapshot.ViewRotation);
             Vector3 euler = viewRotation.eulerAngles;

@@ -126,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
+  config: {fileID: 0}
 --- !u!114 &600000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,7 +138,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4da1e754ec294f628cdf67d55fe4f1c1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulator.EntityObjectIdentity
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulation.EntityObjectIdentity
   entityId: 0
   ownerClientId: 0
   role: 3

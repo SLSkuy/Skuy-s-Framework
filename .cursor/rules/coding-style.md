@@ -19,6 +19,7 @@ Use C#, 4-space indent, braces on their own line. Types/methods: `PascalCase`. L
 * **Managers:** `Manager` suffix (`GameStateManager`, `DataProxyManager`).
 * **Static utilities:** `Utils` suffix, `static class` (`MathUtils`, `NetUtils`).
 * **Concrete states:** `State` suffix (`EntityIdleState`, `LoadingState`).
+* **Network handlers:** `Handler` suffix. One transport side: `{Feature}Handler`. Both sides: `{Feature}ClientHandler` / `{Feature}ServerHandler`. File lives in `{Feature}/Handler/`; namespace stays with the feature.
 * **Network names:** keep `NetworkObjectIdentity`, `CharacterPresentationAdapter`, `NetClient`, `NetServer`.
 
 ## Fields and Properties
@@ -84,17 +85,86 @@ Keep related fields together. Regions only where listed.
 5. Events — `#region 事件`
 6. Methods — public API first, private helpers after; do not region ordinary methods
 7. Lifecycle — `#region 生命周期` (MonoBehaviour) or `#region 子系统生命周期` (`SubSystemBase`)
-8. Net Handler Last — `#region 网络消息处理`
+8. Handler-facing API last — `#region 网络消息处理` (`HandleXxx` the Handler calls)
 
-Reference: `NetworkObjectIdentity.cs`. Preserve legacy feature regions in `EntityCharacter.cs`; do not copy them into new files.
+Handler classes only, in this order:
+
+1. Feature reference and `NetClient` / `NetServer` fields
+2. Constructor
+3. Bind / Unbind — `#region 消息绑定`
+4. Public Send / Broadcast — `#region 发送消息`
+5. Private Handle — `#region 接收消息`
+
+Reference: `RoomClientHandler.cs`, `RoomServerHandler.cs`, `ProcedureHandler.cs`. Preserve legacy feature regions in `EntityCharacter.cs`; do not copy them into new files.
 
 ## File Organization
 
 * One primary type per file; file name matches the type.
-* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`.
+* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`, `#region 网络消息处理`. Handler files may also use `#region 消息绑定`, `#region 发送消息`, `#region 接收消息`.
 * XML summaries on public types, public methods, and non-obvious `protected virtual` methods when useful.
 * Use `[Header]`, `[Tooltip]`, `[SerializeField]`, `[RequireComponent]`, `[DisallowMultipleComponent]` where they fit.
 * Match the surrounding file for `var` vs explicit types and expression-bodied members.
+
+## Network Handler
+
+A feature that sends or receives gameplay network messages owns a dedicated Handler class. The Handler is the only place that binds events and talks to `NetClient` / `NetServer`. The feature owns business state and exposes `HandleXxx` methods the Handler calls. Those methods sit last in the feature file, inside `#region 网络消息处理`.
+
+`NetClient` and `NetServer` keep transport-only handlers (ping, pong, heartbeat, debug chat). Gameplay modules do not.
+
+### Split
+
+| Side | Owns | Does not own |
+| --- | --- | --- |
+| Feature | Admit, roster, join completion, dissolve, simulation | `RegisterHandler`, `SendReliable`, `BroadcastReliable`, payload construction for the wire |
+| Handler | Bind / Unbind, `SendXxx` / `BroadcastXxx`, private `HandleXxx` that call the feature | Business rules, long-lived gameplay state |
+
+The feature sends by calling Handler `Send` methods. Incoming messages hit Handler `Handle` methods, which call the feature's business API.
+
+```csharp
+// ❌ BAD — feature binds and sends
+
+_client.RegisterHandler<Game_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
+
+public void LeaveMatch()
+{
+    _client.SendReliable(NetEvent.GAME_LEAVE_REQUEST, new Game_Leave_Request());
+}
+
+private void HandleGameLeaveNotify(Game_Leave_Notify message)
+{
+    Dissolve();
+}
+```
+
+```csharp
+// ✅ GOOD — Handler adapts the wire; feature is called
+
+public void SendGameLeaveRequest()
+{
+    _client.SendReliable(NetEvent.GAME_LEAVE_REQUEST, new Game_Leave_Request());
+}
+
+private void HandleGameLeaveNotify(Game_Leave_Notify message)
+{
+    _room.HandleGameLeaveNotify(message);
+}
+```
+
+```csharp
+// ✅ GOOD — feature only calls Send
+
+_clientHandler.SendGameLeaveRequest();
+```
+
+### Bind
+
+`Bind` registers; `Unbind` unregisters the same set and clears the transport reference. The feature calls them at the matching lifetime (start listen / stop host, complete join / stop client). Do not register from the feature, and do not leave Bind/Unbind as a side effect of Send.
+
+### Handle
+
+Handler `HandleXxx` methods are private adapters. They call the feature's matching `HandleXxx`, then may Send/Broadcast from the result. They do not become a second copy of the feature.
+
+Feature `HandleXxx` methods are the business API for that message. Put them last in the feature type, in `#region 网络消息处理`. Do not bind or send from that region.
 
 ## Data Flow, Not Defensive Code
 

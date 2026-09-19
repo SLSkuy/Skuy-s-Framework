@@ -46,13 +46,13 @@ namespace GamePlay.Procedure
 
         private void SendGameJoinRequest()
         {
-            Game_Join_Request request = new() { ClientId = _client.ClientId };
+            Game_Join_Request request = new();
             _client.SendReliable(NetEvent.GAME_JOIN_REQUEST, request);
         }
 
         #endregion
 
-        #region 接受消息
+        #region 接收消息
 
         private void HandleReliableConnectResponse(Client_Reliable_Connect_Response message)
         {
@@ -61,12 +61,13 @@ namespace GamePlay.Procedure
 
         private void HandleGameJoinResponse(Game_Join_Response message)
         {
-            _procedure.CompleteJoin(message);
+            Unbind();
+            _procedure.HandleGameJoinResponse(message);
         }
 
         private void HandleConnectionFailed()
         {
-            _procedure.FailJoin();
+            _procedure.HandleConnectionFailed();
         }
 
         #endregion

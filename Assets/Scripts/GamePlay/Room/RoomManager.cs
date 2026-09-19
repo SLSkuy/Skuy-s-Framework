@@ -17,32 +17,31 @@ namespace GamePlay.Room
 
         private readonly Dictionary<uint, Player> _playersById = new();
         private Dictionary<uint, uint> _playerId; // connectionID -> playerID
-        private uint _nextPlayerId;
+        private uint _nextPlayerId = 1; // 玩家ID从1开始分配
 
         private RoomServerHandler _serverHandler;
         private RoomClientHandler _clientHandler;
         private NetServer _netServer;
         private NetClient _netClient;
 
-        private bool _isInMatch;
-        private SessionRole _sessionRole;
-        private bool _acceptsRemoteJoin;
-        private int _capacity;
-        private uint _hostPlayerId;
-
         #region 属性
         public override int Priority => 150;
-        public bool IsInMatch => _isInMatch;
-        public SessionRole SessionRole => _sessionRole;
-        public bool AcceptsRemoteJoin => _acceptsRemoteJoin;
-        public int Capacity => _capacity;
+        
+        // 房间状态
+        public SessionRole SessionRole { get; private set; }
+        public int Capacity { get; private set; }
         public int MemberCount => _playersById.Count;
-        public uint HostPlayerId => _hostPlayerId;
-        public bool IsListening => _netServer != null;
+        public bool IsInMatch { get; private set; }
+        public bool AcceptsRemoteJoin { get; private set; }
+
+        public uint HostPlayerId { get; private set; }
+        public uint LocalPlayerId { get; private set; }
         #endregion
 
         #region 事件
-        public event Action SessionEnded;
+        public event Action SessionEnded;   // 游戏会话结束
+        public event Action<uint> PlayerJoined;  // 玩家加入
+        public event Action<uint> PlayerRemoved;    // 玩家退出
         #endregion
 
         #region 对局管理
@@ -73,14 +72,14 @@ namespace GamePlay.Room
         /// </summary>
         public bool OpenMatch(bool acceptsRemoteJoin, SessionRole sessionRole = SessionRole.Host)
         {
-            if (_isInMatch)
+            if (IsInMatch)
             {
                 return false;
             }
 
-            _acceptsRemoteJoin = acceptsRemoteJoin;
-            _capacity = acceptsRemoteJoin ? DEFAULT_CAPACITY : LOCAL_CAPACITY;
-            _sessionRole = sessionRole;
+            AcceptsRemoteJoin = acceptsRemoteJoin;
+            Capacity = acceptsRemoteJoin ? DEFAULT_CAPACITY : LOCAL_CAPACITY;
+            SessionRole = sessionRole;
 
             uint playerId = _nextPlayerId;
             if (!TryAdmitPlayer(playerId))
@@ -90,7 +89,8 @@ namespace GamePlay.Room
 
             _nextPlayerId++;
             _playerId[LOCAL_CONNECTION_ID] = playerId;
-            _isInMatch = true;
+            LocalPlayerId = playerId;
+            IsInMatch = true;
             return true;
         }
 
@@ -101,7 +101,6 @@ namespace GamePlay.Room
                 _netServer = Global.Register<NetServer>();
             }
 
-            _netServer.OnClientRemoved += HandleClientRemoved;
             _serverHandler.Bind();
             _netServer.StartServer();
         }
@@ -113,26 +112,10 @@ namespace GamePlay.Room
                 return;
             }
 
-            _netServer.OnClientRemoved -= HandleClientRemoved;
             _serverHandler.Unbind();
-            _netServer.StopServer();
             Global.Unregister<NetServer>();
 
             _netServer = null;
-        }
-
-        /// <summary>
-        /// 菜单加入被接受后，接管已有客户端连接并写入名册。
-        /// </summary>
-        public void CompleteClientJoin(Game_Join_Response response)
-        {
-            _netClient = Global.Get<NetClient>();
-            _sessionRole = SessionRole.Client;
-            _acceptsRemoteJoin = false;
-            _capacity = DEFAULT_CAPACITY;
-            ApplyRoster(response.HostPlayerId, response.PlayerIds);
-            _isInMatch = true;
-            _clientHandler.Bind();
         }
 
         private void StopClient()
@@ -142,13 +125,12 @@ namespace GamePlay.Room
                 return;
             }
 
-            if (_isInMatch)
+            if (IsInMatch)
             {
                 _clientHandler.SendGameLeaveRequest();
             }
 
             _clientHandler.Unbind();
-            _netClient.StopClient();
             Global.Unregister<NetClient>();
 
             _netClient = null;
@@ -160,37 +142,24 @@ namespace GamePlay.Room
             _playersById.Keys.CopyTo(playerIds, 0);
             return playerIds;
         }
-
-        /// <summary>
-        /// 应用远端发来的名单快照。
-        /// </summary>
-        public void ApplyRoster(uint hostPlayerId, IEnumerable<uint> playerIds)
-        {
-            ClearMembers();
-            _hostPlayerId = hostPlayerId;
-            foreach (uint playerId in playerIds)
-            {
-                TryAdmitPlayer(playerId);
-            }
-        }
-
+        
         /// <summary>
         /// 将连接加入当前对局。
         /// </summary>
-        public bool Admit(uint connectionId)
+        public uint Admit(uint connectionId)
         {
-            if (!_isInMatch) return false;
-            if (connectionId != LOCAL_CONNECTION_ID && !_acceptsRemoteJoin) return false;
-            if (_playerId.ContainsKey(connectionId)) return false;
-            if (_playersById.Count >= _capacity) return false;
+            if (!IsInMatch) return 0;
+            if (connectionId != LOCAL_CONNECTION_ID && !AcceptsRemoteJoin) return 0;
+            if (_playerId.ContainsKey(connectionId)) return 0;
+            if (_playersById.Count >= Capacity) return 0;
             
             uint playerId = _nextPlayerId;
-            if (!TryAdmitPlayer(playerId)) return false;
+            if (!TryAdmitPlayer(playerId)) return 0;
 
             _nextPlayerId++;
             _playerId[connectionId] = playerId;
             
-            return true;
+            return playerId;
         }
 
         /// <summary>
@@ -198,10 +167,10 @@ namespace GamePlay.Room
         /// </summary>
         public void Leave(uint connectionId)
         {
-            if (!_isInMatch) return;
+            if (!IsInMatch) return;
             if (!_playerId.Remove(connectionId, out uint playerId)) return;
 
-            bool wasHost = playerId == _hostPlayerId;
+            bool wasHost = playerId == HostPlayerId;
             if (wasHost)
             {
                 Dissolve();
@@ -209,6 +178,7 @@ namespace GamePlay.Room
             }
 
             RemovePlayer(playerId);
+            PlayerRemoved?.Invoke(playerId);
         }
 
         /// <summary>
@@ -216,15 +186,15 @@ namespace GamePlay.Room
         /// </summary>
         private void Dissolve()
         {
-            if (_isInMatch)
+            if (IsInMatch)
             {
                 ClearMembers();
-                _isInMatch = false;
+                IsInMatch = false;
             }
 
             if (_netServer != null)
             {
-                _serverHandler.BroadcastLeave(new Game_Leave_Notify { Dissolved = true });
+                _serverHandler.BroadcastPlayerLeaved(new Game_Player_Leave_Notify { Dissolved = true });
             }
 
             StopHost();
@@ -233,16 +203,13 @@ namespace GamePlay.Room
 
         private bool TryAdmitPlayer(uint playerId)
         {
-            if (_playersById.Count >= _capacity) return false;
+            if (_playersById.Count >= Capacity) return false;
 
             Player player = new(playerId);
             _playersById[playerId] = player;
+            if (HostPlayerId == 0) HostPlayerId = playerId;
 
-            if (_hostPlayerId == 0)
-            {
-                _hostPlayerId = playerId;
-            }
-
+            PlayerJoined?.Invoke(playerId);
             return true;
         }
 
@@ -262,9 +229,10 @@ namespace GamePlay.Room
             }
 
             _playersById.Clear();
-            _hostPlayerId = 0;
             _playerId.Clear();
             _nextPlayerId = 1;
+            HostPlayerId = 0;
+            LocalPlayerId = 0;
         }
 
         #endregion
@@ -287,89 +255,61 @@ namespace GamePlay.Room
         #endregion
 
         #region 网络消息处理
-
-        private void HandleClientRemoved(uint connectionId)
+        
+        /// <summary>
+        /// 菜单加入被接受后，接管已有客户端连接并写入名册。
+        /// </summary>
+        public void HandleGameJoinResponseJoin(Game_Join_Response response)
         {
-            Game_Leave_Notify notify = HandleGameLeaveRequest(connectionId);
-            if (!notify.Dissolved && notify.PlayerId != 0)
+            _netClient = Global.Get<NetClient>();
+            _clientHandler.Bind();
+            
+            // 设置玩家数据
+            _playersById.Clear();
+            HostPlayerId = response.HostPlayerId;
+            LocalPlayerId = response.PlayerId;
+            foreach (uint playerId in response.PlayerIds)
             {
-                _serverHandler.BroadcastLeave(notify);
+                TryAdmitPlayer(playerId);
             }
+            
+            // 设置房间属性
+            SessionRole = SessionRole.Client;
+            Capacity = DEFAULT_CAPACITY;
+            AcceptsRemoteJoin = false;
+            IsInMatch = true;
         }
 
-        public Game_Leave_Notify HandleGameLeaveRequest(uint connectionId)
+        /// <summary>
+        /// 按连接离座。未入座或对局已不存在时返回 0。
+        /// </summary>
+        public uint HandleGameLeaveRequest(uint connectionId)
         {
-            Game_Leave_Notify notify = new();
-            if (!_isInMatch || !_playerId.TryGetValue(connectionId, out uint playerId))
+            if (!IsInMatch || !_playerId.TryGetValue(connectionId, out uint playerId))
             {
-                notify.Dissolved = !_isInMatch;
-                return notify;
+                return 0;
             }
 
-            notify.PlayerId = playerId;
             Leave(connectionId);
-            notify.Dissolved = !_isInMatch;
-            if (!_isInMatch)
-            {
-                return notify;
-            }
-
-            notify.HostPlayerId = _hostPlayerId;
-            notify.PlayerIds.AddRange(GetPlayerIds());
-            return notify;
+            return playerId;
         }
 
-        public Game_Join_Response HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
-        {
-            bool accepted = Admit(connectionId);
-
-            Game_Join_Response response = new() { Accepted = accepted };
-            if (!accepted || !_isInMatch)
-            {
-                return response;
-            }
-
-            if (_playerId.TryGetValue(connectionId, out uint playerId))
-            {
-                response.PlayerId = playerId;
-            }
-
-            response.HostPlayerId = _hostPlayerId;
-            response.PlayerIds.AddRange(GetPlayerIds());
-
-            return response;
-        }
-
-        public void HandleGameJoinResponse(Game_Join_Response response)
-        {
-            if (!response.Accepted || !_isInMatch)
-            {
-                return;
-            }
-
-            ApplyRoster(response.HostPlayerId, response.PlayerIds);
-        }
-
-        public void HandleGameLeaveNotify(Game_Leave_Notify notify)
+        /// <summary>
+        /// 应用远端离开通知。解散则清名册并结束本机会话。
+        /// </summary>
+        public void HandleGameLeaveNotify(Game_Player_Leave_Notify notify)
         {
             if (notify.Dissolved)
             {
-                bool hadSession = _isInMatch || _netClient != null;
                 Dissolve();
-                if (hadSession)
-                {
-                    SessionEnded?.Invoke();
-                }
-
+                SessionEnded?.Invoke();
                 return;
             }
 
-            if (!_isInMatch)
-            {
-                return;
-            }
+            if (!IsInMatch) return;
 
-            ApplyRoster(notify.HostPlayerId, notify.PlayerIds);
+            RemovePlayer(notify.PlayerId);
+            PlayerRemoved?.Invoke(notify.PlayerId);
         }
 
         #endregion

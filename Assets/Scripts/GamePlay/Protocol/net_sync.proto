@@ -20,61 +20,75 @@ message Quat {
   float w = 4;
 }
 
-// 玩家输入命令
-message Player_Input {
-  uint32 entityId = 1;
-  uint32 inputTick = 2;
-  Vec2 move_input = 3;
-  Vec2 aim_input = 4;
-  bool is_primary_attack_pressed = 5;
-  bool is_special_attack_pressed = 6;
-  bool is_special_action_pressed = 7;
-  bool is_interact_pressed = 8;
-  bool is_sprint_pressed = 9;
-  bool is_jump_pressed = 10;
-  bool is_switch_mode_pressed = 11;
-}
-
-message Character_Snapshot {
-  uint32 entityId = 1;
-  uint32 owner_client_id = 2;
-  uint32 snapshotTick = 3;
-  uint32 locomotion_state = 4;
-  Vec3 position = 5;
-  Quat rotation = 6;
-  Quat view_rotation = 7;
-  Vec3 linear_velocity = 8;
-  Vec3 angular_velocity = 9;
-  bool is_grounded = 10;
-  uint32 lastProcessedInputTick = 11;
-}
-
-message World_Snapshot {
-  uint32 snapshotTick = 1;
-  repeated Character_Snapshot character_snapshots = 2;
-}
-
-// ========== 加入游戏 ==========
+// ========== 房间管理 ==========
 message Game_Join_Request {
-  uint32 clientId = 1;
 }
 
 message Game_Join_Response {
-  bool accepted = 1;
+  bool accepted = 1;    // 是否接收加入请求
   uint32 playerId = 2;  // 分配的玩家ID
   uint32 hostPlayerId = 3;  // 主机玩家ID
   repeated uint32 playerIds = 4;  // 所有玩家ID
 }
-// ========== 加入游戏 ==========
 
-// ========== 离开房间 ==========
+// 通知新的玩家加入房间
+message Game_Player_Joined {
+  uint32 playerId = 1;  // 分配的玩家ID
+}
+
 message Game_Leave_Request {
 }
 
-message Game_Leave_Notify {
+// 玩家退出通知
+message Game_Player_Leave_Notify {
   uint32 playerId = 1;
-  uint32 hostPlayerId = 2;
-  repeated uint32 playerIds = 3;
-  bool dissolved = 5;
+  bool dissolved = 2;   // Dissolve为真，则说明房主退出，房间销毁  
 }
-// ========== 离开房间 ==========
+// ========== 房间管理 ==========
+
+// ========== 状态同步 ==========
+message Player_Input {
+    uint32 entityId = 1;
+    uint32 inputTick = 2;
+    Vec2 move_input = 3;
+    Vec2 aim_input = 4;
+    bool is_primary_attack_pressed = 5;
+    bool is_special_attack_pressed = 6;
+    bool is_special_action_pressed = 7;
+    bool is_interact_pressed = 8;
+    bool is_sprint_pressed = 9;
+    bool is_jump_pressed = 10;
+    bool is_switch_mode_pressed = 11;
+}
+
+message Player_Snapshot {
+    uint32 entityId = 1;
+    uint32 owner_client_id = 2;
+    uint32 snapshotTick = 3;
+    uint32 locomotion_state = 4;
+    Vec3 position = 5;
+    Quat rotation = 6;
+    Quat view_rotation = 7;
+    Vec3 linear_velocity = 8;
+    Vec3 angular_velocity = 9;
+    bool is_grounded = 10;
+    uint32 lastProcessedInputTick = 11;
+}
+
+message World_Snapshot {
+    uint32 snapshotTick = 1;
+    repeated Player_Snapshot player_snapshots = 2;
+}
+
+// 世界在场：与名册分离。可靠有序。加入方先处理 Join_Response 再收这些。
+message Entity_Spawn {
+  uint32 entityId = 1;
+  uint32 ownerPlayerId = 2;
+  Vec3 position = 3;
+  Quat rotation = 4;
+}
+
+message Entity_Despawn {
+  uint32 entityId = 1;
+}
+// ========== 状态同步 ==========

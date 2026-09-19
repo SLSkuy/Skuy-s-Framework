@@ -17,6 +17,8 @@ namespace GamePlay.Procedure
         {
             _procedures = procedures;
         }
+        
+        #region 状态周期
 
         public override void Enter()
         {
@@ -24,5 +26,7 @@ namespace GamePlay.Procedure
             
             _procedures.TearDownSession();
         }
+
+        #endregion
     }
 }

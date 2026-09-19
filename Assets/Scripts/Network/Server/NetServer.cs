@@ -515,6 +515,10 @@ namespace Network
             UnregisterHandler<Pong>(NetEvent.PONG, HandleClientPong);
             UnregisterHandler<Chat_Test>(NetEvent.CHAT_TEST, HandleDebugChat);
             UnregisterHandler<Heart_Beat_Request>(NetEvent.HEART_BEAT_REQUEST, HandleHeartBeatRequest);
+            _messageProcessor = null;
+            _serverConfig = null;
+            
+            StopServer();
         }
 
         #endregion

@@ -1,6 +1,5 @@
 using Core;
 using Framework;
-using GamePlay.GameCore;
 using GamePlay.LevelControl;
 using GamePlay.Room;
 using GamePlay.Simulation;
@@ -9,7 +8,7 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：进入时登记关卡控制、模拟核与本机 pawn；离开时拆除。
+    /// 对局流程：进入时登记关卡控制、模拟核、实体工厂与在场导演；离开时先回收实体再停核。
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<ProcedureState>
     {
@@ -23,32 +22,12 @@ namespace GamePlay.Procedure
         {
             _procedures = procedures;
         }
-
-        public override void Enter()
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            
-            _procedures.OnMatchEntered();
-            if (!StartGameplay())
-            {
-                _stateMachine.ChangeState(ProcedureState.Menu);
-            }
-        }
-
-        public override void Exit()
-        {
-            StopGameplay();
-        }
-
-        /// <summary>
-        /// 登记关卡控制、模拟核与本机 pawn。启核失败返回 false，由 Enter 切回菜单。
-        /// </summary>
+        
         private bool StartGameplay()
         {
             EventBus.Get<SceneLoadEvent.Completed>().AddListener(HandleLevelLoadCompleted);
             EventBus.Get<SceneLoadEvent.Failed>().AddListener(HandleLevelLoadFailed);
             
-            // 注册模拟核
             SessionRole sessionRole = Global.Get<RoomManager>().SessionRole;
             SystemManager systems = Global.Get<SystemManager>();
             ISimulationKernel kernel = sessionRole == SessionRole.Client ? new ClientSimulationKernel() : new HostSimulationKernel();
@@ -60,7 +39,6 @@ namespace GamePlay.Procedure
             }
             _simulationKernel = kernel;
             
-            Global.Register<LocalPawnModule>();
             Global.Register<LevelManager>().LoadMatchLevel();
             
             return true;
@@ -71,17 +49,36 @@ namespace GamePlay.Procedure
             EventBus.Get<SceneLoadEvent.Completed>().RemoveListener(HandleLevelLoadCompleted);
             EventBus.Get<SceneLoadEvent.Failed>().RemoveListener(HandleLevelLoadFailed);
             
-            // 清掉模拟核
+            Global.Unregister<LevelManager>();
+            
             if (_simulationKernel != null)
             {
                 _simulationKernel.StopSession();
                 Global.Get<SystemManager>().UnregisterSystem(_simulationKernel);
                 _simulationKernel = null;
             }
-            
-            Global.Unregister<LocalPawnModule>();
-            Global.Unregister<LevelManager>();
         }
+
+        #region 状态周期
+
+        public override void Enter()
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            
+            if (!StartGameplay())
+            {
+                _stateMachine.ChangeState(ProcedureState.Menu);
+            }
+        }
+
+        public override void Exit()
+        {
+            StopGameplay();
+        }
+
+        #endregion
+
+        #region 事件回调
 
         private void HandleLevelLoadCompleted(SceneLoadEvent.CompletedData data)
         {
@@ -90,7 +87,7 @@ namespace GamePlay.Procedure
                 return;
             }
 
-            Global.Get<LocalPawnModule>().HandleMatchLevelCompleted();
+            // TODO: 关卡加载完成，委托生成玩家实体
         }
 
         private void HandleLevelLoadFailed(SceneLoadEvent.FailedData data)
@@ -102,5 +99,7 @@ namespace GamePlay.Procedure
 
             _stateMachine.ChangeState(ProcedureState.Menu);
         }
+
+        #endregion
     }
 }

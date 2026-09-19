@@ -6,7 +6,7 @@ using Network;
 namespace GamePlay.Room
 {
     /// <summary>
-    /// 战局服务端模块：加入请求收发封装，自行登记与拆除回调。
+    /// 战局服务端：Join_Response 只回给申请连接；名册增量与世界 Spawn 分开。
     /// </summary>
     public sealed class RoomServerHandler
     {
@@ -24,6 +24,7 @@ namespace GamePlay.Room
         {
             Unbind();
             _server = Global.Get<NetServer>();
+            _server.OnClientRemoved += HandleClientRemoved;
             _server.RegisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
             _server.RegisterHandler<Game_Leave_Request>(NetEvent.GAME_LEAVE_REQUEST, HandleGameLeaveRequest);
         }
@@ -31,7 +32,8 @@ namespace GamePlay.Room
         public void Unbind()
         {
             if (_server == null) return;
-            
+
+            _server.OnClientRemoved -= HandleClientRemoved;
             _server.UnregisterHandler<Game_Join_Request>(NetEvent.GAME_JOIN_REQUEST, HandleGameJoinRequest);
             _server.UnregisterHandler<Game_Leave_Request>(NetEvent.GAME_LEAVE_REQUEST, HandleGameLeaveRequest);
             _server = null;
@@ -41,12 +43,26 @@ namespace GamePlay.Room
 
         #region 发送消息
         
-        public void SendGameJoinResponse(uint connectionId, Game_Join_Response response)
+        public void SendGameJoinResponse(uint connectionId)
         {
+            uint playerId = _room.Admit(connectionId);
+            
+            Game_Join_Response response = new()
+            {
+                Accepted = playerId != 0 && _room.IsInMatch,
+                HostPlayerId = _room.HostPlayerId
+            };
+            response.PlayerIds.AddRange(_room.GetPlayerIds());
+            
             _server.SendReliable(connectionId, NetEvent.GAME_JOIN_RESPONSE, response);
         }
 
-        public void BroadcastLeave(Game_Leave_Notify notify)
+        public void BroadcastPlayerJoined(Game_Player_Joined notify)
+        {
+            _server.BroadcastReliable(NetEvent.GAME_PLAYER_JOINED, notify);
+        }
+
+        public void BroadcastPlayerLeaved(Game_Player_Leave_Notify notify)
         {
             _server.BroadcastReliable(NetEvent.GAME_LEAVE_NOTIFY, notify);
         }
@@ -55,22 +71,30 @@ namespace GamePlay.Room
 
         #region 接收消息
 
+        /// <summary>
+        /// 玩家加入请求
+        /// </summary>
         private void HandleGameJoinRequest(uint connectionId, Game_Join_Request request)
         {
-            Game_Join_Response response = _room.HandleGameJoinRequest(connectionId, request);
-            SendGameJoinResponse(connectionId, response);
-            if (response.Accepted)
-            {
-                _server.BroadcastReliable(NetEvent.GAME_JOIN_RESPONSE, response);
-            }
+            SendGameJoinResponse(connectionId);
         }
 
         private void HandleGameLeaveRequest(uint connectionId, Game_Leave_Request request)
         {
-            Game_Leave_Notify notify = _room.HandleGameLeaveRequest(connectionId);
-            if (!notify.Dissolved && notify.PlayerId != 0)
+            NotifyLeave(connectionId);
+        }
+
+        private void HandleClientRemoved(uint connectionId)
+        {
+            NotifyLeave(connectionId);
+        }
+
+        private void NotifyLeave(uint connectionId)
+        {
+            uint playerId = _room.HandleGameLeaveRequest(connectionId);
+            if (playerId != 0 && _room.IsInMatch)
             {
-                BroadcastLeave(notify);
+                BroadcastPlayerLeaved(new Game_Player_Leave_Notify { PlayerId = playerId });
             }
         }
 

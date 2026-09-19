@@ -14,14 +14,7 @@ namespace GamePlay.Procedure
     {
         private ProcedureHandler _handler;
         private EnumStateMachine<ProcedureState> _fsm;
-        private MatchDebugHud _matchHud;
         private bool _joinInFlight;
-        
-        #region 属性
-        public ProcedureState CurrentProcedureState => _fsm.CurrentState;
-        public bool SessionIsHost => Global.TryGet(out RoomManager battle) && battle.IsInMatch && 
-                                     battle.SessionRole == SessionRole.Host;
-        #endregion
 
         /// <summary>
         /// 本机玩：建本机对局并进入对局。
@@ -59,33 +52,6 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 加入响应到达：拒绝则结束加入；接受则接管名册并进入对局。
-        /// </summary>
-        public void CompleteJoin(Game_Join_Response response)
-        {
-            _handler.Unbind();
-            if (!response.Accepted)
-            {
-                FailJoin();
-                return;
-            }
-
-            _joinInFlight = false;
-            RoomManager room = Global.Register<RoomManager>();
-            room.CompleteClientJoin(response);
-            room.SessionEnded += HandleSessionEnded;
-            _fsm.ChangeState(ProcedureState.Match);
-        }
-
-        /// <summary>
-        /// 连接失败或加入被拒。
-        /// </summary>
-        public void FailJoin()
-        {
-            TearDownSession();
-        }
-
-        /// <summary>
         /// 解散对局并回到菜单。加入尚未完成时取消加入。
         /// </summary>
         public void LeaveSession()
@@ -97,6 +63,30 @@ namespace GamePlay.Procedure
             }
 
             _fsm.ChangeState(ProcedureState.Menu);
+        }
+
+        /// <summary>
+        /// 取消尚未完成的加入，或拆除名册并加载菜单入口。玩法对象由对局态离开时拆除。
+        /// </summary>
+        public void TearDownSession()
+        {
+            bool joining = _joinInFlight;
+            _joinInFlight = false;
+
+            _handler.Unbind();
+            if (joining)
+            {
+                Global.Get<NetClient>().StopClient();
+                Global.Unregister<NetClient>();
+                return;
+            }
+
+            if (Global.TryGet(out RoomManager battle))
+            {
+                battle.SessionEnded -= HandleSessionEnded;
+                Global.Unregister<RoomManager>();
+                Global.LoadScene(GlobalConstants.MENU_SCENE_NAME);
+            }
         }
 
         private void OpenHostSession(bool acceptsRemoteJoin)
@@ -124,76 +114,15 @@ namespace GamePlay.Procedure
             }
         }
 
-        #region 流程控制
-
-        public void OnMatchEntered()
+        private void HandleSessionEnded()
         {
-            ShowMatchHud();
-        }
-
-        /// <summary>
-        /// 取消尚未完成的加入，或拆除名册并加载菜单入口。玩法对象由对局态离开时拆除。
-        /// </summary>
-        public void TearDownSession()
-        {
-            bool joining = _joinInFlight;
-            _joinInFlight = false;
-            HideMatchHud();
-
-            _handler.Unbind();
-            if (joining)
-            {
-                Global.Get<NetClient>().StopClient();
-                Global.Unregister<NetClient>();
-                return;
-            }
-
             if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
-                Global.Unregister<RoomManager>();
-                Global.LoadScene(GlobalConstants.MENU_SCENE_NAME);
-            }
-        }
-
-        #endregion
-
-        // ========== HUD调试 ==========
-        // ========== HUD调试 ==========
-        // ========== HUD调试 ==========
-        private void ShowMatchHud()
-        {
-            if (!_matchHud)
-            {
-                _matchHud = gameObject.AddComponent<MatchDebugHud>();
             }
 
-            _matchHud.enabled = true;
+            _fsm.ChangeState(ProcedureState.Menu);
         }
-
-        /// <summary>
-        /// 供常驻 HUD 读取名册，不把战局管理器交给界面。
-        /// </summary>
-        public uint[] GetRosterPlayerIds()
-        {
-            if (!Global.TryGet(out RoomManager battle) || !battle.IsInMatch)
-            {
-                return System.Array.Empty<uint>();
-            }
-
-            return battle.GetPlayerIds();
-        }
-
-        private void HideMatchHud()
-        {
-            if (_matchHud)
-            {
-                _matchHud.enabled = false;
-            }
-        }
-        // ========== HUD调试 ==========
-        // ========== HUD调试 ==========
-        // ========== HUD调试 ==========
 
         #region 生命周期
 
@@ -223,16 +152,32 @@ namespace GamePlay.Procedure
 
         #endregion
 
-        #region 回调处理
+        #region 网络消息处理
 
-        private void HandleSessionEnded()
+        /// <summary>
+        /// 加入响应到达：拒绝则结束加入；接受则接管名册并进入对局。
+        /// </summary>
+        public void HandleGameJoinResponse(Game_Join_Response response)
         {
-            if (Global.TryGet(out RoomManager battle))
+            if (!response.Accepted)
             {
-                battle.SessionEnded -= HandleSessionEnded;
+                HandleConnectionFailed();
+                return;
             }
 
-            _fsm.ChangeState(ProcedureState.Menu);
+            _joinInFlight = false;
+            RoomManager room = Global.Register<RoomManager>();
+            room.HandleGameJoinResponseJoin(response);
+            room.SessionEnded += HandleSessionEnded;
+            _fsm.ChangeState(ProcedureState.Match);
+        }
+
+        /// <summary>
+        /// 连接失败或加入被拒。
+        /// </summary>
+        public void HandleConnectionFailed()
+        {
+            TearDownSession();
         }
 
         #endregion
