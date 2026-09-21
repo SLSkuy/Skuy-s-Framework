@@ -7,12 +7,12 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程：进入时登记关卡控制与模拟核；关卡就绪后再生成本机 pawn。离开时拆除它们。
+    /// 对局流程状态，粘合其他的所有游戏功能模块
     /// </summary>
     public sealed class ProcedureMatchState : EnumStateBase<ProcedureState>
     {
         private readonly ProcedureCore _procedures;
-        private LevelManager _levels;
+        private LevelManager _levelMgr;
         private ISimulationKernel _simulationKernel;
 
         public override int StateKey => (int)ProcedureState.Match;
@@ -25,9 +25,9 @@ namespace GamePlay.Procedure
         
         private bool StartGameplay()
         {
-            _levels = Global.Register<LevelManager>();
-            _levels.Completed += HandleLevelLoadCompleted;
-            _levels.Failed += HandleLevelLoadFailed;
+            _levelMgr = Global.Register<LevelManager>();
+            _levelMgr.Completed += HandleLevelLoadCompleted;
+            _levelMgr.Failed += HandleLevelLoadFailed;
 
             SessionRole sessionRole = Global.Get<RoomManager>().SessionRole;
             SystemManager systems = Global.Get<SystemManager>();
@@ -39,19 +39,19 @@ namespace GamePlay.Procedure
                 return false;
             }
             _simulationKernel = kernel;
-
-            _levels.LoadMatchLevel();
+            
+            _levelMgr.LoadMatchLevel();
             return true;
         }
 
         private void StopGameplay()
         {
-            if (_levels != null)
+            if (_levelMgr != null)
             {
-                _levels.Completed -= HandleLevelLoadCompleted;
-                _levels.Failed -= HandleLevelLoadFailed;
+                _levelMgr.Completed -= HandleLevelLoadCompleted;
+                _levelMgr.Failed -= HandleLevelLoadFailed;
                 Global.Unregister<LevelManager>();
-                _levels = null;
+                _levelMgr = null;
             }
 
             if (_simulationKernel != null)
@@ -85,7 +85,7 @@ namespace GamePlay.Procedure
 
         private void HandleLevelLoadCompleted(string sceneName)
         {
-            // TODO: 关卡加载完成，委托生成玩家实体
+            // TODO: 生成玩家实体位置
         }
 
         private void HandleLevelLoadFailed(string sceneName, string errorMessage)

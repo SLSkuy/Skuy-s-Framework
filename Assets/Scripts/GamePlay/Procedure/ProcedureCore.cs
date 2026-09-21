@@ -150,6 +150,20 @@ namespace GamePlay.Procedure
             _fsm.LateUpdate();
         }
 
+        protected override void Destroy()
+        {
+            _handler.Unbind();
+            if (Global.TryGet(out RoomManager battle))
+            {
+                battle.SessionEnded -= HandleSessionEnded;
+            }
+        }
+
+        private void OnApplicationQuit()
+        {
+            ShutDown();
+        }
+
         #endregion
 
         #region 网络消息处理

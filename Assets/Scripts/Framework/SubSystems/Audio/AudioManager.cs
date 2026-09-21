@@ -49,6 +49,15 @@ namespace Framework.SubSystems
             Object.DontDestroyOnLoad(_container);
         }
 
+        public override void Destroy()
+        {
+            if (_container)
+            {
+                Object.Destroy(_container.gameObject);
+                _container = null;
+            }
+        }
+
         #endregion
     }
 }

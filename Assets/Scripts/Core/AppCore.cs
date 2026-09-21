@@ -108,6 +108,7 @@ namespace Core
             ResourceMgr.OnResourceReady -= InitSystems;
             SystemMgr.Destroy();
             Global.Clear();
+            EventBus.Clear();
         }
 
         /// <summary>

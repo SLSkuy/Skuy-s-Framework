@@ -18,6 +18,14 @@ namespace Framework
         public static SType Get<SType>() where SType : IEvent, new() {
             return hub.Get<SType>();
         }
+
+        /// <summary>
+        /// 丢弃上一 Play 会话残留的事件实例与监听。
+        /// </summary>
+        public static void Clear()
+        {
+            hub.Clear();
+        }
     }
 
     /// <summary>
@@ -70,6 +78,11 @@ namespace Framework
 
         private IEvent Bind<T>() where T : IEvent, new() {
             return Bind(typeof(T));
+        }
+
+        public void Clear()
+        {
+            _signals.Clear();
         }
 
         private IEvent GetSignalByHash(string signalHash) {

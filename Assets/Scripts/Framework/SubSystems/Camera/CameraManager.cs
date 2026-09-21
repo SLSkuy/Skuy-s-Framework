@@ -57,7 +57,7 @@ namespace Framework
         /// <param name="state">摄像机目标状态</param>
         public void SwitchTo(GameCameraState state)
         {
-            if (_currentState == state&&_hasInitializedState) return;
+            if (_currentState == state && _hasInitializedState) return;
             _hasInitializedState = true;
             
             if (!_cameraMap.ContainsKey(state))
@@ -81,7 +81,8 @@ namespace Framework
             {
                 Object.Destroy(_cameraRoot.gameObject);
             }
-            
+
+            _hasInitializedState = false;
             _cameraMap.Clear();
         }
     }
