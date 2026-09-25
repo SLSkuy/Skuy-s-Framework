@@ -94,13 +94,12 @@ namespace GamePlay.Room
             return true;
         }
 
+        /// <summary>
+        /// 开启监听客户端连接
+        /// </summary>
         private void StartListening()
         {
-            if (!Global.TryGet(out _netServer))
-            {
-                _netServer = Global.Register<NetServer>();
-            }
-
+            _netServer = Global.Get<NetServer>();
             _serverHandler.Bind();
             _netServer.StartServer();
         }
@@ -113,8 +112,6 @@ namespace GamePlay.Room
             }
 
             _serverHandler.Unbind();
-            Global.Unregister<NetServer>();
-
             _netServer = null;
         }
 
@@ -131,8 +128,6 @@ namespace GamePlay.Room
             }
 
             _clientHandler.Unbind();
-            Global.Unregister<NetClient>();
-
             _netClient = null;
         }
 
@@ -194,6 +189,7 @@ namespace GamePlay.Room
 
             if (_netServer != null)
             {
+                // 房主销毁房间，广播销毁房间通知
                 _serverHandler.BroadcastHostDissolved(new Room_Host_Dissolved_Notify());
             }
 

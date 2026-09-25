@@ -1,19 +1,26 @@
+using System;
 using Core;
 using Framework;
 using GamePlay.Room;
 using NetSync;
+using Network;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程核心：菜单与对局门闩，界面意图入口。
+    /// 玩法流程核心：菜单与对局门闩，界面意图入口。持有 NetClient / NetServer 登记寿命。
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
         private EnumStateMachine<ProcedureState> _fsm;
-        private ProcedureJoiningState _joiningState;
+        private NetClient _netClient;
+        private NetServer _netServer;
+
+        #region 事件
+        public event Action<bool> OnJoinResponse;
+        #endregion
 
         /// <summary>
         /// 本机玩：建本机对局并进入对局。
@@ -38,11 +45,14 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 加入远端：先连接，被接受前仍在菜单且没有对局；接受后才登记名册并进入对局。
+        /// 加入远端：先登记客户端，被接受前仍没有对局；接受后才登记名册并进入对局。
         /// </summary>
         public void JoinRemote()
         {
             if (_fsm.CurrentState != ProcedureState.Menu) return;
+
+            _netClient = Global.Register<NetClient>();
+            _netClient.OnReconnectFailed += HandleReconnectFailed;
             _fsm.ChangeState(ProcedureState.Joining);
         }
 
@@ -56,7 +66,7 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 拆除名册并加载菜单入口。加入中的连接由 Joining 状态退出时拆除。
+        /// 拆除名册并注销传输。加入失败时 Joining 已停连接，此处只拆登记。
         /// </summary>
         public void TearDownSession()
         {
@@ -66,6 +76,9 @@ namespace GamePlay.Procedure
                 Global.Unregister<RoomManager>();
                 Global.LoadScene(GlobalConstants.MENU_SCENE_NAME);
             }
+
+            UnregisterNetClient();
+            UnregisterNetServer();
         }
 
         private void OpenHostSession(bool acceptsRemoteJoin)
@@ -83,24 +96,28 @@ namespace GamePlay.Procedure
             battle.SessionEnded += HandleSessionEnded;
             if (acceptsRemoteJoin)
             {
-                // 创建主机房间
+                _netServer = Global.Register<NetServer>();
                 battle.CreateHostRoom();
             }
             else
             {
-                // 创建本地房间
                 battle.CreateLocalRoom();
             }
         }
 
-        private void HandleSessionEnded()
+        private void UnregisterNetClient()
         {
-            if (Global.TryGet(out RoomManager battle))
-            {
-                battle.SessionEnded -= HandleSessionEnded;
-            }
+            if (_netClient == null) return;
+            _netClient.OnReconnectFailed -= HandleReconnectFailed;
+            Global.Unregister<NetClient>();
+            _netClient = null;
+        }
 
-            _fsm.ChangeState(ProcedureState.Menu);
+        private void UnregisterNetServer()
+        {
+            if (_netServer == null) return;
+            Global.Unregister<NetServer>();
+            _netServer = null;
         }
 
         #region 生命周期
@@ -138,16 +155,7 @@ namespace GamePlay.Procedure
 
         protected override void Destroy()
         {
-            if (_fsm.CurrentState == ProcedureState.Joining)
-            {
-                // 取消连接
-                _joiningState.Exit();
-            }
-
-            if (Global.TryGet(out RoomManager battle))
-            {
-                battle.SessionEnded -= HandleSessionEnded;
-            }
+            TearDownSession();
         }
 
         private void OnApplicationQuit()
@@ -165,13 +173,14 @@ namespace GamePlay.Procedure
         public void HandleGameJoinResponse(Room_Join_Response response)
         {
             if (_fsm.CurrentState != ProcedureState.Joining) return;
+            OnJoinResponse?.Invoke(response.Accepted);
+            
             if (!response.Accepted)
             {
                 HandleConnectionFailed();
                 return;
             }
-
-            _joiningState.CommitJoin();
+            
             RoomManager room = Global.Register<RoomManager>();
             room.HandleJoinResponse(response);
             room.SessionEnded += HandleSessionEnded;
@@ -184,6 +193,18 @@ namespace GamePlay.Procedure
         public void HandleConnectionFailed()
         {
             if (_fsm.CurrentState != ProcedureState.Joining) return;
+            _fsm.ChangeState(ProcedureState.Menu);
+        }
+        
+        private void HandleSessionEnded()
+        {
+            if (Global.TryGet(out RoomManager battle)) battle.SessionEnded -= HandleSessionEnded;
+            _fsm.ChangeState(ProcedureState.Menu);
+        }
+
+        private void HandleReconnectFailed()
+        {
+            if (_fsm.CurrentState == ProcedureState.Menu) return;
             _fsm.ChangeState(ProcedureState.Menu);
         }
 
