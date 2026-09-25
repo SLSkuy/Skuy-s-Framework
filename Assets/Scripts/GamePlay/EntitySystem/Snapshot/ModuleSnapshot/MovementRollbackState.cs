@@ -30,6 +30,5 @@ namespace GamePlay.EntitySystem
         public bool isDashing;
         public bool isSprinting;
         public bool isRunning;
-        public bool isGrounded;
     }
 }

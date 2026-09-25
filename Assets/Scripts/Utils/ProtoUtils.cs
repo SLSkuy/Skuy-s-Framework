@@ -79,22 +79,20 @@ namespace Utils
         }
 
         public static Player_Snapshot ToPlayerSnapshot(in EntityRollbackState state,
-            uint entityId, uint ownerClientId, uint snapshotTick, uint lastProcessedInputTick)
+            uint entityId, uint playerId, uint lastProcessedInputTick)
         {
             MovementRollbackState movement = state.movementState;
             return new Player_Snapshot
             {
                 EntityId = entityId,
-                SnapshotTick = snapshotTick,
-                LastProcessedInputTick = lastProcessedInputTick,
+                PlayerId = playerId,
+                LocomotionState = state.simulationState.entityState,
                 Position = ToProto(movement.rootPosition),
                 Rotation = ToProto(movement.meshRotation),
                 ViewRotation = ToProto(state.viewState.viewRotation),
                 LinearVelocity = ToProto(movement.rootLinearVelocity),
                 AngularVelocity = ToProto(movement.meshAngularVelocity),
-                OwnerClientId = ownerClientId,
-                LocomotionState = state.simulationState.entityState,
-                IsGrounded = movement.isGrounded
+                LastProcessedInputTick = lastProcessedInputTick,
             };
         }
 
@@ -114,7 +112,6 @@ namespace Utils
                     meshRotation = ToUnity(snapshot.Rotation),
                     rootLinearVelocity = ToUnity(snapshot.LinearVelocity),
                     meshAngularVelocity = ToUnity(snapshot.AngularVelocity),
-                    isGrounded = snapshot.IsGrounded
                 },
                 viewState = new ViewRollbackState
                 {

@@ -1,11 +1,12 @@
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程：菜单、对局。没有大厅。
+    /// 玩法流程：菜单、加入远端、对局。没有大厅。
     /// </summary>
     public enum ProcedureState
     {
         Menu = 0,
-        Match = 1
+        Joining = 1,
+        Match = 2
     }
 }

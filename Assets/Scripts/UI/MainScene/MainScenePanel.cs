@@ -7,12 +7,12 @@ namespace UI.MainScene
     {
         public void UI_LocalPlay()
         {
-            ProcedureCore.Instance.StartLocal();
+            ProcedureCore.Instance.StartLocalPlay();
         }
 
         public void UI_MultiPlay()
         {
-            ProcedureCore.Instance.HostMultiplayer();
+            ProcedureCore.Instance.HostMultiplay();
         }
 
         public void UI_Join()

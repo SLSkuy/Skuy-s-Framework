@@ -10,12 +10,12 @@ namespace GamePlay.Simulation
     public sealed class EntityObjectIdentity : MonoBehaviour, IEntityObjectIdentity
     {
         [SerializeField] private uint entityId;
-        [SerializeField] private uint ownerClientId;
+        [SerializeField] private uint playerId;
         [SerializeField] private EntityObjectRole role = EntityObjectRole.LocalPlay;
 
         #region 属性
         public uint EntityId => entityId;
-        public uint OwnerClientId => ownerClientId;
+        public uint PlayerId => playerId;
         public bool IsInitialized => entityId != 0;
         
         public EntityObjectRole Role => role;
@@ -28,16 +28,17 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 初始化网络对象身份
         /// </summary>
-        public void Init(uint objectId, uint ownerId = 0, EntityObjectRole newRole = EntityObjectRole.LocalPlay)
+        public void Init(uint newEntityId, uint newPlayerId = 0,
+            EntityObjectRole newRole = EntityObjectRole.LocalPlay)
         {
-            if (objectId == 0) throw new ArgumentOutOfRangeException(nameof(objectId), "NetworkObjectId 不能为 0。");
-            if (entityId != 0 && entityId != objectId)
+            if (newEntityId == 0) throw new ArgumentOutOfRangeException(nameof(newEntityId), "NetworkObjectId 不能为 0。");
+            if (entityId != 0 && entityId != newEntityId)
             {
-                throw new InvalidOperationException($"网络对象 {name} 已绑定 ID {entityId}，不能在运行时改为 {objectId}。");
+                throw new InvalidOperationException($"网络对象 {name} 已绑定 ID {entityId}，不能在运行时改为 {newEntityId}。");
             }
 
-            entityId = objectId;
-            ownerClientId = ownerId;
+            entityId = newEntityId;
+            this.playerId = newPlayerId;
             role = newRole;
         }
     }

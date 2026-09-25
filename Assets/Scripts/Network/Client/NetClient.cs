@@ -49,7 +49,9 @@ namespace Network
         // ========== RTT ==========
 
         #region 事件
-        public event Action ConnectionFailed;
+        public event Action OnConnectionFailed; // 连接失败
+        public event Action<int, int> OnReconnect;  // 尝试重连
+        public event Action OnReconnectFailed;  // 重连失败
         #endregion
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -395,10 +397,13 @@ namespace Network
                     
                     _reconnectTimes++;
                     Debug.Log($"[NetClient] Reconnecting {_reconnectTimes} / {_clientConfig.maxReconnectCount}");
+                    OnReconnect?.Invoke(_reconnectTimes, _clientConfig.maxReconnectCount);
+                    
                     if (_reconnectTimes >= _clientConfig.maxReconnectCount)
                     {
                         // 连接次数超时
                         Debug.Log("[NetClient] Reconnect failed, client disconnected");
+                        OnReconnectFailed?.Invoke();
                         StopClient();
                     }
                 }
@@ -445,7 +450,7 @@ namespace Network
             if (_connectionFailed)
             {
                 _connectionFailed = false;
-                ConnectionFailed?.Invoke();
+                OnConnectionFailed?.Invoke();
                 return;
             }
 

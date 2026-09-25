@@ -2,8 +2,8 @@ using Core;
 using Framework;
 using GamePlay.Room;
 using NetSync;
-using Network;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GamePlay.Procedure
 {
@@ -12,16 +12,15 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
-        private ProcedureHandler _handler;
         private EnumStateMachine<ProcedureState> _fsm;
-        private bool _joinInFlight;
+        private ProcedureJoiningState _joiningState;
 
         /// <summary>
         /// 本机玩：建本机对局并进入对局。
         /// </summary>
-        public void StartLocal()
+        public void StartLocalPlay()
         {
-            if (_joinInFlight) return;
+            if (_fsm.CurrentState != ProcedureState.Menu) return;
 
             OpenHostSession(false);
             _fsm.ChangeState(ProcedureState.Match);
@@ -30,9 +29,9 @@ namespace GamePlay.Procedure
         /// <summary>
         /// 开多人：本机入座、开听、对局已提交，进入对局。
         /// </summary>
-        public void HostMultiplayer()
+        public void HostMultiplay()
         {
-            if (_joinInFlight) return;
+            if (_fsm.CurrentState != ProcedureState.Menu) return;
 
             OpenHostSession(true);
             _fsm.ChangeState(ProcedureState.Match);
@@ -43,44 +42,24 @@ namespace GamePlay.Procedure
         /// </summary>
         public void JoinRemote()
         {
-            if (_joinInFlight) return;
-
-            _joinInFlight = true;
-            NetClient client = Global.Register<NetClient>();
-            _handler.Bind();
-            client.StartReliableConnect();
+            if (_fsm.CurrentState != ProcedureState.Menu) return;
+            _fsm.ChangeState(ProcedureState.Joining);
         }
 
         /// <summary>
-        /// 解散对局并回到菜单。加入尚未完成时取消加入。
+        /// 解散对局并回到菜单
         /// </summary>
-        public void LeaveSession()
+        public void BackToMainMenu()
         {
-            if (_joinInFlight)
-            {
-                TearDownSession();
-                return;
-            }
-
+            if (_fsm.CurrentState == ProcedureState.Menu) return;
             _fsm.ChangeState(ProcedureState.Menu);
         }
 
         /// <summary>
-        /// 取消尚未完成的加入，或拆除名册并加载菜单入口。玩法对象由对局态离开时拆除。
+        /// 拆除名册并加载菜单入口。加入中的连接由 Joining 状态退出时拆除。
         /// </summary>
         public void TearDownSession()
         {
-            bool joining = _joinInFlight;
-            _joinInFlight = false;
-
-            _handler.Unbind();
-            if (joining)
-            {
-                Global.Get<NetClient>().StopClient();
-                Global.Unregister<NetClient>();
-                return;
-            }
-
             if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
@@ -128,15 +107,22 @@ namespace GamePlay.Procedure
 
         protected override void Init()
         {
-            _handler = new ProcedureHandler(this);
             _fsm = new EnumStateMachine<ProcedureState>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
+            _fsm.RegisterState(new ProcedureJoiningState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
             _fsm.ChangeState(ProcedureState.Menu);
         }
 
         private void Update()
         {
+            // ===== DEBUG =====
+            if (Keyboard.current.f5Key.wasPressedThisFrame)
+            {
+                BackToMainMenu();
+            }
+            // ===== DEBUG =====
+            
             _fsm.Update(Time.deltaTime);
         }
 
@@ -152,7 +138,12 @@ namespace GamePlay.Procedure
 
         protected override void Destroy()
         {
-            _handler.Unbind();
+            if (_fsm.CurrentState == ProcedureState.Joining)
+            {
+                // 取消连接
+                _joiningState.Exit();
+            }
+
             if (Global.TryGet(out RoomManager battle))
             {
                 battle.SessionEnded -= HandleSessionEnded;
@@ -171,17 +162,18 @@ namespace GamePlay.Procedure
         /// <summary>
         /// 加入响应到达：拒绝则结束加入；接受则接管名册并进入对局。
         /// </summary>
-        public void HandleGameJoinResponse(Game_Join_Response response)
+        public void HandleGameJoinResponse(Room_Join_Response response)
         {
+            if (_fsm.CurrentState != ProcedureState.Joining) return;
             if (!response.Accepted)
             {
                 HandleConnectionFailed();
                 return;
             }
 
-            _joinInFlight = false;
+            _joiningState.CommitJoin();
             RoomManager room = Global.Register<RoomManager>();
-            room.HandleGameJoinResponseJoin(response);
+            room.HandleJoinResponse(response);
             room.SessionEnded += HandleSessionEnded;
             _fsm.ChangeState(ProcedureState.Match);
         }
@@ -191,7 +183,8 @@ namespace GamePlay.Procedure
         /// </summary>
         public void HandleConnectionFailed()
         {
-            TearDownSession();
+            if (_fsm.CurrentState != ProcedureState.Joining) return;
+            _fsm.ChangeState(ProcedureState.Menu);
         }
 
         #endregion

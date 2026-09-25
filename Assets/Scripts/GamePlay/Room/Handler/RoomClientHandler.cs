@@ -24,16 +24,18 @@ namespace GamePlay.Room
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.RegisterHandler<Game_Player_Joined>(NetEvent.GAME_PLAYER_JOINED, HandlePlayerJoined);
-            _client.RegisterHandler<Game_Player_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.RegisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoined);
+            _client.RegisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.RegisterHandler<Room_Host_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleHostDissolvedNotify);
         }
 
         public void Unbind()
         {
             if (_client == null) return;
 
-            _client.UnregisterHandler<Game_Player_Joined>(NetEvent.GAME_PLAYER_JOINED, HandlePlayerJoined);
-            _client.UnregisterHandler<Game_Player_Leave_Notify>(NetEvent.GAME_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.UnregisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoined);
+            _client.UnregisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandleGameLeaveNotify);
+            _client.UnregisterHandler<Room_Host_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleHostDissolvedNotify);
             _client = null;
         }
 
@@ -43,21 +45,26 @@ namespace GamePlay.Room
 
         public void SendGameLeaveRequest()
         {
-            _client.SendReliable(NetEvent.GAME_LEAVE_REQUEST, new Game_Leave_Request());
+            _client.SendReliable(NetEvent.ROOM_LEAVE_REQUEST, new Room_Leave_Request());
         }
 
         #endregion
 
-        #region 接受消息
+        #region 接收消息
 
-        private void HandlePlayerJoined(Game_Player_Joined message)
+        private void HandlePlayerJoined(Room_Player_Joined_Notify message)
         {
-            // TODO: 处理新加入的玩家消息            
+            _room.HandlePlayerJoinedNotify(message);
         }
 
-        private void HandleGameLeaveNotify(Game_Player_Leave_Notify message)
+        private void HandleGameLeaveNotify(Room_Player_Leave_Notify message)
         {
-            _room.HandleGameLeaveNotify(message);
+            _room.HandlePlayerLeaveNotify(message);
+        }
+
+        private void HandleHostDissolvedNotify(Room_Host_Dissolved_Notify message)
+        {
+            _room.HandleHostDissolvedNotify(message);
         }
 
         #endregion

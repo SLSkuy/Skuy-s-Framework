@@ -194,13 +194,17 @@ namespace GamePlay.Room
 
             if (_netServer != null)
             {
-                _serverHandler.BroadcastPlayerLeaved(new Game_Player_Leave_Notify { Dissolved = true });
+                _serverHandler.BroadcastHostDissolved(new Room_Host_Dissolved_Notify());
             }
 
             StopHost();
             StopClient();
         }
 
+        /// <summary>
+        /// 尝试添加玩家
+        /// 主机和客户端都走这套逻辑，客户端应用主机下发的玩家增量，按理说是不会出任何问题
+        /// </summary>
         private bool TryAdmitPlayer(uint playerId)
         {
             if (_playersById.Count >= Capacity) return false;
@@ -259,7 +263,7 @@ namespace GamePlay.Room
         /// <summary>
         /// 菜单加入被接受后，接管已有客户端连接并写入名册。
         /// </summary>
-        public void HandleGameJoinResponseJoin(Game_Join_Response response)
+        public void HandleJoinResponse(Room_Join_Response response)
         {
             _netClient = Global.Get<NetClient>();
             _clientHandler.Bind();
@@ -281,9 +285,19 @@ namespace GamePlay.Room
         }
 
         /// <summary>
-        /// 按连接离座。未入座或对局已不存在时返回 0。
+        /// 应用主机下发的权威玩家增量通知
         /// </summary>
-        public uint HandleGameLeaveRequest(uint connectionId)
+        public void HandlePlayerJoinedNotify(Room_Player_Joined_Notify notify)
+        {
+            uint playerId = notify.PlayerId;
+            if (playerId == 0 || _playersById.ContainsKey(playerId)) return;    // 按理说这条return永远也不会触发
+            TryAdmitPlayer(playerId);
+        }
+
+        /// <summary>
+        /// 按连接离座。未入座或对局已不存在时返回 0
+        /// </summary>
+        public uint HandlePlayerLeaveRequest(uint connectionId)
         {
             if (!IsInMatch || !_playerId.TryGetValue(connectionId, out uint playerId))
             {
@@ -295,21 +309,24 @@ namespace GamePlay.Room
         }
 
         /// <summary>
-        /// 应用远端离开通知。解散则清名册并结束本机会话。
+        /// 应用远端玩家离开通知
         /// </summary>
-        public void HandleGameLeaveNotify(Game_Player_Leave_Notify notify)
+        public void HandlePlayerLeaveNotify(Room_Player_Leave_Notify notify)
         {
-            if (notify.Dissolved)
-            {
-                Dissolve();
-                SessionEnded?.Invoke();
-                return;
-            }
-
             if (!IsInMatch) return;
 
             RemovePlayer(notify.PlayerId);
             PlayerRemoved?.Invoke(notify.PlayerId);
+        }
+
+        /// <summary>
+        /// 应用远端房主关闭房间通知
+        /// </summary>
+        public void HandleHostDissolvedNotify(Room_Host_Dissolved_Notify notify)
+        {
+            // 房主退出，销毁房间
+            Dissolve();
+            SessionEnded?.Invoke();
         }
 
         #endregion

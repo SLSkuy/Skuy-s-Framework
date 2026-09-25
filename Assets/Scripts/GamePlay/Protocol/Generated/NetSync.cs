@@ -27,43 +27,43 @@ namespace NetSync {
             "Cg5uZXRfc3luYy5wcm90bxIHTmV0U3luYyIcCgRWZWMyEgkKAXgYASABKAIS",
             "CQoBeRgCIAEoAiInCgRWZWMzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6",
             "GAMgASgCIjIKBFF1YXQSCQoBeBgBIAEoAhIJCgF5GAIgASgCEgkKAXoYAyAB",
-            "KAISCQoBdxgEIAEoAiITChFHYW1lX0pvaW5fUmVxdWVzdCJhChJHYW1lX0pv",
+            "KAISCQoBdxgEIAEoAiITChFSb29tX0pvaW5fUmVxdWVzdCJhChJSb29tX0pv",
             "aW5fUmVzcG9uc2USEAoIYWNjZXB0ZWQYASABKAgSEAoIcGxheWVySWQYAiAB",
-            "KA0SFAoMaG9zdFBsYXllcklkGAMgASgNEhEKCXBsYXllcklkcxgEIAMoDSIm",
-            "ChJHYW1lX1BsYXllcl9Kb2luZWQSEAoIcGxheWVySWQYASABKA0iFAoSR2Ft",
-            "ZV9MZWF2ZV9SZXF1ZXN0Ij8KGEdhbWVfUGxheWVyX0xlYXZlX05vdGlmeRIQ",
-            "CghwbGF5ZXJJZBgBIAEoDRIRCglkaXNzb2x2ZWQYAiABKAgi0gIKDFBsYXll",
-            "cl9JbnB1dBIQCghlbnRpdHlJZBgBIAEoDRIRCglpbnB1dFRpY2sYAiABKA0S",
-            "IQoKbW92ZV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhIgCglhaW1faW5w",
-            "dXQYBCABKAsyDS5OZXRTeW5jLlZlYzISIQoZaXNfcHJpbWFyeV9hdHRhY2tf",
-            "cHJlc3NlZBgFIAEoCBIhChlpc19zcGVjaWFsX2F0dGFja19wcmVzc2VkGAYg",
-            "ASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYByABKAgSGwoTaXNf",
-            "aW50ZXJhY3RfcHJlc3NlZBgIIAEoCBIZChFpc19zcHJpbnRfcHJlc3NlZBgJ",
-            "IAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCiABKAgSHgoWaXNfc3dpdGNoX21v",
-            "ZGVfcHJlc3NlZBgLIAEoCCLaAgoPUGxheWVyX1NuYXBzaG90EhAKCGVudGl0",
-            "eUlkGAEgASgNEhcKD293bmVyX2NsaWVudF9pZBgCIAEoDRIUCgxzbmFwc2hv",
-            "dFRpY2sYAyABKA0SGAoQbG9jb21vdGlvbl9zdGF0ZRgEIAEoDRIfCghwb3Np",
-            "dGlvbhgFIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgGIAEoCzIN",
-            "Lk5ldFN5bmMuUXVhdBIkCg12aWV3X3JvdGF0aW9uGAcgASgLMg0uTmV0U3lu",
-            "Yy5RdWF0EiYKD2xpbmVhcl92ZWxvY2l0eRgIIAEoCzINLk5ldFN5bmMuVmVj",
-            "MxInChBhbmd1bGFyX3ZlbG9jaXR5GAkgASgLMg0uTmV0U3luYy5WZWMzEhMK",
-            "C2lzX2dyb3VuZGVkGAogASgIEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sY",
-            "CyABKA0iWgoOV29ybGRfU25hcHNob3QSFAoMc25hcHNob3RUaWNrGAEgASgN",
-            "EjIKEHBsYXllcl9zbmFwc2hvdHMYAiADKAsyGC5OZXRTeW5jLlBsYXllcl9T",
-            "bmFwc2hvdGIGcHJvdG8z"));
+            "KA0SFAoMaG9zdFBsYXllcklkGAMgASgNEhEKCXBsYXllcklkcxgEIAMoDSIt",
+            "ChlSb29tX1BsYXllcl9Kb2luZWRfTm90aWZ5EhAKCHBsYXllcklkGAEgASgN",
+            "IhQKElJvb21fTGVhdmVfUmVxdWVzdCIsChhSb29tX1BsYXllcl9MZWF2ZV9O",
+            "b3RpZnkSEAoIcGxheWVySWQYASABKA0iHAoaUm9vbV9Ib3N0X0Rpc3NvbHZl",
+            "ZF9Ob3RpZnki0gIKDFBsYXllcl9JbnB1dBIQCghlbnRpdHlJZBgBIAEoDRIR",
+            "CglpbnB1dFRpY2sYAiABKA0SIQoKbW92ZV9pbnB1dBgDIAEoCzINLk5ldFN5",
+            "bmMuVmVjMhIgCglhaW1faW5wdXQYBCABKAsyDS5OZXRTeW5jLlZlYzISIQoZ",
+            "aXNfcHJpbWFyeV9hdHRhY2tfcHJlc3NlZBgFIAEoCBIhChlpc19zcGVjaWFs",
+            "X2F0dGFja19wcmVzc2VkGAYgASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3By",
+            "ZXNzZWQYByABKAgSGwoTaXNfaW50ZXJhY3RfcHJlc3NlZBgIIAEoCBIZChFp",
+            "c19zcHJpbnRfcHJlc3NlZBgJIAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCiAB",
+            "KAgSHgoWaXNfc3dpdGNoX21vZGVfcHJlc3NlZBgLIAEoCCKpAgoPUGxheWVy",
+            "X1NuYXBzaG90EhAKCGVudGl0eUlkGAEgASgNEhEKCXBsYXllcl9pZBgCIAEo",
+            "DRIYChBsb2NvbW90aW9uX3N0YXRlGAMgASgNEh8KCHBvc2l0aW9uGAQgASgL",
+            "Mg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAUgASgLMg0uTmV0U3luYy5R",
+            "dWF0EiQKDXZpZXdfcm90YXRpb24YBiABKAsyDS5OZXRTeW5jLlF1YXQSJgoP",
+            "bGluZWFyX3ZlbG9jaXR5GAcgASgLMg0uTmV0U3luYy5WZWMzEicKEGFuZ3Vs",
+            "YXJfdmVsb2NpdHkYCCABKAsyDS5OZXRTeW5jLlZlYzMSHgoWbGFzdFByb2Nl",
+            "c3NlZElucHV0VGljaxgJIAEoDSJaCg5Xb3JsZF9TbmFwc2hvdBIUCgxzbmFw",
+            "c2hvdFRpY2sYASABKA0SMgoQcGxheWVyX3NuYXBzaG90cxgCIAMoCzIYLk5l",
+            "dFN5bmMuUGxheWVyX1NuYXBzaG90YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec2), global::NetSync.Vec2.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Request), global::NetSync.Game_Join_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Join_Response), global::NetSync.Game_Join_Response.Parser, new[]{ "Accepted", "PlayerId", "HostPlayerId", "PlayerIds" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Player_Joined), global::NetSync.Game_Player_Joined.Parser, new[]{ "PlayerId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Leave_Request), global::NetSync.Game_Leave_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Game_Player_Leave_Notify), global::NetSync.Game_Player_Leave_Notify.Parser, new[]{ "PlayerId", "Dissolved" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Request), global::NetSync.Room_Join_Request.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Response), global::NetSync.Room_Join_Response.Parser, new[]{ "Accepted", "PlayerId", "HostPlayerId", "PlayerIds" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Joined_Notify), global::NetSync.Room_Player_Joined_Notify.Parser, new[]{ "PlayerId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Leave_Request), global::NetSync.Room_Leave_Request.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Leave_Notify), global::NetSync.Room_Player_Leave_Notify.Parser, new[]{ "PlayerId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Host_Dissolved_Notify), global::NetSync.Room_Host_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "EntityId", "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "OwnerClientId", "SnapshotTick", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "IsGrounded", "LastProcessedInputTick" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "PlayerId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null)
           }));
     }
@@ -863,16 +863,16 @@ namespace NetSync {
   /// <summary>
   /// ========== 房间管理 ==========
   /// </summary>
-  public sealed partial class Game_Join_Request : pb::IMessage<Game_Join_Request>
+  public sealed partial class Room_Join_Request : pb::IMessage<Room_Join_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Game_Join_Request> _parser = new pb::MessageParser<Game_Join_Request>(() => new Game_Join_Request());
+    private static readonly pb::MessageParser<Room_Join_Request> _parser = new pb::MessageParser<Room_Join_Request>(() => new Room_Join_Request());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Game_Join_Request> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Join_Request> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -888,7 +888,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Request() {
+    public Room_Join_Request() {
       OnConstruction();
     }
 
@@ -896,25 +896,25 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Request(Game_Join_Request other) : this() {
+    public Room_Join_Request(Room_Join_Request other) : this() {
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Request Clone() {
-      return new Game_Join_Request(this);
+    public Room_Join_Request Clone() {
+      return new Room_Join_Request(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Game_Join_Request);
+      return Equals(other as Room_Join_Request);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Game_Join_Request other) {
+    public bool Equals(Room_Join_Request other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -974,7 +974,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Game_Join_Request other) {
+    public void MergeFrom(Room_Join_Request other) {
       if (other == null) {
         return;
       }
@@ -1015,16 +1015,16 @@ namespace NetSync {
 
   }
 
-  public sealed partial class Game_Join_Response : pb::IMessage<Game_Join_Response>
+  public sealed partial class Room_Join_Response : pb::IMessage<Room_Join_Response>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Game_Join_Response> _parser = new pb::MessageParser<Game_Join_Response>(() => new Game_Join_Response());
+    private static readonly pb::MessageParser<Room_Join_Response> _parser = new pb::MessageParser<Room_Join_Response>(() => new Room_Join_Response());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Game_Join_Response> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Join_Response> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1040,7 +1040,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Response() {
+    public Room_Join_Response() {
       OnConstruction();
     }
 
@@ -1048,7 +1048,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Response(Game_Join_Response other) : this() {
+    public Room_Join_Response(Room_Join_Response other) : this() {
       accepted_ = other.accepted_;
       playerId_ = other.playerId_;
       hostPlayerId_ = other.hostPlayerId_;
@@ -1058,8 +1058,8 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Join_Response Clone() {
-      return new Game_Join_Response(this);
+    public Room_Join_Response Clone() {
+      return new Room_Join_Response(this);
     }
 
     /// <summary>Field number for the "accepted" field.</summary>
@@ -1124,12 +1124,12 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Game_Join_Response);
+      return Equals(other as Room_Join_Response);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Game_Join_Response other) {
+    public bool Equals(Room_Join_Response other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1233,7 +1233,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Game_Join_Response other) {
+    public void MergeFrom(Room_Join_Response other) {
       if (other == null) {
         return;
       }
@@ -1321,16 +1321,16 @@ namespace NetSync {
   /// <summary>
   /// 通知新的玩家加入房间
   /// </summary>
-  public sealed partial class Game_Player_Joined : pb::IMessage<Game_Player_Joined>
+  public sealed partial class Room_Player_Joined_Notify : pb::IMessage<Room_Player_Joined_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Game_Player_Joined> _parser = new pb::MessageParser<Game_Player_Joined>(() => new Game_Player_Joined());
+    private static readonly pb::MessageParser<Room_Player_Joined_Notify> _parser = new pb::MessageParser<Room_Player_Joined_Notify>(() => new Room_Player_Joined_Notify());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Game_Player_Joined> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Player_Joined_Notify> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1346,7 +1346,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Joined() {
+    public Room_Player_Joined_Notify() {
       OnConstruction();
     }
 
@@ -1354,15 +1354,15 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Joined(Game_Player_Joined other) : this() {
+    public Room_Player_Joined_Notify(Room_Player_Joined_Notify other) : this() {
       playerId_ = other.playerId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Joined Clone() {
-      return new Game_Player_Joined(this);
+    public Room_Player_Joined_Notify Clone() {
+      return new Room_Player_Joined_Notify(this);
     }
 
     /// <summary>Field number for the "playerId" field.</summary>
@@ -1383,12 +1383,12 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Game_Player_Joined);
+      return Equals(other as Room_Player_Joined_Notify);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Game_Player_Joined other) {
+    public bool Equals(Room_Player_Joined_Notify other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1461,7 +1461,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Game_Player_Joined other) {
+    public void MergeFrom(Room_Player_Joined_Notify other) {
       if (other == null) {
         return;
       }
@@ -1513,16 +1513,16 @@ namespace NetSync {
 
   }
 
-  public sealed partial class Game_Leave_Request : pb::IMessage<Game_Leave_Request>
+  public sealed partial class Room_Leave_Request : pb::IMessage<Room_Leave_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Game_Leave_Request> _parser = new pb::MessageParser<Game_Leave_Request>(() => new Game_Leave_Request());
+    private static readonly pb::MessageParser<Room_Leave_Request> _parser = new pb::MessageParser<Room_Leave_Request>(() => new Room_Leave_Request());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Game_Leave_Request> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Leave_Request> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1538,7 +1538,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Leave_Request() {
+    public Room_Leave_Request() {
       OnConstruction();
     }
 
@@ -1546,25 +1546,25 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Leave_Request(Game_Leave_Request other) : this() {
+    public Room_Leave_Request(Room_Leave_Request other) : this() {
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Leave_Request Clone() {
-      return new Game_Leave_Request(this);
+    public Room_Leave_Request Clone() {
+      return new Room_Leave_Request(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Game_Leave_Request);
+      return Equals(other as Room_Leave_Request);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Game_Leave_Request other) {
+    public bool Equals(Room_Leave_Request other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1624,7 +1624,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Game_Leave_Request other) {
+    public void MergeFrom(Room_Leave_Request other) {
       if (other == null) {
         return;
       }
@@ -1668,16 +1668,16 @@ namespace NetSync {
   /// <summary>
   /// 玩家退出通知
   /// </summary>
-  public sealed partial class Game_Player_Leave_Notify : pb::IMessage<Game_Player_Leave_Notify>
+  public sealed partial class Room_Player_Leave_Notify : pb::IMessage<Room_Player_Leave_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Game_Player_Leave_Notify> _parser = new pb::MessageParser<Game_Player_Leave_Notify>(() => new Game_Player_Leave_Notify());
+    private static readonly pb::MessageParser<Room_Player_Leave_Notify> _parser = new pb::MessageParser<Room_Player_Leave_Notify>(() => new Room_Player_Leave_Notify());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Game_Player_Leave_Notify> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Player_Leave_Notify> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1693,7 +1693,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Leave_Notify() {
+    public Room_Player_Leave_Notify() {
       OnConstruction();
     }
 
@@ -1701,16 +1701,15 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Leave_Notify(Game_Player_Leave_Notify other) : this() {
+    public Room_Player_Leave_Notify(Room_Player_Leave_Notify other) : this() {
       playerId_ = other.playerId_;
-      dissolved_ = other.dissolved_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Game_Player_Leave_Notify Clone() {
-      return new Game_Player_Leave_Notify(this);
+    public Room_Player_Leave_Notify Clone() {
+      return new Room_Player_Leave_Notify(this);
     }
 
     /// <summary>Field number for the "playerId" field.</summary>
@@ -1725,30 +1724,15 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "dissolved" field.</summary>
-    public const int DissolvedFieldNumber = 2;
-    private bool dissolved_;
-    /// <summary>
-    /// Dissolve为真，则说明房主退出，房间销毁  
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Dissolved {
-      get { return dissolved_; }
-      set {
-        dissolved_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Game_Player_Leave_Notify);
+      return Equals(other as Room_Player_Leave_Notify);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Game_Player_Leave_Notify other) {
+    public bool Equals(Room_Player_Leave_Notify other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1756,7 +1740,6 @@ namespace NetSync {
         return true;
       }
       if (PlayerId != other.PlayerId) return false;
-      if (Dissolved != other.Dissolved) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1765,7 +1748,6 @@ namespace NetSync {
     public override int GetHashCode() {
       int hash = 1;
       if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
-      if (Dissolved != false) hash ^= Dissolved.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1788,10 +1770,6 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(PlayerId);
       }
-      if (Dissolved != false) {
-        output.WriteRawTag(16);
-        output.WriteBool(Dissolved);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1806,10 +1784,6 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(PlayerId);
       }
-      if (Dissolved != false) {
-        output.WriteRawTag(16);
-        output.WriteBool(Dissolved);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1823,9 +1797,6 @@ namespace NetSync {
       if (PlayerId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
       }
-      if (Dissolved != false) {
-        size += 1 + 1;
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1834,15 +1805,12 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Game_Player_Leave_Notify other) {
+    public void MergeFrom(Room_Player_Leave_Notify other) {
       if (other == null) {
         return;
       }
       if (other.PlayerId != 0) {
         PlayerId = other.PlayerId;
-      }
-      if (other.Dissolved != false) {
-        Dissolved = other.Dissolved;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1861,10 +1829,6 @@ namespace NetSync {
             break;
           case 8: {
             PlayerId = input.ReadUInt32();
-            break;
-          }
-          case 16: {
-            Dissolved = input.ReadBool();
             break;
           }
         }
@@ -1886,10 +1850,161 @@ namespace NetSync {
             PlayerId = input.ReadUInt32();
             break;
           }
-          case 16: {
-            Dissolved = input.ReadBool();
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 房主退出，房间销毁通知
+  /// </summary>
+  public sealed partial class Room_Host_Dissolved_Notify : pb::IMessage<Room_Host_Dissolved_Notify>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<Room_Host_Dissolved_Notify> _parser = new pb::MessageParser<Room_Host_Dissolved_Notify>(() => new Room_Host_Dissolved_Notify());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<Room_Host_Dissolved_Notify> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[8]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Room_Host_Dissolved_Notify() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Room_Host_Dissolved_Notify(Room_Host_Dissolved_Notify other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Room_Host_Dissolved_Notify Clone() {
+      return new Room_Host_Dissolved_Notify(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as Room_Host_Dissolved_Notify);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(Room_Host_Dissolved_Notify other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(Room_Host_Dissolved_Notify other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
         }
       }
     }
@@ -1914,7 +2029,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[8]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2491,7 +2606,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[9]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2512,15 +2627,13 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Player_Snapshot(Player_Snapshot other) : this() {
       entityId_ = other.entityId_;
-      ownerClientId_ = other.ownerClientId_;
-      snapshotTick_ = other.snapshotTick_;
+      playerId_ = other.playerId_;
       locomotionState_ = other.locomotionState_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       rotation_ = other.rotation_ != null ? other.rotation_.Clone() : null;
       viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
       linearVelocity_ = other.linearVelocity_ != null ? other.linearVelocity_.Clone() : null;
       angularVelocity_ = other.angularVelocity_ != null ? other.angularVelocity_.Clone() : null;
-      isGrounded_ = other.isGrounded_;
       lastProcessedInputTick_ = other.lastProcessedInputTick_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2543,32 +2656,20 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "owner_client_id" field.</summary>
-    public const int OwnerClientIdFieldNumber = 2;
-    private uint ownerClientId_;
+    /// <summary>Field number for the "player_id" field.</summary>
+    public const int PlayerIdFieldNumber = 2;
+    private uint playerId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint OwnerClientId {
-      get { return ownerClientId_; }
+    public uint PlayerId {
+      get { return playerId_; }
       set {
-        ownerClientId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "snapshotTick" field.</summary>
-    public const int SnapshotTickFieldNumber = 3;
-    private uint snapshotTick_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint SnapshotTick {
-      get { return snapshotTick_; }
-      set {
-        snapshotTick_ = value;
+        playerId_ = value;
       }
     }
 
     /// <summary>Field number for the "locomotion_state" field.</summary>
-    public const int LocomotionStateFieldNumber = 4;
+    public const int LocomotionStateFieldNumber = 3;
     private uint locomotionState_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2580,7 +2681,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 5;
+    public const int PositionFieldNumber = 4;
     private global::NetSync.Vec3 position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2592,7 +2693,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "rotation" field.</summary>
-    public const int RotationFieldNumber = 6;
+    public const int RotationFieldNumber = 5;
     private global::NetSync.Quat rotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2604,7 +2705,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "view_rotation" field.</summary>
-    public const int ViewRotationFieldNumber = 7;
+    public const int ViewRotationFieldNumber = 6;
     private global::NetSync.Quat viewRotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2616,7 +2717,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "linear_velocity" field.</summary>
-    public const int LinearVelocityFieldNumber = 8;
+    public const int LinearVelocityFieldNumber = 7;
     private global::NetSync.Vec3 linearVelocity_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2628,7 +2729,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "angular_velocity" field.</summary>
-    public const int AngularVelocityFieldNumber = 9;
+    public const int AngularVelocityFieldNumber = 8;
     private global::NetSync.Vec3 angularVelocity_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2639,20 +2740,8 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "is_grounded" field.</summary>
-    public const int IsGroundedFieldNumber = 10;
-    private bool isGrounded_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsGrounded {
-      get { return isGrounded_; }
-      set {
-        isGrounded_ = value;
-      }
-    }
-
     /// <summary>Field number for the "lastProcessedInputTick" field.</summary>
-    public const int LastProcessedInputTickFieldNumber = 11;
+    public const int LastProcessedInputTickFieldNumber = 9;
     private uint lastProcessedInputTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2679,15 +2768,13 @@ namespace NetSync {
         return true;
       }
       if (EntityId != other.EntityId) return false;
-      if (OwnerClientId != other.OwnerClientId) return false;
-      if (SnapshotTick != other.SnapshotTick) return false;
+      if (PlayerId != other.PlayerId) return false;
       if (LocomotionState != other.LocomotionState) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Rotation, other.Rotation)) return false;
       if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
       if (!object.Equals(LinearVelocity, other.LinearVelocity)) return false;
       if (!object.Equals(AngularVelocity, other.AngularVelocity)) return false;
-      if (IsGrounded != other.IsGrounded) return false;
       if (LastProcessedInputTick != other.LastProcessedInputTick) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -2697,15 +2784,13 @@ namespace NetSync {
     public override int GetHashCode() {
       int hash = 1;
       if (EntityId != 0) hash ^= EntityId.GetHashCode();
-      if (OwnerClientId != 0) hash ^= OwnerClientId.GetHashCode();
-      if (SnapshotTick != 0) hash ^= SnapshotTick.GetHashCode();
+      if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
       if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (rotation_ != null) hash ^= Rotation.GetHashCode();
       if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
       if (linearVelocity_ != null) hash ^= LinearVelocity.GetHashCode();
       if (angularVelocity_ != null) hash ^= AngularVelocity.GetHashCode();
-      if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
       if (LastProcessedInputTick != 0) hash ^= LastProcessedInputTick.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2729,44 +2814,36 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (OwnerClientId != 0) {
+      if (PlayerId != 0) {
         output.WriteRawTag(16);
-        output.WriteUInt32(OwnerClientId);
-      }
-      if (SnapshotTick != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(SnapshotTick);
+        output.WriteUInt32(PlayerId);
       }
       if (LocomotionState != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteUInt32(LocomotionState);
       }
       if (position_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(42);
         output.WriteMessage(Rotation);
       }
       if (viewRotation_ != null) {
-        output.WriteRawTag(58);
+        output.WriteRawTag(50);
         output.WriteMessage(ViewRotation);
       }
       if (linearVelocity_ != null) {
-        output.WriteRawTag(66);
+        output.WriteRawTag(58);
         output.WriteMessage(LinearVelocity);
       }
       if (angularVelocity_ != null) {
-        output.WriteRawTag(74);
+        output.WriteRawTag(66);
         output.WriteMessage(AngularVelocity);
       }
-      if (IsGrounded != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(IsGrounded);
-      }
       if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(88);
+        output.WriteRawTag(72);
         output.WriteUInt32(LastProcessedInputTick);
       }
       if (_unknownFields != null) {
@@ -2783,44 +2860,36 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (OwnerClientId != 0) {
+      if (PlayerId != 0) {
         output.WriteRawTag(16);
-        output.WriteUInt32(OwnerClientId);
-      }
-      if (SnapshotTick != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(SnapshotTick);
+        output.WriteUInt32(PlayerId);
       }
       if (LocomotionState != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteUInt32(LocomotionState);
       }
       if (position_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(42);
         output.WriteMessage(Rotation);
       }
       if (viewRotation_ != null) {
-        output.WriteRawTag(58);
+        output.WriteRawTag(50);
         output.WriteMessage(ViewRotation);
       }
       if (linearVelocity_ != null) {
-        output.WriteRawTag(66);
+        output.WriteRawTag(58);
         output.WriteMessage(LinearVelocity);
       }
       if (angularVelocity_ != null) {
-        output.WriteRawTag(74);
+        output.WriteRawTag(66);
         output.WriteMessage(AngularVelocity);
       }
-      if (IsGrounded != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(IsGrounded);
-      }
       if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(88);
+        output.WriteRawTag(72);
         output.WriteUInt32(LastProcessedInputTick);
       }
       if (_unknownFields != null) {
@@ -2836,11 +2905,8 @@ namespace NetSync {
       if (EntityId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityId);
       }
-      if (OwnerClientId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(OwnerClientId);
-      }
-      if (SnapshotTick != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SnapshotTick);
+      if (PlayerId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
       }
       if (LocomotionState != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LocomotionState);
@@ -2860,9 +2926,6 @@ namespace NetSync {
       if (angularVelocity_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(AngularVelocity);
       }
-      if (IsGrounded != false) {
-        size += 1 + 1;
-      }
       if (LastProcessedInputTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LastProcessedInputTick);
       }
@@ -2881,11 +2944,8 @@ namespace NetSync {
       if (other.EntityId != 0) {
         EntityId = other.EntityId;
       }
-      if (other.OwnerClientId != 0) {
-        OwnerClientId = other.OwnerClientId;
-      }
-      if (other.SnapshotTick != 0) {
-        SnapshotTick = other.SnapshotTick;
+      if (other.PlayerId != 0) {
+        PlayerId = other.PlayerId;
       }
       if (other.LocomotionState != 0) {
         LocomotionState = other.LocomotionState;
@@ -2920,9 +2980,6 @@ namespace NetSync {
         }
         AngularVelocity.MergeFrom(other.AngularVelocity);
       }
-      if (other.IsGrounded != false) {
-        IsGrounded = other.IsGrounded;
-      }
       if (other.LastProcessedInputTick != 0) {
         LastProcessedInputTick = other.LastProcessedInputTick;
       }
@@ -2946,57 +3003,49 @@ namespace NetSync {
             break;
           }
           case 16: {
-            OwnerClientId = input.ReadUInt32();
+            PlayerId = input.ReadUInt32();
             break;
           }
           case 24: {
-            SnapshotTick = input.ReadUInt32();
-            break;
-          }
-          case 32: {
             LocomotionState = input.ReadUInt32();
             break;
           }
-          case 42: {
+          case 34: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 50: {
+          case 42: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 58: {
+          case 50: {
             if (viewRotation_ == null) {
               ViewRotation = new global::NetSync.Quat();
             }
             input.ReadMessage(ViewRotation);
             break;
           }
-          case 66: {
+          case 58: {
             if (linearVelocity_ == null) {
               LinearVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(LinearVelocity);
             break;
           }
-          case 74: {
+          case 66: {
             if (angularVelocity_ == null) {
               AngularVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(AngularVelocity);
             break;
           }
-          case 80: {
-            IsGrounded = input.ReadBool();
-            break;
-          }
-          case 88: {
+          case 72: {
             LastProcessedInputTick = input.ReadUInt32();
             break;
           }
@@ -3020,57 +3069,49 @@ namespace NetSync {
             break;
           }
           case 16: {
-            OwnerClientId = input.ReadUInt32();
+            PlayerId = input.ReadUInt32();
             break;
           }
           case 24: {
-            SnapshotTick = input.ReadUInt32();
-            break;
-          }
-          case 32: {
             LocomotionState = input.ReadUInt32();
             break;
           }
-          case 42: {
+          case 34: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 50: {
+          case 42: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 58: {
+          case 50: {
             if (viewRotation_ == null) {
               ViewRotation = new global::NetSync.Quat();
             }
             input.ReadMessage(ViewRotation);
             break;
           }
-          case 66: {
+          case 58: {
             if (linearVelocity_ == null) {
               LinearVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(LinearVelocity);
             break;
           }
-          case 74: {
+          case 66: {
             if (angularVelocity_ == null) {
               AngularVelocity = new global::NetSync.Vec3();
             }
             input.ReadMessage(AngularVelocity);
             break;
           }
-          case 80: {
-            IsGrounded = input.ReadBool();
-            break;
-          }
-          case 88: {
+          case 72: {
             LastProcessedInputTick = input.ReadUInt32();
             break;
           }
@@ -3095,7 +3136,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[10]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

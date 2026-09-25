@@ -21,10 +21,10 @@ message Quat {
 }
 
 // ========== 房间管理 ==========
-message Game_Join_Request {
+message Room_Join_Request {
 }
 
-message Game_Join_Response {
+message Room_Join_Response {
   bool accepted = 1;    // 是否接收加入请求
   uint32 playerId = 2;  // 分配的玩家ID
   uint32 hostPlayerId = 3;  // 主机玩家ID
@@ -32,17 +32,20 @@ message Game_Join_Response {
 }
 
 // 通知新的玩家加入房间
-message Game_Player_Joined {
+message Room_Player_Joined_Notify {
   uint32 playerId = 1;  // 分配的玩家ID
 }
 
-message Game_Leave_Request {
+message Room_Leave_Request {
 }
 
 // 玩家退出通知
-message Game_Player_Leave_Notify {
+message Room_Player_Leave_Notify {
   uint32 playerId = 1;
-  bool dissolved = 2;   // Dissolve为真，则说明房主退出，房间销毁  
+}
+
+// 房主退出，房间销毁通知
+message Room_Host_Dissolved_Notify{
 }
 // ========== 房间管理 ==========
 
@@ -63,16 +66,14 @@ message Player_Input {
 
 message Player_Snapshot {
     uint32 entityId = 1;
-    uint32 owner_client_id = 2;
-    uint32 snapshotTick = 3;
-    uint32 locomotion_state = 4;
-    Vec3 position = 5;
-    Quat rotation = 6;
-    Quat view_rotation = 7;
-    Vec3 linear_velocity = 8;
-    Vec3 angular_velocity = 9;
-    bool is_grounded = 10;
-    uint32 lastProcessedInputTick = 11;
+    uint32 player_id = 2;
+    uint32 locomotion_state = 3;
+    Vec3 position = 4;
+    Quat rotation = 5;
+    Quat view_rotation = 6;
+    Vec3 linear_velocity = 7;
+    Vec3 angular_velocity = 8;
+    uint32 lastProcessedInputTick = 9;
 }
 
 message World_Snapshot {

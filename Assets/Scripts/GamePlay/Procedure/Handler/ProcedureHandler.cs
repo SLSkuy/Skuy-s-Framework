@@ -25,18 +25,18 @@ namespace GamePlay.Procedure
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.ConnectionFailed += HandleConnectionFailed;
+            _client.OnConnectionFailed += HandleOnConnectionFailed;
             _client.RegisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
-            _client.RegisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
+            _client.RegisterHandler<Room_Join_Response>(NetEvent.ROOM_JOIN_RESPONSE, HandleGameJoinResponse);
         }
 
         public void Unbind()
         {
             if (_client == null) return;
 
-            _client.ConnectionFailed -= HandleConnectionFailed;
+            _client.OnConnectionFailed -= HandleOnConnectionFailed;
             _client.UnregisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
-            _client.UnregisterHandler<Game_Join_Response>(NetEvent.GAME_JOIN_RESPONSE, HandleGameJoinResponse);
+            _client.UnregisterHandler<Room_Join_Response>(NetEvent.ROOM_JOIN_RESPONSE, HandleGameJoinResponse);
             _client = null;
         }
 
@@ -46,8 +46,8 @@ namespace GamePlay.Procedure
 
         private void SendGameJoinRequest()
         {
-            Game_Join_Request request = new();
-            _client.SendReliable(NetEvent.GAME_JOIN_REQUEST, request);
+            Room_Join_Request request = new();
+            _client.SendReliable(NetEvent.ROOM_JOIN_REQUEST, request);
         }
 
         #endregion
@@ -59,12 +59,12 @@ namespace GamePlay.Procedure
             SendGameJoinRequest();
         }
 
-        private void HandleGameJoinResponse(Game_Join_Response message)
+        private void HandleGameJoinResponse(Room_Join_Response message)
         {
             _procedure.HandleGameJoinResponse(message);
         }
 
-        private void HandleConnectionFailed()
+        private void HandleOnConnectionFailed()
         {
             _procedure.HandleConnectionFailed();
         }

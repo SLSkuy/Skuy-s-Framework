@@ -47,7 +47,6 @@ namespace GamePlay.EntitySystem
             movementState.desiredLocomotionSpeed = _context.LocomotionSpeed;
             movementState.isSprinting = _context.IsSprinting;
             movementState.isRunning = _context.IsRunning;
-            movementState.isGrounded = _context.IsGrounded;
 
             ViewRollbackState viewState = _context.View.CaptureRollbackState();
             viewState.isFocus = _context.IsFocus;

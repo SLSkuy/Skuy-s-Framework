@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Framework;
 using GamePlay.EntitySystem;
 using YooAsset;
@@ -20,6 +21,12 @@ namespace GamePlay.Simulation
         public bool IsRunning => _tickSystem is { IsRunning: true };
         #endregion
 
+        #region 事件
+        public event Action<uint, float> TickBegin;
+        public event Action<uint, float> TickWorld;
+        public event Action<uint, float> TickEnd;
+        #endregion
+
         #region Tick管理
         
         public void StartClock()
@@ -35,9 +42,12 @@ namespace GamePlay.Simulation
 
         private void HandleTick(uint tick, float deltaTime)
         {
+            TickBegin?.Invoke(tick, deltaTime);
             PrepareSimulationTick();
             DispatchTick(tick, deltaTime);
+            TickWorld?.Invoke(tick, deltaTime);
             CaptureAuthorityTick();
+            TickEnd?.Invoke(tick, deltaTime);
         }
 
         /// <summary>
@@ -224,6 +234,9 @@ namespace GamePlay.Simulation
             }
 
             _tickCommands.Clear();
+            TickBegin = null;
+            TickWorld = null;
+            TickEnd = null;
             _entityRegistry?.Clear();
         }
 

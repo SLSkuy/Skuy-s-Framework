@@ -95,6 +95,8 @@ namespace GamePlay.LevelControl
 
         #endregion
 
+        #region 事件回调
+
         private void HandleSceneLoadCompleted(string sceneName)
         {
             if (!IsChanging || sceneName != RequestedLevelScene)
@@ -129,5 +131,7 @@ namespace GamePlay.LevelControl
             IsReady = false;
             Failed?.Invoke(sceneName, errorMessage);
         }
+
+        #endregion
     }
 }

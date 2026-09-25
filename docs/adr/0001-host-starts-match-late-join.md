@@ -4,4 +4,4 @@
 
 **Considered Options**: 大厅聚齐后再锁门、禁止中途加入（更简单的门闩，但和「主机进游戏、别人再进来」的玩法相反）。
 
-**Consequences**: 不使用 `Match_Start` 作为加入方进对局的信号；`Join_Response` 在开听之后即带完整名册。房主退出对局即解散并回菜单。关卡是 `GameScene`，进程壳留在 `[GameRoot]`。
+**Consequences**: 不使用 `Match_Start` 作为加入方进对局的信号；`Join_Response` 在开听之后即带完整名册。远端连接期间使用不持有名册的瞬时 `Joining` 流程态，它不是等人大厅。房主退出对局即解散并回菜单。关卡是 `GameScene`，进程壳留在 `[GameRoot]`。

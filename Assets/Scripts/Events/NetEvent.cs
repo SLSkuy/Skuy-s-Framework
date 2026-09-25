@@ -5,6 +5,7 @@ namespace Events
     /// </summary>
     public enum NetEvent : ushort
     {
+        // DEBUG
         ERROR,
         CHAT_TEST,
         
@@ -20,16 +21,15 @@ namespace Events
         PONG,
 
         // 房间玩家管理
-        GAME_JOIN_REQUEST,
-        GAME_JOIN_RESPONSE,
-        GAME_LEAVE_REQUEST,
-        GAME_LEAVE_NOTIFY,
-        GAME_PLAYER_JOINED,
+        ROOM_JOIN_REQUEST,
+        ROOM_JOIN_RESPONSE,
+        ROOM_LEAVE_REQUEST,
+        ROOM_PLAYER_LEAVE_NOTIFY,
+        ROOM_PLAYER_JOINED_NOTIFY,
+        ROOM_HOST_DISSOLVED_NOTIFY,
         
         // 状态同步
         PLAYER_INPUT,
         WORLD_SNAPSHOT,
-        ENTITY_SPAWN,
-        ENTITY_DESPAWN,
     }
 }
