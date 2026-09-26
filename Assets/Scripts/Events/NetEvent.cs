@@ -31,5 +31,10 @@ namespace Events
         // 状态同步
         PLAYER_INPUT,
         WORLD_SNAPSHOT,
+
+        // 实体生成
+        ENTITY_SPAWN_NOTIFY,
+        ENTITY_DESTROY_NOTIFY,
+        ENTITY_SPAWN_SYNC_REQUEST,
     }
 }

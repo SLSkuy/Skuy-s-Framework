@@ -13,7 +13,7 @@ namespace GamePlay.Procedure
     public sealed class ProcedureMatchState : EnumStateBase<ProcedureState>
     {
         private readonly ProcedureCore _procedure;
-        private ISimulationKernel _simulationKernel;
+        private ISimulationKernel _simulation;
         
         #region 游戏逻辑调度器
         private EntitySpawner _entitySpawner;
@@ -30,11 +30,8 @@ namespace GamePlay.Procedure
         
         private bool StartGameplay()
         {
-            _entitySpawner = Global.Register<EntitySpawner>();
-            
+            // 注册房间管理器
             _room = Global.Get<RoomManager>();
-            _room.PlayerJoined += OnPlayerJoined;
-            _room.PlayerRemoved += OnPlayerRemoved;
             
             // 注册模拟核，确定如何进行游戏逻辑Tick
             SessionRole sessionRole = _room.SessionRole;
@@ -46,8 +43,13 @@ namespace GamePlay.Procedure
                 systems.UnregisterSystem(kernel);
                 return false;
             }
-            _simulationKernel = kernel;
+            _simulation = kernel;
             
+            // 注册实体生成管理器
+            _entitySpawner = Global.Register<EntitySpawner>();
+            _entitySpawner.BindSimulation(_simulation.SimulationKernal);
+            
+            // 注册关卡管理器
             _levelMgr = Global.Register<LevelManager>();
             _levelMgr.Completed += OnLevelLoadCompleted;
             _levelMgr.Failed += OnLevelLoadFailed;
@@ -58,17 +60,24 @@ namespace GamePlay.Procedure
 
         private void StopGameplay()
         {
+            if (_room != null)
+            {
+                _room.PlayerJoined -= OnPlayerJoined;
+                _room.PlayerRemoved -= OnPlayerRemoved;
+                _room = null;
+            }
+            
             if (_entitySpawner != null)
             {
                 Global.Unregister<EntitySpawner>();
                 _entitySpawner = null;
             }
             
-            if (_room != null)
+            if (_simulation != null)
             {
-                _room.PlayerJoined -= OnPlayerJoined;
-                _room.PlayerRemoved -= OnPlayerRemoved;
-                _room = null;
+                _simulation.StopSession();
+                Global.Get<SystemManager>().UnregisterSystem(_simulation);
+                _simulation = null;
             }
             
             if (_levelMgr != null)
@@ -77,13 +86,6 @@ namespace GamePlay.Procedure
                 _levelMgr.Failed -= OnLevelLoadFailed;
                 Global.Unregister<LevelManager>();
                 _levelMgr = null;
-            }
-
-            if (_simulationKernel != null)
-            {
-                _simulationKernel.StopSession();
-                Global.Get<SystemManager>().UnregisterSystem(_simulationKernel);
-                _simulationKernel = null;
             }
         }
 
@@ -110,7 +112,20 @@ namespace GamePlay.Procedure
 
         private void OnLevelLoadCompleted(string sceneName)
         {
-            // TODO: 关卡加载完成回调
+            if (_room.SessionRole == SessionRole.Client)
+            {
+                _entitySpawner.StartClient();
+                return;
+            }
+
+            _entitySpawner.SpawnRosterPlayers();
+            if (_room.AcceptsRemoteJoin)
+            {
+                _entitySpawner.StartHost();
+            }
+
+            _room.PlayerJoined += OnPlayerJoined;
+            _room.PlayerRemoved += OnPlayerRemoved;
         }
 
         private void OnLevelLoadFailed(string sceneName, string errorMessage)
@@ -120,12 +135,12 @@ namespace GamePlay.Procedure
 
         private void OnPlayerJoined(uint playerId)
         {
-            // TODO: 新玩家加入处理
+            _entitySpawner.SpawnPlayer(playerId);
         }
 
         private void OnPlayerRemoved(uint playerId)
         {
-            // TODO: 玩家退出处理
+            _entitySpawner.DespawnPlayer(playerId);
         }
 
         #endregion

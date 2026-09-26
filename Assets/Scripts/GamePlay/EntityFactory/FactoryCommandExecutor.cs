@@ -5,17 +5,16 @@ using YooAsset;
 namespace GamePlay.EntityFactory
 {
     /// <summary>
-    /// 工厂命令处理器，负责接收工厂指令
-    /// 委托对应工厂完成实际的游戏对象生成
+    /// 工厂命令执行器，按实体类型实例化或释放对象
     /// </summary>
     public class FactoryCommandExecutor
     {
         public GameObject Execute(SpawnEntityCommand command)
         {
+            string location = FactoryConfig.GetLocation(command.entityTypeId);
             InstantiateOptions options = new(true, command.position, command.rotation);
-            GameObject instance = Global.Instantiate(command.resPath, options);
             
-            return instance;
+            return Global.Instantiate(location, options);
         }
 
         public void Execute(DestroyEntityCommand command)

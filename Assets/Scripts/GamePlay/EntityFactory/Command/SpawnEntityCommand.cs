@@ -3,26 +3,26 @@
 namespace GamePlay.EntityFactory
 {
     /// <summary>
-    /// 生成实体命令
+    /// 生成实体命令。只描述生成数据，不引用预制体或已注册实体。
     /// </summary>
     public struct SpawnEntityCommand
     {
-        public string resPath;
+        public EntityType entityTypeId;
         public Vector3 position;
         public Quaternion rotation;
 
-        public SpawnEntityCommand(string path)
+        public SpawnEntityCommand(EntityType entityTypeId)
         {
-            resPath = path;
-            position = default;
-            rotation = default;
+            this.entityTypeId = entityTypeId;
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
         }
-
-        public SpawnEntityCommand(string path, Vector3 pos, Quaternion rot)
+        
+        public SpawnEntityCommand(EntityType entityTypeId, Vector3 position, Quaternion rotation)
         {
-            resPath = path;
-            position = pos;
-            rotation = rot;
+            this.entityTypeId = entityTypeId;
+            this.position = position;
+            this.rotation = rotation;
         }
     }
 }

@@ -8,10 +8,10 @@ namespace GamePlay.EntityFactory
     public struct DestroyEntityCommand
     {
         public GameObject instance;
-        
-        public DestroyEntityCommand(GameObject obj)
+
+        public DestroyEntityCommand(GameObject instance)
         {
-            instance = obj;
+            this.instance = instance;
         }
     }
 }

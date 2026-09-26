@@ -81,3 +81,23 @@ message World_Snapshot {
     repeated Player_Snapshot player_snapshots = 2;
 }
 // ========== 状态同步 ==========
+
+// ========== 实体生成 ==========
+// 主机通知客户端生成实体
+message Entity_Spawn_Notify {
+  uint32 entityId = 1;
+  uint32 entityTypeId = 2;
+  uint32 playerId = 3;
+  Vec3 position = 4;
+  Quat rotation = 5;
+}
+
+// 主机通知客户端销毁实体
+message Entity_Destroy_Notify {
+  uint32 entityId = 1;
+}
+
+// 客户端关卡就绪后，向主机请求已有实体
+message Entity_Spawn_Sync_Request {
+}
+// ========== 实体生成 ==========
