@@ -27,14 +27,14 @@ namespace GamePlay.EntitySpawn
         {
             Unbind();
             _server = Global.Get<NetServer>();
-            _server.RegisterHandler<Entity_Spawn_Sync_Request>(NetEvent.ENTITY_SPAWN_SYNC_REQUEST, HandleSpawnSyncRequest);
+            _server.RegisterHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
         }
 
         public void Unbind()
         {
             if (_server == null) return;
 
-            _server.UnregisterHandler<Entity_Spawn_Sync_Request>(NetEvent.ENTITY_SPAWN_SYNC_REQUEST, HandleSpawnSyncRequest);
+            _server.UnregisterHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
             _server = null;
         }
 
@@ -44,24 +44,24 @@ namespace GamePlay.EntitySpawn
 
         public void BroadcastSpawn(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
         {
-            _server.BroadcastReliable(NetEvent.ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
+            _server.BroadcastReliable(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
         }
 
         public void SendSpawn(uint connectionId, uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
         {
-            _server.SendReliable(connectionId, NetEvent.ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
+            _server.SendReliable(connectionId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
         }
 
         public void BroadcastDestroy(uint entityId)
         {
-            _server.BroadcastReliable(NetEvent.ENTITY_DESTROY_NOTIFY, new Entity_Destroy_Notify { EntityId = entityId });
+            _server.BroadcastReliable(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, new Entity_Destroy_Notify { EntityId = entityId });
         }
 
         #endregion
 
         #region 接收消息
 
-        private void HandleSpawnSyncRequest(uint connectionId, Entity_Spawn_Sync_Request request)
+        private void HandleEntitySpawnSyncRequest(uint connectionId, Entity_Spawn_Sync_Request request)
         {
             _spawner.HandleSpawnSyncRequest(connectionId);
         }

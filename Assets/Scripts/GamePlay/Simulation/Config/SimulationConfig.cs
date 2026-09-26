@@ -9,13 +9,13 @@ namespace GamePlay.Simulation
     public class SimulationConfig : ScriptableObject
     {
         [Header("权威模拟")]
-        [Min(1)] public int simulationTickRate = 32;
+        [Min(1)] public int simulationTickRate = 60;
         [Min(1)] public int maxSimulationTicksPerFrame = 8;
         
         [Header("状态快照")]
-        [Min(1)] public int snapshotTickRate = 20;
+        [Min(1)] public int snapshotTickRate = 30;
         [Min(0)] public int interpolationDelayTicks = 3;
-        [Min(1)] public int maxBufferedInputs = 64;
+        [Min(1)] public int maxBufferedInputs = 32;
         [Min(0)] public int maxFutureInputTicks = 32;
 
         [Header("客户端预测")]

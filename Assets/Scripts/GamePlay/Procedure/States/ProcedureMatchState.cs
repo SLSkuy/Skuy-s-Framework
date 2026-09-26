@@ -1,5 +1,6 @@
 using Framework;
 using GamePlay.EntitySpawn;
+using GamePlay.EntitySystem;
 using GamePlay.LevelControl;
 using GamePlay.Room;
 using GamePlay.Simulation;
@@ -48,6 +49,7 @@ namespace GamePlay.Procedure
             // 注册实体生成管理器
             _entitySpawner = Global.Register<EntitySpawner>();
             _entitySpawner.BindSimulation(_simulation.SimulationKernal);
+            _entitySpawner.OnSpawnLocalPlayer += OnLocalPlayerSpawned;
             
             // 注册关卡管理器
             _levelMgr = Global.Register<LevelManager>();
@@ -69,9 +71,12 @@ namespace GamePlay.Procedure
             
             if (_entitySpawner != null)
             {
+                _entitySpawner.OnSpawnLocalPlayer -= OnLocalPlayerSpawned;
                 Global.Unregister<EntitySpawner>();
                 _entitySpawner = null;
             }
+
+            Global.Get<CameraManager>().SetTarget(null);
             
             if (_simulation != null)
             {
@@ -109,6 +114,17 @@ namespace GamePlay.Procedure
         #endregion
 
         #region 事件回调
+        
+        /// <summary>
+        /// 生成本机玩家，绑定输入源，设置摄像机跟随目标
+        /// </summary>
+        private void OnLocalPlayerSpawned(uint playerId, EntityCharacter character)
+        {
+            EntityObjectIdentity identity = character.GetComponent<EntityObjectIdentity>();
+            
+            _simulation.SimulationKernal.SetInputSource(identity.EntityId, Global.Get<LocalInputManager>().Provider);
+            Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
+        }
 
         private void OnLevelLoadCompleted(string sceneName)
         {

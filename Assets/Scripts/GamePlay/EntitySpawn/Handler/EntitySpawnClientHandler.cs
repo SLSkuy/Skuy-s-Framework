@@ -26,16 +26,16 @@ namespace GamePlay.EntitySpawn
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.RegisterHandler<Entity_Spawn_Notify>(NetEvent.ENTITY_SPAWN_NOTIFY, HandleSpawnNotify);
-            _client.RegisterHandler<Entity_Destroy_Notify>(NetEvent.ENTITY_DESTROY_NOTIFY, HandleDestroyNotify);
+            _client.RegisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
+            _client.RegisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
         }
 
         public void Unbind()
         {
             if (_client == null) return;
 
-            _client.UnregisterHandler<Entity_Spawn_Notify>(NetEvent.ENTITY_SPAWN_NOTIFY, HandleSpawnNotify);
-            _client.UnregisterHandler<Entity_Destroy_Notify>(NetEvent.ENTITY_DESTROY_NOTIFY, HandleDestroyNotify);
+            _client.UnregisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
+            _client.UnregisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
             _client = null;
         }
 
@@ -45,20 +45,20 @@ namespace GamePlay.EntitySpawn
 
         public void SendSpawnSyncRequest()
         {
-            _client.SendReliable(NetEvent.ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
+            _client.SendReliable(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
         }
 
         #endregion
 
         #region 接收消息
 
-        private void HandleSpawnNotify(Entity_Spawn_Notify message)
+        private void HandleEntitySpawnNotify(Entity_Spawn_Notify message)
         {
             _spawner.HandleSpawnNotify(message.EntityId, (EntityType)message.EntityTypeId, message.PlayerId,
                 ProtoUtils.ToUnity(message.Position), ProtoUtils.ToUnity(message.Rotation));
         }
 
-        private void HandleDestroyNotify(Entity_Destroy_Notify message)
+        private void HandleEntityDestroyNotify(Entity_Destroy_Notify message)
         {
             _spawner.HandleDestroyNotify(message.EntityId);
         }
