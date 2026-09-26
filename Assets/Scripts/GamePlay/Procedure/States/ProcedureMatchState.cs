@@ -1,4 +1,5 @@
 using Framework;
+using GamePlay.EntitySpawn;
 using GamePlay.LevelControl;
 using GamePlay.Room;
 using GamePlay.Simulation;
@@ -15,6 +16,7 @@ namespace GamePlay.Procedure
         private ISimulationKernel _simulationKernel;
         
         #region 游戏逻辑调度器
+        private EntitySpawner _entitySpawner;
         private LevelManager _levelMgr;
         private RoomManager _room;
         #endregion
@@ -28,6 +30,8 @@ namespace GamePlay.Procedure
         
         private bool StartGameplay()
         {
+            _entitySpawner = Global.Register<EntitySpawner>();
+            
             _room = Global.Get<RoomManager>();
             _room.PlayerJoined += OnPlayerJoined;
             _room.PlayerRemoved += OnPlayerRemoved;
@@ -54,6 +58,12 @@ namespace GamePlay.Procedure
 
         private void StopGameplay()
         {
+            if (_entitySpawner != null)
+            {
+                Global.Unregister<EntitySpawner>();
+                _entitySpawner = null;
+            }
+            
             if (_room != null)
             {
                 _room.PlayerJoined -= OnPlayerJoined;
