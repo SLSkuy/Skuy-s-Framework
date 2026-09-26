@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Framework;
 using Framework.SubSystems;
@@ -21,6 +22,13 @@ namespace Core
         public SceneLoader SceneMgr { get; private set; }
         public AudioManager AudioMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
+        #endregion
+        
+        #region 事件
+        /// <summary>
+        /// 核心销毁前通知。订阅方在此拆掉仍依赖子系统的会话。
+        /// </summary>
+        public static event Action BeforeShutdown;
         #endregion
 
         private AppCoreConfig _config;
@@ -103,6 +111,10 @@ namespace Core
 
         protected override void Destroy()
         {
+            Action beforeShutdown = BeforeShutdown;
+            BeforeShutdown = null;
+            beforeShutdown?.Invoke();
+
             StopAllCoroutines();
             
             ResourceMgr.OnResourceReady -= InitSystems;
