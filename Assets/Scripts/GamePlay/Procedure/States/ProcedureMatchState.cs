@@ -16,7 +16,7 @@ namespace GamePlay.Procedure
         private readonly ProcedureCore _procedure;
         private ISimulationKernel _simulation;
         
-        #region 游戏逻辑调度器
+        #region 游戏业务逻辑
         private EntitySpawner _entitySpawner;
         private LevelManager _levelMgr;
         private RoomManager _room;
@@ -50,6 +50,10 @@ namespace GamePlay.Procedure
             _entitySpawner = Global.Register<EntitySpawner>();
             _entitySpawner.BindSimulation(_simulation.SimulationKernal);
             _entitySpawner.OnSpawnLocalPlayer += OnLocalPlayerSpawned;
+            if (sessionRole == SessionRole.Host)
+            {
+                _entitySpawner.OnSpawnRemotePlayer += OnRemotePlayerSpawned;
+            }
             
             // 注册关卡管理器
             _levelMgr = Global.Register<LevelManager>();
@@ -72,6 +76,7 @@ namespace GamePlay.Procedure
             if (_entitySpawner != null)
             {
                 _entitySpawner.OnSpawnLocalPlayer -= OnLocalPlayerSpawned;
+                _entitySpawner.OnSpawnRemotePlayer -= OnRemotePlayerSpawned;
                 Global.Unregister<EntitySpawner>();
                 _entitySpawner = null;
             }
@@ -116,14 +121,24 @@ namespace GamePlay.Procedure
         #region 事件回调
         
         /// <summary>
-        /// 生成本机玩家，绑定输入源，设置摄像机跟随目标
+        /// 生成本机玩家，绑定输入来源，设置摄像机跟随目标
         /// </summary>
         private void OnLocalPlayerSpawned(uint playerId, EntityCharacter character)
         {
-            EntityObjectIdentity identity = character.GetComponent<EntityObjectIdentity>();
-            
-            _simulation.SimulationKernal.SetInputSource(identity.EntityId, Global.Get<LocalInputManager>().Provider);
+            _entitySpawner.SetPlayerInputSource(playerId, Global.Get<LocalInputManager>().Provider);
             Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
+        }
+
+        /// <summary>
+        /// 主机上的远端玩家生成后，绑定网络输入来源。
+        /// </summary>
+        private void OnRemotePlayerSpawned(uint playerId, EntityCharacter _)
+        {
+            Simulator simulator = _simulation.SimulationKernal;
+            AuthorityInputProvider provider = new(simulator.MaxBufferedInputs, simulator.MaxFutureInputTicks);
+            _entitySpawner.SetPlayerInputSource(playerId, provider);
+            
+            ((HostSimulationKernel)_simulation).RegisterRemoteInput(playerId, provider);
         }
 
         private void OnLevelLoadCompleted(string sceneName)
@@ -156,6 +171,8 @@ namespace GamePlay.Procedure
 
         private void OnPlayerRemoved(uint playerId)
         {
+            ((HostSimulationKernel)_simulation).UnregisterRemoteInput(playerId);
+            
             _entitySpawner.DespawnPlayer(playerId);
         }
 

@@ -61,11 +61,11 @@ namespace Utils
             };
         }
 
-        public static Player_Input ToPlayerInput(uint entityId, uint inputTick, InputState state)
+        public static Player_Input ToPlayerInput(uint playerId, uint inputTick, InputState state)
         {
             return new Player_Input
             {
-                EntityId = entityId,
+                PlayerId = playerId,
                 InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
                 AimInput = ToProto(state.AimInput),
@@ -80,12 +80,11 @@ namespace Utils
         }
 
         public static Player_Snapshot ToPlayerSnapshot(in EntityRollbackState state,
-            uint entityId, uint playerId, uint lastProcessedInputTick)
+            uint playerId, uint lastProcessedInputTick)
         {
             MovementRollbackState movement = state.movementState;
             return new Player_Snapshot
             {
-                EntityId = entityId,
                 PlayerId = playerId,
                 LocomotionState = state.simulationState.entityState,
                 Position = ToProto(movement.rootPosition),

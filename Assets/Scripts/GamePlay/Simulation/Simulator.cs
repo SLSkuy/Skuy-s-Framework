@@ -7,7 +7,7 @@ using YooAsset;
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 模拟核：持有唯一 Tick、实体注册表与步进调度。由 Host 子系统持有并驱动。
+    /// 模拟核：持有唯一 Tick、实体注册表与步进调度。每拍先处理玩家移动输入，再处理业务逻辑。
     /// </summary>
     public sealed class Simulator
     {
@@ -15,16 +15,31 @@ namespace GamePlay.Simulation
         private TickSystem _tickSystem;
         private EntityRegistry _entityRegistry;
         private readonly Dictionary<uint, EntityCommand> _tickCommands = new();
+        private int _maxBufferedInputs;
+        private int _maxFutureInputTicks;
 
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
         public bool IsRunning => _tickSystem is { IsRunning: true };
+        public int MaxBufferedInputs => _maxBufferedInputs;
+        public int MaxFutureInputTicks => _maxFutureInputTicks;
         #endregion
 
         #region 事件
-        public event Action<uint, float> TickBegin;
-        public event Action<uint, float> TickWorld;
-        public event Action<uint, float> TickEnd;
+        /// <summary>
+        /// 本拍实体移动之前。订阅者在此提交玩家移动输入。
+        /// </summary>
+        public event Action<uint, float> TickPlayerInput;
+
+        /// <summary>
+        /// 本拍移动步进完成之后、权威状态采样之前。订阅者在此推进业务逻辑。
+        /// </summary>
+        public event Action<uint, float> TickBusiness;
+
+        /// <summary>
+        /// 本拍权威状态采样之后。
+        /// </summary>
+        public event Action<uint, float> TickCaptured;
         #endregion
 
         #region Tick管理
@@ -42,12 +57,12 @@ namespace GamePlay.Simulation
 
         private void HandleTick(uint tick, float deltaTime)
         {
-            TickBegin?.Invoke(tick, deltaTime);
             PrepareSimulationTick();
+            TickPlayerInput?.Invoke(tick, deltaTime);
             DispatchTick(tick, deltaTime);
-            TickWorld?.Invoke(tick, deltaTime);
+            TickBusiness?.Invoke(tick, deltaTime);
             CaptureAuthorityTick();
-            TickEnd?.Invoke(tick, deltaTime);
+            TickCaptured?.Invoke(tick, deltaTime);
         }
 
         /// <summary>
@@ -206,6 +221,8 @@ namespace GamePlay.Simulation
         {
             _configHandle = Global.Load<SimulationConfig>("Config_SimulationConfig");
             SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
+            _maxBufferedInputs = config.maxBufferedInputs;
+            _maxFutureInputTicks = config.maxFutureInputTicks;
             _entityRegistry = new EntityRegistry();
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tickSystem.Tick += HandleTick;
@@ -234,9 +251,9 @@ namespace GamePlay.Simulation
             }
 
             _tickCommands.Clear();
-            TickBegin = null;
-            TickWorld = null;
-            TickEnd = null;
+            TickPlayerInput = null;
+            TickBusiness = null;
+            TickCaptured = null;
             _entityRegistry?.Clear();
         }
 

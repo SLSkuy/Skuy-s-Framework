@@ -137,6 +137,14 @@ namespace GamePlay.Room
             _playersById.Keys.CopyTo(playerIds, 0);
             return playerIds;
         }
+
+        /// <summary>
+        /// 按连接取已入座的玩家。连接未入座时返回 false。
+        /// </summary>
+        public bool TryGetPlayerId(uint connectionId, out uint playerId)
+        {
+            return _playerId.TryGetValue(connectionId, out playerId);
+        }
         
         /// <summary>
         /// 将连接加入当前对局。

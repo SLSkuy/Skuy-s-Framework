@@ -51,7 +51,7 @@ message Room_Host_Dissolved_Notify{
 
 // ========== 状态同步 ==========
 message Player_Input {
-    uint32 entityId = 1;
+    uint32 playerId = 1;
     uint32 inputTick = 2;
     Vec2 move_input = 3;
     Vec2 aim_input = 4;
@@ -65,15 +65,14 @@ message Player_Input {
 }
 
 message Player_Snapshot {
-    uint32 entityId = 1;
-    uint32 player_id = 2;
-    uint32 locomotion_state = 3;
-    Vec3 position = 4;
-    Quat rotation = 5;
-    Quat view_rotation = 6;
-    Vec3 linear_velocity = 7;
-    Vec3 angular_velocity = 8;
-    uint32 lastProcessedInputTick = 9;
+    uint32 player_id = 1;
+    uint32 locomotion_state = 2;
+    Vec3 position = 3;
+    Quat rotation = 4;
+    Quat view_rotation = 5;
+    Vec3 linear_velocity = 6;
+    Vec3 angular_velocity = 7;
+    uint32 lastProcessedInputTick = 8;
 }
 
 message World_Snapshot {

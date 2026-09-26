@@ -29,6 +29,7 @@ namespace GamePlay.EntitySpawn
 
         #region 事件
         public event Action<uint, EntityCharacter> OnSpawnLocalPlayer;
+        public event Action<uint, EntityCharacter> OnSpawnRemotePlayer;
         #endregion
 
         /// <summary>
@@ -71,6 +72,15 @@ namespace GamePlay.EntitySpawn
         }
 
         /// <summary>
+        /// 按玩家号把输入来源挂到已生成的玩家实体上。
+        /// </summary>
+        public void SetPlayerInputSource(uint playerId, IInputStateProvider inputSource)
+        {
+            uint entityId = _allocator.GetByPlayer(playerId);
+            _simulator.SetInputSource(entityId, inputSource);
+        }
+
+        /// <summary>
         /// 主机为入座玩家生成实体。已开听时广播给其他客户端。
         /// </summary>
         public void SpawnPlayer(uint playerId)
@@ -94,8 +104,14 @@ namespace GamePlay.EntitySpawn
             
             _simulator.Register(identity, character);
             
-            // 生成本机玩家
-            if(playerId == _room.LocalPlayerId) OnSpawnLocalPlayer?.Invoke(playerId, character);
+            if (playerId == _room.LocalPlayerId)
+            {
+                OnSpawnLocalPlayer?.Invoke(playerId, character);
+            }
+            else if (_room.SessionRole == SessionRole.Host)
+            {
+                OnSpawnRemotePlayer?.Invoke(playerId, character);
+            }
         }
 
         /// <summary>
@@ -135,17 +151,6 @@ namespace GamePlay.EntitySpawn
             return _room.AcceptsRemoteJoin ? EntityObjectRole.Authority : EntityObjectRole.LocalPlay;
         }
 
-        private void SendSpawnSnapshot(uint connectionId)
-        {
-            foreach (var record in _allocator.GetLiveEntityIds())
-            {
-                _simulator.TryGet(record.EntityId, out _, out EntityCharacter character);
-                uint playerId = _allocator.GetPlayerId(record.EntityId);
-                _serverHandler.SendSpawn(connectionId, record.EntityId, record.EntityTypeId, playerId, 
-                    character.transform.position, character.transform.rotation);
-            }
-        }
-
         #region 子系统生命周期
 
         public override void Init()
@@ -175,6 +180,21 @@ namespace GamePlay.EntitySpawn
             _clientHandler = null;
             _simulator = null;
             _room = null;
+        }
+
+        #endregion
+
+        #region 消息发送
+
+        private void SendSpawnSnapshot(uint connectionId)
+        {
+            foreach (var record in _allocator.GetLiveEntityIds())
+            {
+                _simulator.TryGet(record.EntityId, out _, out EntityCharacter character);
+                uint playerId = _allocator.GetPlayerId(record.EntityId);
+                _serverHandler.SendSpawn(connectionId, record.EntityId, record.EntityTypeId, playerId, 
+                    character.transform.position, character.transform.rotation);
+            }
         }
 
         #endregion

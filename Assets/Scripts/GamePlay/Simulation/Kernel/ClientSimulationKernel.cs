@@ -1,13 +1,17 @@
 using Framework;
+using GamePlay.Room;
 
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 客户端模拟核占位：预测与快照接入前只维持会话，不驱动权威步进。
+    /// 客户端模拟核：沿用模拟核节拍，在移动输入时机把本机玩家输入发给主机。
     /// </summary>
     public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
     {
+        private IInputStateProvider _localInputProvider;
+        private SimulationClientHandler _clientHandler;
         private Simulator _simulator;
+        private RoomManager _room;
 
         #region 属性
         public override int Priority => 500;
@@ -18,6 +22,16 @@ namespace GamePlay.Simulation
         public bool StartSession()
         {
             if (IsSessionRunning) return true;
+            
+            _room = Global.Get<RoomManager>();
+            _localInputProvider = Global.Get<LocalInputManager>().Provider;
+            
+            _clientHandler = new SimulationClientHandler();
+            _clientHandler.Bind();
+            
+            _simulator.TickPlayerInput += HandlePlayerInputTick;
+            _simulator.StartClock();
+            
             IsSessionRunning = true;
             return true;
         }
@@ -25,9 +39,16 @@ namespace GamePlay.Simulation
         public void StopSession()
         {
             if (!IsSessionRunning) return;
+
+            _simulator.TickPlayerInput -= HandlePlayerInputTick;
+            _simulator.StopClock();
+            
+            _clientHandler.Unbind();
+            _clientHandler = null;
+            
             IsSessionRunning = false;
         }
-
+        
         #region 子系统生命周期
 
         public override void Init()
@@ -50,7 +71,13 @@ namespace GamePlay.Simulation
 
         #endregion
 
-        #region 网络消息处理
+        #region 回调处理
+        
+        private void HandlePlayerInputTick(uint inputTick, float deltaTime)
+        {
+            InputState input = _localInputProvider.GetInputState();
+            _clientHandler.SendPlayerInput(_room.LocalPlayerId, inputTick, input);
+        }
 
         public void HandleWorldSnapshot()
         {
