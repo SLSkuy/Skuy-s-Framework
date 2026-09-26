@@ -124,9 +124,8 @@ namespace GamePlay.Procedure
 
         protected override void Init()
         {
-            // 订阅程序销毁通知，所有生命周期只走这一个调度入口
-            AppCore.BeforeShutdown += ShutDown;
-
+            AppCore.OnAppQuit += ShutDown;
+            
             _fsm = new EnumStateMachine<ProcedureState>();
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedureJoiningState(_fsm, this));
@@ -158,9 +157,10 @@ namespace GamePlay.Procedure
 
         protected override void Destroy()
         {
-            AppCore.BeforeShutdown -= ShutDown;
+            AppCore.OnAppQuit -= ShutDown;
             
-            TearDownSession();
+            if (_fsm.CurrentState != ProcedureState.Menu)
+                _fsm.ChangeState(ProcedureState.Menu);
         }
 
         #endregion

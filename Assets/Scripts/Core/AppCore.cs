@@ -23,12 +23,9 @@ namespace Core
         public AudioManager AudioMgr { get; private set; }
         public CameraManager CameraMgr { get; private set; }
         #endregion
-        
+
         #region 事件
-        /// <summary>
-        /// 核心销毁前通知。订阅方在此拆掉仍依赖子系统的会话。
-        /// </summary>
-        public static event Action BeforeShutdown;
+        public static event Action OnAppQuit;
         #endregion
 
         private AppCoreConfig _config;
@@ -111,10 +108,6 @@ namespace Core
 
         protected override void Destroy()
         {
-            Action beforeShutdown = BeforeShutdown;
-            BeforeShutdown = null;
-            beforeShutdown?.Invoke();
-
             StopAllCoroutines();
             
             ResourceMgr.OnResourceReady -= InitSystems;
@@ -128,6 +121,9 @@ namespace Core
         /// </summary>
         private void OnApplicationQuit()
         {
+            // 先清理游戏业务再清理框架
+            OnAppQuit?.Invoke();
+            
             ShutDown();
         }
 
