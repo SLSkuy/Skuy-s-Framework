@@ -1,4 +1,5 @@
-﻿using Framework;
+﻿using System;
+using Framework;
 using GamePlay.EntityFactory;
 using GamePlay.EntitySystem;
 using GamePlay.Room;
@@ -24,6 +25,10 @@ namespace GamePlay.EntitySpawn
 
         #region 属性
         public override int Priority => 700;
+        #endregion
+
+        #region 事件
+        public event Action<uint, EntityCharacter> OnSpawnLocalPlayer;
         #endregion
 
         /// <summary>
@@ -88,6 +93,9 @@ namespace GamePlay.EntitySpawn
             character.Init();
             
             _simulator.Register(identity, character);
+            
+            // 生成本机玩家
+            if(playerId == _room.LocalPlayerId) OnSpawnLocalPlayer?.Invoke(playerId, character);
         }
 
         /// <summary>

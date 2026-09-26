@@ -28,13 +28,13 @@ namespace Events
         ROOM_PLAYER_JOINED_NOTIFY,
         ROOM_HOST_DISSOLVED_NOTIFY,
         
-        // 状态同步
-        PLAYER_INPUT,
-        WORLD_SNAPSHOT,
-
         // 实体生成
-        ENTITY_SPAWN_NOTIFY,
-        ENTITY_DESTROY_NOTIFY,
-        ENTITY_SPAWN_SYNC_REQUEST,
+        GAME_ENTITY_SPAWN_NOTIFY,
+        GAME_ENTITY_DESTROY_NOTIFY,
+        GAME_ENTITY_SPAWN_SYNC_REQUEST,
+        
+        // 状态同步
+        GAME_PLAYER_INPUT,
+        GAME_WORLD_SNAPSHOT,
     }
 }
