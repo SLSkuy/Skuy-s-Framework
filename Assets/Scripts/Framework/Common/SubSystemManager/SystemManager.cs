@@ -164,6 +164,8 @@ namespace Framework
             {
                 _subSystems[i].LateUpdate();
             }
+
+            EndTick();
         }
 
         public override void FixedUpdate(float fixedDeltaTime)
@@ -176,6 +178,8 @@ namespace Framework
             {
                 _subSystems[i].FixedUpdate(fixedDeltaTime);
             }
+
+            EndTick();
         }
 
         public override void Destroy()
