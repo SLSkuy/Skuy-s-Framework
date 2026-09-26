@@ -39,6 +39,17 @@ namespace GamePlay.EntitySpawn
         }
 
         /// <summary>
+        /// 记下主机已经分配好的玩家实体。客户端不另行分配。
+        /// </summary>
+        public void AdoptByPlayer(uint playerId, uint entityId, EntityType entityTypeId)
+        {
+            EntityIdRecord record = new(entityId, entityTypeId);
+            _live.Add(entityId, record);
+            _entityByPlayer.Add(playerId, entityId);
+            if (entityId >= _nextId) _nextId = entityId + 1;
+        }
+
+        /// <summary>
         /// 分配非玩家实体ID
         /// </summary>
         public uint Allocate(EntityType entityTypeId)

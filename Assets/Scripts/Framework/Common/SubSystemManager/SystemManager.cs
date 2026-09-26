@@ -101,28 +101,27 @@ namespace Framework
         }
 
         /// <summary>
-        /// 清除注销的系统
+        /// 先按优先级排序，再从高到低销毁已注销的系统。
         /// </summary>
         private void RemoveSystem()
         {
-            while (_systems2Remove.Count > 0)
+            if (_systems2Remove.Count == 0) return;
+
+            SortSystems();
+            for (int i = _subSystems.Count - 1; i >= 0; i--)
             {
-                ISubSystem system = _systems2Remove[^1];
-                _systems2Remove.RemoveAt(_systems2Remove.Count - 1);
-                if (!_subSystems.Contains(system))
-                {
-                    continue;
-                }
+                ISubSystem system = _subSystems[i];
+                if (!_systems2Remove.Contains(system)) continue;
 
                 if (system.IsInitialized)
                 {
                     system._Destroy();
                 }
 
-                _subSystems.Remove(system);
+                _subSystems.RemoveAt(i);
             }
 
-            SortSystems();
+            _systems2Remove.Clear();
         }
 
         /// <summary>

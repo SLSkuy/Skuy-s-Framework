@@ -133,7 +133,10 @@ namespace GamePlay.EntitySpawn
             _factoryCommandExecutor.Execute(new DestroyEntityCommand(character.gameObject));
         }
         
-        private void DespawnAll()
+        /// <summary>
+        /// 清掉本局已生成的实体。须在模拟核销毁之前调用。
+        /// </summary>
+        public void DespawnAll()
         {
             foreach (var record in _allocator.GetLiveEntityIds())
             {
@@ -205,6 +208,7 @@ namespace GamePlay.EntitySpawn
         {
             if (_simulator.TryGet(entityId, out _, out _)) return;
 
+            _allocator.AdoptByPlayer(playerId, entityId, entityTypeId);
             DoSpawnPlayer(entityId, entityTypeId, playerId, position, rotation);
         }
 

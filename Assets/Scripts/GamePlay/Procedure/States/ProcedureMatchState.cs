@@ -125,7 +125,12 @@ namespace GamePlay.Procedure
         /// </summary>
         private void OnLocalPlayerSpawned(uint playerId, EntityCharacter character)
         {
-            _entitySpawner.SetPlayerInputSource(playerId, Global.Get<LocalInputManager>().Provider);
+            if (_room.SessionRole == SessionRole.Host)
+            {
+                // 客户端现阶段不做预测输入
+                _entitySpawner.SetPlayerInputSource(playerId, Global.Get<LocalInputManager>().Provider);    
+            }
+            
             Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
         }
 
