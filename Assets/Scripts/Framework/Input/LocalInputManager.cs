@@ -7,7 +7,7 @@ namespace Framework
     /// </summary>
     public sealed class LocalInputManager : SubSystemBase
     {
-        private GameObject _host;
+        private GameObject _container;
 
         #region 属性
         public override int Priority => (int)SubSystemPriority.LocalInputManager;
@@ -19,18 +19,18 @@ namespace Framework
         public override void Init()
         {
             GameObject root = GameObject.Find("[GameRoot]");
-            _host = new GameObject("[LocalInput]");
-            _host.transform.SetParent(root.transform);
+            _container = new GameObject("[LocalInput]");
+            _container.transform.SetParent(root.transform);
             
-            Provider = _host.AddComponent<LocalInputProvider>();
+            Provider = _container.AddComponent<LocalInputProvider>();
         }
 
         public override void Destroy()
         {
-            if (_host)
+            if (_container)
             {
-                Object.Destroy(_host);
-                _host = null;
+                Object.Destroy(_container);
+                _container = null;
             }
 
             Provider = null;

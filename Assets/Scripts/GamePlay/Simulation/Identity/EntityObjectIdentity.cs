@@ -28,8 +28,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 初始化网络对象身份
         /// </summary>
-        public void Init(uint newEntityId, uint newPlayerId = 0,
-            EntityObjectRole newRole = EntityObjectRole.LocalPlay)
+        public void Init(uint newEntityId, uint newPlayerId = 0, EntityObjectRole newRole = EntityObjectRole.LocalPlay)
         {
             if (newEntityId == 0) throw new ArgumentOutOfRangeException(nameof(newEntityId), "NetworkObjectId 不能为 0。");
             if (entityId != 0 && entityId != newEntityId)
