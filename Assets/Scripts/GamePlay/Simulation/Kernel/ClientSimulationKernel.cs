@@ -1,5 +1,4 @@
 using Framework;
-using GamePlay.Room;
 
 namespace GamePlay.Simulation
 {
@@ -11,7 +10,6 @@ namespace GamePlay.Simulation
         private IInputStateProvider _localInputProvider;
         private SimulationClientHandler _clientHandler;
         private Simulator _simulator;
-        private RoomManager _room;
 
         #region 属性
         public override int Priority => 500;
@@ -23,7 +21,6 @@ namespace GamePlay.Simulation
         {
             if (IsSessionRunning) return true;
             
-            _room = Global.Get<RoomManager>();
             _localInputProvider = Global.Get<LocalInputManager>().Provider;
             
             _clientHandler = new SimulationClientHandler();
@@ -76,8 +73,12 @@ namespace GamePlay.Simulation
         private void HandlePlayerInputTick(uint inputTick, float deltaTime)
         {
             InputState input = _localInputProvider.GetInputState();
-            _clientHandler.SendPlayerInput(_room.LocalPlayerId, inputTick, input);
+            _clientHandler.SendPlayerInput(inputTick, input);
         }
+
+        #endregion
+
+        #region 客户端消息处理
 
         public void HandleWorldSnapshot()
         {

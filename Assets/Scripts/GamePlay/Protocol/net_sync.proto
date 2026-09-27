@@ -50,22 +50,23 @@ message Room_Host_Dissolved_Notify{
 // ========== 房间管理 ==========
 
 // ========== 状态同步 ==========
+// 本机玩家输入。玩家由发送这条消息的连接决定。
 message Player_Input {
-    uint32 playerId = 1;
-    uint32 inputTick = 2;
-    Vec2 move_input = 3;
-    Vec2 aim_input = 4;
-    bool is_primary_attack_pressed = 5;
-    bool is_special_attack_pressed = 6;
-    bool is_special_action_pressed = 7;
-    bool is_interact_pressed = 8;
-    bool is_sprint_pressed = 9;
-    bool is_jump_pressed = 10;
-    bool is_switch_mode_pressed = 11;
+    uint32 inputTick = 1;
+    Vec2 move_input = 2;
+    Vec2 aim_input = 3;
+    bool is_primary_attack_pressed = 4;
+    bool is_special_attack_pressed = 5;
+    bool is_special_action_pressed = 6;
+    bool is_interact_pressed = 7;
+    bool is_sprint_pressed = 8;
+    bool is_jump_pressed = 9;
+    bool is_switch_mode_pressed = 10;
 }
 
+// 玩家实体在某一Tick的状态
 message Player_Snapshot {
-    uint32 player_id = 1;
+    uint32 entityId = 1;
     uint32 locomotion_state = 2;
     Vec3 position = 3;
     Quat rotation = 4;
@@ -77,7 +78,7 @@ message Player_Snapshot {
 
 message World_Snapshot {
     uint32 snapshotTick = 1;
-    repeated Player_Snapshot player_snapshots = 2;
+    repeated Player_Snapshot Player_snapshots = 2;
 }
 // ========== 状态同步 ==========
 

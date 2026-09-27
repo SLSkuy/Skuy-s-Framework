@@ -165,7 +165,7 @@ namespace GamePlay.Procedure
 
         #endregion
 
-        #region 网络消息处理
+        #region 客户端消息处理
 
         /// <summary>
         /// 加入响应到达：拒绝则结束加入；接受则接管名册并进入对局。

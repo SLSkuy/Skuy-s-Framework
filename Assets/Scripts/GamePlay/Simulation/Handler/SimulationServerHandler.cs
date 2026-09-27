@@ -2,7 +2,6 @@ using Events;
 using Framework;
 using GamePlay.Room;
 using NetSync;
-using Network;
 
 namespace GamePlay.Simulation
 {
@@ -12,7 +11,7 @@ namespace GamePlay.Simulation
     public sealed class SimulationServerHandler
     {
         private readonly HostSimulationKernel _kernel;
-        private NetServer _server;
+        private RoomManager _room;
 
         public SimulationServerHandler(HostSimulationKernel kernel)
         {
@@ -24,25 +23,24 @@ namespace GamePlay.Simulation
         public void Bind()
         {
             Unbind();
-            _server = Global.Get<NetServer>();
-            _server.RegisterHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room = Global.Get<RoomManager>();
+            _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
         }
 
         public void Unbind()
         {
-            if (_server == null) return;
+            if (_room == null) return;
 
-            _server.UnregisterHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
-            _server = null;
+            _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room = null;
         }
 
         #endregion
 
         #region 接收消息
 
-        private void HandlePlayerInput(uint connectionId, Player_Input message)
+        private void HandlePlayerInput(uint playerId, Player_Input message)
         {
-            if (!Global.Get<RoomManager>().TryGetPlayerId(connectionId, out uint playerId)) return;
             _kernel.HandlePlayerInput(playerId, message);
         }
 

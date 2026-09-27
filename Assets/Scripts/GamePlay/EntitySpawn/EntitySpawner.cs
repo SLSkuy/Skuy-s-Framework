@@ -91,7 +91,7 @@ namespace GamePlay.EntitySpawn
             DoSpawnPlayer(entityId, EntityType.Player, playerId, position, rotation);
 
             // 广播实体生成
-            _serverHandler?.BroadcastSpawn(entityId, EntityType.Player, playerId, position, rotation);
+            _serverHandler?.BroadcastSpawnNotify(entityId, EntityType.Player, playerId, position, rotation);
         }
         
         private void DoSpawnPlayer(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
@@ -187,22 +187,7 @@ namespace GamePlay.EntitySpawn
 
         #endregion
 
-        #region 消息发送
-
-        private void SendSpawnSnapshot(uint connectionId)
-        {
-            foreach (var record in _allocator.GetLiveEntityIds())
-            {
-                _simulator.TryGet(record.EntityId, out _, out EntityCharacter character);
-                uint playerId = _allocator.GetPlayerId(record.EntityId);
-                _serverHandler.SendSpawn(connectionId, record.EntityId, record.EntityTypeId, playerId, 
-                    character.transform.position, character.transform.rotation);
-            }
-        }
-
-        #endregion
-
-        #region 网络消息处理
+        #region 客户端消息处理
 
         public void HandleSpawnNotify(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
         {
@@ -217,9 +202,18 @@ namespace GamePlay.EntitySpawn
             Despawn(entityId);
         }
 
-        public void HandleSpawnSyncRequest(uint connectionId)
+        #endregion
+
+        #region 服务端消息处理
+
+        public void HandleSpawnSyncRequest(uint playerId)
         {
-            SendSpawnSnapshot(connectionId);
+            foreach (var record in _allocator.GetLiveEntityIds())
+            {
+                _simulator.TryGet(record.EntityId, out EntityObjectIdentity identity, out EntityCharacter character);
+                _serverHandler.SendSpawnNotify(playerId, record.EntityId, record.EntityTypeId, identity.PlayerId,
+                    character.transform.position, character.transform.rotation);
+            }
         }
 
         #endregion

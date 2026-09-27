@@ -30,9 +30,9 @@ namespace GamePlay.Simulation
 
         #region 发送消息
 
-        public void SendPlayerInput(uint playerId, uint inputTick, in InputState input)
+        public void SendPlayerInput(uint inputTick, in InputState input)
         {
-            _client.Send(NetEvent.GAME_PLAYER_INPUT, ProtoUtils.ToPlayerInput(playerId, inputTick, input));
+            _client.Send(NetEvent.GAME_PLAYER_INPUT, ProtoUtils.ToPlayerInput(inputTick, input));
         }
 
         #endregion

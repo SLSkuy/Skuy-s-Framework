@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Events;
 using Framework;
+using Google.Protobuf;
 using NetSync;
 using Network;
 
 namespace GamePlay.Room
 {
     /// <summary>
-    /// 对局连接与名册：入座、开听、连接映射与解散。不加载场景，不编排玩法。
+    /// 对局名册：入座、开听与解散。已入座的消息按玩家号收发，连接只用于入座和断开。
     /// </summary>
     public sealed class RoomManager : SubSystemBase
     {
@@ -16,7 +18,9 @@ namespace GamePlay.Room
         private const uint LOCAL_CONNECTION_ID = 0;
 
         private readonly Dictionary<uint, Player> _playersById = new();
-        private Dictionary<uint, uint> _playerId; // connectionID -> playerID
+        private readonly Dictionary<Delegate, Delegate> _playerHandlers = new();
+        private Dictionary<uint, uint> _playerByConnection;
+        private Dictionary<uint, uint> _connectionByPlayer;
         private uint _nextPlayerId = 1; // 玩家ID从1开始分配
 
         private RoomServerHandler _serverHandler;
@@ -88,7 +92,7 @@ namespace GamePlay.Room
             }
 
             _nextPlayerId++;
-            _playerId[LOCAL_CONNECTION_ID] = playerId;
+            BindConnection(LOCAL_CONNECTION_ID, playerId);
             LocalPlayerId = playerId;
             IsInMatch = true;
             return true;
@@ -137,13 +141,10 @@ namespace GamePlay.Room
             _playersById.Keys.CopyTo(playerIds, 0);
             return playerIds;
         }
-
-        /// <summary>
-        /// 按连接取已入座的玩家。连接未入座时返回 false。
-        /// </summary>
-        public bool TryGetPlayerId(uint connectionId, out uint playerId)
+        
+        private bool TryGetPlayerId(uint connectionId, out uint playerId)
         {
-            return _playerId.TryGetValue(connectionId, out playerId);
+            return _playerByConnection.TryGetValue(connectionId, out playerId);
         }
         
         /// <summary>
@@ -153,14 +154,14 @@ namespace GamePlay.Room
         {
             if (!IsInMatch) return 0;
             if (connectionId != LOCAL_CONNECTION_ID && !AcceptsRemoteJoin) return 0;
-            if (_playerId.ContainsKey(connectionId)) return 0;
+            if (_playerByConnection.ContainsKey(connectionId)) return 0;
             if (_playersById.Count >= Capacity) return 0;
             
             uint playerId = _nextPlayerId;
             if (!TryAdmitPlayer(playerId)) return 0;
 
             _nextPlayerId++;
-            _playerId[connectionId] = playerId;
+            BindConnection(connectionId, playerId);
             
             return playerId;
         }
@@ -171,7 +172,7 @@ namespace GamePlay.Room
         public void Leave(uint connectionId)
         {
             if (!IsInMatch) return;
-            if (!_playerId.Remove(connectionId, out uint playerId)) return;
+            if (!UnbindConnection(connectionId, out uint playerId)) return;
 
             bool wasHost = playerId == HostPlayerId;
             if (wasHost)
@@ -237,7 +238,8 @@ namespace GamePlay.Room
             }
 
             _playersById.Clear();
-            _playerId.Clear();
+            _playerByConnection.Clear();
+            _connectionByPlayer.Clear();
             _nextPlayerId = 1;
             HostPlayerId = 0;
             LocalPlayerId = 0;
@@ -250,7 +252,8 @@ namespace GamePlay.Room
         public override void Init()
         {
             _nextPlayerId = 1;
-            _playerId = new Dictionary<uint, uint>();
+            _playerByConnection = new Dictionary<uint, uint>();
+            _connectionByPlayer = new Dictionary<uint, uint>();
             _serverHandler = new RoomServerHandler(this);
             _clientHandler = new RoomClientHandler(this);
         }
@@ -262,7 +265,7 @@ namespace GamePlay.Room
 
         #endregion
 
-        #region 网络消息处理
+        #region 客户端消息处理
         
         /// <summary>
         /// 菜单加入被接受后，接管已有客户端连接并写入名册。
@@ -299,20 +302,6 @@ namespace GamePlay.Room
         }
 
         /// <summary>
-        /// 按连接离座。未入座或对局已不存在时返回 0
-        /// </summary>
-        public uint HandlePlayerLeaveRequest(uint connectionId)
-        {
-            if (!IsInMatch || !_playerId.TryGetValue(connectionId, out uint playerId))
-            {
-                return 0;
-            }
-
-            Leave(connectionId);
-            return playerId;
-        }
-
-        /// <summary>
         /// 应用远端玩家离开通知
         /// </summary>
         public void HandlePlayerLeaveNotify(Room_Player_Leave_Notify notify)
@@ -334,5 +323,112 @@ namespace GamePlay.Room
         }
 
         #endregion
+
+        #region 服务端消息处理
+
+        /// <summary>
+        /// 按连接离座。未入座或对局已不存在时返回 0
+        /// </summary>
+        public uint HandlePlayerLeaveRequest(uint connectionId)
+        {
+            if (!IsInMatch || !TryGetPlayerId(connectionId, out uint playerId))
+            {
+                return 0;
+            }
+
+            Leave(connectionId);
+            return playerId;
+        }
+
+        #endregion
+
+        #region 网路注册重映射
+
+        /// <summary>
+        /// 登记已入座玩家的消息。回调收到的是玩家号；尚未入座的连接在这里被丢掉。
+        /// </summary>
+        public void RegisterPlayerHandler<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
+        {
+            if (_playerHandlers.ContainsKey(callback)) return;
+
+            PlayerHandler<T> handler = new(this, callback);
+            Action<uint, T> adapter = handler.Invoke;
+            _playerHandlers.Add(callback, adapter);
+            Global.Get<NetServer>().RegisterHandler(eventId, adapter);
+        }
+
+        /// <summary>
+        /// 拆除已入座玩家的消息。须传入登记时的同一回调。
+        /// </summary>
+        public void UnregisterPlayerHandler<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
+        {
+            if (!_playerHandlers.Remove(callback, out Delegate adapter)) return;
+
+            Global.Get<NetServer>().UnregisterHandler(eventId, (Action<uint, T>)adapter);
+        }
+
+        /// <summary>
+        /// 按玩家号可靠发送
+        /// </summary>
+        public void SendReliable(uint playerId, NetEvent eventId, IMessage message)
+        {
+            _netServer.SendReliable(_connectionByPlayer[playerId], eventId, message);
+        }
+
+        /// <summary>
+        /// 按玩家号发送
+        /// </summary>
+        public void Send(uint playerId, NetEvent eventId, IMessage message)
+        {
+            _netServer.Send(_connectionByPlayer[playerId], eventId, message);
+        }
+
+        public void BroadcastReliable(NetEvent eventId, IMessage message)
+        {
+            _netServer.BroadcastReliable(eventId, message);
+        }
+
+        public void Broadcast(NetEvent eventId, IMessage message)
+        {
+            _netServer.Broadcast(eventId, message);
+        }
+        
+        private void BindConnection(uint connectionId, uint playerId)
+        {
+            _playerByConnection[connectionId] = playerId;
+            _connectionByPlayer[playerId] = connectionId;
+        }
+
+        private bool UnbindConnection(uint connectionId, out uint playerId)
+        {
+            if (!_playerByConnection.Remove(connectionId, out playerId)) return false;
+
+            _connectionByPlayer.Remove(playerId);
+            return true;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 把连接上的消息转成玩家号再交给玩法回调。
+        /// </summary>
+        private sealed class PlayerHandler<T> where T : class, IMessage, new()
+        {
+            private readonly RoomManager _room;
+            private readonly Action<uint, T> _callback;
+
+            public PlayerHandler(RoomManager room, Action<uint, T> callback)
+            {
+                _room = room;
+                _callback = callback;
+            }
+
+            public void Invoke(uint connectionId, T message)
+            {
+                if (!_room.TryGetPlayerId(connectionId, out uint playerId)) return;
+
+                _callback(playerId, message);
+            }
+        }
     }
 }

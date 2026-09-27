@@ -85,7 +85,8 @@ Keep related fields together. Regions only where listed.
 5. Events — `#region 事件`
 6. Methods — public API first, private helpers after; do not region ordinary methods
 7. Lifecycle — `#region 生命周期` (MonoBehaviour) or `#region 子系统生命周期` (`SubSystemBase`)
-8. Handler-facing API last — `#region 网络消息处理` (`HandleXxx` the Handler calls)
+8. Client Handler-facing API last — `#region 客户端消息处理` (`HandleXxx` that `*ClientHandler` calls: client received the host's message)
+9. Server Handler-facing API after that — `#region 服务端消息处理` (`HandleXxx` that `*ServerHandler` calls: host received a client's message)
 
 Handler classes only, in this order:
 
@@ -100,14 +101,19 @@ Reference: `RoomClientHandler.cs`, `RoomServerHandler.cs`, `ProcedureHandler.cs`
 ## File Organization
 
 * One primary type per file; file name matches the type.
-* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`, `#region 网络消息处理`. Handler files may also use `#region 消息绑定`, `#region 发送消息`, `#region 接收消息`.
+* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`, `#region 客户端消息处理`, `#region 服务端消息处理`. Handler files may also use `#region 消息绑定`, `#region 发送消息`, `#region 接收消息`.
 * XML summaries on public types, public methods, and non-obvious `protected virtual` methods when useful.
 * Use `[Header]`, `[Tooltip]`, `[SerializeField]`, `[RequireComponent]`, `[DisallowMultipleComponent]` where they fit.
 * Match the surrounding file for `var` vs explicit types and expression-bodied members.
 
 ## Network Handler
 
-A feature that sends or receives gameplay network messages owns a dedicated Handler class. The Handler is the only place that binds events and talks to `NetClient` / `NetServer`. The feature owns business state and exposes `HandleXxx` methods the Handler calls. Those methods sit last in the feature file, inside `#region 网络消息处理`.
+A feature that sends or receives gameplay network messages owns a dedicated Handler class. The Handler is the only place that binds events and talks to `NetClient` / `NetServer`. The feature owns business state and exposes `HandleXxx` methods the Handler calls. Those methods sit last in the feature file, split by who received the message:
+
+- `#region 客户端消息处理` — the local client applied a message the host sent
+- `#region 服务端消息处理` — the host applied a message a client sent
+
+Omit the region that this type has no `HandleXxx` for. Do not keep a combined `#region 网络消息处理`.
 
 `NetClient` and `NetServer` keep transport-only handlers (ping, pong, heartbeat, debug chat). Gameplay modules do not.
 
@@ -164,7 +170,7 @@ _clientHandler.SendGameLeaveRequest();
 
 Handler `HandleXxx` methods are private adapters. They call the feature's matching `HandleXxx`, then may Send/Broadcast from the result. They do not become a second copy of the feature.
 
-Feature `HandleXxx` methods are the business API for that message. Put them last in the feature type, in `#region 网络消息处理`. Do not bind or send from that region.
+Feature `HandleXxx` methods are the business API for that message. Put them last in the feature type: client-received methods in `#region 客户端消息处理`, host-received methods in `#region 服务端消息处理`. Do not bind or send from those regions.
 
 ## Data Flow, Not Defensive Code
 

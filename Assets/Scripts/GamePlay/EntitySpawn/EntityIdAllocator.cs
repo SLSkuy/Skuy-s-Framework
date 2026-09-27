@@ -22,7 +22,8 @@ namespace GamePlay.EntitySpawn
 
         private uint _nextId = 1;
         private readonly Dictionary<uint, EntityIdRecord> _live = new();
-        private readonly Dictionary<uint, uint> _entityByPlayer = new();    // playerID -> entityID
+        private readonly Dictionary<uint, uint> _entityByPlayer = new();
+        private readonly Dictionary<uint, uint> _playerByEntity = new();
 
         /// <summary>
         /// 分配玩家实体对应的实体ID
@@ -34,7 +35,7 @@ namespace GamePlay.EntitySpawn
 
             EntityIdRecord record = new(entityId, entityTypeId);
             _live.Add(entityId, record);
-            _entityByPlayer.Add(playerId, entityId);
+            BindPlayer(playerId, entityId);
             return entityId;
         }
 
@@ -45,7 +46,7 @@ namespace GamePlay.EntitySpawn
         {
             EntityIdRecord record = new(entityId, entityTypeId);
             _live.Add(entityId, record);
-            _entityByPlayer.Add(playerId, entityId);
+            BindPlayer(playerId, entityId);
             if (entityId >= _nextId) _nextId = entityId + 1;
         }
 
@@ -71,22 +72,17 @@ namespace GamePlay.EntitySpawn
         }
 
         /// <summary>
-        /// 通过实体号取玩家号。非玩家实体返回 0。
+        /// 通过实体号取主人玩家号。非玩家实体返回 0。
         /// </summary>
         public uint GetPlayerId(uint entityId)
         {
-            foreach (KeyValuePair<uint, uint> pair in _entityByPlayer)
-            {
-                if (pair.Value == entityId) return pair.Key;
-            }
-
-            return 0;
+            return _playerByEntity.TryGetValue(entityId, out uint playerId) ? playerId : 0;
         }
 
         public void RemoveByPlayer(uint playerId)
         {
             uint entityId = _entityByPlayer[playerId];
-            _entityByPlayer.Remove(playerId);
+            UnbindPlayer(entityId);
             _live.Remove(entityId);
         }
 
@@ -95,12 +91,8 @@ namespace GamePlay.EntitySpawn
         /// </summary>
         public void Remove(uint entityId)
         {
+            UnbindPlayer(entityId);
             _live.Remove(entityId);
-            uint playerId = GetPlayerId(entityId);
-            if (playerId != 0)
-            {
-                _entityByPlayer.Remove(playerId);
-            }
         }
 
         /// <summary>
@@ -112,5 +104,22 @@ namespace GamePlay.EntitySpawn
             _live.Values.CopyTo(records, 0);
             return records;
         }
+
+        #region 名册映射处理
+
+        private void BindPlayer(uint playerId, uint entityId)
+        {
+            _entityByPlayer.Add(playerId, entityId);
+            _playerByEntity.Add(entityId, playerId);
+        }
+
+        private void UnbindPlayer(uint entityId)
+        {
+            if (!_playerByEntity.Remove(entityId, out uint playerId)) return;
+
+            _entityByPlayer.Remove(playerId);
+        }
+
+        #endregion
     }
 }

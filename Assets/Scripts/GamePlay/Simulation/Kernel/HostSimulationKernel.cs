@@ -91,11 +91,10 @@ namespace GamePlay.Simulation
 
         #endregion
 
-        #region 网络消息处理
+        #region 服务端消息处理
 
         public void HandlePlayerInput(uint playerId, Player_Input input)
         {
-            if (input.PlayerId != playerId) return;
             if (!_remoteInputs.TryGetValue(playerId, out AuthorityInputProvider provider)) return;
 
             provider.Enqueue(input.InputTick, ProtoUtils.ToInputState(input));
