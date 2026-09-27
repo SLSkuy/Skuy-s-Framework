@@ -6,7 +6,7 @@ namespace Framework
     /// <summary>
     /// 计时器
     /// </summary>
-    public class Timer
+    public class Timer : IPoolable
     {
         private float _duration;
         private float _elapsedTime;
@@ -110,6 +110,14 @@ namespace Framework
             _elapsedTime = 0f;
             _isRunning = false;
             _isPaused = false;
+        }
+
+        /// <summary>
+        /// 还池时清掉本次计时留下的回调和进度。
+        /// </summary>
+        void IPoolable.Reset()
+        {
+            Dispose();
         }
     }
 }

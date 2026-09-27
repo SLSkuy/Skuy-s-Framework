@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 场景角色实体：装配模块与状态机，并托管固定 Tick 模拟
     /// </summary>
-    public class EntityCharacter : MonoBehaviour
+    public class EntityCharacter : MonoBehaviour, IPoolable
     {
         [SerializeField] private EntityConfig config;
         private AssetHandle _assetHandle;
@@ -157,5 +157,29 @@ namespace GamePlay.EntitySystem
         }
 
         #endregion
+        
+        
+        /// <summary>
+        /// 还池时清掉上一场的运动、视角和状态。
+        /// </summary>
+        void IPoolable.Reset()
+        {
+            if (!_isInitialized) return;
+
+            _context.LastMoveInput = Vector2.zero;
+            _context.LastAimInput = Vector2.zero;
+            _context.CurrentTick = 0;
+            _context.RunToggleRequest = false;
+            _context.JumpRequest = false;
+            _context.IsSprinting = false;
+            _context.IsRunning = false;
+            _context.IsFocus = false;
+
+            _movementModule.ResetMotion();
+            _movementModule.Restore(Quaternion.identity, Vector3.zero);
+            _viewModule.Restore(Quaternion.identity, Vector3.zero);
+            _context.StateMachine.ChangeState(EntityState.IDLE);
+            _visualPresentation.SnapToAuthority();
+        }
     }
 }

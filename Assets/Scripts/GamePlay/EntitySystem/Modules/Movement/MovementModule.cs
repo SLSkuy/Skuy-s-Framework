@@ -44,7 +44,7 @@ namespace GamePlay.EntitySystem
             _mesh = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{MESH_CHILD_NAME}");
             _controller = GetComponent<CharacterController>();
         }
-
+        
         /// <summary>
         /// 直接设置实体位置，用于权威快照或插值快照应用
         /// </summary>
@@ -254,5 +254,21 @@ namespace GamePlay.EntitySystem
         }
 
         #endregion
+        
+        /// <summary>
+        /// 清掉上一场留下的速度、冲刺和跳跃计数。
+        /// </summary>
+        public void ResetMotion()
+        {
+            _lastMoveDir = Vector3.zero;
+            _dashDir = Vector3.zero;
+            _locomotionSpeed = _config.walkSpeed;
+            _verticalVelocity = 0f;
+            _dashAccumulator = 0f;
+            _jumpCount = 0;
+            _isDashing = false;
+            LinearVelocity = Vector3.zero;
+            AngularVelocity = Vector3.zero;
+        }
     }
 }

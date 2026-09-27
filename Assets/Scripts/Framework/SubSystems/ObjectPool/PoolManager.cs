@@ -16,7 +16,7 @@ namespace Framework
         #endregion
 
         public void RegisterPool<T>(Func<T> createFunc, Action<T> onGet = null, Action<T> onRelease = null,
-            Action<T> onDestroy = null, int defaultCapacity = 0, int maxCount = 32) where T : class
+            Action<T> onDestroy = null, int defaultCapacity = 0, int maxCount = 32) where T : class, IPoolable
         {
             Type type = typeof(T);
 
@@ -30,7 +30,7 @@ namespace Framework
             _purePools[type] = pool;
         }
 
-        public T Get<T>() where T : class
+        public T Get<T>() where T : class, IPoolable
         {
             Type type = typeof(T);
 
@@ -43,7 +43,7 @@ namespace Framework
             return ((ObjectPool<T>)poolObj).Get();
         }
 
-        public void Release<T>(T obj) where T : class
+        public void Release<T>(T obj) where T : class, IPoolable
         {
             if (obj == null) return;
 
@@ -58,7 +58,7 @@ namespace Framework
             ((ObjectPool<T>)poolObj).Release(obj);
         }
 
-        public void ClearPool<T>() where T : class
+        public void ClearPool<T>() where T : class, IPoolable
         {
             Type type = typeof(T);
 

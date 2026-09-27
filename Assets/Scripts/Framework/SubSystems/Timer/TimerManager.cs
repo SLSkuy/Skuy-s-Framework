@@ -70,7 +70,7 @@ namespace Framework
         
         public override void Init()
         {
-            Global.Get<PoolManager>().RegisterPool<Timer>(() => new Timer(), onRelease: timer => timer.Dispose(),
+            Global.Get<PoolManager>().RegisterPool<Timer>(() => new Timer(),
                 onDestroy: timer => timer.Dispose(), defaultCapacity: 4);
         }
         

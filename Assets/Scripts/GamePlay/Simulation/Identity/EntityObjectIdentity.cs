@@ -1,4 +1,5 @@
 using System;
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.Simulation
@@ -7,7 +8,7 @@ namespace GamePlay.Simulation
     /// 对象身份识别器，决定如何进行模拟
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class EntityObjectIdentity : MonoBehaviour, IEntityObjectIdentity
+    public sealed class EntityObjectIdentity : MonoBehaviour, IEntityObjectIdentity, IPoolable
     {
         [SerializeField] private uint entityId;
         [SerializeField] private uint playerId;
@@ -39,6 +40,16 @@ namespace GamePlay.Simulation
             entityId = newEntityId;
             playerId = newPlayerId;
             role = newRole;
+        }
+
+        /// <summary>
+        /// 还池时解开本次实体号，下一次借出可以重新绑定。
+        /// </summary>
+        void IPoolable.Reset()
+        {
+            entityId = 0;
+            playerId = 0;
+            role = EntityObjectRole.LocalPlay;
         }
     }
 }

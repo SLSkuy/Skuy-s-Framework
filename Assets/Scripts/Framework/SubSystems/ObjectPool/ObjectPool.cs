@@ -17,7 +17,7 @@ namespace Framework
     /// <para>通过 Func 创建对象，通过 Action 控制取出/回收逻辑</para>
     /// </summary>
     /// <typeparam name="T">对象类型</typeparam>
-    public class ObjectPool<T> : IObjectPool where T : class
+    public class ObjectPool<T> : IObjectPool where T : class, IPoolable
     {
         /// <summary>
         /// 对象队列
@@ -103,6 +103,7 @@ namespace Framework
                 return;
             }
 
+            obj.Reset();
             _onRelease?.Invoke(obj);
 
             _pool.Enqueue(obj);

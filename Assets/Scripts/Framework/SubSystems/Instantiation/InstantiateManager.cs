@@ -111,7 +111,7 @@ namespace Framework
         /// </summary>
         public GameObject Instantiate(string location, InstantiateOptions options = default)
         {
-            return InstantiateFromLocation(location, options, instance => instance.transform.SetParent(null));
+            return InstantiateFromLocation(location, options);
         }
 
         /// <summary>
@@ -164,12 +164,14 @@ namespace Framework
                 return;
             }
 
-            if (!_lent.Remove(instance, out SpawnEntry entry))
+            if (!_lent.TryGetValue(instance, out SpawnEntry entry))
             {
                 Debug.LogError($"[{nameof(InstantiateManager)}] Release ignored: instance was not created by the instance facade.");
                 return;
             }
 
+            ResetPooledInstance(instance);
+            _lent.Remove(instance);
             instance.SetActive(false);
             instance.transform.SetParent(_poolRoot);
             entry.Idle.Enqueue(instance);
@@ -199,11 +201,11 @@ namespace Framework
         /// <summary>
         /// 同步执行预制体实例化。
         /// </summary>
-        private GameObject InstantiateFromLocation(string location, InstantiateOptions options, Action<GameObject> activate)
+        private GameObject InstantiateFromLocation(string location, InstantiateOptions options)
         {
             if (!ValidateLocation(location)) return null;
 
-            GameObject pooled = RentFromPool(location, activate);
+            GameObject pooled = RentFromPool(location, options);
             if (pooled) return pooled;
 
             SpawnEntry entry = GetOrCreateEntry(location);
@@ -225,7 +227,7 @@ namespace Framework
         {
             if (!ValidateLocation(location)) return Task.FromResult<GameObject>(null);
 
-            GameObject pooled = RentFromPool(location, instance => instance.transform.SetParent(null));
+            GameObject pooled = RentFromPool(location, options);
             if (pooled) return Task.FromResult(pooled);
 
             SpawnEntry entry = GetOrCreateEntry(location);
@@ -303,7 +305,7 @@ namespace Framework
         /// <summary>
         /// 尝试从对象池借出一个实例。
         /// </summary>
-        private GameObject RentFromPool(string location, Action<GameObject> activate)
+        private GameObject RentFromPool(string location, InstantiateOptions options)
         {
             if (!_entries.TryGetValue(location, out SpawnEntry entry)) return null;
 
@@ -314,8 +316,8 @@ namespace Framework
                 if (!instance)
                     continue;
 
-                activate(instance);
-                instance.SetActive(true);
+                ApplyOptions(instance, options);
+                ResetPooledInstance(instance);
 
                 entry.LentCount++;
                 _lent[instance] = entry;
@@ -328,12 +330,49 @@ namespace Framework
         }
 
         /// <summary>
+        /// 借出时套用与新建实例相同的父节点、位姿和激活状态。
+        /// </summary>
+        private static void ApplyOptions(GameObject instance, InstantiateOptions options)
+        {
+            if (options.Parent)
+                instance.transform.SetParent(options.Parent, options.InWorldSpace);
+            else
+                instance.transform.SetParent(null);
+
+            instance.transform.SetPositionAndRotation(options.Position, options.Rotation);
+            instance.SetActive(options.IsActive);
+        }
+
+        /// <summary>
+        /// 还池或再次借出前重置。没有实现 <see cref="IPoolable"/> 的实例不能进池。
+        /// </summary>
+        private static void ResetPooledInstance(GameObject instance)
+        {
+            IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
+            if (poolables.Length == 0)
+            {
+                throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
+            }
+
+            foreach (var t in poolables)
+            {
+                t.Reset();
+            }
+        }
+
+        /// <summary>
         /// 从资源句柄实例化 GameObject，并登记为借出实例。
         /// </summary>
         private GameObject InstantiateFromHandle(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
         {
             GameObject instance = handle.InstantiateSync(options);
             if (!instance) return null;
+
+            if (instance.GetComponentInChildren<IPoolable>(true) == null)
+            {
+                DestroyInstance(instance);
+                throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
+            }
 
             entry.LentCount++;
             _lent[instance] = entry;
