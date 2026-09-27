@@ -351,8 +351,12 @@ namespace GamePlay.Room
         {
             if (_playerHandlers.ContainsKey(callback)) return;
 
-            PlayerHandler<T> handler = new(this, callback);
-            Action<uint, T> adapter = handler.Invoke;
+            Action<uint, T> adapter = (connectionId, message) =>
+            {
+                if (!TryGetPlayerId(connectionId, out uint playerId)) return;
+
+                callback(playerId, message);
+            };
             _playerHandlers.Add(callback, adapter);
             Global.Get<NetServer>().RegisterHandler(eventId, adapter);
         }
@@ -408,27 +412,5 @@ namespace GamePlay.Room
         }
 
         #endregion
-
-        /// <summary>
-        /// 把连接上的消息转成玩家号再交给玩法回调。
-        /// </summary>
-        private sealed class PlayerHandler<T> where T : class, IMessage, new()
-        {
-            private readonly RoomManager _room;
-            private readonly Action<uint, T> _callback;
-
-            public PlayerHandler(RoomManager room, Action<uint, T> callback)
-            {
-                _room = room;
-                _callback = callback;
-            }
-
-            public void Invoke(uint connectionId, T message)
-            {
-                if (!_room.TryGetPlayerId(connectionId, out uint playerId)) return;
-
-                _callback(playerId, message);
-            }
-        }
     }
 }

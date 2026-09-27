@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Events;
 using Google.Protobuf;
 using Utils;
@@ -37,7 +36,6 @@ namespace Network
         public void Register<T>(NetEvent eventId, Action<T> callback) where T : class, IMessage, new()
         {
             if (callback == null) return;
-            AssertNotAnonymous(callback);
             if (!Add(eventId, callback, server: false, (_, msg) => callback((T)msg))) return;
             NetUtils.RegisterParser<T>(eventId);
         }
@@ -48,7 +46,6 @@ namespace Network
         public void RegisterServer<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
         {
             if (callback == null) return;
-            AssertNotAnonymous(callback);
             if (!Add(eventId, callback, server: true, (id, msg) => callback(id, (T)msg))) return;
             NetUtils.RegisterParser<T>(eventId);
         }
@@ -115,17 +112,8 @@ namespace Network
             return -1;
         }
 
-        private static void AssertNotAnonymous(Delegate callback)
-        {
-#if UNITY_EDITOR
-            UnityEngine.Debug.Assert(
-                callback.Method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), inherit: false).Length == 0,
-                "Adding anonymous delegates as network callbacks is not supported (you wouldn't be able to unregister them later).");
-#endif
-        }
-
         /// <summary>
-        /// 槽位：Callback 用于按方法组注销；Invoke 在登记时闭包具体 T，分发时直接调用。
+        /// 槽位：Callback 按登记时的同一委托实例注销；Invoke 在登记时闭包具体 T，分发时直接调用。
         /// </summary>
         private readonly struct Binding
         {
