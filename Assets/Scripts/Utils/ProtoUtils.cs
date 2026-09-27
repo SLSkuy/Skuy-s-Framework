@@ -78,8 +78,8 @@ namespace Utils
             };
         }
 
-        public static Player_Snapshot ToPlayerSnapshot(in EntityRollbackState state,
-            uint entityId, uint lastProcessedInputTick)
+        public static Player_Snapshot ToPlayerSnapshot(uint entityId, uint lastProcessedInputTick,
+            in EntityRollbackState state)
         {
             MovementRollbackState movement = state.movementState;
             return new Player_Snapshot

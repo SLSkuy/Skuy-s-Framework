@@ -7,11 +7,12 @@ using Utils;
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 主机权威模拟核：持有 Simulator、时钟，以及远端玩家的输入来源。
+    /// 主机权威模拟核：持有 Simulator，以及远端玩家的输入来源。
     /// </summary>
     public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
         private readonly Dictionary<uint, AuthorityInputProvider> _remoteInputs = new();
+        private readonly List<PlayerProcessedSnapshot> _snapshotBuffer = new();
         private SimulationServerHandler _serverHandler;
         private Simulator _simulator;
         private RoomManager _room;
@@ -29,6 +30,9 @@ namespace GamePlay.Simulation
             _room = Global.Get<RoomManager>();
             if (_room.AcceptsRemoteJoin)
             {
+                _simulator.TickSnapshot += OnSnapshotTick;
+                _simulator.StartSnapshotClock();
+                
                 _serverHandler = new SimulationServerHandler(this);
                 _serverHandler.Bind();
             }
@@ -44,6 +48,9 @@ namespace GamePlay.Simulation
 
             if (_serverHandler != null)
             {
+                _simulator.TickSnapshot -= OnSnapshotTick;
+                _simulator.StopSnapshotClock();
+                
                 _serverHandler.Unbind();
                 _serverHandler = null;
             }
@@ -93,9 +100,18 @@ namespace GamePlay.Simulation
 
         #region 事件回调
 
-        public void OnCaptureWorldSnapshot()
+        /// <summary>
+        /// 采集世界状态，广播给所有客户端快照
+        /// </summary>
+        private void OnSnapshotTick(uint snapshotTick, float deltaTime)
         {
-            // TODO: 捕获模拟核世界状态
+            _simulator.CaptureEntities(_snapshotBuffer);
+            for (int i = 0; i < _snapshotBuffer.Count; i++)
+            {
+                _snapshotBuffer[i] = _snapshotBuffer[i];
+            }
+
+            _serverHandler.BroadcastWorldSnapshot(snapshotTick, _snapshotBuffer);
         }
 
         #endregion

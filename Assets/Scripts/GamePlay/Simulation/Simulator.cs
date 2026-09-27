@@ -11,10 +11,13 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class Simulator
     {
-        private AssetHandle _configHandle;
-        private TickSystem _tickSystem;
-        private EntityRegistry _entityRegistry;
         private readonly Dictionary<uint, EntityCommand> _tickCommands = new();
+        private EntityRegistry _entityRegistry;
+        private TickSystem _snapshotTickSystem;
+        private TickSystem _tickSystem;
+        
+        private AssetHandle _configHandle;
+        
         private int _maxBufferedInputs;
         private int _maxFutureInputTicks;
 
@@ -40,6 +43,11 @@ namespace GamePlay.Simulation
         /// 本拍权威状态采样之后。
         /// </summary>
         public event Action<uint, float> TickCaptured;
+
+        /// <summary>
+        /// 快照节拍。与模拟节拍分开累计，开了快照时钟后才触发。
+        /// </summary>
+        public event Action<uint, float> TickSnapshot;
         #endregion
 
         #region Tick管理
@@ -55,6 +63,17 @@ namespace GamePlay.Simulation
             _tickSystem?.Stop();
         }
 
+        public void StartSnapshotClock()
+        {
+            if (_snapshotTickSystem.IsRunning) return;
+            _snapshotTickSystem.Start();
+        }
+
+        public void StopSnapshotClock()
+        {
+            _snapshotTickSystem?.Stop();
+        }
+
         private void HandleTick(uint tick, float deltaTime)
         {
             PrepareSimulationTick();
@@ -63,6 +82,11 @@ namespace GamePlay.Simulation
             TickBusiness?.Invoke(tick, deltaTime);
             CaptureAuthorityTick();
             TickCaptured?.Invoke(tick, deltaTime);
+        }
+
+        private void HandleSnapshotTick(uint tick, float deltaTime)
+        {
+            TickSnapshot?.Invoke(tick, deltaTime);
         }
 
         /// <summary>
@@ -213,6 +237,26 @@ namespace GamePlay.Simulation
             return true;
         }
 
+        /// <summary>
+        /// 采样当前已初始化实体的回滚状态。
+        /// </summary>
+        public void CaptureEntities(List<PlayerProcessedSnapshot> samples)
+        {
+            samples.Clear();
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                RegisteredEntity entity = pair.Value;
+                if (!entity.Character || !entity.Character.IsInitialized) continue;
+
+                samples.Add(new PlayerProcessedSnapshot
+                {
+                    entityId = pair.Key,
+                    playerId = entity.Identity.PlayerId,
+                    state = entity.Character.CaptureRollbackState(),
+                });
+            }
+        }
+
         #endregion
 
         #region 生命周期
@@ -223,9 +267,14 @@ namespace GamePlay.Simulation
             SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
             _maxBufferedInputs = config.maxBufferedInputs;
             _maxFutureInputTicks = config.maxFutureInputTicks;
+            
             _entityRegistry = new EntityRegistry();
+            
             _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
             _tickSystem.Tick += HandleTick;
+            
+            _snapshotTickSystem = new TickSystem(config.snapshotTickRate, config.maxSimulationTicksPerFrame);
+            _snapshotTickSystem.Tick += HandleSnapshotTick;
         }
 
         public void Update(float deltaTime)
@@ -233,9 +282,8 @@ namespace GamePlay.Simulation
             if (!IsRunning) return;
             
             _tickSystem.Update(deltaTime);
-            
-            // 处理步进插值
             PresentVisualPoses();
+            _snapshotTickSystem.Update(deltaTime);
         }
 
         public void Destroy()
@@ -250,11 +298,19 @@ namespace GamePlay.Simulation
                 _tickSystem = null;
             }
 
+            if (_snapshotTickSystem != null)
+            {
+                _snapshotTickSystem.Tick -= HandleSnapshotTick;
+                _snapshotTickSystem.Stop();
+                _snapshotTickSystem = null;
+            }
+            
+            _entityRegistry?.Clear();
             _tickCommands.Clear();
             TickPlayerInput = null;
             TickBusiness = null;
             TickCaptured = null;
-            _entityRegistry?.Clear();
+            TickSnapshot = null;
         }
 
         #endregion
