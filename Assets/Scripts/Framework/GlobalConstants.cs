@@ -1,4 +1,4 @@
-﻿namespace Core
+﻿namespace Framework
 {
     /// <summary>
     /// 全局游戏常量

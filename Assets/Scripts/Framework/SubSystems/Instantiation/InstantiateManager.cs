@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -330,14 +331,17 @@ namespace Framework
         }
 
         /// <summary>
-        /// 借出时套用与新建实例相同的父节点、位姿和激活状态。
+        /// 借出时套用与新建实例相同的父节点、位姿和激活状态。无父节点时放入当前激活场景。
         /// </summary>
         private static void ApplyOptions(GameObject instance, InstantiateOptions options)
         {
             if (options.Parent)
                 instance.transform.SetParent(options.Parent, options.InWorldSpace);
             else
+            {
                 instance.transform.SetParent(null);
+                SceneManager.MoveGameObjectToScene(instance, SceneManager.GetActiveScene());
+            }
 
             instance.transform.SetPositionAndRotation(options.Position, options.Rotation);
             instance.SetActive(options.IsActive);
