@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using GamePlay.EntitySystem;
 
-namespace GamePlay.EntitySystem
+namespace GamePlay.Simulation.LocalInput
 {
     /// <summary>
     /// 客户端预测命令缓存

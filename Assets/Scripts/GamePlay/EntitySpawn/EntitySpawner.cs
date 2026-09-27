@@ -102,6 +102,10 @@ namespace GamePlay.EntitySpawn
             identity.Init(entityId, playerId, ResolveRole(playerId));
             character.Init();
             
+            // 初始化实体角色的移动快照配置
+            bool isReplica = _room.SessionRole != SessionRole.Host && playerId != _room.LocalPlayerId;
+            character.Context.Movement.SetReplicaMode(isReplica);
+            
             _simulator.Register(identity, character);
             
             if (playerId == _room.LocalPlayerId)

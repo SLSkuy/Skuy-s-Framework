@@ -1,6 +1,6 @@
 using System;
 
-namespace GamePlay.EntitySystem
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 按客户端输入 Tick 索引的环形命令缓冲；未命中时返回默认空命令
