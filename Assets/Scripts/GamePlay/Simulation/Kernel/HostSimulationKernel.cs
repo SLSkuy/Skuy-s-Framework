@@ -91,6 +91,15 @@ namespace GamePlay.Simulation
 
         #endregion
 
+        #region 事件回调
+
+        public void OnCaptureWorldSnapshot()
+        {
+            // TODO: 捕获模拟核世界状态
+        }
+
+        #endregion
+
         #region 服务端消息处理
 
         public void HandlePlayerInput(uint playerId, Player_Input input)

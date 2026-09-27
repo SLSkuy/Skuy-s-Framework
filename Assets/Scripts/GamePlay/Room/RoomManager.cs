@@ -15,7 +15,7 @@ namespace GamePlay.Room
     {
         private const int DEFAULT_CAPACITY = 4;
         private const int LOCAL_CAPACITY = 1;
-        private const uint LOCAL_CONNECTION_ID = 0;
+        private const uint LOCAL_CONNECTION_ID = 0; // 房主没有连接的标识，不是远端客户端
 
         private readonly Dictionary<uint, Player> _playersById = new();
         private readonly Dictionary<Delegate, Delegate> _playerHandlers = new();
@@ -115,6 +115,7 @@ namespace GamePlay.Room
                 return;
             }
 
+            _netServer.StopServer();
             _serverHandler.Unbind();
             _netServer = null;
         }
@@ -131,6 +132,7 @@ namespace GamePlay.Room
                 _clientHandler.SendGameLeaveRequest();
             }
 
+            _netClient.StopClient();
             _clientHandler.Unbind();
             _netClient = null;
         }
@@ -148,12 +150,12 @@ namespace GamePlay.Room
         }
         
         /// <summary>
-        /// 将连接加入当前对局。
+        /// 将远端连接加入当前对局。connectionId 为 0 表示房主没有连接，不能入座。
         /// </summary>
         public uint Admit(uint connectionId)
         {
             if (!IsInMatch) return 0;
-            if (connectionId != LOCAL_CONNECTION_ID && !AcceptsRemoteJoin) return 0;
+            if (connectionId == LOCAL_CONNECTION_ID || !AcceptsRemoteJoin) return 0;
             if (_playerByConnection.ContainsKey(connectionId)) return 0;
             if (_playersById.Count >= Capacity) return 0;
             
@@ -167,19 +169,18 @@ namespace GamePlay.Room
         }
 
         /// <summary>
-        /// 连接离开。房主离开则解散对局。
+        /// 连接离开。connectionId 为 0 表示房主没有连接，结束整场对局。
         /// </summary>
         public void Leave(uint connectionId)
         {
             if (!IsInMatch) return;
-            if (!UnbindConnection(connectionId, out uint playerId)) return;
-
-            bool wasHost = playerId == HostPlayerId;
-            if (wasHost)
+            if (connectionId == LOCAL_CONNECTION_ID)
             {
                 Dissolve();
                 return;
             }
+
+            if (!UnbindConnection(connectionId, out uint playerId)) return;
 
             RemovePlayer(playerId);
             PlayerRemoved?.Invoke(playerId);

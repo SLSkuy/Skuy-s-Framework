@@ -49,6 +49,8 @@ private int _clientId;
 
 * **Public / `protected virtual`:** `PascalCase` (`Move`, `Init`, `Tick`, `CheckStateChange`).
 * **Unity lifecycle:** keep Unity names (`Awake`, `Update`, `OnDestroy`, …).
+* **Event callbacks:** `On` prefix (`OnSessionEnded`, `OnPlayerInputTick`). Subscribe with `eventName += OnXxx`.
+* **Network message callbacks:** `Handle` prefix (`HandlePlayerLeaveNotify`, `HandleSpawnNotify`). Handler adapters and feature methods in `#region 客户端消息处理` / `#region 服务端消息处理` only. Do not use `Handle` for a C# event subscriber, or `On` for a wire-message method.
 * **Framework hooks:** only `_Init()` and `_Destroy()`; do not add other public underscore APIs.
 * **Async:** `Async` suffix (`LoadResourceAsync`).
 * **Parameter wrap:** wrap at line width, several parameters per line, continuation indent 4 spaces. Do not put one parameter per line.
@@ -171,6 +173,8 @@ _clientHandler.SendGameLeaveRequest();
 Handler `HandleXxx` methods are private adapters. They call the feature's matching `HandleXxx`, then may Send/Broadcast from the result. They do not become a second copy of the feature.
 
 Feature `HandleXxx` methods are the business API for that message. Put them last in the feature type: client-received methods in `#region 客户端消息处理`, host-received methods in `#region 服务端消息处理`. Do not bind or send from those regions.
+
+C# events (`SessionEnded`, `TickPlayerInput`, transport `OnConnected`, …) use `OnXxx` subscribers, not `HandleXxx`.
 
 ## Data Flow, Not Defensive Code
 

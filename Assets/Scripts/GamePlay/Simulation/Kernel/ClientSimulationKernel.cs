@@ -26,7 +26,7 @@ namespace GamePlay.Simulation
             _clientHandler = new SimulationClientHandler();
             _clientHandler.Bind();
             
-            _simulator.TickPlayerInput += HandlePlayerInputTick;
+            _simulator.TickPlayerInput += OnPlayerInputTick;
             _simulator.StartClock();
             
             IsSessionRunning = true;
@@ -37,7 +37,7 @@ namespace GamePlay.Simulation
         {
             if (!IsSessionRunning) return;
 
-            _simulator.TickPlayerInput -= HandlePlayerInputTick;
+            _simulator.TickPlayerInput -= OnPlayerInputTick;
             _simulator.StopClock();
             
             _clientHandler.Unbind();
@@ -70,7 +70,7 @@ namespace GamePlay.Simulation
 
         #region 回调处理
         
-        private void HandlePlayerInputTick(uint inputTick, float deltaTime)
+        private void OnPlayerInputTick(uint inputTick, float deltaTime)
         {
             InputState input = _localInputProvider.GetInputState();
             _clientHandler.SendPlayerInput(inputTick, input);

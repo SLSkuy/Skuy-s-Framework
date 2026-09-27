@@ -37,7 +37,7 @@ namespace GamePlay.Simulation
             }
 
             entityId = newEntityId;
-            this.playerId = newPlayerId;
+            playerId = newPlayerId;
             role = newRole;
         }
     }
