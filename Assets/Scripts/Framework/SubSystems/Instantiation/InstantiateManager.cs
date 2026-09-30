@@ -45,6 +45,11 @@ namespace Framework
             /// 资源完全空闲后的累计时间
             /// </summary>
             public float IdleElapsed;
+
+            /// <summary>
+            /// 该资源位置第一次建池时确定的分组
+            /// </summary>
+            public ResGroup Group;
         }
 
         /// <summary>
@@ -53,12 +58,14 @@ namespace Framework
         private sealed class PendingInstantiate
         {
             public readonly string Location;
+            public readonly ResGroup Group;
             public readonly InstantiateOptions Options;
             public readonly TaskCompletionSource<GameObject> Completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
             
-            public PendingInstantiate(string location, InstantiateOptions options)
+            public PendingInstantiate(string location, ResGroup group, InstantiateOptions options)
             {
                 Location = location;
+                Group = group;
                 Options = options;
             }
         }
@@ -69,6 +76,7 @@ namespace Framework
 
         private ResourceManager _resourceManager;
         private Transform _poolRoot;
+        private Transform[] _groupRoots;
 
         /// <summary>
         /// 按资源位置管理资源句柄、对象池以及相关状态
@@ -107,20 +115,37 @@ namespace Framework
 
         #region 公共接口
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 按资源位置同步生成实例。
+        /// 按资源位置同步生成实例，分组为 <see cref="ResGroup.Temp"/>。
         /// </summary>
         public GameObject Instantiate(string location, InstantiateOptions options = default)
         {
-            return InstantiateFromLocation(location, options);
+            return Instantiate(location, ResGroup.Temp, options);
         }
 
         /// <summary>
-        /// 按资源位置异步生成实例。
+        /// 按资源位置和分组同步生成实例。同一资源名第一次建池时确定分组。
+        /// </summary>
+        public GameObject Instantiate(string location, ResGroup group, InstantiateOptions options = default)
+        {
+            return InstantiateFromLocation(location, group, options);
+        }
+
+        /// <summary>
+        /// 按资源位置异步生成实例，分组为 <see cref="ResGroup.Temp"/>。
         /// </summary>
         public Task<GameObject> InstantiateAsync(string location, InstantiateOptions options = default)
         {
-            return InstantiateAsyncFromLocation(location, options);
+            return InstantiateAsync(location, ResGroup.Temp, options);
+        }
+
+        /// <summary>
+        /// 按资源位置和分组异步生成实例。同一资源名第一次建池时确定分组。
+        /// </summary>
+        public Task<GameObject> InstantiateAsync(string location, ResGroup group, InstantiateOptions options = default)
+        {
+            return InstantiateAsyncFromLocation(location, group, options);
         }
 
         /// <summary>
@@ -147,6 +172,7 @@ namespace Framework
             return instance;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 回收由本管理器生成的实例。
         /// 池化实例还池；不进池实例销毁。外源、空引用或重复 Release 会记录错误并忽略。
@@ -174,7 +200,7 @@ namespace Framework
             ResetPooledInstance(instance);
             _lent.Remove(instance);
             instance.SetActive(false);
-            instance.transform.SetParent(_poolRoot);
+            instance.transform.SetParent(_groupRoots[(int)entry.Group]);
             entry.Idle.Enqueue(instance);
             entry.LentCount--;
 
@@ -185,7 +211,7 @@ namespace Framework
         /// <summary>
         /// 销毁全部借出与空闲实例，并释放所有资源句柄
         /// </summary>
-        public void Clear()
+        public void ClearAll()
         {
             ClearPending();
             ClearLentInstances();
@@ -199,20 +225,24 @@ namespace Framework
 
         #region 同步实例化
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 同步执行预制体实例化。
         /// </summary>
-        private GameObject InstantiateFromLocation(string location, InstantiateOptions options)
+        private GameObject InstantiateFromLocation(string location, ResGroup group, InstantiateOptions options)
         {
             if (!ValidateLocation(location)) return null;
+            if (!TryGetOrCreateEntry(location, group, out SpawnEntry entry)) return null;
 
-            GameObject pooled = RentFromPool(location, options);
+            GameObject pooled = RentFromPool(entry, options);
             if (pooled) return pooled;
 
-            SpawnEntry entry = GetOrCreateEntry(location);
             AssetHandle handle = GetOrLoadHandle(location, entry, false);
-
-            if (handle == null) return null;
+            if (handle == null)
+            {
+                RemoveUnusedEntry(location, entry);
+                return null;
+            }
 
             return InstantiateFromHandle(entry, handle, options);
         }
@@ -224,15 +254,16 @@ namespace Framework
         /// <summary>
         /// 异步执行预制体实例化。
         /// </summary>
-        private Task<GameObject> InstantiateAsyncFromLocation(string location, InstantiateOptions options)
+        private Task<GameObject> InstantiateAsyncFromLocation(string location, ResGroup group, InstantiateOptions options)
         {
             if (!ValidateLocation(location)) return Task.FromResult<GameObject>(null);
+            if (!TryGetOrCreateEntry(location, group, out SpawnEntry entry))
+                return Task.FromResult<GameObject>(null);
 
-            GameObject pooled = RentFromPool(location, options);
+            GameObject pooled = RentFromPool(entry, options);
             if (pooled) return Task.FromResult(pooled);
 
-            SpawnEntry entry = GetOrCreateEntry(location);
-            PendingInstantiate pending = new(location, options);
+            PendingInstantiate pending = new(location, group, options);
 
             entry.PendingCount++;
 
@@ -241,7 +272,7 @@ namespace Framework
             {
                 entry.PendingCount--;
                 pending.Completion.TrySetResult(null);
-                RemoveEntryIfUnused(location, entry);
+                RemoveUnusedEntry(location, entry);
                 return pending.Completion.Task;
             }
 
@@ -249,6 +280,7 @@ namespace Framework
             return pending.Completion.Task;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 尝试完成一个异步实例化请求。
         /// </summary>
@@ -260,13 +292,20 @@ namespace Framework
                 return true;
             }
 
+            if (entry.Group != pending.Group)
+            {
+                Debug.LogError($"[{nameof(InstantiateManager)}] '{pending.Location}' is already in {entry.Group}, refused {pending.Group}.");
+                pending.Completion.TrySetResult(null);
+                return true;
+            }
+
             AssetHandle handle = entry.Handle;
             if (handle == null)
             {
                 entry.PendingCount--;
                 LogInstantiateFailed(pending.Location);
                 pending.Completion.TrySetResult(null);
-                RemoveEntryIfUnused(pending.Location, entry);
+                RemoveUnusedEntry(pending.Location, entry);
                 return true;
             }
 
@@ -280,7 +319,7 @@ namespace Framework
                 handle.Dispose();
                 entry.Handle = null;
                 pending.Completion.TrySetResult(null);
-                RemoveEntryIfUnused(pending.Location, entry);
+                RemoveUnusedEntry(pending.Location, entry);
                 return true;
             }
 
@@ -291,7 +330,7 @@ namespace Framework
             {
                 LogInstantiateFailed(pending.Location);
                 pending.Completion.TrySetResult(null);
-                RemoveEntryIfUnused(pending.Location, entry);
+                RemoveUnusedEntry(pending.Location, entry);
                 return true;
             }
 
@@ -306,10 +345,8 @@ namespace Framework
         /// <summary>
         /// 尝试从对象池借出一个实例。
         /// </summary>
-        private GameObject RentFromPool(string location, InstantiateOptions options)
+        private GameObject RentFromPool(SpawnEntry entry, InstantiateOptions options)
         {
-            if (!_entries.TryGetValue(location, out SpawnEntry entry)) return null;
-
             while (entry.Idle.Count > 0)
             {
                 GameObject instance = entry.Idle.Dequeue();
@@ -406,9 +443,8 @@ namespace Framework
             if (!handle.IsDone) return handle;
             if (handle.AssetObject is not GameObject)
             {
-                if (!async)
-                    LogInstantiateFailed(location);
-
+                if (!async) LogInstantiateFailed(location);
+                
                 handle.Dispose();
                 entry.Handle = null;
                 return null;
@@ -442,6 +478,7 @@ namespace Framework
             return handle;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 卸载一个已经完全空闲的资源池。
         /// </summary>
@@ -457,7 +494,7 @@ namespace Framework
         /// <summary>
         /// 当资源池已经没有任何使用者时移除资源池。
         /// </summary>
-        private void RemoveEntryIfUnused(string location, SpawnEntry entry)
+        private void RemoveUnusedEntry(string location, SpawnEntry entry)
         {
             if (entry.LentCount > 0 || entry.PendingCount > 0 || entry.Idle.Count > 0)
                 return;
@@ -535,13 +572,25 @@ namespace Framework
 
         #region 查询
 
-        private SpawnEntry GetOrCreateEntry(string location)
+        // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// 取得资源池。不存在则按本次分组创建。已存在且分组不同则拒绝。
+        /// </summary>
+        private bool TryGetOrCreateEntry(string location, ResGroup group, out SpawnEntry entry)
         {
-            if (_entries.TryGetValue(location, out SpawnEntry entry)) return entry;
-            entry = new SpawnEntry();
-            _entries.Add(location, entry);
+            if (_entries.TryGetValue(location, out entry))
+            {
+                if (entry.Group == group)
+                    return true;
 
-            return entry;
+                Debug.LogError($"[{nameof(InstantiateManager)}] '{location}' is already in {entry.Group}, refused {group}.");
+                entry = null;
+                return false;
+            }
+
+            entry = new SpawnEntry { Group = group };
+            _entries.Add(location, entry);
+            return true;
         }
 
         private static bool ValidateLocation(string location)
@@ -615,12 +664,26 @@ namespace Framework
 
         #region 子系统生命周期
 
+        private void CreateGroupRoots()
+        {
+            int count = (int)ResGroup.Temp + 1;
+            _groupRoots = new Transform[count];
+            for (int i = 0; i < count; i++)
+            {
+                ResGroup group = (ResGroup)i;
+                Transform node = new GameObject(group.ToString()).transform;
+                node.SetParent(_poolRoot, false);
+                _groupRoots[i] = node;
+            }
+        }
+
         public override void Init()
         {
             _resourceManager = Global.Get<ResourceManager>();
 
             _poolRoot = new GameObject($"[{nameof(InstantiateManager)}]").transform;
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
+            CreateGroupRoots();
 
             _idleUnloadSeconds = AppCoreConfig.Instance.clearUnusedIdleTime;
         }
@@ -648,13 +711,14 @@ namespace Framework
 
         public override void Destroy()
         {
-            Clear();
+            ClearAll();
             ClearUnpooledInstances();
 
             if (_poolRoot)
             {
                 DestroyInstance(_poolRoot.gameObject);
                 _poolRoot = null;
+                _groupRoots = null;
             }
 
             _resourceManager = null;

@@ -132,19 +132,35 @@ namespace Framework
         }
 
         /// <summary>
-        /// 按资源位置同步生成 GameObject
+        /// 按资源位置同步生成 GameObject，分组为 <see cref="ResGroup.Temp"/>。
         /// </summary>
         public static GameObject Instantiate(string location, InstantiateOptions options = default)
         {
             return Get<InstantiateManager>().Instantiate(location, options);
         }
+
+        /// <summary>
+        /// 按资源位置和分组同步生成 GameObject。同一资源名第一次建池时确定分组。
+        /// </summary>
+        public static GameObject Instantiate(string location, ResGroup group, InstantiateOptions options = default)
+        {
+            return Get<InstantiateManager>().Instantiate(location, group, options);
+        }
         
         /// <summary>
-        /// 按资源位置异步生成 GameObject
+        /// 按资源位置异步生成 GameObject，分组为 <see cref="ResGroup.Temp"/>。
         /// </summary>
         public static Task<GameObject> InstantiateAsync(string location, InstantiateOptions options = default)
         {
             return Get<InstantiateManager>().InstantiateAsync(location, options);
+        }
+
+        /// <summary>
+        /// 按资源位置和分组异步生成 GameObject。同一资源名第一次建池时确定分组。
+        /// </summary>
+        public static Task<GameObject> InstantiateAsync(string location, ResGroup group, InstantiateOptions options = default)
+        {
+            return Get<InstantiateManager>().InstantiateAsync(location, group, options);
         }
 
         /// <summary>

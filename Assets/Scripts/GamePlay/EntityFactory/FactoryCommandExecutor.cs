@@ -14,7 +14,7 @@ namespace GamePlay.EntityFactory
             string location = FactoryConfig.GetLocation(command.entityTypeId);
             InstantiateOptions options = new(true, command.position, command.rotation);
             
-            return Global.Instantiate(location, options);
+            return Global.Instantiate(location, ResGroup.Prefab, options);
         }
 
         public void Execute(DestroyEntityCommand command)

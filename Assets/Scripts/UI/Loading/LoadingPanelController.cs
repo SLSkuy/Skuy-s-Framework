@@ -22,22 +22,20 @@ namespace UI.Loading
 
         protected override void AddListener()
         {
-            SceneLoader sceneLoader = Global.Get<SceneLoader>();
-            sceneLoader.Completed += HandleCompleted;
-            sceneLoader.Failed += HandleFailed;
+            _sceneLoader = Global.Get<SceneLoader>();
+            _sceneLoader.Completed += HandleCompleted;
+            _sceneLoader.Failed += HandleFailed;
         }
 
         protected override void RemoveListener()
         {
-            SceneLoader sceneLoader = Global.Get<SceneLoader>();
-            sceneLoader.Completed -= HandleCompleted;
-            sceneLoader.Failed -= HandleFailed;
+            _sceneLoader.Completed -= HandleCompleted;
+            _sceneLoader.Failed -= HandleFailed;
             base.RemoveListener();
         }
 
         protected override void OnShow()
         {
-            _sceneLoader = Global.Get<SceneLoader>();
             progressFill.fillAmount = _sceneLoader.CurrentProgress;
             _tracking = true;
         }

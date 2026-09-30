@@ -128,7 +128,7 @@ namespace Framework
 
         public void CloseCurrentWindow()
         {
-            if(_windowLayer.CurrentWindow != null)CloseWindow(_windowLayer.CurrentWindow.UIControllerID);
+            if(_windowLayer.CurrentWindow != null) CloseWindow(_windowLayer.CurrentWindow.UIControllerID);
         }
 
         /// <summary>

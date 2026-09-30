@@ -103,6 +103,7 @@ namespace Network
             SendReliable(clientId, NetUtils.Proto2Bytes(evt, message));
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 给单个客户端发送消息
         /// </summary>
@@ -117,6 +118,7 @@ namespace Network
             _fastTransport.Send(fastSessionId, data);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 使用可靠传输发送
         /// </summary>
