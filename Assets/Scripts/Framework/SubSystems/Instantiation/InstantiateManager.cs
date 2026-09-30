@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using YooAsset;
@@ -55,6 +54,16 @@ namespace Framework
             /// 该资源位置第一次建池时确定的分组
             /// </summary>
             public ResGroup Group;
+
+            /// <summary>
+            /// 建池时记下的分组策略
+            /// </summary>
+            public ResGroupPolicy.Setting Policy;
+
+            /// <summary>
+            /// 是否已经按策略预热过
+            /// </summary>
+            public bool Prewarmed;
 
             /// <summary>
             /// 句柄完成回调。只绑定一次，句柄替换后重新绑定。
@@ -124,8 +133,6 @@ namespace Framework
         /// 切场景时收集待销毁借出实例
         /// </summary>
         private readonly List<GameObject> _lentScratch = new();
-
-        private float _idleUnloadSeconds;
 
         #endregion
 
@@ -228,9 +235,15 @@ namespace Framework
             }
             finally
             {
-                instance.SetActive(false);
-                instance.transform.SetParent(_groupRoots[(int)entry.Group]);
-                entry.Idle.Enqueue(tracked);
+                if (entry.Idle.Count >= entry.Policy.maxIdleCount)
+                    DestroyInstance(instance);
+                else
+                {
+                    instance.SetActive(false);
+                    instance.transform.SetParent(_groupRoots[(int)entry.Group]);
+                    entry.Idle.Enqueue(tracked);
+                }
+
                 if (entry.LentCount == 0 && entry.PendingCount == 0)
                     entry.IdleElapsed = 0f;
             }
@@ -238,8 +251,7 @@ namespace Framework
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 切场景时销毁 VFX、Prefab、Temp。UI 与 Audio 保留，只走空闲超时卸载。
-        /// 卸载路径与空闲超时相同。
+        /// 切场景时销毁策略里 sceneClear 的分组。卸载路径与空闲超时相同。
         /// </summary>
         public void ClearSceneGroups()
         {
@@ -249,7 +261,7 @@ namespace Framework
             _unloadScratch.Clear();
             foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
             {
-                if (ClearsOnSceneChange(pair.Value.Group))
+                if (pair.Value.Policy.sceneClear)
                     _unloadScratch.Add(pair.Key);
             }
 
@@ -300,6 +312,10 @@ namespace Framework
                 RemoveUnusedEntry(location, entry);
                 return null;
             }
+
+            Prewarm(entry, handle);
+            pooled = RentFromPool(entry, options);
+            if (pooled) return pooled;
 
             return InstantiateFromHandle(entry, handle, options);
         }
@@ -371,6 +387,8 @@ namespace Framework
                 return;
             }
 
+            Prewarm(entry, handle);
+
             while (entry.Pending.Count > 0)
             {
                 PendingInstantiate pending = entry.Pending[0];
@@ -384,7 +402,9 @@ namespace Framework
                     continue;
                 }
 
-                GameObject instance = InstantiateFromHandle(entry, handle, pending.Options);
+                GameObject instance = RentFromPool(entry, pending.Options);
+                if (!instance)
+                    instance = InstantiateFromHandle(entry, handle, pending.Options);
                 if (!instance)
                 {
                     LogInstantiateFailed(pending.Location);
@@ -473,6 +493,41 @@ namespace Framework
         /// </summary>
         private GameObject InstantiateFromHandle(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
         {
+            InstanceEntry tracked = CreateTrackedInstance(entry, handle, options);
+            if (tracked == null) return null;
+
+            entry.LentCount++;
+            _lent[tracked.Instance] = tracked;
+
+            return tracked.Instance;
+        }
+
+        /// <summary>
+        /// 按策略把空闲实例预热进池。只执行一次，数量不超过空闲上限。
+        /// </summary>
+        private void Prewarm(SpawnEntry entry, AssetHandle handle)
+        {
+            if (entry.Prewarmed)
+                return;
+
+            entry.Prewarmed = true;
+            int count = entry.Policy.prewarmCount;
+            if (count > entry.Policy.maxIdleCount)
+                count = entry.Policy.maxIdleCount;
+
+            InstantiateOptions options = new(false, _groupRoots[(int)entry.Group], false);
+            for (int i = 0; i < count; i++)
+            {
+                InstanceEntry tracked = CreateTrackedInstance(entry, handle, options);
+                if (tracked == null)
+                    break;
+
+                entry.Idle.Enqueue(tracked);
+            }
+        }
+
+        private InstanceEntry CreateTrackedInstance(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
+        {
             GameObject instance = handle.InstantiateSync(options);
             if (!instance) return null;
 
@@ -483,17 +538,12 @@ namespace Framework
                 throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
             }
 
-            InstanceEntry tracked = new()
+            return new InstanceEntry
             {
                 Instance = instance,
                 Spawn = entry,
                 Poolables = poolables
             };
-
-            entry.LentCount++;
-            _lent[instance] = tracked;
-
-            return instance;
         }
 
         #endregion
@@ -604,19 +654,11 @@ namespace Framework
 
         #region Pending
 
-        private static bool ClearsOnSceneChange(ResGroup group)
-        {
-            return group == ResGroup.VFX || group == ResGroup.Prefab || group == ResGroup.Temp;
-        }
-
-        /// <summary>
-        /// 取消切场景分组上尚未完成的实例化请求。
-        /// </summary>
         private void CancelScenePending()
         {
             foreach (SpawnEntry entry in _entries.Values)
             {
-                if (!ClearsOnSceneChange(entry.Group))
+                if (!entry.Policy.sceneClear)
                     continue;
 
                 for (int i = entry.Pending.Count - 1; i >= 0; i--)
@@ -640,7 +682,7 @@ namespace Framework
             _lentScratch.Clear();
             foreach (KeyValuePair<GameObject, InstanceEntry> pair in _lent)
             {
-                if (ClearsOnSceneChange(pair.Value.Spawn.Group))
+                if (pair.Value.Spawn.Policy.sceneClear)
                     _lentScratch.Add(pair.Key);
             }
 
@@ -689,7 +731,7 @@ namespace Framework
             {
                 SpawnEntry entry = pair.Value;
 
-                if (entry.LentCount > 0 || entry.PendingCount > 0)
+                if (!entry.Policy.idleUnload || entry.LentCount > 0 || entry.PendingCount > 0)
                 {
                     entry.IdleElapsed = 0f;
                     continue;
@@ -703,7 +745,7 @@ namespace Framework
 
                 entry.IdleElapsed += deltaTime;
 
-                if (entry.IdleElapsed >= _idleUnloadSeconds) _unloadScratch.Add(pair.Key);
+                if (entry.IdleElapsed >= entry.Policy.idleUnloadSeconds) _unloadScratch.Add(pair.Key);
             }
 
             foreach (var location in _unloadScratch)
@@ -735,7 +777,11 @@ namespace Framework
                 return false;
             }
 
-            entry = new SpawnEntry { Group = group };
+            entry = new SpawnEntry
+            {
+                Group = group,
+                Policy = ResGroupPolicy.Get(group)
+            };
             _entries.Add(location, entry);
             return true;
         }
@@ -831,8 +877,6 @@ namespace Framework
             _poolRoot = new GameObject($"[{nameof(InstantiateManager)}]").transform;
             _poolRoot.SetParent(GameObject.Find("[GameRoot]").transform);
             CreateGroupRoots();
-
-            _idleUnloadSeconds = AppCoreConfig.Instance.clearUnusedIdleTime;
         }
 
         public override void Update(float deltaTime)
