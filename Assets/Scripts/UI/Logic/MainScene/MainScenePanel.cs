@@ -14,6 +14,7 @@ namespace UI.MainScene
         {
             // TODO: 初始化界面数据与控件状态
             // <ui-bind:add>
+            _exitBtn.onClick.AddListener(OnExitBtn);
             _hostPlayBtn.onClick.AddListener(OnHostPlayBtn);
             _localPlayBtn.onClick.AddListener(OnLocalPlayBtn);
             _multiPlayBtn.onClick.AddListener(OnMultiPlayBtn);
@@ -30,6 +31,7 @@ namespace UI.MainScene
         {
             // TODO: 取消订阅，并交给基类清理控制器事件
             // <ui-bind:remove>
+            _exitBtn.onClick.RemoveListener(OnExitBtn);
             _hostPlayBtn.onClick.RemoveListener(OnHostPlayBtn);
             _localPlayBtn.onClick.RemoveListener(OnLocalPlayBtn);
             _multiPlayBtn.onClick.RemoveListener(OnMultiPlayBtn);
@@ -63,6 +65,11 @@ namespace UI.MainScene
         }
 
         private void OnSettings()
+        {
+            
+        }
+
+        private void OnExitBtn()
         {
             Global.QuitGame();
         }

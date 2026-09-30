@@ -4,6 +4,7 @@
 
 using Framework.Core;
 using Framework.Panel;
+using UnityEngine.Scripting;
 using UnityEngine.UI;
 
 namespace UI.MainScene
@@ -11,8 +12,10 @@ namespace UI.MainScene
     /// <summary>
     /// MainScenePanel 的控件绑定
     /// </summary>
+    [Preserve]
     public partial class MainScenePanel : PanelController, UIView.IBindable
     {
+        private Button _exitBtn;
         private Button _hostPlayBtn;
         private Button _localPlayBtn;
         private Button _multiPlayBtn;
@@ -23,6 +26,7 @@ namespace UI.MainScene
         /// </summary>
         public void Bind(UIView view)
         {
+            _exitBtn = (Button)view.GetBinding("exitBtn");
             _hostPlayBtn = (Button)view.GetBinding("hostPlayBtn");
             _localPlayBtn = (Button)view.GetBinding("localPlayBtn");
             _multiPlayBtn = (Button)view.GetBinding("multiPlayBtn");

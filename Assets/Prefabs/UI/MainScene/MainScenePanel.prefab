@@ -1074,6 +1074,8 @@ MonoBehaviour:
   kind: 0
   controllerTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
   bindings:
+  - fieldName: exitBtn
+    target: {fileID: 363689608746696445}
   - fieldName: hostPlayBtn
     target: {fileID: 2340431897922649683}
   - fieldName: localPlayBtn

@@ -5,6 +5,8 @@ using System.Text;
 using Framework.Core;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -246,9 +248,33 @@ namespace Framework.Editor
             return true;
         }
 
+        /// <summary>
+        /// 找出所有界面脚本类型名解析不到的UI预制体。
+        /// 预制体里只存了类型名字符串，改类名、挪命名空间、加程序集都会让它过期，打包前必须拦住。
+        /// </summary>
+        public static List<string> CollectBrokenPrefabs()
+        {
+            List<string> broken = new();
+
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { PrefabRoot }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                UIView view = prefab ? prefab.GetComponent<UIView>() : null;
+                if (!view) continue;
+
+                if (string.IsNullOrEmpty(view.ControllerTypeName))
+                    broken.Add($"{path}：还没有生成代码");
+                else if (Type.GetType(view.ControllerTypeName) == null)
+                    broken.Add($"{path}：解析不到 {view.ControllerTypeName}");
+            }
+
+            return broken;
+        }
+
         private static string BuildBinding(UIView view, string namespaceName, string className, bool isWindow)
         {
-            SortedSet<string> usings = new(StringComparer.Ordinal) { "Framework.Core" };
+            SortedSet<string> usings = new(StringComparer.Ordinal) { "Framework.Core", "UnityEngine.Scripting" };
             usings.Add(isWindow ? "Framework.Window" : "Framework.Panel");
 
             foreach (UIView.Binding binding in view.Bindings)
@@ -269,6 +295,8 @@ namespace Framework.Editor
             builder.AppendLine("    /// <summary>");
             builder.AppendLine($"    /// {className} 的控件绑定");
             builder.AppendLine("    /// </summary>");
+            // 只有预制体上的类型名字符串引用该类型，托管代码裁剪必须显式保留
+            builder.AppendLine("    [Preserve]");
             builder.AppendLine($"    public partial class {className} : {(isWindow ? "WindowController" : "PanelController")}, UIView.IBindable");
             builder.AppendLine("    {");
 
@@ -897,4 +925,22 @@ namespace Framework.Editor
     }
 
     #endregion
+
+    /// <summary>
+    /// 打包前校验UI预制体上的界面脚本类型名，解析不到就中断打包。
+    /// 类型只由字符串引用，不拦的话要到真机运行时才发现界面起不来。
+    /// </summary>
+    internal sealed class UIViewBuildCheck : IPreprocessBuildWithReport
+    {
+        public int callbackOrder => 0;
+
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            List<string> broken = UIViewBindingEditor.CollectBrokenPrefabs();
+            if (broken.Count == 0) return;
+
+            throw new BuildFailedException(
+                $"[UIFramework] {broken.Count} 个UI预制体的界面脚本解析不到，重新生成代码后再打包：\n{string.Join("\n", broken)}");
+        }
+    }
 }
