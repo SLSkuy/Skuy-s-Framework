@@ -901,7 +901,7 @@ namespace Framework
 
         #endregion
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR
         #region 调试
 
         public struct DebugGroupStat

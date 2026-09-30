@@ -1,9 +1,10 @@
 using Framework;
 using GamePlay.Procedure;
+using UnityEngine;
 
 namespace UI.MainScene
 {
-    public class MainScenePanel : UnityEngine.MonoBehaviour
+    public class MainScenePanel : MonoBehaviour
     {
         public void UI_LocalPlay()
         {

@@ -141,7 +141,7 @@ namespace Framework
 
         public void ShowPanel(string id)
         {
-            if (!TryLoadPanel(id)) return;
+            if (!TryLoadUI(id)) return;
 
             MarkPanelVisible(id);
             _panelLayer.ShowUIByID(id);
@@ -149,7 +149,7 @@ namespace Framework
 
         public void ShowPanel<T>(string id, T p) where T : IUIProperties
         {
-            if (!TryLoadPanel(id)) return;
+            if (!TryLoadUI(id)) return;
 
             MarkPanelVisible(id);
             _panelLayer.ShowUIByID(id, p);
@@ -334,7 +334,7 @@ namespace Framework
         /// <summary>
         /// 面板已注册则直接可用。未注册时按面板名补上 <c>UI_</c> 前缀，从 <see cref="ResGroup.UI"/> 实例化并注册。
         /// </summary>
-        private bool TryLoadPanel(string id)
+        private bool TryLoadUI(string id)
         {
             if (_panelLayer.IsRegistered(id))
                 return true;
