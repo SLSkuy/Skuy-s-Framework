@@ -9,7 +9,7 @@ namespace Framework.Window
     /// 窗口（Window）的Layer
     /// 通过访问管理对象的controller进行窗口的控制
     /// 窗口是一种有历史记录和顺序的UI界面
-    /// 通过栈和队列的结构对不同优先级的窗口进行存储
+    /// 历史和队列只记窗口名，需要显示时再取回控制器
     /// </summary>
     public class WindowLayer : UIBaseLayer<IWindowController>
     {
@@ -23,9 +23,24 @@ namespace Framework.Window
 
         public IWindowController CurrentWindow { get; private set; }
 
+        /// <summary>
+        /// 按窗口名取回控制器。未在册时由外部实例化。
+        /// </summary>
+        public event Func<string, IWindowController> ResolveWindow;
+
+        /// <summary>
+        /// 窗口已经显示，取消空闲计时。
+        /// </summary>
+        public event Action<string> WindowShown;
+
+        /// <summary>
+        /// 窗口已经隐藏，开始空闲计时。
+        /// </summary>
+        public event Action<string> WindowHidden;
+
         private List<string> _readyToShow;
-        private Queue<WindowHistoryEntry> _windowQueue;
-        private Stack<WindowHistoryEntry> _windowHistory;
+        private Queue<string> _windowQueue;
+        private Stack<string> _windowHistory;
 
         public event Action RequestedScreenBlock;
         public event Action RequestedScreenUnBlock;
@@ -42,41 +57,31 @@ namespace Framework.Window
         public override void ShowUI<TProps>(IWindowController controller, TProps props)
         {
             IWindowProperties windowProperties = props as IWindowProperties;
-            if(ShouldEnqueue(controller))
+            if (ShouldEnqueue(controller))
             {
-                // 当前队列已经存在对应窗口，不再加入队列
-                if (_readyToShow.Contains(controller.UIControllerID) || CurrentWindow == controller)
-                {
-                    Debug.LogWarning($"[WindowLayer] {controller.UIControllerID} is already in queue or showing");
-                    return;
-                }
-                
-                Enqueue(controller, windowProperties);
+                Enqueue(controller);
+                return;
             }
-            else
-            {
-                DoShow(controller, windowProperties);
-            }
+
+            DoShow(controller, windowProperties);
         }
 
         public override void HideUI(IWindowController controller)
         {
             if (controller == CurrentWindow)
             {
+                string id = controller.UIControllerID;
                 CurrentWindow = null;
                 _windowHistory.Pop();
-                _readyToShow.Remove(controller.UIControllerID);
+                _readyToShow.Remove(id);
                 BlockScreen(controller);
                 controller.Hide();
+                WindowHidden?.Invoke(id);
 
                 if (_windowQueue.Count > 0)
-                {
                     ShowNextInQueue();
-                }
-                else if(_windowHistory.Count > 0)
-                {
+                else if (_windowHistory.Count > 0)
                     ShowPreviousInHistory();
-                }
             }
             else
             {
@@ -99,8 +104,8 @@ namespace Framework.Window
         public override void Initialize()
         {
             base.Initialize();
-            _windowQueue = new Queue<WindowHistoryEntry>();
-            _windowHistory = new Stack<WindowHistoryEntry>();
+            _windowQueue = new Queue<string>();
+            _windowHistory = new Stack<string>();
             _readyToShow = new List<string>();
         }
         
@@ -111,10 +116,10 @@ namespace Framework.Window
             {
                 priorityLayerWindow.AddUI(uiTransform);
             }
-            else if(controller is IWindowController)
+            else if (controller is IWindowController)
             {
                 // 普通窗口
-                base.ReParentUI(controller,uiTransform);
+                base.ReParentUI(controller, uiTransform);
             }
             else
             {
@@ -151,47 +156,67 @@ namespace Framework.Window
         private bool ShouldEnqueue(IWindowController controller)
         {
             if (CurrentWindow == null && _windowQueue.Count == 0)
-            {
                 return false;
-            }
 
-            if (controller.Priority == WindowPriority.Enqueue)
-            {
-                return true;
-            }
-
-            return false;
+            return controller.Priority == WindowPriority.Enqueue;
         }
 
-        private void Enqueue(IWindowController controller, IWindowProperties properties)
+        /// <summary>
+        /// 队列只记窗口名。实例可以随后出册，轮到它时再取回。
+        /// </summary>
+        private void Enqueue(IWindowController controller)
         {
-            _readyToShow.Add(controller.UIControllerID);
-            _windowQueue.Enqueue(new WindowHistoryEntry(controller, properties));
+            string id = controller.UIControllerID;
+            if (_readyToShow.Contains(id) || (CurrentWindow != null && CurrentWindow.UIControllerID == id))
+            {
+                Debug.LogWarning($"[WindowLayer] {id} is already in queue or showing");
+                return;
+            }
+
+            _readyToShow.Add(id);
+            _windowQueue.Enqueue(id);
+            controller.Hide();
+            WindowHidden?.Invoke(id);
         }
 
         private void ShowNextInQueue()
         {
-            if (_windowQueue.Count > 0)
+            if (_windowQueue.Count == 0)
+                return;
+
+            string id = _windowQueue.Dequeue();
+            _readyToShow.Remove(id);
+            if (ResolveWindow != null)
             {
-                WindowHistoryEntry entry = _windowQueue.Dequeue();
-                DoShow(entry.WindowController, entry.WindowProperties);
+                IWindowController controller = ResolveWindow(id);
+                if (controller == null)
+                    return;
+
+                DoShow(controller, null);
             }
         }
 
         private void ShowPreviousInHistory()
         {
-            if (_windowHistory.Count > 0)
+            if (_windowHistory.Count == 0)
+                return;
+
+            string id = _windowHistory.Pop();
+            if (ResolveWindow != null)
             {
-                WindowHistoryEntry entry = _windowHistory.Pop();
-                DoShow(entry.WindowController, entry.WindowProperties);
+                IWindowController controller = ResolveWindow(id);
+                if (controller == null)
+                    return;
+
+                DoShow(controller, null);
             }
         }
 
         /// <summary>
-        /// 处理窗口显示逻辑
+        /// 处理窗口显示逻辑。历史只记下窗口名。
         /// </summary>
         /// <param name="controller">窗口控制器</param>
-        /// <param name="properties">窗口属性</param>
+        /// <param name="properties">本次显示使用的窗口属性，不写入历史或队列</param>
         private void DoShow(IWindowController controller, IWindowProperties properties)
         {
             if (controller == CurrentWindow)
@@ -199,24 +224,26 @@ namespace Framework.Window
                 Debug.LogWarning($"[WindowLayer] {controller.UIControllerID} is already show");
                 return;
             }
-            
-            if(CurrentWindow != null && CurrentWindow.HideOnForegroundLost && !controller.IsPopup)
+
+            // 弹窗强制留在最前，不把底下的窗口送去隐藏
+            if (CurrentWindow != null && CurrentWindow.HideOnForegroundLost
+                && !CurrentWindow.IsPopup && !controller.IsPopup)
             {
+                string coveredId = CurrentWindow.UIControllerID;
                 CurrentWindow.Hide();
+                WindowHidden?.Invoke(coveredId);
             }
             
-            // 将当前窗口加载到窗口历史中
-            _windowHistory.Push(new WindowHistoryEntry(controller, properties));
+            _windowHistory.Push(controller.UIControllerID);
             BlockScreen(controller);
 
             // 启用蒙黑层
             if (controller.IsPopup)
-            {
                 priorityLayerWindow.DarkenBg();
-            }
             
-            controller.Show(properties);  // 委托Controller进行窗口显示
+            controller.Show(properties);
             CurrentWindow = controller;
+            WindowShown?.Invoke(controller.UIControllerID);
         }
         
         /// <summary>
@@ -250,11 +277,22 @@ namespace Framework.Window
         {
             UnBlockScreen(controller);
             if (controller is IWindowController { IsPopup: true })
-            {
                 priorityLayerWindow.RefreshDarken();
-            }
         }
         
+        #endregion
+
+        #region 生命周期
+
+        public void OnDestroy()
+        {
+            ResolveWindow = null;
+            WindowShown = null;
+            WindowHidden = null;
+            RequestedScreenBlock = null;
+            RequestedScreenUnBlock = null;
+        }
+
         #endregion
     }
 }
