@@ -80,6 +80,7 @@ namespace Core
         private void InitUI()
         {
             // TODO: 初始化全局UI
+            Global.ShowUI("MainScenePanel");
         }
 
         #endregion

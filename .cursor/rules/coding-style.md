@@ -103,7 +103,7 @@ Reference: `RoomClientHandler.cs`, `RoomServerHandler.cs`, `ProcedureHandler.cs`
 ## File Organization
 
 * One primary type per file; file name matches the type.
-* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`, `#region 客户端消息处理`, `#region 服务端消息处理`. Handler files may also use `#region 消息绑定`, `#region 发送消息`, `#region 接收消息`.
+* New code may use only `#region 属性`, `#region 事件`, `#region 生命周期`, `#region 子系统生命周期`, `#region 客户端消息处理`, `#region 服务端消息处理`. Handler files may also use `#region 消息绑定`, `#region 发送消息`, `#region 接收消息`. Generated UI screen scripts may also use `#region UI回调` for their control callbacks.
 * XML summaries on public types, public methods, and non-obvious `protected virtual` methods when useful.
 * Use `[Header]`, `[Tooltip]`, `[SerializeField]`, `[RequireComponent]`, `[DisallowMultipleComponent]` where they fit.
 * Match the surrounding file for `var` vs explicit types and expression-bodied members.

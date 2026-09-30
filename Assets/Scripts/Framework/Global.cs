@@ -185,6 +185,37 @@ namespace Framework
         }
 
         /// <summary>
+        /// 显示UI
+        /// </summary>
+        /// <param name="uiName"></param>
+        public static void ShowUI(string uiName)
+        {
+            Get<UIManager>().ShowUI(uiName);
+        }
+
+        /// <summary>
+        /// 关闭当前顶层窗口
+        /// </summary>
+        public static void Close()
+        {
+            Get<UIManager>().CloseCurrentWindow();
+        }
+
+        /// <summary>
+        /// 指定关闭UI
+        /// </summary>
+        /// <param name="uiName"></param>
+        public static void HideUI(string uiName)
+        {
+            Get<UIManager>().HideUI(uiName);
+        }
+        
+        public static void HideAll()
+        {
+            Get<UIManager>().HideAllUI();
+        }
+
+        /// <summary>
         /// 程序退出时清理所有注册
         /// </summary>
         public static void Clear()

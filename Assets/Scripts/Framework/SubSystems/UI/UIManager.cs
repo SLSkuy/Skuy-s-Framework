@@ -377,6 +377,10 @@ namespace Framework
             GameObject instance = Global.Instantiate(PANEL_LOCATION_PREFIX + id, ResGroup.UI, new InstantiateOptions(false));
             if (!instance) return null;
 
+            // 实例此时尚未激活，界面脚本挂上之后才会触发其Awake
+            UIView view = instance.GetComponent<UIView>();
+            if (view) view.ApplyBindings(id);
+
             IWindowController window = instance.GetComponent<IWindowController>();
             IPanelController panel = instance.GetComponent<IPanelController>();
             IUIController controller = window != null ? window : panel;
