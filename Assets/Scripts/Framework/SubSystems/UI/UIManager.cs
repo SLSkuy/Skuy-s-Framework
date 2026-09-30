@@ -19,8 +19,22 @@ namespace Framework
         public override int Priority => (int)SubSystemPriority.UIManager;
         
         #region 内部成员
-        
-        private readonly Dictionary<string, GameObject> _uiObj = new();
+
+        private const string PANEL_LOCATION_PREFIX = "UI_";
+        private const float PANEL_VISIBLE_ELAPSED = -1f;
+
+        /// <summary>
+        /// UIManager 自己实例化的面板。手动 Register 的面板不在此表中，不参与超时回收。
+        /// </summary>
+        private sealed class OwnedPanel
+        {
+            public GameObject Instance;
+            public IPanelController Controller;
+            public float HiddenElapsed;
+        }
+
+        private readonly Dictionary<string, OwnedPanel> _ownedPanels = new();
+        private readonly List<string> _unloadScratch = new();
         
         // UI类别层级管理器
         private Transform _container;
@@ -73,13 +87,42 @@ namespace Framework
             _graphicRaycaster = _container.GetComponent<GraphicRaycaster>();
         }
 
+        public override void Update(float deltaTime)
+        {
+            float timeout = ResGroupPolicy.Get(ResGroup.UI).idleUnloadSeconds;
+            _unloadScratch.Clear();
+
+            foreach (KeyValuePair<string, OwnedPanel> pair in _ownedPanels)
+            {
+                OwnedPanel owned = pair.Value;
+                if (owned.HiddenElapsed < 0f)
+                    continue;
+
+                owned.HiddenElapsed += deltaTime;
+                if (owned.HiddenElapsed >= timeout)
+                    _unloadScratch.Add(pair.Key);
+            }
+
+            for (int i = 0; i < _unloadScratch.Count; i++)
+                ReleaseOwnedPanel(_unloadScratch[i]);
+
+            _unloadScratch.Clear();
+        }
+
         public override void Destroy()
         {
+            _unloadScratch.Clear();
+            foreach (string id in _ownedPanels.Keys)
+                _unloadScratch.Add(id);
+
+            for (int i = 0; i < _unloadScratch.Count; i++)
+                ReleaseOwnedPanel(_unloadScratch[i]);
+
+            _unloadScratch.Clear();
+
             // 防止Unity对GameObject销毁顺序不同
             if (_container)
-            {
                 Global.Release(_container.gameObject);
-            }
         }
 
         #endregion
@@ -98,17 +141,24 @@ namespace Framework
 
         public void ShowPanel(string id)
         {
+            if (!TryLoadPanel(id)) return;
+
+            MarkPanelVisible(id);
             _panelLayer.ShowUIByID(id);
         }
 
         public void ShowPanel<T>(string id, T p) where T : IUIProperties
         {
+            if (!TryLoadPanel(id)) return;
+
+            MarkPanelVisible(id);
             _panelLayer.ShowUIByID(id, p);
         }
 
         public void HidePanel(string id)
         {
             _panelLayer.HideUIByID(id);
+            BeginPanelIdle(id);
         }
 
         public void OpenWindow(string id)
@@ -177,16 +227,16 @@ namespace Framework
         /// <param name="id"></param>
         public void HideUI(string id)
         {
-            if (IsUIRegistered(id, out var type)) {
-                if (type == typeof(IWindowController)) {
+            if (IsUIRegistered(id, out var type))
+            {
+                if (type == typeof(IWindowController))
                     CloseWindow(id);
-                }
-                else if (type == typeof(IPanelController)) {
+                else if (type == typeof(IPanelController))
                     HidePanel(id);
-                }
             }
-            else {
-                Debug.LogError($"[UIFramework] Tried to open Screen id {id} but it's not registered as Window or Panel!");
+            else
+            {
+                Debug.LogError($"[UIFramework] Tried to hide Screen id {id} but it's not registered as Window or Panel!");
             }
         }
 
@@ -244,6 +294,9 @@ namespace Framework
         {
             _panelLayer.HideAllUI(animate);
             _windowLayer.HideAllUI(animate);
+
+            foreach (string id in _ownedPanels.Keys)
+                BeginPanelIdle(id);
         }
 
         public bool IsUIRegistered(string id, out Type type)
@@ -274,6 +327,65 @@ namespace Framework
                 return _panelLayer.GetUIController(id);
             }
             return null;
+        }
+
+        
+        // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// 面板已注册则直接可用。未注册时按面板名补上 <c>UI_</c> 前缀，从 <see cref="ResGroup.UI"/> 实例化并注册。
+        /// </summary>
+        private bool TryLoadPanel(string id)
+        {
+            if (_panelLayer.IsRegistered(id))
+                return true;
+
+            if (_windowLayer.IsRegistered(id))
+            {
+                Debug.LogError($"[UIFramework] {id} is registered as a window");
+                return false;
+            }
+
+            GameObject instance = Global.Instantiate(PANEL_LOCATION_PREFIX + id, ResGroup.UI, new InstantiateOptions(false));
+            if (!instance) return false;
+
+            IPanelController panel = instance.GetComponent<IPanelController>();
+            if (panel == null)
+            {
+                Debug.LogError($"[UIFramework] {id} is not a panel");
+                Global.Release(instance);
+                return false;
+            }
+
+            RegisterUI(id, panel, instance.transform);
+            _ownedPanels.Add(id, new OwnedPanel
+            {
+                Instance = instance,
+                Controller = panel,
+                HiddenElapsed = PANEL_VISIBLE_ELAPSED
+            });
+            return true;
+        }
+
+        private void MarkPanelVisible(string id)
+        {
+            if (_ownedPanels.TryGetValue(id, out OwnedPanel owned))
+                owned.HiddenElapsed = PANEL_VISIBLE_ELAPSED;
+        }
+
+        private void BeginPanelIdle(string id)
+        {
+            if (_ownedPanels.TryGetValue(id, out OwnedPanel owned) && owned.HiddenElapsed < 0f)
+                owned.HiddenElapsed = 0f;
+        }
+
+        private void ReleaseOwnedPanel(string id)
+        {
+            if (!_ownedPanels.TryGetValue(id, out OwnedPanel owned))
+                return;
+
+            _ownedPanels.Remove(id);
+            UnregisterUI(id, owned.Controller);
+            Global.Release(owned.Instance);
         }
         
         #endregion

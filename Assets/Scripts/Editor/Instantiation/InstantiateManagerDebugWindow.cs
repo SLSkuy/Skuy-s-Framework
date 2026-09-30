@@ -20,8 +20,11 @@ namespace Framework.Editor
         private readonly HashSet<string> _expandedLocations = new();
 
         private ToolbarToggle _autoRefreshToggle;
-        private ScrollView _scrollView;
+        private VisualElement _body;
+        private ScrollView _locationScroll;
         private TextField _searchField;
+
+        private float _locationScrollOffset;
 
         private bool _unpooledExpanded;
         private double _nextRefresh;
@@ -76,18 +79,20 @@ namespace Framework.Editor
 
             CreateToolbar();
 
-            _scrollView = new ScrollView(ScrollViewMode.Vertical)
+            _body = new VisualElement
             {
                 name = "content"
             };
 
-            _scrollView.style.flexGrow = 1;
-            _scrollView.style.paddingLeft = 8;
-            _scrollView.style.paddingRight = 8;
-            _scrollView.style.paddingTop = 4;
-            _scrollView.style.paddingBottom = 8;
+            _body.style.flexGrow = 1;
+            _body.style.flexDirection = FlexDirection.Column;
+            _body.style.overflow = Overflow.Hidden;
+            _body.style.paddingLeft = 8;
+            _body.style.paddingRight = 8;
+            _body.style.paddingTop = 8;
+            _body.style.paddingBottom = 8;
 
-            rootVisualElement.Add(_scrollView);
+            rootVisualElement.Add(_body);
         }
 
         private void CreateToolbar()
@@ -139,16 +144,20 @@ namespace Framework.Editor
 
         private void RefreshView()
         {
-            if (_scrollView == null)
+            if (_body == null)
                 return;
 
-            _scrollView.Clear();
+            if (_locationScroll != null)
+                _locationScrollOffset = _locationScroll.scrollOffset.y;
+
+            _body.Clear();
+            _locationScroll = null;
 
             if (!Application.isPlaying)
             {
-                AddMessage(
-                    "Instantiate Pool",
-                    "Enter Play Mode to inspect InstantiateManager.");
+                _body.Add(new HelpBox(
+                    "Enter Play Mode to inspect InstantiateManager.",
+                    HelpBoxMessageType.Info));
 
                 return;
             }
@@ -157,9 +166,9 @@ namespace Framework.Editor
 
             if (manager == null)
             {
-                AddMessage(
-                    "InstantiateManager",
-                    "InstantiateManager has not been initialized.");
+                _body.Add(new HelpBox(
+                    "InstantiateManager has not been initialized.",
+                    HelpBoxMessageType.Warning));
 
                 return;
             }
@@ -167,8 +176,8 @@ namespace Framework.Editor
             RefreshData(manager);
 
             CreateOverview(manager);
-            CreateGroups();
             CreateLocations(manager);
+            CreateGroups();
             CreateUnpooled();
         }
 
@@ -211,7 +220,7 @@ namespace Framework.Editor
             AddStat(row, "Unpooled", manager.DebugUnpooledCount);
 
             section.Add(row);
-            _scrollView.Add(section);
+            _body.Add(section);
         }
 
         private static void AddStat(
@@ -249,20 +258,20 @@ namespace Framework.Editor
 
         private void CreateGroups()
         {
-            VisualElement section = CreateSection("GROUPS");
+            VisualElement section = CreateSection("Groups");
 
             if (_groups.Count == 0)
             {
-                section.Add(CreateEmptyLabel("No active groups."));
-                _scrollView.Add(section);
+                section.Add(new HelpBox("No active groups.", HelpBoxMessageType.Info));
+                _body.Add(section);
                 return;
             }
 
             VisualElement header = CreateRow();
 
-            AddHeader(header, "Group", 2.5f);
-            AddHeader(header, "Active", 1f);
-            AddHeader(header, "Idle", 1f);
+            AddHeader(header, "Group", 2.5f, TextAnchor.MiddleLeft);
+            AddHeader(header, "Active", 1f, TextAnchor.MiddleRight);
+            AddHeader(header, "Idle", 1f, TextAnchor.MiddleRight);
 
             section.Add(header);
 
@@ -270,14 +279,14 @@ namespace Framework.Editor
             {
                 VisualElement row = CreateTableRow();
 
-                AddCell(row, group.Group.ToString(), 2.5f);
-                AddCell(row, group.Active.ToString(), 1f);
-                AddCell(row, group.Idle.ToString(), 1f);
+                AddCell(row, group.Group.ToString(), 2.5f, TextAnchor.MiddleLeft);
+                AddCell(row, group.Active.ToString(), 1f, TextAnchor.MiddleRight);
+                AddCell(row, group.Idle.ToString(), 1f, TextAnchor.MiddleRight);
 
                 section.Add(row);
             }
 
-            _scrollView.Add(section);
+            _body.Add(section);
         }
 
         #endregion
@@ -286,10 +295,10 @@ namespace Framework.Editor
 
         private void CreateLocations(InstantiateManager manager)
         {
-            VisualElement section = CreateSection("RESOURCE LOCATIONS");
-
             string search = _searchField?.value?.Trim() ?? string.Empty;
-            bool hasResult = false;
+            VisualElement section = CreateSection("Resource Locations", true);
+            VisualElement listBox = CreateInnerBox(out ScrollView list);
+            int shown = 0;
 
             foreach (InstantiateManager.DebugLocationStat location in _locations)
             {
@@ -301,20 +310,36 @@ namespace Framework.Editor
                     continue;
                 }
 
-                hasResult = true;
-                section.Add(CreateLocation(manager, location));
+                shown++;
+                list.Add(CreateLocation(manager, location));
             }
 
-            if (!hasResult)
+            Label title = (Label)section[0];
+            title.text = $"Resource Locations ({shown})";
+
+            if (shown == 0)
             {
-                section.Add(
-                    CreateEmptyLabel(
-                        string.IsNullOrEmpty(search)
-                            ? "No resource entries."
-                            : "No matching resources."));
+                section.Add(new HelpBox(
+                    string.IsNullOrEmpty(search)
+                        ? "No resource entries."
+                        : "No matching resources.",
+                    HelpBoxMessageType.Warning));
+            }
+            else
+            {
+                _locationScroll = list;
+                float offset = _locationScrollOffset;
+                list.schedule.Execute(() =>
+                {
+                    if (_locationScroll != list)
+                        return;
+
+                    list.scrollOffset = new Vector2(0f, offset);
+                });
+                section.Add(listBox);
             }
 
-            _scrollView.Add(section);
+            _body.Add(section);
         }
 
         private VisualElement CreateLocation(
@@ -367,8 +392,9 @@ namespace Framework.Editor
 
                 if (_instances.Count == 0)
                 {
-                    instanceContainer.Add(
-                        CreateEmptyLabel("No instances."));
+                    instanceContainer.Add(new HelpBox(
+                        "No instances.",
+                        HelpBoxMessageType.Info));
                 }
 
                 container.Add(instanceContainer);
@@ -515,18 +541,31 @@ namespace Framework.Editor
             if (_unpooled.Count == 0)
                 return;
 
-            VisualElement section = CreateSection("UNPOOLED");
-
             Foldout foldout = new Foldout
             {
-                text = $"Instances ({_unpooled.Count})",
+                text = $"Unpooled ({_unpooled.Count})",
                 value = _unpooledExpanded
             };
+
+            foldout.style.flexShrink = 0;
+            foldout.style.marginBottom = 4;
 
             foldout.RegisterValueChangedCallback(evt =>
             {
                 _unpooledExpanded = evt.newValue;
+                RefreshView();
             });
+
+            _body.Add(foldout);
+
+            if (!_unpooledExpanded)
+                return;
+
+            VisualElement section = CreateSection("Instances");
+            ScrollView instances = new ScrollView(ScrollViewMode.Vertical);
+
+            instances.style.maxHeight = 160;
+            instances.style.flexShrink = 0;
 
             foreach (GameObject instance in _unpooled)
             {
@@ -540,33 +579,60 @@ namespace Framework.Editor
                         Active = instance.activeSelf
                     };
 
-                foldout.Add(CreateInstanceRow(info));
+                instances.Add(CreateInstanceRow(info));
             }
 
-            section.Add(foldout);
-            _scrollView.Add(section);
+            section.Add(instances);
+
+            _body.Add(section);
         }
 
         #endregion
 
         #region Common UI
 
-        private static VisualElement CreateSection(string title)
+        private static VisualElement CreateSection(string title, bool expand = false)
         {
             VisualElement section = new VisualElement();
 
-            section.style.marginTop = 8;
-            section.style.marginBottom = 4;
+            ApplyHelpBox(section);
+            section.style.marginBottom = 8;
+            section.style.flexShrink = expand ? 1 : 0;
+
+            if (expand)
+            {
+                section.style.flexGrow = 1;
+                section.style.minHeight = 120;
+                section.style.overflow = Overflow.Hidden;
+            }
 
             Label titleLabel = new Label(title);
 
-            titleLabel.style.marginBottom = 3;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            titleLabel.style.fontSize = 11;
+            titleLabel.style.marginBottom = 5;
 
             section.Add(titleLabel);
 
             return section;
+        }
+
+        private static VisualElement CreateInnerBox(out ScrollView scroll)
+        {
+            scroll = new ScrollView(ScrollViewMode.Vertical);
+            scroll.style.flexGrow = 1;
+            scroll.style.flexShrink = 1;
+            scroll.style.minHeight = 0;
+
+            VisualElement box = new VisualElement();
+
+            ApplyHelpBox(box);
+            box.style.flexGrow = 1;
+            box.style.flexShrink = 1;
+            box.style.minHeight = 0;
+            box.style.overflow = Overflow.Hidden;
+            box.Add(scroll);
+
+            return box;
         }
 
         private static VisualElement CreateRow()
@@ -593,7 +659,8 @@ namespace Framework.Editor
         private static void AddHeader(
             VisualElement parent,
             string text,
-            float flexGrow)
+            float flexGrow,
+            TextAnchor align)
         {
             Label label = new Label(text);
 
@@ -601,6 +668,7 @@ namespace Framework.Editor
             label.style.flexBasis = 0;
             label.style.unityFontStyleAndWeight = FontStyle.Bold;
             label.style.fontSize = 10;
+            label.style.unityTextAlign = align;
 
             parent.Add(label);
         }
@@ -608,14 +676,41 @@ namespace Framework.Editor
         private static void AddCell(
             VisualElement parent,
             string text,
-            float flexGrow)
+            float flexGrow,
+            TextAnchor align)
         {
             Label label = new Label(text);
 
             label.style.flexGrow = flexGrow;
             label.style.flexBasis = 0;
+            label.style.unityTextAlign = align;
 
             parent.Add(label);
+        }
+
+        private static void ApplyHelpBox(VisualElement element)
+        {
+            GUIStyle style = EditorStyles.helpBox;
+            Texture2D background = style.normal.background;
+
+            if (background == null &&
+                style.normal.scaledBackgrounds != null &&
+                style.normal.scaledBackgrounds.Length > 0)
+            {
+                background = style.normal.scaledBackgrounds[0];
+            }
+
+            if (background != null)
+                element.style.backgroundImage = background;
+
+            element.style.unitySliceLeft = style.border.left;
+            element.style.unitySliceRight = style.border.right;
+            element.style.unitySliceTop = style.border.top;
+            element.style.unitySliceBottom = style.border.bottom;
+            element.style.paddingLeft = style.padding.left;
+            element.style.paddingRight = style.padding.right;
+            element.style.paddingTop = style.padding.top;
+            element.style.paddingBottom = style.padding.bottom;
         }
 
         private static void AddRightCell(
@@ -630,53 +725,6 @@ namespace Framework.Editor
             label.style.fontSize = 10;
 
             parent.Add(label);
-        }
-
-        private static Label CreateEmptyLabel(string text)
-        {
-            Label label = new Label(text);
-
-            label.style.paddingLeft = 4;
-            label.style.paddingTop = 4;
-            label.style.paddingBottom = 4;
-
-            label.style.color = EditorGUIUtility.isProSkin
-                ? new Color(0.55f, 0.55f, 0.55f)
-                : new Color(0.45f, 0.45f, 0.45f);
-
-            return label;
-        }
-
-        private void AddMessage(
-            string title,
-            string message)
-        {
-            VisualElement container = new VisualElement();
-
-            container.style.marginTop = 20;
-            container.style.marginLeft = 12;
-            container.style.marginRight = 12;
-            container.style.paddingLeft = 12;
-            container.style.paddingRight = 12;
-            container.style.paddingTop = 10;
-            container.style.paddingBottom = 10;
-
-            Label titleLabel = new Label(title);
-
-            titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            titleLabel.style.marginBottom = 4;
-
-            Label messageLabel = new Label(message);
-
-            messageLabel.style.color =
-                EditorGUIUtility.isProSkin
-                    ? new Color(0.65f, 0.65f, 0.65f)
-                    : new Color(0.35f, 0.35f, 0.35f);
-
-            container.Add(titleLabel);
-            container.Add(messageLabel);
-
-            _scrollView.Add(container);
         }
 
         #endregion
