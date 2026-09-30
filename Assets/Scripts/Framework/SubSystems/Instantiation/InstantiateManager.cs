@@ -29,12 +29,17 @@ namespace Framework
             /// <summary>
             /// 当前空闲实例
             /// </summary>
-            public readonly Queue<GameObject> Idle = new();
+            public readonly Queue<InstanceEntry> Idle = new();
 
             /// <summary>
             /// 当前借出的实例数量
             /// </summary>
             public int LentCount;
+
+            /// <summary>
+            /// 当前等待资源加载的请求
+            /// </summary>
+            public readonly List<PendingInstantiate> Pending = new();
 
             /// <summary>
             /// 当前等待资源加载的请求数量
@@ -50,6 +55,23 @@ namespace Framework
             /// 该资源位置第一次建池时确定的分组
             /// </summary>
             public ResGroup Group;
+
+            /// <summary>
+            /// 句柄完成回调。只绑定一次，句柄替换后重新绑定。
+            /// </summary>
+            public Action<AssetHandle> OnCompleted;
+
+            public bool CompletionBound;
+        }
+
+        /// <summary>
+        /// 一个池化实例的元数据。IPoolable 在创建时缓存，借还不再查找组件。
+        /// </summary>
+        private sealed class InstanceEntry
+        {
+            public GameObject Instance;
+            public SpawnEntry Spawn;
+            public IPoolable[] Poolables;
         }
 
         /// <summary>
@@ -84,9 +106,9 @@ namespace Framework
         private readonly Dictionary<string, SpawnEntry> _entries = new();
 
         /// <summary>
-        /// 记录当前借出的实例及其所属资源池
+        /// 记录当前借出的实例及其元数据
         /// </summary>
-        private readonly Dictionary<GameObject, SpawnEntry> _lent = new();
+        private readonly Dictionary<GameObject, InstanceEntry> _lent = new();
 
         /// <summary>
         /// 不进池的实例：Release 时销毁
@@ -94,14 +116,14 @@ namespace Framework
         private readonly HashSet<GameObject> _unpooled = new();
 
         /// <summary>
-        /// 等待资源加载完成的异步实例化请求
-        /// </summary>
-        private readonly List<PendingInstantiate> _pending = new();
-
-        /// <summary>
         /// 空闲资源卸载检查的临时列表
         /// </summary>
         private readonly List<string> _unloadScratch = new();
+
+        /// <summary>
+        /// 切场景时收集待销毁借出实例
+        /// </summary>
+        private readonly List<GameObject> _lentScratch = new();
 
         private float _idleUnloadSeconds;
 
@@ -191,23 +213,58 @@ namespace Framework
                 return;
             }
 
-            if (!_lent.TryGetValue(instance, out SpawnEntry entry))
+            if (!_lent.TryGetValue(instance, out InstanceEntry tracked))
             {
                 Debug.LogError($"[{nameof(InstantiateManager)}] Release ignored: instance was not created by the instance facade.");
                 return;
             }
 
-            ResetPooledInstance(instance);
+            SpawnEntry entry = tracked.Spawn;
             _lent.Remove(instance);
-            instance.SetActive(false);
-            instance.transform.SetParent(_groupRoots[(int)entry.Group]);
-            entry.Idle.Enqueue(instance);
             entry.LentCount--;
-
-            if (entry.LentCount == 0 && entry.PendingCount == 0) entry.IdleElapsed = 0f;
+            try
+            {
+                ResetPooledInstance(tracked);
+            }
+            finally
+            {
+                instance.SetActive(false);
+                instance.transform.SetParent(_groupRoots[(int)entry.Group]);
+                entry.Idle.Enqueue(tracked);
+                if (entry.LentCount == 0 && entry.PendingCount == 0)
+                    entry.IdleElapsed = 0f;
+            }
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// 切场景时销毁 VFX、Prefab、Temp。UI 与 Audio 保留，只走空闲超时卸载。
+        /// 卸载路径与空闲超时相同。
+        /// </summary>
+        public void ClearSceneGroups()
+        {
+            CancelScenePending();
+            DestroySceneLent();
+
+            _unloadScratch.Clear();
+            foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
+            {
+                if (ClearsOnSceneChange(pair.Value.Group))
+                    _unloadScratch.Add(pair.Key);
+            }
+
+            for (int i = 0; i < _unloadScratch.Count; i++)
+            {
+                string location = _unloadScratch[i];
+                if (!_entries.TryGetValue(location, out SpawnEntry entry))
+                    continue;
+
+                TryUnloadEntry(location, entry);
+            }
+
+            _unloadScratch.Clear();
+        }
+
         /// <summary>
         /// 销毁全部借出与空闲实例，并释放所有资源句柄
         /// </summary>
@@ -264,78 +321,94 @@ namespace Framework
             if (pooled) return Task.FromResult(pooled);
 
             PendingInstantiate pending = new(location, group, options);
-
+            entry.Pending.Add(pending);
             entry.PendingCount++;
 
             AssetHandle handle = GetOrLoadHandle(location, entry, true);
             if (handle == null)
             {
+                entry.Pending.Remove(pending);
                 entry.PendingCount--;
                 pending.Completion.TrySetResult(null);
                 RemoveUnusedEntry(location, entry);
                 return pending.Completion.Task;
             }
 
-            _pending.Add(pending);
+            if (handle.IsDone)
+                CompletePending(entry);
+            else
+                EnsureCompletion(entry);
+
             return pending.Completion.Task;
         }
 
-        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 尝试完成一个异步实例化请求。
+        /// 句柄完成时，结束该资源池上的全部等待请求。
         /// </summary>
-        private bool TryCompletePending(PendingInstantiate pending)
+        private void EnsureCompletion(SpawnEntry entry)
         {
-            if (!_entries.TryGetValue(pending.Location, out SpawnEntry entry))
-            {
-                pending.Completion.TrySetResult(null);
-                return true;
-            }
+            if (entry.Handle == null || entry.CompletionBound)
+                return;
 
-            if (entry.Group != pending.Group)
-            {
-                Debug.LogError($"[{nameof(InstantiateManager)}] '{pending.Location}' is already in {entry.Group}, refused {pending.Group}.");
-                pending.Completion.TrySetResult(null);
-                return true;
-            }
+            entry.OnCompleted ??= _ => CompletePending(entry);
+            entry.CompletionBound = true;
+            entry.Handle.Completed += entry.OnCompleted;
+        }
 
+        private void CompletePending(SpawnEntry entry)
+        {
+            if (entry.Pending.Count == 0)
+                return;
+
+            string location = entry.Pending[0].Location;
             AssetHandle handle = entry.Handle;
-            if (handle == null)
+            if (handle == null || !handle.IsValid || handle.AssetObject is not GameObject)
             {
+                LogInstantiateFailed(location);
+                FailPending(entry);
+                DisposeHandle(entry);
+                RemoveUnusedEntry(location, entry);
+                return;
+            }
+
+            while (entry.Pending.Count > 0)
+            {
+                PendingInstantiate pending = entry.Pending[0];
+                entry.Pending.RemoveAt(0);
                 entry.PendingCount--;
-                LogInstantiateFailed(pending.Location);
-                pending.Completion.TrySetResult(null);
-                RemoveUnusedEntry(pending.Location, entry);
-                return true;
+
+                if (pending.Group != entry.Group)
+                {
+                    Debug.LogError($"[{nameof(InstantiateManager)}] '{pending.Location}' is already in {entry.Group}, refused {pending.Group}.");
+                    pending.Completion.TrySetResult(null);
+                    continue;
+                }
+
+                GameObject instance = InstantiateFromHandle(entry, handle, pending.Options);
+                if (!instance)
+                {
+                    LogInstantiateFailed(pending.Location);
+                    pending.Completion.TrySetResult(null);
+                    continue;
+                }
+
+                pending.Completion.TrySetResult(instance);
             }
 
-            if (!handle.IsDone)
-                return false;
+            RemoveUnusedEntry(location, entry);
+        }
 
-            if (handle.AssetObject is not GameObject)
+        private void FailPending(SpawnEntry entry)
+        {
+            for (int i = 0; i < entry.Pending.Count; i++)
             {
-                entry.PendingCount--;
-                LogInstantiateFailed(pending.Location);
-                handle.Dispose();
-                entry.Handle = null;
-                pending.Completion.TrySetResult(null);
-                RemoveUnusedEntry(pending.Location, entry);
-                return true;
+                PendingInstantiate pending = entry.Pending[i];
+                if (!pending.Completion.Task.IsCompleted)
+                    pending.Completion.TrySetResult(null);
             }
 
-            GameObject instance = InstantiateFromHandle(entry, handle, pending.Options);
-            entry.PendingCount--;
-
-            if (!instance)
-            {
-                LogInstantiateFailed(pending.Location);
-                pending.Completion.TrySetResult(null);
-                RemoveUnusedEntry(pending.Location, entry);
-                return true;
-            }
-
-            pending.Completion.TrySetResult(instance);
-            return true;
+            entry.PendingCount = 0;
+            entry.Pending.Clear();
         }
 
         #endregion
@@ -349,16 +422,17 @@ namespace Framework
         {
             while (entry.Idle.Count > 0)
             {
-                GameObject instance = entry.Idle.Dequeue();
+                InstanceEntry tracked = entry.Idle.Dequeue();
+                GameObject instance = tracked.Instance;
 
                 if (!instance)
                     continue;
 
+                ResetPooledInstance(tracked);
                 ApplyOptions(instance, options);
-                ResetPooledInstance(instance);
 
                 entry.LentCount++;
-                _lent[instance] = entry;
+                _lent[instance] = tracked;
                 entry.IdleElapsed = 0f;
 
                 return instance;
@@ -385,20 +459,13 @@ namespace Framework
         }
 
         /// <summary>
-        /// 还池或再次借出前重置。没有实现 <see cref="IPoolable"/> 的实例不能进池。
+        /// 还池或再次借出前重置。组件列表在创建时缓存。
         /// </summary>
-        private static void ResetPooledInstance(GameObject instance)
+        private static void ResetPooledInstance(InstanceEntry tracked)
         {
-            IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
-            if (poolables.Length == 0)
-            {
-                throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
-            }
-
-            foreach (var t in poolables)
-            {
-                t.Reset();
-            }
+            IPoolable[] poolables = tracked.Poolables;
+            for (int i = 0; i < poolables.Length; i++)
+                poolables[i].Reset();
         }
 
         /// <summary>
@@ -409,14 +476,22 @@ namespace Framework
             GameObject instance = handle.InstantiateSync(options);
             if (!instance) return null;
 
-            if (instance.GetComponentInChildren<IPoolable>(true) == null)
+            IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
+            if (poolables.Length == 0)
             {
                 DestroyInstance(instance);
                 throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
             }
 
+            InstanceEntry tracked = new()
+            {
+                Instance = instance,
+                Spawn = entry,
+                Poolables = poolables
+            };
+
             entry.LentCount++;
-            _lent[instance] = entry;
+            _lent[instance] = tracked;
 
             return instance;
         }
@@ -444,9 +519,8 @@ namespace Framework
             if (handle.AssetObject is not GameObject)
             {
                 if (!async) LogInstantiateFailed(location);
-                
-                handle.Dispose();
-                entry.Handle = null;
+
+                DisposeHandle(entry);
                 return null;
             }
 
@@ -480,15 +554,19 @@ namespace Framework
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// 卸载一个已经完全空闲的资源池。
+        /// 卸载已经没有借出和等待加载的资源池。仍在使用时不释放句柄。
         /// </summary>
-        private void UnloadEntry(string location, SpawnEntry entry)
+        private bool TryUnloadEntry(string location, SpawnEntry entry)
         {
-            while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue());
-            entry.Handle?.Dispose();
-            entry.Handle = null;
+            if (entry.LentCount > 0 || entry.PendingCount > 0)
+                return false;
 
+            while (entry.Idle.Count > 0)
+                DestroyInstance(entry.Idle.Dequeue().Instance);
+
+            DisposeHandle(entry);
             _entries.Remove(location);
+            return true;
         }
 
         /// <summary>
@@ -499,34 +577,104 @@ namespace Framework
             if (entry.LentCount > 0 || entry.PendingCount > 0 || entry.Idle.Count > 0)
                 return;
 
-            if (_entries.TryGetValue(location, out SpawnEntry current) && ReferenceEquals(current, entry))
+            if (!_entries.TryGetValue(location, out SpawnEntry current) || !ReferenceEquals(current, entry))
+                return;
+
+            DisposeHandle(entry);
+            _entries.Remove(location);
+        }
+
+        private void DisposeHandle(SpawnEntry entry)
+        {
+            AssetHandle handle = entry.Handle;
+            if (handle == null)
+                return;
+
+            if (entry.CompletionBound && entry.OnCompleted != null)
             {
-                entry.Handle?.Dispose();
-                entry.Handle = null;
-                _entries.Remove(location);
+                handle.Completed -= entry.OnCompleted;
+                entry.CompletionBound = false;
             }
+
+            entry.Handle = null;
+            handle.Dispose();
         }
 
         #endregion
 
         #region Pending
 
+        private static bool ClearsOnSceneChange(ResGroup group)
+        {
+            return group == ResGroup.VFX || group == ResGroup.Prefab || group == ResGroup.Temp;
+        }
+
+        /// <summary>
+        /// 取消切场景分组上尚未完成的实例化请求。
+        /// </summary>
+        private void CancelScenePending()
+        {
+            foreach (SpawnEntry entry in _entries.Values)
+            {
+                if (!ClearsOnSceneChange(entry.Group))
+                    continue;
+
+                for (int i = entry.Pending.Count - 1; i >= 0; i--)
+                {
+                    PendingInstantiate pending = entry.Pending[i];
+                    if (!pending.Completion.Task.IsCompleted)
+                        pending.Completion.TrySetResult(null);
+
+                    entry.Pending.RemoveAt(i);
+                }
+
+                entry.PendingCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// 销毁切场景分组中仍借出的实例。场景卸载后已销毁的实例只从登记中移除。
+        /// </summary>
+        private void DestroySceneLent()
+        {
+            _lentScratch.Clear();
+            foreach (KeyValuePair<GameObject, InstanceEntry> pair in _lent)
+            {
+                if (ClearsOnSceneChange(pair.Value.Spawn.Group))
+                    _lentScratch.Add(pair.Key);
+            }
+
+            for (int i = 0; i < _lentScratch.Count; i++)
+            {
+                GameObject instance = _lentScratch[i];
+                if (!_lent.TryGetValue(instance, out InstanceEntry tracked))
+                    continue;
+
+                _lent.Remove(instance);
+                tracked.Spawn.LentCount--;
+                DestroyInstance(instance);
+            }
+
+            _lentScratch.Clear();
+        }
+
         /// <summary>
         /// 清理所有等待中的异步实例化请求。
         /// </summary>
         private void ClearPending()
         {
-            for (int i = 0; i < _pending.Count; i++)
+            foreach (SpawnEntry entry in _entries.Values)
             {
-                PendingInstantiate pending = _pending[i];
+                for (int i = 0; i < entry.Pending.Count; i++)
+                {
+                    PendingInstantiate pending = entry.Pending[i];
+                    if (!pending.Completion.Task.IsCompleted)
+                        pending.Completion.TrySetResult(null);
+                }
 
-                if (pending.Completion.Task.IsCompleted)
-                    continue;
-
-                pending.Completion.TrySetResult(null);
+                entry.Pending.Clear();
+                entry.PendingCount = 0;
             }
-
-            _pending.Clear();
         }
 
         #endregion
@@ -561,8 +709,7 @@ namespace Framework
             foreach (var location in _unloadScratch)
             {
                 if (!_entries.TryGetValue(location, out SpawnEntry entry)) continue;
-                if (entry.LentCount > 0 || entry.PendingCount > 0) continue;
-                UnloadEntry(location, entry);
+                TryUnloadEntry(location, entry);
             }
 
             _unloadScratch.Clear();
@@ -625,14 +772,14 @@ namespace Framework
         {
             foreach (SpawnEntry entry in _entries.Values)
             {
-                while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue());
+                while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue().Instance);
             }
         }
 
         private void ClearEntries()
         {
             foreach (SpawnEntry entry in _entries.Values)
-                entry.Handle?.Dispose();
+                DisposeHandle(entry);
 
             _entries.Clear();
         }
@@ -690,22 +837,6 @@ namespace Framework
 
         public override void Update(float deltaTime)
         {
-            int pendingCount = _pending.Count;
-
-            for (int i = 0; i < pendingCount;)
-            {
-                PendingInstantiate pending = _pending[i];
-
-                if (!TryCompletePending(pending))
-                {
-                    i++;
-                    continue;
-                }
-
-                _pending.RemoveAt(i);
-                pendingCount--;
-            }
-
             TickIdleUnload(deltaTime);
         }
 
