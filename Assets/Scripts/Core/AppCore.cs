@@ -50,7 +50,6 @@ namespace Core
         {
             InitSubSystems();
             InitDataProxy();
-            InitUI();
         }
 
         /// <summary>
@@ -75,12 +74,6 @@ namespace Core
         private void InitDataProxy()
         {
             // TODO: 初始化全局数据代理
-        }
-
-        private void InitUI()
-        {
-            // TODO: 初始化全局UI
-            Global.ShowUI("MainScenePanel");
         }
 
         #endregion

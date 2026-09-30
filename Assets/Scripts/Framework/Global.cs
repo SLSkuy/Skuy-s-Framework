@@ -210,7 +210,7 @@ namespace Framework
             Get<UIManager>().HideUI(uiName);
         }
         
-        public static void HideAll()
+        public static void HideAllUI()
         {
             Get<UIManager>().HideAllUI();
         }

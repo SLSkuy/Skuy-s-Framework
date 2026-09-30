@@ -16,6 +16,12 @@ namespace Framework
             public ResGroup group;
             public bool sceneClear;
             public bool idleUnload;
+
+            /// <summary>
+            /// 进池对象是否必须实现 <see cref="IPoolable"/>。UI 在显示时走 UpdateView 刷新，不靠 Reset 复位。
+            /// </summary>
+            public bool requirePoolable;
+
             public int maxIdleCount;
             public int prewarmCount;
             public float idleUnloadSeconds;
@@ -23,11 +29,11 @@ namespace Framework
 
         [SerializeField] private Setting[] settings =
         {
-            new() { group = ResGroup.UI, sceneClear = false, idleUnload = true, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f },
-            new() { group = ResGroup.Audio, sceneClear = false, idleUnload = true, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f },
-            new() { group = ResGroup.VFX, sceneClear = true, idleUnload = true, maxIdleCount = 64, prewarmCount = 0, idleUnloadSeconds = 30f },
-            new() { group = ResGroup.Prefab, sceneClear = true, idleUnload = true, maxIdleCount = 256, prewarmCount = 0, idleUnloadSeconds = 30f },
-            new() { group = ResGroup.Temp, sceneClear = true, idleUnload = true, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f }
+            new() { group = ResGroup.UI, sceneClear = false, idleUnload = true, requirePoolable = false, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f },
+            new() { group = ResGroup.Audio, sceneClear = false, idleUnload = true, requirePoolable = true, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f },
+            new() { group = ResGroup.VFX, sceneClear = true, idleUnload = true, requirePoolable = true, maxIdleCount = 64, prewarmCount = 0, idleUnloadSeconds = 30f },
+            new() { group = ResGroup.Prefab, sceneClear = true, idleUnload = true, requirePoolable = true, maxIdleCount = 256, prewarmCount = 0, idleUnloadSeconds = 30f },
+            new() { group = ResGroup.Temp, sceneClear = true, idleUnload = true, requirePoolable = true, maxIdleCount = 32, prewarmCount = 0, idleUnloadSeconds = 30f }
         };
 
         private Dictionary<ResGroup, Setting> _lookup;

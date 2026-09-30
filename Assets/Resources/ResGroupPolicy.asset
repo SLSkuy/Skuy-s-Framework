@@ -16,30 +16,35 @@ MonoBehaviour:
   - group: 0
     sceneClear: 0
     idleUnload: 1
+    requirePoolable: 0
     maxIdleCount: 32
     prewarmCount: 0
     idleUnloadSeconds: 30
   - group: 2
     sceneClear: 0
     idleUnload: 1
+    requirePoolable: 1
     maxIdleCount: 32
     prewarmCount: 0
     idleUnloadSeconds: 30
   - group: 1
     sceneClear: 1
     idleUnload: 1
+    requirePoolable: 1
     maxIdleCount: 64
     prewarmCount: 0
     idleUnloadSeconds: 30
   - group: 3
     sceneClear: 1
     idleUnload: 1
+    requirePoolable: 1
     maxIdleCount: 256
     prewarmCount: 0
     idleUnloadSeconds: 30
   - group: 4
     sceneClear: 1
     idleUnload: 1
+    requirePoolable: 1
     maxIdleCount: 32
     prewarmCount: 0
     idleUnloadSeconds: 30

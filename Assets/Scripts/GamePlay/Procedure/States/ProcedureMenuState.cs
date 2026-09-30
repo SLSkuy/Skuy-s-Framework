@@ -22,9 +22,10 @@ namespace GamePlay.Procedure
 
         public override void Enter()
         {
-            Cursor.lockState = CursorLockMode.None;
-            
             _procedures.TearDownSession();
+            
+            Cursor.lockState = CursorLockMode.None;
+            Global.ShowUI("MainScenePanel");
         }
 
         #endregion

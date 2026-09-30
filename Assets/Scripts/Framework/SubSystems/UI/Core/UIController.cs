@@ -7,7 +7,7 @@ namespace Framework.Core
     /// <summary>
     /// UI界面控制器基类，用于实现单个UI界面的所有逻辑
     /// </summary>
-    public class UIController<T> : MonoBehaviour, IPoolable, IUIController where T : IUIProperties
+    public class UIController<T> : MonoBehaviour, IUIController where T : IUIProperties
     {
         #region 控制器属性
 
@@ -205,12 +205,6 @@ namespace Framework.Core
         protected void CloseUIRequested(IUIController controller)
         {
             CloseRequested?.Invoke(controller);
-        }
-        
-        
-        public virtual void Reset()
-        {
-            
         }
         
         #endregion

@@ -121,6 +121,7 @@ namespace Framework
             _currentSceneName = _loadingSceneName;
             Global.Get<InstantiateManager>().ClearSceneGroups();
             Global.Get<ResourceManager>().ClearUnused();
+            Global.HideAllUI();
             _isHolding = true;
             _holdElapsed = 0f;
         }

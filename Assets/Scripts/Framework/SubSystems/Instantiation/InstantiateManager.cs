@@ -75,6 +75,7 @@ namespace Framework
 
         /// <summary>
         /// 一个池化实例的元数据。IPoolable 在创建时缓存，借还不再查找组件。
+        /// 分组策略不要求 IPoolable 时该数组可以为空，复位交给业务自己做。
         /// </summary>
         private sealed class InstanceEntry
         {
@@ -532,10 +533,10 @@ namespace Framework
             if (!instance) return null;
 
             IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
-            if (poolables.Length == 0)
+            if (poolables.Length == 0 && entry.Policy.requirePoolable)
             {
                 DestroyInstance(instance);
-                throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入对象池。");
+                throw new InvalidOperationException($"实例 {instance.name} 未实现 {nameof(IPoolable)}，不能进入 {entry.Group} 池。");
             }
 
             return new InstanceEntry
