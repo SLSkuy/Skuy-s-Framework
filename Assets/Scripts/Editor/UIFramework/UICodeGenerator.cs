@@ -38,7 +38,7 @@ namespace Framework.Editor
         private string pendingControllerName = "";
         private bool waitingForCompilation = false;
 
-        [MenuItem("Tools/UI Framework/UI Code Generator")]
+        [MenuItem("Tools/Framework/UI Code Generator")]
         public static void ShowWindow()
         {
             GetWindow<UICodeGenerator>("UI Code Generator");

@@ -33,7 +33,7 @@ namespace Framework.Editor
             public bool selected = true;
         }
 
-        [MenuItem("Tools/Protobuf/Proto Compiler")]
+        [MenuItem("Tools/Framework/Proto Compiler")]
         public static void ShowWindow()
         {
             var window = GetWindow<ProtoCompilerWindow>("Proto Compiler");
