@@ -40,7 +40,7 @@ namespace UI.Loading
             _tracking = true;
         }
 
-        protected override void WhileHiding()
+        protected override void OnHide()
         {
             _tracking = false;
         }

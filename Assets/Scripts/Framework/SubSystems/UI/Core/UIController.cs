@@ -70,7 +70,6 @@ namespace Framework.Core
                 if (props is T uiProperties)
                 {
                     SetProperties(uiProperties);
-                    OnPropertyChange();
                 }
                 else
                 {
@@ -91,6 +90,7 @@ namespace Framework.Core
             }
 
             OnShow();
+            UpdateView();
         }
 
         /// <summary>
@@ -102,13 +102,21 @@ namespace Framework.Core
         }
 
         /// <summary>
+        /// 更新UI显示数据，可以是获取新的数据来源，或是使用变更的UIProperties
+        /// </summary>
+        protected virtual void UpdateView()
+        {
+            
+        }
+
+        /// <summary>
         /// 隐藏界面
         /// </summary>
         /// <param name="animate">是否播放动画</param>
         public void Hide(bool animate = true)
         {
             DoAnimation(animate ? animOut : null, OnTransitionOutFinished, false);
-            WhileHiding();
+            OnHide();
         }
 
         /// <summary>
@@ -172,7 +180,7 @@ namespace Framework.Core
         /// <summary>
         /// 界面隐藏时触发处理逻辑，由子类添加自定义行为
         /// </summary>
-        protected virtual void WhileHiding()
+        protected virtual void OnHide()
         {
             
         }
@@ -180,14 +188,6 @@ namespace Framework.Core
         protected virtual void SetProperties(T props)
         {
             properties = props;
-        }
-        
-        /// <summary>
-        /// UI界面属性设置时调用
-        /// </summary>
-        protected virtual void OnPropertyChange()
-        {
-            
         }
 
         /// <summary>
