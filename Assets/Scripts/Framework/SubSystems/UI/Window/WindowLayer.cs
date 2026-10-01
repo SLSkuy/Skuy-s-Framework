@@ -12,8 +12,6 @@ namespace Framework
     /// </summary>
     public class WindowLayer : UIBaseLayer<IWindowController>
     {
-        #region 内部成员
-
         /// <summary>
         /// 辅助界面用于显示弹窗等窗口
         /// 带蒙黑
@@ -21,6 +19,12 @@ namespace Framework
         [SerializeField] private WindowPriorityLayer priorityLayerWindow;
 
         public IWindowController CurrentWindow { get; private set; }
+
+        private List<string> _readyToShow;
+        private Queue<string> _windowQueue;
+        private Stack<string> _windowHistory;
+
+        #region 事件
 
         /// <summary>
         /// 按窗口名取回控制器。未在册时由外部实例化。
@@ -37,13 +41,8 @@ namespace Framework
         /// </summary>
         public event Action<string> WindowHidden;
 
-        private List<string> _readyToShow;
-        private Queue<string> _windowQueue;
-        private Stack<string> _windowHistory;
-
         public event Action RequestedScreenBlock;
         public event Action RequestedScreenUnBlock;
-        
         #endregion
         
         #region 窗口控制器管理方法

@@ -42,14 +42,14 @@ namespace Framework.Editor
 
         #endregion
 
-        private const string PrefabRoot = "Assets/Prefabs/UI";
-        private const string ScriptRoot = "Assets/Scripts/UI";
-        private const string AddMarkerBegin = "// <ui-bind:add>";
-        private const string AddMarkerEnd = "// </ui-bind:add>";
-        private const string RemoveMarkerBegin = "// <ui-bind:remove>";
-        private const string RemoveMarkerEnd = "// </ui-bind:remove>";
-        private const string LifecycleRegion = "#region 生命周期";
-        private const string CallbackRegion = "#region UI回调";
+        private const string PREFAB_ROOT = "Assets/Prefabs/UI";
+        private const string SCRIPT_ROOT = "Assets/Scripts/UI";
+        private const string ADD_MARKER_BEGIN = "// <ui-bind:add>";
+        private const string ADD_MARKER_END = "// </ui-bind:add>";
+        private const string REMOVE_MARKER_BEGIN = "// <ui-bind:remove>";
+        private const string REMOVE_MARKER_END = "// </ui-bind:remove>";
+        private const string LIFECYCLE_REGION = "#region 生命周期";
+        private const string CALLBACK_REGION = "#region UI回调";
 
         private static readonly HashSet<string> Reserved = new()
         {
@@ -178,30 +178,30 @@ namespace Framework.Editor
                 return;
             }
 
-            if (!prefabPath.StartsWith(PrefabRoot + "/", StringComparison.Ordinal))
+            if (!prefabPath.StartsWith(PREFAB_ROOT + "/", StringComparison.Ordinal))
             {
-                Debug.LogError($"[UIFramework] {prefabPath} 不在 {PrefabRoot} 下，无法推导脚本路径");
+                Debug.LogError($"[UIFramework] {prefabPath} 不在 {PREFAB_ROOT} 下，无法推导脚本路径");
                 return;
             }
 
             if (!Validate(view)) return;
 
             string className = Path.GetFileNameWithoutExtension(prefabPath);
-            string relativeDir = Path.GetDirectoryName(prefabPath[(PrefabRoot.Length + 1)..])?.Replace('\\', '/') ?? string.Empty;
+            string relativeDir = Path.GetDirectoryName(prefabPath[(PREFAB_ROOT.Length + 1)..])?.Replace('\\', '/') ?? string.Empty;
             string namespaceName = "UI";
             bool isWindow = view.Kind == UIView.ViewKind.Window;
 
             List<ButtonHook> hooks = CollectButtonHooks(view);
 
-            string bindingPath = Path.Combine(ScriptRoot, "Binding", relativeDir, className + ".Binding.cs").Replace('\\', '/');
+            string bindingPath = Path.Combine(SCRIPT_ROOT, "Binding", relativeDir, className + ".Binding.cs").Replace('\\', '/');
             WriteFile(bindingPath, BuildBinding(view, namespaceName, className, isWindow));
 
-            string logicPath = Path.Combine(ScriptRoot, "Logic", relativeDir, className + ".cs");
+            string logicPath = Path.Combine(SCRIPT_ROOT, "Logic", relativeDir, className + ".cs");
             WriteFile(logicPath, File.Exists(logicPath)
                 ? UpdateLogic(File.ReadAllText(logicPath), hooks, logicPath, namespaceName)
                 : BuildLogic(namespaceName, className, hooks));
 
-            string propertiesPath = Path.Combine(ScriptRoot, "Properties", relativeDir, className + "Properties.cs");
+            string propertiesPath = Path.Combine(SCRIPT_ROOT, "Properties", relativeDir, className + "Properties.cs");
             if (!File.Exists(propertiesPath))
             {
                 WriteFile(propertiesPath, BuildProperties(namespaceName, className, isWindow));
@@ -288,7 +288,7 @@ namespace Framework.Editor
         {
             List<string> broken = new();
 
-            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { PrefabRoot }))
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { PREFAB_ROOT }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
@@ -380,14 +380,14 @@ namespace Framework.Editor
             builder.AppendLine("    /// </summary>");
             builder.AppendLine($"    public partial class {className}");
             builder.AppendLine("    {");
-            builder.AppendLine($"        {LifecycleRegion}");
+            builder.AppendLine($"        {LIFECYCLE_REGION}");
             builder.AppendLine();
             builder.AppendLine("        protected override void Init()");
             builder.AppendLine("        {");
             builder.AppendLine("            // TODO: 初始化界面数据与控件状态");
-            builder.AppendLine($"            {AddMarkerBegin}");
+            builder.AppendLine($"            {ADD_MARKER_BEGIN}");
             builder.Append(BuildListenerLines(hooks, true));
-            builder.AppendLine($"            {AddMarkerEnd}");
+            builder.AppendLine($"            {ADD_MARKER_END}");
             builder.AppendLine("        }");
             builder.AppendLine();
             builder.AppendLine("        protected override void AddListener()");
@@ -398,9 +398,9 @@ namespace Framework.Editor
             builder.AppendLine("        protected override void RemoveListener()");
             builder.AppendLine("        {");
             builder.AppendLine("            // TODO: 取消订阅，并交给基类清理控制器事件");
-            builder.AppendLine($"            {RemoveMarkerBegin}");
+            builder.AppendLine($"            {REMOVE_MARKER_BEGIN}");
             builder.Append(BuildListenerLines(hooks, false));
-            builder.AppendLine($"            {RemoveMarkerEnd}");
+            builder.AppendLine($"            {REMOVE_MARKER_END}");
             builder.AppendLine("            base.RemoveListener();");
             builder.AppendLine("        }");
             builder.AppendLine();
@@ -411,7 +411,7 @@ namespace Framework.Editor
             if (hooks.Count > 0)
             {
                 builder.AppendLine();
-                builder.AppendLine($"        {CallbackRegion}");
+                builder.AppendLine($"        {CALLBACK_REGION}");
 
                 foreach (ButtonHook hook in hooks)
                 {
@@ -431,16 +431,16 @@ namespace Framework.Editor
         private static string UpdateLogic(string text, List<ButtonHook> hooks, string logicPath, string namespaceName)
         {
             text = RetargetNamespace(text, namespaceName);
-            text = ReplaceBetween(text, AddMarkerBegin, AddMarkerEnd, BuildListenerLines(hooks, true), logicPath);
-            text = ReplaceBetween(text, RemoveMarkerBegin, RemoveMarkerEnd, BuildListenerLines(hooks, false), logicPath);
+            text = ReplaceBetween(text, ADD_MARKER_BEGIN, ADD_MARKER_END, BuildListenerLines(hooks, true), logicPath);
+            text = ReplaceBetween(text, REMOVE_MARKER_BEGIN, REMOVE_MARKER_END, BuildListenerLines(hooks, false), logicPath);
 
             if (!text.Contains("void UpdateView(", StringComparison.Ordinal))
-                text = InsertBeforeRegionEnd(text, LifecycleRegion, BuildUpdateView());
+                text = InsertBeforeRegionEnd(text, LIFECYCLE_REGION, BuildUpdateView());
 
             foreach (ButtonHook hook in hooks)
             {
                 if (text.Contains($"void {hook.Callback}(", StringComparison.Ordinal)) continue;
-                text = InsertBeforeRegionEnd(text, CallbackRegion, BuildCallback(hook));
+                text = InsertBeforeRegionEnd(text, CALLBACK_REGION, BuildCallback(hook));
             }
 
             return text;

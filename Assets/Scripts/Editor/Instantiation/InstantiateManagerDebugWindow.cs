@@ -11,7 +11,7 @@ namespace Framework.Editor
 {
     public sealed class InstantiateManagerDebugWindow : EditorWindow
     {
-        private const double RefreshInterval = 0.5d;
+        private const double REFRESH_INTERVAL = 0.5d;
 
         private readonly List<InstantiateManager.DebugGroupStat> _groups = new();
         private readonly List<InstantiateManager.DebugLocationStat> _locations = new();
@@ -66,7 +66,7 @@ namespace Framework.Editor
             if (EditorApplication.timeSinceStartup < _nextRefresh)
                 return;
 
-            _nextRefresh = EditorApplication.timeSinceStartup + RefreshInterval;
+            _nextRefresh = EditorApplication.timeSinceStartup + REFRESH_INTERVAL;
             RefreshView();
         }
 
