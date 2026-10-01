@@ -1,6 +1,6 @@
 using System;
 
-namespace Framework.Core
+namespace Framework
 {
     /// <summary>
     /// UI界面控制器接口

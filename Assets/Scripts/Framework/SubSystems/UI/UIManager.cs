@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Framework.Core;
-using Framework.Panel;
-using Framework.Window;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;

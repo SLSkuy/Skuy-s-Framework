@@ -1,7 +1,6 @@
-using Framework.Core;
 using UnityEngine;
 
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 面板（Panel）的Layer

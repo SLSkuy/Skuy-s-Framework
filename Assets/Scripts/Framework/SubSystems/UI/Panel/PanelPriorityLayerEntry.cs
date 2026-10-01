@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 面板优先级子层对象

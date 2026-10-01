@@ -1,4 +1,4 @@
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 定义面板的优先级

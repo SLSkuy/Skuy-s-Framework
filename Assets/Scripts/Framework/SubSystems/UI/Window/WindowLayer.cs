@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Framework.Core;
 using UnityEngine;
 
-namespace Framework.Window
+namespace Framework
 {
     /// <summary>
     /// 窗口（Window）的Layer

@@ -1,4 +1,4 @@
-namespace Framework.Core
+namespace Framework
 {
     /// <summary>
     /// UI界面属性接口

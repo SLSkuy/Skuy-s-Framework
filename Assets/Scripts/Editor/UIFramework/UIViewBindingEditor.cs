@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Framework.Core;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Build;
@@ -189,7 +188,7 @@ namespace Framework.Editor
 
             string className = Path.GetFileNameWithoutExtension(prefabPath);
             string relativeDir = Path.GetDirectoryName(prefabPath[(PrefabRoot.Length + 1)..])?.Replace('\\', '/') ?? string.Empty;
-            string namespaceName = string.IsNullOrEmpty(relativeDir) ? "UI" : "UI." + relativeDir.Replace('/', '.');
+            string namespaceName = "UI";
             bool isWindow = view.Kind == UIView.ViewKind.Window;
 
             List<ButtonHook> hooks = CollectButtonHooks(view);
@@ -199,15 +198,30 @@ namespace Framework.Editor
 
             string logicPath = Path.Combine(ScriptRoot, "Logic", relativeDir, className + ".cs");
             WriteFile(logicPath, File.Exists(logicPath)
-                ? UpdateLogic(File.ReadAllText(logicPath), hooks, logicPath)
+                ? UpdateLogic(File.ReadAllText(logicPath), hooks, logicPath, namespaceName)
                 : BuildLogic(namespaceName, className, hooks));
 
             string propertiesPath = Path.Combine(ScriptRoot, "Properties", relativeDir, className + "Properties.cs");
             if (!File.Exists(propertiesPath))
+            {
                 WriteFile(propertiesPath, BuildProperties(namespaceName, className, isWindow));
+            }
+            else
+            {
+                // 属性文件由人维护，只跟着命名空间规则迁移，内容不动
+                string existing = File.ReadAllText(propertiesPath);
+                string migrated = RetargetNamespace(existing, namespaceName);
+                if (migrated != existing) WriteFile(propertiesPath, migrated);
+            }
 
             Undo.RecordObject(view, "完成UI绑定");
             view.ControllerTypeName = $"{namespaceName}.{className}, {ResolveAssemblyName(bindingPath)}";
+
+            // 首次生成时属性类还没编译出来，下一次生成才能换成生成的类型
+            Type propertiesType = ResolvePropertiesType(view);
+            if (view.Properties?.GetType() != propertiesType)
+                view.Properties = (IUIProperties)Activator.CreateInstance(propertiesType);
+
             EditorUtility.SetDirty(view);
 
             // 预制体编辑模式下的改动随预制体保存落盘，直接选中预制体资源时需要立刻写回
@@ -249,6 +263,24 @@ namespace Framework.Editor
         }
 
         /// <summary>
+        /// 取出该界面应当使用的属性类型。
+        /// 生成过代码就用同命名空间下的 <c>类名Properties</c>，还没生成就按界面类别退回框架基类。
+        /// </summary>
+        public static Type ResolvePropertiesType(UIView view)
+        {
+            int split = view.ControllerTypeName?.IndexOf(',') ?? -1;
+            if (split > 0)
+            {
+                string typeName = view.ControllerTypeName[..split];
+                string assembly = view.ControllerTypeName[(split + 1)..].Trim();
+                Type generated = Type.GetType($"{typeName}Properties, {assembly}");
+                if (generated != null) return generated;
+            }
+
+            return view.Kind == UIView.ViewKind.Window ? typeof(WindowProperties) : typeof(PanelProperties);
+        }
+
+        /// <summary>
         /// 找出所有界面脚本类型名解析不到的UI预制体。
         /// 预制体里只存了类型名字符串，改类名、挪命名空间、加程序集都会让它过期，打包前必须拦住。
         /// </summary>
@@ -264,9 +296,21 @@ namespace Framework.Editor
                 if (!view) continue;
 
                 if (string.IsNullOrEmpty(view.ControllerTypeName))
+                {
                     broken.Add($"{path}：还没有生成代码");
-                else if (Type.GetType(view.ControllerTypeName) == null)
+                    continue;
+                }
+
+                if (Type.GetType(view.ControllerTypeName) == null)
+                {
                     broken.Add($"{path}：解析不到 {view.ControllerTypeName}");
+                    continue;
+                }
+
+                // 生成的 Bind 会把界面属性强转成生成的属性类，类型对不上运行时会抛异常
+                Type expected = ResolvePropertiesType(view);
+                if (view.Properties == null || view.Properties.GetType() != expected)
+                    broken.Add($"{path}：界面属性不是 {expected.Name}，重新生成一次代码");
             }
 
             return broken;
@@ -274,8 +318,8 @@ namespace Framework.Editor
 
         private static string BuildBinding(UIView view, string namespaceName, string className, bool isWindow)
         {
-            SortedSet<string> usings = new(StringComparer.Ordinal) { "Framework.Core", "UnityEngine.Scripting" };
-            usings.Add(isWindow ? "Framework.Window" : "Framework.Panel");
+            SortedSet<string> usings = new(StringComparer.Ordinal) { "UnityEngine.Scripting" };
+            usings.Add("Framework");
 
             foreach (UIView.Binding binding in view.Bindings)
                 usings.Add(binding.Target.GetType().Namespace);
@@ -305,7 +349,7 @@ namespace Framework.Editor
 
             builder.AppendLine();
             builder.AppendLine("        /// <summary>");
-            builder.AppendLine("        /// 由 UIView 在挂载后调用，写入预制体上绑定的控件");
+            builder.AppendLine("        /// 由 UIView 在挂载后调用，写入预制体上绑定的控件、界面属性和过渡动画");
             builder.AppendLine("        /// </summary>");
             builder.AppendLine("        public void Bind(UIView view)");
             builder.AppendLine("        {");
@@ -316,6 +360,10 @@ namespace Framework.Editor
                 builder.AppendLine($"            _{binding.FieldName} = ({type})view.GetBinding(\"{binding.FieldName}\");");
             }
 
+            builder.AppendLine();
+            builder.AppendLine($"            Properties = ({className}Properties)view.Properties;");
+            builder.AppendLine("            AnimIn = view.AnimIn;");
+            builder.AppendLine("            AnimOut = view.AnimOut;");
             builder.AppendLine("        }");
             builder.AppendLine("    }");
             builder.AppendLine("}");
@@ -380,8 +428,9 @@ namespace Framework.Editor
             return builder.ToString();
         }
 
-        private static string UpdateLogic(string text, List<ButtonHook> hooks, string logicPath)
+        private static string UpdateLogic(string text, List<ButtonHook> hooks, string logicPath, string namespaceName)
         {
+            text = RetargetNamespace(text, namespaceName);
             text = ReplaceBetween(text, AddMarkerBegin, AddMarkerEnd, BuildListenerLines(hooks, true), logicPath);
             text = ReplaceBetween(text, RemoveMarkerBegin, RemoveMarkerEnd, BuildListenerLines(hooks, false), logicPath);
 
@@ -401,7 +450,7 @@ namespace Framework.Editor
         {
             StringBuilder builder = new();
             builder.AppendLine("using System;");
-            builder.AppendLine(isWindow ? "using Framework.Window;" : "using Framework.Panel;");
+            builder.AppendLine("using Framework;");
             builder.AppendLine();
             builder.AppendLine($"namespace {namespaceName}");
             builder.AppendLine("{");
@@ -414,20 +463,24 @@ namespace Framework.Editor
             {
                 builder.AppendLine($"    public class {className}Properties : WindowProperties");
                 builder.AppendLine("    {");
+                builder.AppendLine("        // TODO: 补上该界面需要的数据字段，加上 SerializeField 即可在 UIView 上配置");
+                builder.AppendLine();
+                builder.AppendLine("        // 供预制体上的 UIView 序列化使用");
+                builder.AppendLine($"        public {className}Properties() " + "{ }");
+                builder.AppendLine();
                 builder.AppendLine($"        public {className}Properties(WindowPriority priority, bool hideOnForegroundLost, bool isPopup)");
-                builder.AppendLine("            : base(priority, hideOnForegroundLost, isPopup)");
-                builder.AppendLine("        {");
-                builder.AppendLine("            // TODO: 补上该界面需要的数据字段");
-                builder.AppendLine("        }");
+                builder.AppendLine("            : base(priority, hideOnForegroundLost, isPopup) { }");
             }
             else
             {
                 builder.AppendLine($"    public class {className}Properties : PanelProperties");
                 builder.AppendLine("    {");
-                builder.AppendLine($"        public {className}Properties(PanelPriority priority) : base(priority)");
-                builder.AppendLine("        {");
-                builder.AppendLine("            // TODO: 补上该界面需要的数据字段");
-                builder.AppendLine("        }");
+                builder.AppendLine("        // TODO: 补上该界面需要的数据字段，加上 SerializeField 即可在 UIView 上配置");
+                builder.AppendLine();
+                builder.AppendLine("        // 供预制体上的 UIView 序列化使用");
+                builder.AppendLine($"        public {className}Properties() " + "{ }");
+                builder.AppendLine();
+                builder.AppendLine($"        public {className}Properties(PanelPriority priority) : base(priority)" + "{ }");
             }
 
             builder.AppendLine("    }");
@@ -641,6 +694,21 @@ namespace Framework.Editor
                 : null;
         }
 
+        /// <summary>
+        /// 把已有文件的命名空间改成当前生成用的，改过命名空间规则之后不用手动挪文件
+        /// </summary>
+        private static string RetargetNamespace(string text, string namespaceName)
+        {
+            int begin = text.IndexOf("namespace ", StringComparison.Ordinal);
+            if (begin < 0) return text;
+
+            int end = text.IndexOf('\n', begin);
+            if (end < 0) end = text.Length;
+
+            string replacement = $"namespace {namespaceName}";
+            return text[begin..end].TrimEnd('\r') == replacement ? text : text[..begin] + replacement + text[end..];
+        }
+
         private static void WriteFile(string path, string content)
         {
             path = path.Replace('\\', '/');
@@ -672,9 +740,14 @@ namespace Framework.Editor
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("controllerTypeName"));
 
+            DrawProperties();
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("animIn"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("animOut"));
+
             SerializedProperty bindings = serializedObject.FindProperty("bindings");
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"控件引用（{bindings.arraySize}）", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"组件引用（{bindings.arraySize}）", EditorStyles.boldLabel);
 
             int removeIndex = -1;
 
@@ -737,6 +810,20 @@ namespace Framework.Editor
 
             if (GUILayout.Button("生成代码", GUILayout.Height(24f)))
                 UIViewBindingEditor.Generate((UIView)target);
+        }
+
+        /// <summary>
+        /// 画界面属性。实例类型跟着界面类别和生成的属性类走，对不上就换一个新的。
+        /// </summary>
+        private void DrawProperties()
+        {
+            SerializedProperty properties = serializedObject.FindProperty("properties");
+            Type expected = UIViewBindingEditor.ResolvePropertiesType((UIView)target);
+
+            if (properties.managedReferenceValue?.GetType() != expected)
+                properties.managedReferenceValue = Activator.CreateInstance(expected);
+
+            EditorGUILayout.PropertyField(properties, new GUIContent(expected.Name, "界面属性，运行时写入控制器"), true);
         }
     }
 

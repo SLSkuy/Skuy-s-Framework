@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Framework.Window
+namespace Framework
 {
     /// <summary>
     /// 带蒙黑的辅助层

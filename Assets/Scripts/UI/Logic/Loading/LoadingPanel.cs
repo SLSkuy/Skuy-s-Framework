@@ -1,25 +1,22 @@
 using Framework;
-using Framework.Panel;
-using UnityEngine;
-using UnityEngine.UI;
 
-namespace UI.Loading
+namespace UI
 {
     /// <summary>
-    /// 进程级加载面板：订阅场景加载事件，显示期间读取视觉进度。
+    /// LoadingPanel 的界面逻辑
     /// </summary>
-    public class LoadingPanelController : PanelController
+    public partial class LoadingPanel
     {
-        [SerializeField] private Image progressFill;
-
         private SceneLoader _sceneLoader;
         private bool _tracking;
+        
+        #region 生命周期
 
         protected override void Init()
         {
-            progressFill.fillAmount = 0f;
+            _progressBar.fillAmount = 0f;
         }
-
+        
         protected override void AddListener()
         {
             _sceneLoader = Global.Get<SceneLoader>();
@@ -33,24 +30,33 @@ namespace UI.Loading
             _sceneLoader.Failed -= HandleFailed;
             base.RemoveListener();
         }
+        
+        private void Update()
+        {
+            if (!_tracking) return;
 
+            _progressBar.fillAmount = _sceneLoader.CurrentProgress;
+        }
+        
         protected override void OnShow()
         {
-            progressFill.fillAmount = _sceneLoader.CurrentProgress;
+            _progressBar.fillAmount = _sceneLoader.CurrentProgress;
             _tracking = true;
         }
-
+        
         protected override void OnHide()
         {
             _tracking = false;
         }
 
-        private void Update()
+        protected override void UpdateView()
         {
-            if (!_tracking) return;
-
-            progressFill.fillAmount = _sceneLoader.CurrentProgress;
+            // TODO: 用界面属性刷新控件显示
         }
+
+        #endregion
+
+        #region UI回调
 
         private void HandleCompleted(string sceneName)
         {
@@ -61,5 +67,7 @@ namespace UI.Loading
         {
             Hide();
         }
+
+        #endregion
     }
 }

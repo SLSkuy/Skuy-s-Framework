@@ -25,7 +25,6 @@ namespace GamePlay.Procedure
             _procedures.TearDownSession();
             
             Cursor.lockState = CursorLockMode.None;
-            Global.ShowUI("MainScenePanel");
         }
 
         #endregion

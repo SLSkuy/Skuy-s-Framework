@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
-using Framework.UIAnimation;
 using UnityEngine;
 
-namespace Framework.Examples
+namespace Framework
 {
     /// <summary>
     /// 单个UI界面具体动画实现

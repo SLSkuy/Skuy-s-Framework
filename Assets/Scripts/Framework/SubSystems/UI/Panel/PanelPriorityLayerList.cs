@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 根据优先级划分面板层的子层

@@ -328,7 +328,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: UI.MainScenePanel, Assembly-CSharp
         m_MethodName: UI_LocalPlay
         m_Mode: 1
         m_Arguments:
@@ -600,7 +600,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: UI.MainScenePanel, Assembly-CSharp
         m_MethodName: UI_Exit
         m_Mode: 1
         m_Arguments:
@@ -1011,7 +1011,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: UI.MainScenePanel, Assembly-CSharp
         m_MethodName: UI_Join
         m_Mode: 1
         m_Arguments:
@@ -1072,7 +1072,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.Core.UIView
   kind: 0
-  controllerTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
+  controllerTypeName: UI.MainScenePanel, Assembly-CSharp
+  properties:
+    rid: 2511793658892910700
+  animIn: {fileID: 0}
+  animOut: {fileID: 0}
   bindings:
   - fieldName: exitBtn
     target: {fileID: 363689608746696445}
@@ -1084,6 +1088,13 @@ MonoBehaviour:
     target: {fileID: 3705245885713685074}
   - fieldName: settings
     target: {fileID: 1701842236551125901}
+  references:
+    version: 2
+    RefIds:
+    - rid: 2511793658892910700
+      type: {class: MainScenePanelProperties, ns: UI, asm: Assembly-CSharp}
+      data:
+        priority: 0
 --- !u!1 &8196305937834333688
 GameObject:
   m_ObjectHideFlags: 0
@@ -1206,7 +1217,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UI.MainScene.MainScenePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: UI.MainScenePanel, Assembly-CSharp
         m_MethodName: UI_MultiPlay
         m_Mode: 1
         m_Arguments:

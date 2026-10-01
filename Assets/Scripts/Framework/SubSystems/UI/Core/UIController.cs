@@ -1,8 +1,7 @@
 using System;
-using Framework.UIAnimation;
 using UnityEngine;
 
-namespace Framework.Core
+namespace Framework
 {
     /// <summary>
     /// UI界面控制器基类，用于实现单个UI界面的所有逻辑
@@ -119,6 +118,7 @@ namespace Framework.Core
             OnHide();
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 播放UI界面过渡动画，当动画播放完毕后调用回调函数
         /// </summary>
@@ -127,7 +127,7 @@ namespace Framework.Core
         /// <param name="visible">设置UI界面可见性</param>
         private void DoAnimation(AnimComponent anim, Action callback, bool visible)
         {
-            if (anim == null)
+            if (!anim)
             {
                 // 没有过渡动画处理
                 gameObject.SetActive(visible);

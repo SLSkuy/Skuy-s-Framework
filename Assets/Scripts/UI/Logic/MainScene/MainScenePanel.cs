@@ -1,7 +1,7 @@
 using Framework;
 using GamePlay.Procedure;
 
-namespace UI.MainScene
+namespace UI
 {
     /// <summary>
     /// MainScenePanel 的界面逻辑

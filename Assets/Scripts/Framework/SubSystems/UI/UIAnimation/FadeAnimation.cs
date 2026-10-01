@@ -1,5 +1,4 @@
 using System;
-using Framework.UIAnimation;
 using UnityEngine;
 
 namespace Framework

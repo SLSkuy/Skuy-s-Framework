@@ -2,12 +2,11 @@
 //     此文件为自动生成文件，请勿手改，重新绑定会覆盖。
 // </auto-generated>
 
-using Framework.Core;
-using Framework.Panel;
+using Framework;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
 
-namespace UI.MainScene
+namespace UI
 {
     /// <summary>
     /// MainScenePanel 的控件绑定
@@ -22,7 +21,7 @@ namespace UI.MainScene
         private Button _settings;
 
         /// <summary>
-        /// 由 UIView 在挂载后调用，写入预制体上绑定的控件
+        /// 由 UIView 在挂载后调用，写入预制体上绑定的控件、界面属性和过渡动画
         /// </summary>
         public void Bind(UIView view)
         {
@@ -31,6 +30,10 @@ namespace UI.MainScene
             _localPlayBtn = (Button)view.GetBinding("localPlayBtn");
             _multiPlayBtn = (Button)view.GetBinding("multiPlayBtn");
             _settings = (Button)view.GetBinding("settings");
+
+            Properties = (MainScenePanelProperties)view.Properties;
+            AnimIn = view.AnimIn;
+            AnimOut = view.AnimOut;
         }
     }
 }

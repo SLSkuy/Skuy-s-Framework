@@ -1,6 +1,4 @@
-using Framework.Core;
-
-namespace Framework.Window
+namespace Framework
 {
     /// <summary>
     /// 窗口界面属性

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Framework.Panel
+namespace Framework
 {
     [Serializable]
     public class PanelProperties : IPanelProperties
@@ -14,6 +14,11 @@ namespace Framework.Panel
         public PanelPriority Priority { get => priority; set => priority = value; }
         
         #endregion
+
+        // 供预制体上的 UIView 序列化使用
+        public PanelProperties()
+        {
+        }
 
         public PanelProperties(PanelPriority priority)
         {

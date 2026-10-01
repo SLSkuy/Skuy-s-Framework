@@ -1,4 +1,4 @@
-namespace Framework.Window
+namespace Framework
 {
     public enum WindowPriority
     {

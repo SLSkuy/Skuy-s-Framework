@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Framework.Core
+namespace Framework
 {
     /// <summary>
     /// 基础UI界面的Layer

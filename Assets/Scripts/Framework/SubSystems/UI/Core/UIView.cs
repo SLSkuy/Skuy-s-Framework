@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Framework.Core
+namespace Framework
 {
     /// <summary>
     /// 预制体上的界面壳。编辑期保存绑定的控件引用，运行时挂上生成的界面脚本、写入引用后移除自身。
@@ -54,6 +54,13 @@ namespace Framework.Core
         [SerializeField] [Tooltip("界面类别，决定生成脚本继承的控制器基类")] private ViewKind kind;
         [SerializeField] [Tooltip("生成的界面脚本类型，程序集限定名，完成绑定时写入")] private string controllerTypeName;
 
+        // 实例类型跟着界面类别和生成的属性类走，由 Inspector 维护
+        [SerializeReference] [Tooltip("界面属性，运行时写入控制器")] private IUIProperties properties;
+
+        [Header("UI过渡动画")]
+        [SerializeField] [Tooltip("显示动画")] private AnimComponent animIn;
+        [SerializeField] [Tooltip("隐藏动画")] private AnimComponent animOut;
+
         [Header("控件引用")]
         [SerializeField] [Tooltip("已绑定的控件，由各组件 Inspector 上的绑定按钮维护")]
         private List<Binding> bindings = new();
@@ -62,6 +69,9 @@ namespace Framework.Core
 
         public ViewKind Kind { get => kind; set => kind = value; }
         public string ControllerTypeName { get => controllerTypeName; set => controllerTypeName = value; }
+        public IUIProperties Properties { get => properties; set => properties = value; }
+        public AnimComponent AnimIn { get => animIn; set => animIn = value; }
+        public AnimComponent AnimOut { get => animOut; set => animOut = value; }
         public List<Binding> Bindings => bindings;
 
         #endregion

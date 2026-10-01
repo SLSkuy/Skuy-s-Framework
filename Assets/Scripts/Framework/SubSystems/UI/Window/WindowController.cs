@@ -1,6 +1,4 @@
-using Framework.Core;
-
-namespace Framework.Window
+namespace Framework
 {
     /// <summary>
     /// 窗口控制器，控制窗口的各种行为

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Framework.UIAnimation
+namespace Framework
 {
     /// <summary>
     /// UI界面动画组件，用于设置UI界面的过渡行为

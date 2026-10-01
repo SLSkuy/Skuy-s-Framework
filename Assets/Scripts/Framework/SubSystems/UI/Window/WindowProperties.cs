@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Framework.Window
+namespace Framework
 {
     [Serializable]
     public class WindowProperties : IWindowProperties
@@ -20,6 +20,11 @@ namespace Framework.Window
         public bool IsPopup { get => isPopup; set => isPopup = value; }
 
         #endregion
+
+        // 供预制体上的 UIView 序列化使用
+        public WindowProperties()
+        {
+        }
 
         public WindowProperties(WindowPriority priority, bool hideOnForegroundLost, bool isPopup)
         {

@@ -1,6 +1,4 @@
-using Framework.Core;
-
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 面板UI控制器接口

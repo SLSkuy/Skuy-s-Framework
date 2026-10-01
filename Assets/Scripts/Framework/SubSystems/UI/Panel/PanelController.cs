@@ -1,6 +1,4 @@
-using Framework.Core;
-
-namespace Framework.Panel
+namespace Framework
 {
     /// <summary>
     /// 面板控制器基类，控制面板的各种行为
