@@ -18,7 +18,8 @@ namespace Framework
         public enum ViewKind
         {
             Panel,
-            Window
+            Window,
+            Scene
         }
 
         /// <summary>

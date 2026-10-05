@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f601562f883638469f92ce4b9377a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Framework.Core.UIView
-  kind: 0
+  kind: 2
   controllerTypeName: UI.LoadingPanel, Assembly-CSharp
   properties:
     rid: 2511793658892910692
@@ -223,5 +223,4 @@ MonoBehaviour:
     RefIds:
     - rid: 2511793658892910692
       type: {class: LoadingPanelProperties, ns: UI, asm: Assembly-CSharp}
-      data:
-        priority: 0
+      data: 

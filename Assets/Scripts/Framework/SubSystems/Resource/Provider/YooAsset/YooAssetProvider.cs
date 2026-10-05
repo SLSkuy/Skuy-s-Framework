@@ -14,6 +14,7 @@ namespace Framework
     {
         private ResourcePackage _package;
         private readonly EPlayMode _playMode;
+        private bool _stepSucceeded;
         private readonly string _packageName;
         private string _packageVersion;
 
@@ -60,9 +61,8 @@ namespace Framework
                 };
                 initializationOperation = _package.InitializePackageAsync(createParameters);
             }
-            
             // 离线打包模式
-            if (_playMode == EPlayMode.OfflinePlayMode)
+            else if (_playMode == EPlayMode.OfflinePlayMode)
             {
                 var createParameters = new OfflinePlayModeOptions
                 {
@@ -70,27 +70,30 @@ namespace Framework
                 };
                 initializationOperation = _package.InitializePackageAsync(createParameters);
             }
-            
-            yield return initializationOperation;
-            
-            if(initializationOperation is { Status: EOperationStatus.Succeeded })
-            {
-                Debug.Log($"[{GetType().Name}] 资源包加载成功");
-            }
-            else if(initializationOperation != null)
-            {
-                Debug.LogError($"[{GetType().Name}] 资源包初始化失败：{initializationOperation.Error}");
-            }
             else
             {
                 Debug.LogError($"[{GetType().Name}] 不受支持的资源加载模式：{_playMode}");
                 yield break;
             }
 
+            yield return initializationOperation;
+
+            if (initializationOperation == null || initializationOperation.Status != EOperationStatus.Succeeded)
+            {
+                string error = initializationOperation != null ? initializationOperation.Error : "初始化操作没有创建";
+                Debug.LogError($"[{GetType().Name}] 资源包初始化失败：{error}");
+                yield break;
+            }
+
+            Debug.Log($"[{GetType().Name}] 资源包加载成功");
+
             yield return UpdatePackageVersion(_package);
+            if (!_stepSucceeded) yield break;
+
             yield return UpdatePackageManifest(_package, _packageVersion);
-            
-            Debug.Log($"[{GetType()}] 资源包初始化完成");
+            if (!_stepSucceeded) yield break;
+
+            Debug.Log($"[{GetType().Name}] 资源包初始化完成");
             InitCompleted?.Invoke();
         }
 
@@ -99,20 +102,19 @@ namespace Framework
         /// </summary>
         private IEnumerator UpdatePackageVersion(ResourcePackage package)
         {
+            _stepSucceeded = false;
             var operation = package.RequestPackageVersionAsync();
             yield return operation;
-            
-            if (operation.Status == EOperationStatus.Succeeded)
+
+            if (operation.Status != EOperationStatus.Succeeded)
             {
-                //请求成功
-                _packageVersion = operation.PackageVersion;
-                Debug.Log($"[{GetType().Name}] 资源包版本信息 : {_packageVersion}");
-            }
-            else
-            {
-                //请求失败
                 Debug.LogError(operation.Error);
+                yield break;
             }
+
+            _packageVersion = operation.PackageVersion;
+            _stepSucceeded = true;
+            Debug.Log($"[{GetType().Name}] 资源包版本信息 : {_packageVersion}");
         }
         
         /// <summary>
@@ -120,18 +122,18 @@ namespace Framework
         /// </summary>
         private IEnumerator UpdatePackageManifest(ResourcePackage package, string packageVersion)
         {
+            _stepSucceeded = false;
             var operation = package.LoadPackageManifestAsync(new LoadPackageManifestOptions(packageVersion, 60));
             yield return operation;
 
-            if (operation.Status == EOperationStatus.Succeeded)
+            if (operation.Status != EOperationStatus.Succeeded)
             {
-                Debug.Log($"[{GetType().Name}] 资源包清单加载完成");
-            }
-            else
-            {
-                //更新失败
                 Debug.LogError(operation.Error);
+                yield break;
             }
+
+            _stepSucceeded = true;
+            Debug.Log($"[{GetType().Name}] 资源包清单加载完成");
         }
 
         #region 资源管理方法

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
@@ -17,7 +18,7 @@ namespace Framework
         /// <summary>
         /// 按资源位置管理资源句柄、对象池以及相关状态
         /// </summary>
-        private readonly Dictionary<string, SpawnEntry> _entries = new();
+        private readonly Dictionary<string, ResEntry> _entries = new();
 
         /// <summary>
         /// 记录当前借出的实例及其元数据
@@ -86,7 +87,7 @@ namespace Framework
         {
             if (!ValidateLocation(location)) return null;
 
-            AssetHandle handle = ResolveHandleForUnpooled(location, out bool disposeHandle);
+            AssetHandle handle = ResolveUnpooledHandle(location, out bool disposeHandle);
             if (handle == null) return null;
 
             GameObject instance = handle.InstantiateSync(options);
@@ -127,7 +128,7 @@ namespace Framework
                 return;
             }
 
-            SpawnEntry entry = tracked.Spawn;
+            ResEntry entry = tracked.Res;
             _lent.Remove(instance);
             entry.LentCount--;
             try
@@ -157,21 +158,16 @@ namespace Framework
         public void ClearSceneGroups()
         {
             CancelScenePending();
-            DestroySceneLent();
+            DestroySceneLent(); // 清理所有实例
 
             _unloadScratch.Clear();
-            foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
+            foreach (var pair in _entries.Where(pair => pair.Value.Policy.sceneClear))
             {
-                if (pair.Value.Policy.sceneClear)
-                    _unloadScratch.Add(pair.Key);
+                _unloadScratch.Add(pair.Key);
             }
-
-            for (int i = 0; i < _unloadScratch.Count; i++)
+            foreach (var location in _unloadScratch)
             {
-                string location = _unloadScratch[i];
-                if (!_entries.TryGetValue(location, out SpawnEntry entry))
-                    continue;
-
+                if (!_entries.TryGetValue(location, out ResEntry entry)) continue;
                 TryUnloadEntry(location, entry);
             }
 

@@ -21,9 +21,9 @@ namespace Framework
         private const float PANEL_VISIBLE_ELAPSED = -1f;
 
         /// <summary>
-        /// UIManager 自己实例化的界面。手动 Register 的界面不在此表中，不参与超时回收。
+        /// UIManager 缓存的UI，手动 Register 的界面不在此表中，不参与超时回收。
         /// </summary>
-        private sealed class OwnedUI
+        private sealed class CachedUI
         {
             public GameObject Instance;
             public IUIController Controller;
@@ -34,13 +34,14 @@ namespace Framework
             public float HiddenElapsed;
         }
 
-        private readonly Dictionary<string, OwnedUI> _ownedUIs = new();
+        private readonly Dictionary<string, CachedUI> _ownedUIs = new();
         private readonly List<string> _unloadScratch = new();
         
         // UI类别层级管理器
         private Transform _container;
         private PanelLayer _panelLayer;
         private WindowLayer _windowLayer;
+        private SceneLayer _sceneLayer;
         
         private GraphicRaycaster _graphicRaycaster;
         
@@ -87,7 +88,21 @@ namespace Framework
                     Debug.LogError("[UIFramework] UI Frame lacks Window Layer]");
                 }
             }
-            
+
+            if (!_sceneLayer)
+            {
+                _sceneLayer = _container.GetComponentInChildren<SceneLayer>();
+                if (_sceneLayer)
+                {
+                    _sceneLayer.Initialize();
+                    _sceneLayer.SceneHidden += BeginScreenIdle;
+                }
+                else
+                {
+                    Debug.LogError("[UIFramework] UI Frame lacks Scene Layer]");
+                }
+            }
+
             _graphicRaycaster = _container.GetComponent<GraphicRaycaster>();
         }
 
@@ -96,19 +111,19 @@ namespace Framework
             float timeout = ResGroupPolicy.Get(ResGroup.UI).idleUnloadSeconds;
             _unloadScratch.Clear();
 
-            foreach (KeyValuePair<string, OwnedUI> pair in _ownedUIs)
+            foreach (KeyValuePair<string, CachedUI> pair in _ownedUIs)
             {
-                OwnedUI owned = pair.Value;
-                if (owned.HiddenElapsed < 0f)
+                CachedUI cached = pair.Value;
+                if (cached.HiddenElapsed < 0f)
                     continue;
 
-                owned.HiddenElapsed += deltaTime;
-                if (owned.HiddenElapsed >= timeout)
+                cached.HiddenElapsed += deltaTime;
+                if (cached.HiddenElapsed >= timeout)
                     _unloadScratch.Add(pair.Key);
             }
 
             for (int i = 0; i < _unloadScratch.Count; i++)
-                ReleaseOwnedUI(_unloadScratch[i]);
+                ReleaseCachedUI(_unloadScratch[i]);
 
             _unloadScratch.Clear();
         }
@@ -120,7 +135,7 @@ namespace Framework
                 _unloadScratch.Add(id);
 
             for (int i = 0; i < _unloadScratch.Count; i++)
-                ReleaseOwnedUI(_unloadScratch[i]);
+                ReleaseCachedUI(_unloadScratch[i]);
 
             _unloadScratch.Clear();
 
@@ -143,6 +158,7 @@ namespace Framework
             _graphicRaycaster.enabled = true;
         }
 
+        // ========== Panel ==========
         public void ShowPanel(string id)
         {
             IUIController screen = LoadUI(id);
@@ -176,8 +192,10 @@ namespace Framework
             _panelLayer.HideUIByID(id);
             BeginScreenIdle(id);
         }
+        // ========== Panel ==========
 
-        public void OpenWindow(string id)
+        // ========== Window ==========
+        public void ShowWindow(string id)
         {
             IUIController screen = LoadUI(id);
             if (screen is IWindowController window)
@@ -190,7 +208,7 @@ namespace Framework
                 Debug.LogError($"[UIFramework] {id} is not a window");
         }
 
-        public void OpenWindow<T>(string id, T p) where T : IUIProperties
+        public void ShowWindow<T>(string id, T p) where T : IUIProperties
         {
             IUIController screen = LoadUI(id);
             if (screen is IWindowController window)
@@ -203,24 +221,46 @@ namespace Framework
                 Debug.LogError($"[UIFramework] {id} is not a window");
         }
 
-        public void CloseWindow(string id)
+        public void HideWindow(string id)
         {
             _windowLayer.HideUIByID(id);
         }
 
         public void CloseCurrentWindow()
         {
-            if(_windowLayer.CurrentWindow != null) CloseWindow(_windowLayer.CurrentWindow.UIControllerID);
+            if(_windowLayer.CurrentWindow != null) HideWindow(_windowLayer.CurrentWindow.UIControllerID);
+        }
+        // ========== Window ==========
+        
+        // ========== Scene ==========
+        public void ShowScene(string id)
+        {
+            IUIController screen = LoadUI(id);
+            if (screen is not ISceneController)
+            {
+                if (screen != null)
+                    Debug.LogError($"[UIFramework] {id} is not a scene screen");
+                return;
+            }
+
+            MarkScreenVisible(id);
+            _sceneLayer.ShowUIByID(id);
         }
 
-        /// <summary>
-        /// 根据传入的ID显示对应的UI界面，不分面板还是窗口
-        /// </summary>
-        /// <param name="id">UI界面ID</param>
+        public void HideScene(string id)
+        {
+            _sceneLayer.HideUIByID(id);
+        }
+        // ========== Scene ==========
+
         public void ShowUI(string id)
         {
             switch (LoadUI(id))
             {
+                case ISceneController:
+                    MarkScreenVisible(id);
+                    _sceneLayer.ShowUIByID(id);
+                    break;
                 case IWindowController:
                     _windowLayer.ShowUIByID(id);
                     break;
@@ -241,6 +281,10 @@ namespace Framework
         {
             switch (LoadUI(id))
             {
+                case ISceneController:
+                    MarkScreenVisible(id);
+                    _sceneLayer.ShowUIByID(id, p);
+                    break;
                 case IWindowController:
                     _windowLayer.ShowUIByID(id, p);
                     break;
@@ -260,9 +304,11 @@ namespace Framework
             if (IsUIRegistered(id, out var type))
             {
                 if (type == typeof(IWindowController))
-                    CloseWindow(id);
+                    HideWindow(id);
                 else if (type == typeof(IPanelController))
                     HidePanel(id);
+                else if (type == typeof(ISceneController))
+                    HideScene(id);
             }
             else
             {
@@ -270,15 +316,25 @@ namespace Framework
             }
         }
 
+        /// <summary>
+        /// 注册UI面板
+        /// </summary>
         public void RegisterUI(IUIController uiController, Transform uiTransform)
         {
             RegisterUI(uiController.UIControllerID, uiController, uiTransform);
         }
 
+        /// <summary>
+        /// 注册UI面板
+        /// </summary>
         public void RegisterUI(string id, IUIController uiController, Transform uiTransform)
         {
             switch (uiController)
             {
+                case ISceneController scene when uiTransform:
+                    _sceneLayer.RegisterUIController(id, scene);
+                    _sceneLayer.ReParentUI(scene, uiTransform);
+                    break;
                 case IWindowController window when uiTransform:
                     _windowLayer.RegisterUIController(id, window);
                     _windowLayer.ReParentUI(window, uiTransform);
@@ -299,15 +355,13 @@ namespace Framework
             UnregisterUI(id, uiController);
         }
 
-        public void UnregisterUI(IUIController uiController)
-        {
-            UnregisterUI(uiController.UIControllerID, uiController);
-        }
-
         public void UnregisterUI(string id, IUIController uiController)
         {
             switch (uiController)
             {
+                case ISceneController scene:
+                    _sceneLayer.UnregisterUIController(id, scene);
+                    break;
                 case IWindowController window:
                     _windowLayer.UnregisterUIController(id, window);
                     break;
@@ -326,11 +380,19 @@ namespace Framework
             _windowLayer.HideAllUI(animate);
 
             foreach (string id in _ownedUIs.Keys)
+            {
+                if (_sceneLayer.IsRegistered(id)) continue;
                 BeginScreenIdle(id);
+            }
         }
 
         public bool IsUIRegistered(string id, out Type type)
         {
+            if (_sceneLayer.IsRegistered(id))
+            {
+                type = typeof(ISceneController);
+                return true;
+            }
             if (_windowLayer.IsRegistered(id))
             {
                 type = typeof(IWindowController);
@@ -350,11 +412,15 @@ namespace Framework
         
         private IUIController GetUIController(string id)
         {
+            if (_sceneLayer.IsRegistered(id))
+            {
+                return _sceneLayer.GetUIController(id);
+            } 
             if (_windowLayer.IsRegistered(id))
             {
                 return _windowLayer.GetUIController(id);
             }
-            else if (_panelLayer.IsRegistered(id))
+            if (_panelLayer.IsRegistered(id))
             {
                 return _panelLayer.GetUIController(id);
             }
@@ -367,6 +433,7 @@ namespace Framework
         /// </summary>
         private IUIController LoadUI(string id)
         {
+            if (_sceneLayer.IsRegistered(id)) return _sceneLayer.GetUIController(id);
             if (_windowLayer.IsRegistered(id)) return _windowLayer.GetUIController(id);
             if (_panelLayer.IsRegistered(id)) return _panelLayer.GetUIController(id);
 
@@ -378,9 +445,10 @@ namespace Framework
             UIView view = instance.GetComponent<UIView>();
             if (view) view.ApplyBindings(id);
 
+            ISceneController scene = instance.GetComponent<ISceneController>();
             IWindowController window = instance.GetComponent<IWindowController>();
             IPanelController panel = instance.GetComponent<IPanelController>();
-            IUIController controller = window != null ? window : panel;
+            IUIController controller = scene != null ? scene : window != null ? window : panel;
             if (controller == null)
             {
                 Debug.LogError($"[UIFramework] {id} is not a screen");
@@ -389,7 +457,7 @@ namespace Framework
             }
 
             RegisterUI(id, controller, instance.transform);
-            _ownedUIs.Add(id, new OwnedUI
+            _ownedUIs.Add(id, new CachedUI
             {
                 Instance = instance,
                 Controller = controller,
@@ -408,19 +476,19 @@ namespace Framework
 
         private void MarkScreenVisible(string id)
         {
-            if (_ownedUIs.TryGetValue(id, out OwnedUI owned))
+            if (_ownedUIs.TryGetValue(id, out CachedUI owned))
                 owned.HiddenElapsed = PANEL_VISIBLE_ELAPSED;
         }
 
         private void BeginScreenIdle(string id)
         {
-            if (_ownedUIs.TryGetValue(id, out OwnedUI owned) && owned.HiddenElapsed < 0f)
+            if (_ownedUIs.TryGetValue(id, out CachedUI owned) && owned.HiddenElapsed < 0f)
                 owned.HiddenElapsed = 0f;
         }
 
-        private void ReleaseOwnedUI(string id)
+        private void ReleaseCachedUI(string id)
         {
-            if (!_ownedUIs.Remove(id, out OwnedUI owned)) return;
+            if (!_ownedUIs.Remove(id, out CachedUI owned)) return;
 
             UnregisterUI(id, owned.Controller);
             Global.Release(owned.Instance);

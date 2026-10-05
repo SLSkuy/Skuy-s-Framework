@@ -49,7 +49,7 @@ namespace Framework
             get
             {
                 int count = 0;
-                foreach (SpawnEntry entry in _entries.Values)
+                foreach (ResEntry entry in _entries.Values)
                     count += entry.PendingCount;
                 return count;
             }
@@ -72,7 +72,7 @@ namespace Framework
                 });
             }
 
-            foreach (SpawnEntry entry in _entries.Values)
+            foreach (ResEntry entry in _entries.Values)
             {
                 int index = (int)entry.Group;
                 DebugGroupStat stat = destination[index];
@@ -88,20 +88,20 @@ namespace Framework
         public void CopyDebugLocationStats(List<DebugLocationStat> destination)
         {
             destination.Clear();
-            var lentMemory = new Dictionary<SpawnEntry, long>();
+            var lentMemory = new Dictionary<ResEntry, long>();
             foreach (KeyValuePair<GameObject, InstanceEntry> pair in _lent)
             {
                 if (!pair.Key)
                     continue;
 
                 long size = Profiler.GetRuntimeMemorySizeLong(pair.Key);
-                lentMemory.TryGetValue(pair.Value.Spawn, out long current);
-                lentMemory[pair.Value.Spawn] = current + size;
+                lentMemory.TryGetValue(pair.Value.Res, out long current);
+                lentMemory[pair.Value.Res] = current + size;
             }
 
-            foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
+            foreach (KeyValuePair<string, ResEntry> pair in _entries)
             {
-                SpawnEntry entry = pair.Value;
+                ResEntry entry = pair.Value;
                 lentMemory.TryGetValue(entry, out long lentBytes);
                 destination.Add(new DebugLocationStat
                 {
@@ -122,7 +122,7 @@ namespace Framework
         public bool TryCopyDebugInstances(string location, List<DebugInstanceInfo> destination)
         {
             destination.Clear();
-            if (!_entries.TryGetValue(location, out SpawnEntry entry))
+            if (!_entries.TryGetValue(location, out ResEntry entry))
                 return false;
 
             foreach (InstanceEntry tracked in entry.Idle)
@@ -136,7 +136,7 @@ namespace Framework
 
             foreach (KeyValuePair<GameObject, InstanceEntry> pair in _lent)
             {
-                if (!ReferenceEquals(pair.Value.Spawn, entry))
+                if (!ReferenceEquals(pair.Value.Res, entry))
                     continue;
 
                 destination.Add(new DebugInstanceInfo
@@ -159,7 +159,7 @@ namespace Framework
                 destination.Add(instance);
         }
 
-        private static long MeasureIdleMemory(SpawnEntry entry)
+        private static long MeasureIdleMemory(ResEntry entry)
         {
             long bytes = 0;
             foreach (InstanceEntry tracked in entry.Idle)

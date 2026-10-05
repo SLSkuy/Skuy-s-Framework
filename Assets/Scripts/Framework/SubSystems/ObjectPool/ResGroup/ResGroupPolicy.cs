@@ -44,7 +44,7 @@ namespace Framework
         public static Setting Get(ResGroup group)
         {
             ResGroupPolicy policy = Instance;
-            if (!policy) throw new InvalidOperationException("Resources/ResGroupPolicy.asset 不存在，中断操作");
+            if (!policy) throw new InvalidOperationException("ResGroupPolicy.asset 不存在，中断操作");
 
             return policy.Find(group);
         }

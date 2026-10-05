@@ -25,6 +25,7 @@ namespace Core
         #endregion
 
         #region 事件
+        public static event Action OnAppReady;
         public static event Action OnAppQuit;
         #endregion
 
@@ -42,6 +43,9 @@ namespace Core
             ResourceMgr = SystemMgr.RegisterSystem<ResourceManager>();
             ResourceMgr.SetProvider(new YooAssetProvider(_config.defaultPackageName, _config.resourceMode));
             ResourceMgr.OnResourceReady += InitSystems;
+            
+            // 核心系统加载完毕，通知业务逻辑开始处理
+            OnAppReady?.Invoke();
         }
 
         #region Global

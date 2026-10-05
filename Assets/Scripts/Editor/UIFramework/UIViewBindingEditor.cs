@@ -189,12 +189,10 @@ namespace Framework.Editor
             string className = Path.GetFileNameWithoutExtension(prefabPath);
             string relativeDir = Path.GetDirectoryName(prefabPath[(PREFAB_ROOT.Length + 1)..])?.Replace('\\', '/') ?? string.Empty;
             string namespaceName = "UI";
-            bool isWindow = view.Kind == UIView.ViewKind.Window;
-
             List<ButtonHook> hooks = CollectButtonHooks(view);
 
             string bindingPath = Path.Combine(SCRIPT_ROOT, "Binding", relativeDir, className + ".Binding.cs").Replace('\\', '/');
-            WriteFile(bindingPath, BuildBinding(view, namespaceName, className, isWindow));
+            WriteFile(bindingPath, BuildBinding(view, namespaceName, className, view.Kind));
 
             string logicPath = Path.Combine(SCRIPT_ROOT, "Logic", relativeDir, className + ".cs");
             WriteFile(logicPath, File.Exists(logicPath)
@@ -204,7 +202,7 @@ namespace Framework.Editor
             string propertiesPath = Path.Combine(SCRIPT_ROOT, "Properties", relativeDir, className + "Properties.cs");
             if (!File.Exists(propertiesPath))
             {
-                WriteFile(propertiesPath, BuildProperties(namespaceName, className, isWindow));
+                WriteFile(propertiesPath, BuildProperties(namespaceName, className, view.Kind));
             }
             else
             {
@@ -277,7 +275,12 @@ namespace Framework.Editor
                 if (generated != null) return generated;
             }
 
-            return view.Kind == UIView.ViewKind.Window ? typeof(WindowProperties) : typeof(PanelProperties);
+            return view.Kind switch
+            {
+                UIView.ViewKind.Window => typeof(WindowProperties),
+                UIView.ViewKind.Scene => typeof(SceneProperties),
+                _ => typeof(PanelProperties)
+            };
         }
 
         /// <summary>
@@ -316,7 +319,17 @@ namespace Framework.Editor
             return broken;
         }
 
-        private static string BuildBinding(UIView view, string namespaceName, string className, bool isWindow)
+        private static string ControllerBaseName(UIView.ViewKind kind)
+        {
+            return kind switch
+            {
+                UIView.ViewKind.Window => "WindowController",
+                UIView.ViewKind.Scene => "SceneController",
+                _ => "PanelController"
+            };
+        }
+
+        private static string BuildBinding(UIView view, string namespaceName, string className, UIView.ViewKind kind)
         {
             SortedSet<string> usings = new(StringComparer.Ordinal) { "UnityEngine.Scripting" };
             usings.Add("Framework");
@@ -341,7 +354,7 @@ namespace Framework.Editor
             builder.AppendLine("    /// </summary>");
             // 只有预制体上的类型名字符串引用该类型，托管代码裁剪必须显式保留
             builder.AppendLine("    [Preserve]");
-            builder.AppendLine($"    public partial class {className} : {(isWindow ? "WindowController" : "PanelController")}, UIView.IBindable");
+            builder.AppendLine($"    public partial class {className} : {ControllerBaseName(kind)}, UIView.IBindable");
             builder.AppendLine("    {");
 
             foreach (UIView.Binding binding in view.Bindings)
@@ -446,7 +459,7 @@ namespace Framework.Editor
             return text;
         }
 
-        private static string BuildProperties(string namespaceName, string className, bool isWindow)
+        private static string BuildProperties(string namespaceName, string className, UIView.ViewKind kind)
         {
             StringBuilder builder = new();
             builder.AppendLine("using System;");
@@ -459,7 +472,7 @@ namespace Framework.Editor
             builder.AppendLine("    /// </summary>");
             builder.AppendLine("    [Serializable]");
 
-            if (isWindow)
+            if (kind == UIView.ViewKind.Window)
             {
                 builder.AppendLine($"    public class {className}Properties : WindowProperties");
                 builder.AppendLine("    {");
@@ -471,6 +484,15 @@ namespace Framework.Editor
                 builder.AppendLine($"        public {className}Properties(WindowPriority priority, bool hideOnForegroundLost, bool isPopup)");
                 builder.AppendLine("            : base(priority, hideOnForegroundLost, isPopup) { }");
             }
+            else if (kind == UIView.ViewKind.Scene)
+            {
+                builder.AppendLine($"    public class {className}Properties : SceneProperties");
+                builder.AppendLine("    {");
+                builder.AppendLine("        // TODO: 补上该界面需要的数据字段，加上 SerializeField 即可在 UIView 上配置");
+                builder.AppendLine();
+                builder.AppendLine("        // 供预制体上的 UIView 序列化使用");
+                builder.AppendLine($"        public {className}Properties() " + "{ }");
+            }
             else
             {
                 builder.AppendLine($"    public class {className}Properties : PanelProperties");
@@ -480,7 +502,7 @@ namespace Framework.Editor
                 builder.AppendLine("        // 供预制体上的 UIView 序列化使用");
                 builder.AppendLine($"        public {className}Properties() " + "{ }");
                 builder.AppendLine();
-                builder.AppendLine($"        public {className}Properties(PanelPriority priority) : base(priority)" + "{ }");
+                builder.AppendLine($"        public {className}Properties(PanelPriority priority) : base(priority) " + "{ }");
             }
 
             builder.AppendLine("    }");

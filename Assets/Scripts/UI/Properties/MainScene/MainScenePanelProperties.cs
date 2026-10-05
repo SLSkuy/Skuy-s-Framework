@@ -12,12 +12,8 @@ namespace UI
         // TODO: 补上该界面需要的数据字段，加上 SerializeField 即可在 UIView 上配置
 
         // 供预制体上的 UIView 序列化使用
-        public MainScenePanelProperties()
-        {
-        }
+        public MainScenePanelProperties() { }
 
-        public MainScenePanelProperties(PanelPriority priority) : base(priority)
-        {
-        }
+        public MainScenePanelProperties(PanelPriority priority) : base(priority){ }
     }
 }

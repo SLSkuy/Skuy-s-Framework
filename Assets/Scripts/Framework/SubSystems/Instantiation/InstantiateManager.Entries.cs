@@ -11,7 +11,7 @@ namespace Framework
         /// <summary>
         /// 一个资源位置对应的实例化池
         /// </summary>
-        private sealed class SpawnEntry
+        private sealed class ResEntry
         {
             /// <summary>
             /// 该资源位置对应的预制体句柄
@@ -73,7 +73,7 @@ namespace Framework
         private sealed class InstanceEntry
         {
             public GameObject Instance;
-            public SpawnEntry Spawn;
+            public ResEntry Res;
             public IPoolable[] Poolables;
         }
 

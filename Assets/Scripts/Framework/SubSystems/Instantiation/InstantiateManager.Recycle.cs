@@ -10,7 +10,7 @@ namespace Framework
         /// <summary>
         /// 获取或加载指定资源位置的预制体句柄。
         /// </summary>
-        private AssetHandle GetOrLoadHandle(string location, SpawnEntry entry, bool async)
+        private AssetHandle LoadHandle(string location, ResEntry entry, bool async)
         {
             if (entry.Handle != null) return entry.Handle;
             AssetHandle handle = async ? _resourceManager.LoadAsync<GameObject>(location) : _resourceManager.Load<GameObject>(location);
@@ -37,9 +37,9 @@ namespace Framework
         /// <summary>
         /// 不进池实例化使用已缓存的预制体句柄，否则加载一次并在实例化后释放。
         /// </summary>
-        private AssetHandle ResolveHandleForUnpooled(string location, out bool disposeHandle)
+        private AssetHandle ResolveUnpooledHandle(string location, out bool disposeHandle)
         {
-            if (_entries.TryGetValue(location, out SpawnEntry entry) && entry.Handle != null && entry.Handle.IsValid
+            if (_entries.TryGetValue(location, out ResEntry entry) && entry.Handle != null && entry.Handle.IsValid
                 && entry.Handle.IsDone && entry.Handle.AssetObject is GameObject)
             {
                 disposeHandle = false;
@@ -63,7 +63,7 @@ namespace Framework
         /// <summary>
         /// 卸载已经没有借出和等待加载的资源池。仍在使用时不释放句柄。
         /// </summary>
-        private bool TryUnloadEntry(string location, SpawnEntry entry)
+        private bool TryUnloadEntry(string location, ResEntry entry)
         {
             if (entry.LentCount > 0 || entry.PendingCount > 0)
                 return false;
@@ -79,19 +79,19 @@ namespace Framework
         /// <summary>
         /// 当资源池已经没有任何使用者时移除资源池。
         /// </summary>
-        private void RemoveUnusedEntry(string location, SpawnEntry entry)
+        private void RemoveUnusedEntry(string location, ResEntry entry)
         {
             if (entry.LentCount > 0 || entry.PendingCount > 0 || entry.Idle.Count > 0)
                 return;
 
-            if (!_entries.TryGetValue(location, out SpawnEntry current) || !ReferenceEquals(current, entry))
+            if (!_entries.TryGetValue(location, out ResEntry current) || !ReferenceEquals(current, entry))
                 return;
 
             DisposeHandle(entry);
             _entries.Remove(location);
         }
 
-        private void DisposeHandle(SpawnEntry entry)
+        private void DisposeHandle(ResEntry entry)
         {
             AssetHandle handle = entry.Handle;
             if (handle == null)
@@ -111,9 +111,9 @@ namespace Framework
         {
             _unloadScratch.Clear();
 
-            foreach (KeyValuePair<string, SpawnEntry> pair in _entries)
+            foreach (KeyValuePair<string, ResEntry> pair in _entries)
             {
-                SpawnEntry entry = pair.Value;
+                ResEntry entry = pair.Value;
 
                 if (!entry.Policy.idleUnload || entry.LentCount > 0 || entry.PendingCount > 0)
                 {
@@ -134,7 +134,7 @@ namespace Framework
 
             foreach (var location in _unloadScratch)
             {
-                if (!_entries.TryGetValue(location, out SpawnEntry entry)) continue;
+                if (!_entries.TryGetValue(location, out ResEntry entry)) continue;
                 TryUnloadEntry(location, entry);
             }
 
@@ -145,7 +145,7 @@ namespace Framework
         /// <summary>
         /// 取得资源池。不存在则按本次分组创建。已存在且分组不同则拒绝。
         /// </summary>
-        private bool TryGetOrCreateEntry(string location, ResGroup group, out SpawnEntry entry)
+        private bool TryGetOrCreateEntry(string location, ResGroup group, out ResEntry entry)
         {
             if (_entries.TryGetValue(location, out entry))
             {
@@ -157,7 +157,7 @@ namespace Framework
                 return false;
             }
 
-            entry = new SpawnEntry
+            entry = new ResEntry
             {
                 Group = group,
                 Policy = ResGroupPolicy.Get(group)
@@ -192,7 +192,7 @@ namespace Framework
 
         private void ClearIdleInstances()
         {
-            foreach (SpawnEntry entry in _entries.Values)
+            foreach (ResEntry entry in _entries.Values)
             {
                 while (entry.Idle.Count > 0) DestroyInstance(entry.Idle.Dequeue().Instance);
             }
@@ -200,7 +200,7 @@ namespace Framework
 
         private void ClearEntries()
         {
-            foreach (SpawnEntry entry in _entries.Values)
+            foreach (ResEntry entry in _entries.Values)
                 DisposeHandle(entry);
 
             _entries.Clear();

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
@@ -13,7 +13,7 @@ namespace Framework
         private Task<GameObject> InstantiateAsyncFromLocation(string location, ResGroup group, InstantiateOptions options)
         {
             if (!ValidateLocation(location)) return Task.FromResult<GameObject>(null);
-            if (!TryGetOrCreateEntry(location, group, out SpawnEntry entry))
+            if (!TryGetOrCreateEntry(location, group, out ResEntry entry))
                 return Task.FromResult<GameObject>(null);
 
             GameObject pooled = RentFromPool(entry, options);
@@ -23,7 +23,7 @@ namespace Framework
             entry.Pending.Add(pending);
             entry.PendingCount++;
 
-            AssetHandle handle = GetOrLoadHandle(location, entry, true);
+            AssetHandle handle = LoadHandle(location, entry, true);
             if (handle == null)
             {
                 entry.Pending.Remove(pending);
@@ -36,25 +36,25 @@ namespace Framework
             if (handle.IsDone)
                 CompletePending(entry);
             else
-                EnsureCompletion(entry);
+                WaitComplete(entry);
 
             return pending.Completion.Task;
         }
 
         /// <summary>
-        /// 句柄完成时，结束该资源池上的全部等待请求。
+        /// 还没加载完成，添加监听事件
+        /// 句柄完成时，结束该资源池上的全部等待请求
         /// </summary>
-        private void EnsureCompletion(SpawnEntry entry)
+        private void WaitComplete(ResEntry entry)
         {
-            if (entry.Handle == null || entry.CompletionBound)
-                return;
+            if (entry.Handle == null || entry.CompletionBound) return;
 
             entry.OnCompleted ??= _ => CompletePending(entry);
             entry.CompletionBound = true;
             entry.Handle.Completed += entry.OnCompleted;
         }
 
-        private void CompletePending(SpawnEntry entry)
+        private void CompletePending(ResEntry entry)
         {
             if (entry.Pending.Count == 0)
                 return;
@@ -86,8 +86,7 @@ namespace Framework
                 }
 
                 GameObject instance = RentFromPool(entry, pending.Options);
-                if (!instance)
-                    instance = InstantiateFromHandle(entry, handle, pending.Options);
+                if (!instance) instance = InstantiateFromHandle(entry, handle, pending.Options);
                 if (!instance)
                 {
                     LogInstantiateFailed(pending.Location);
@@ -101,13 +100,11 @@ namespace Framework
             RemoveUnusedEntry(location, entry);
         }
 
-        private void FailPending(SpawnEntry entry)
+        private void FailPending(ResEntry entry)
         {
-            for (int i = 0; i < entry.Pending.Count; i++)
+            foreach (var pending in entry.Pending.Where(pending => !pending.Completion.Task.IsCompleted))
             {
-                PendingInstantiate pending = entry.Pending[i];
-                if (!pending.Completion.Task.IsCompleted)
-                    pending.Completion.TrySetResult(null);
+                pending.Completion.TrySetResult(null);
             }
 
             entry.PendingCount = 0;
@@ -116,11 +113,8 @@ namespace Framework
 
         private void CancelScenePending()
         {
-            foreach (SpawnEntry entry in _entries.Values)
+            foreach (var entry in _entries.Values.Where(entry => entry.Policy.sceneClear))
             {
-                if (!entry.Policy.sceneClear)
-                    continue;
-
                 for (int i = entry.Pending.Count - 1; i >= 0; i--)
                 {
                     PendingInstantiate pending = entry.Pending[i];
@@ -140,20 +134,15 @@ namespace Framework
         private void DestroySceneLent()
         {
             _lentScratch.Clear();
-            foreach (KeyValuePair<GameObject, InstanceEntry> pair in _lent)
+            foreach (var pair in _lent.Where(pair => pair.Value.Res.Policy.sceneClear))
             {
-                if (pair.Value.Spawn.Policy.sceneClear)
-                    _lentScratch.Add(pair.Key);
+                _lentScratch.Add(pair.Key);
             }
-
-            for (int i = 0; i < _lentScratch.Count; i++)
+            foreach (var instance in _lentScratch)
             {
-                GameObject instance = _lentScratch[i];
-                if (!_lent.TryGetValue(instance, out InstanceEntry tracked))
-                    continue;
+                if (!_lent.Remove(instance, out InstanceEntry tracked)) continue;
 
-                _lent.Remove(instance);
-                tracked.Spawn.LentCount--;
+                tracked.Res.LentCount--;
                 DestroyInstance(instance);
             }
 
@@ -165,13 +154,11 @@ namespace Framework
         /// </summary>
         private void ClearPending()
         {
-            foreach (SpawnEntry entry in _entries.Values)
+            foreach (ResEntry entry in _entries.Values)
             {
-                for (int i = 0; i < entry.Pending.Count; i++)
+                foreach (var pending in entry.Pending.Where(pending => !pending.Completion.Task.IsCompleted))
                 {
-                    PendingInstantiate pending = entry.Pending[i];
-                    if (!pending.Completion.Task.IsCompleted)
-                        pending.Completion.TrySetResult(null);
+                    pending.Completion.TrySetResult(null);
                 }
 
                 entry.Pending.Clear();

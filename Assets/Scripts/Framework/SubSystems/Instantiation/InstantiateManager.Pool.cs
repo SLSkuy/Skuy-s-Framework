@@ -14,12 +14,12 @@ namespace Framework
         private GameObject InstantiateFromLocation(string location, ResGroup group, InstantiateOptions options)
         {
             if (!ValidateLocation(location)) return null;
-            if (!TryGetOrCreateEntry(location, group, out SpawnEntry entry)) return null;
+            if (!TryGetOrCreateEntry(location, group, out ResEntry entry)) return null;
 
             GameObject pooled = RentFromPool(entry, options);
             if (pooled) return pooled;
 
-            AssetHandle handle = GetOrLoadHandle(location, entry, false);
+            AssetHandle handle = LoadHandle(location, entry, false);
             if (handle == null)
             {
                 RemoveUnusedEntry(location, entry);
@@ -36,7 +36,7 @@ namespace Framework
         /// <summary>
         /// 尝试从对象池借出一个实例。
         /// </summary>
-        private GameObject RentFromPool(SpawnEntry entry, InstantiateOptions options)
+        private GameObject RentFromPool(ResEntry entry, InstantiateOptions options)
         {
             while (entry.Idle.Count > 0)
             {
@@ -89,7 +89,7 @@ namespace Framework
         /// <summary>
         /// 从资源句柄实例化 GameObject，并登记为借出实例。
         /// </summary>
-        private GameObject InstantiateFromHandle(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
+        private GameObject InstantiateFromHandle(ResEntry entry, AssetHandle handle, InstantiateOptions options)
         {
             InstanceEntry tracked = CreateTrackedInstance(entry, handle, options);
             if (tracked == null) return null;
@@ -103,7 +103,7 @@ namespace Framework
         /// <summary>
         /// 按策略把空闲实例预热进池。只执行一次，数量不超过空闲上限。
         /// </summary>
-        private void Prewarm(SpawnEntry entry, AssetHandle handle)
+        private void Prewarm(ResEntry entry, AssetHandle handle)
         {
             if (entry.Prewarmed)
                 return;
@@ -124,7 +124,7 @@ namespace Framework
             }
         }
 
-        private InstanceEntry CreateTrackedInstance(SpawnEntry entry, AssetHandle handle, InstantiateOptions options)
+        private InstanceEntry CreateTrackedInstance(ResEntry entry, AssetHandle handle, InstantiateOptions options)
         {
             GameObject instance = handle.InstantiateSync(options);
             if (!instance) return null;
@@ -139,7 +139,7 @@ namespace Framework
             return new InstanceEntry
             {
                 Instance = instance,
-                Spawn = entry,
+                Res = entry,
                 Poolables = poolables
             };
         }

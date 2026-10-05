@@ -12,7 +12,7 @@ namespace UI
     /// LoadingPanel 的控件绑定
     /// </summary>
     [Preserve]
-    public partial class LoadingPanel : PanelController, UIView.IBindable
+    public partial class LoadingPanel : SceneController, UIView.IBindable
     {
         private Image _progressBar;
 
