@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Core;
 using Framework;
 using GamePlay.DataProxy;
@@ -6,7 +5,6 @@ using GamePlay.Room;
 using NetSync;
 using Network;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace GamePlay.Procedure
 {
@@ -16,7 +14,6 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
-        private Queue<ProcedureTransition<ProcedureState>> _pendingTransitions;
         private StateMachine<ProcedureState> _fsm;
         private RoomManager _room;
         private NetClient _netClient;
@@ -28,6 +25,11 @@ namespace GamePlay.Procedure
         /// 这一场对局是怎么开起来的。菜单投递意图时写入，准备状态读取。
         /// </summary>
         public ProcedureIntent MatchIntent { get; private set; }
+
+        /// <summary>
+        /// 当前这一次带任务的切换。同时只有一个。
+        /// </summary>
+        public ProcedureTransition<ProcedureState> PendingTransition { get; private set; }
         #endregion
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace GamePlay.Procedure
         public void BackToMainMenu() => PostIntent(ProcedureIntent.BackToMenu);
 
         /// <summary>
-        /// 请求切换新的状态
+        /// 请求切换新的状态。没有任务时立刻切换；有任务时先进入加载状态，任务完成后再进入目标状态。
         /// </summary>
         private void RequestState(ProcedureState state, ILoadTask task = null)
         {
@@ -81,10 +83,12 @@ namespace GamePlay.Procedure
                 _fsm.ChangeState(state);
                 return;
             }
-            
-            
+
+            // 更新当前转换的任务
+            PendingTransition = new ProcedureTransition<ProcedureState>(state, task);
+            _fsm.ChangeState(ProcedureState.Loading);
         }
-        
+
         /// <summary>
         /// 经由加载闸门换场景。当前状态立刻退出，场景就绪之后才进入目标状态。
         /// </summary>
@@ -187,7 +191,6 @@ namespace GamePlay.Procedure
             _fsm.RegisterState(new ProcedurePreparingState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
             _fsm.RegisterState(new ProcedureLoadingState(_fsm, this));
-            _pendingTransitions = new Queue<ProcedureTransition<ProcedureState>>();
 
             // 子系统就绪之后才启动流程，已经就绪时立刻回调
             AppCore.OnAppReady += StartUp;
@@ -196,13 +199,6 @@ namespace GamePlay.Procedure
 
         private void Update()
         {
-            // ===== DEBUG =====
-            if (Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
-            {
-                BackToMainMenu();
-            }
-            // ===== DEBUG =====
-            
             _fsm.Update(Time.deltaTime);
         }
 
@@ -253,7 +249,7 @@ namespace GamePlay.Procedure
         }
 
         /// <summary>
-        /// 加载任务失败时场景没有换过去，仍停在发起加载时的那张图，直接回菜单。
+        /// 加载任务失败时没有进入目标状态。目标不是菜单时，再走回菜单。
         /// </summary>
         private void OnTransitionFailed(ProcedureTransition<ProcedureState> transition)
         {

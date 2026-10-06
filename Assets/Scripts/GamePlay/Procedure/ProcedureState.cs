@@ -1,7 +1,7 @@
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程：菜单、开局准备、对局。换场景是状态切换上的任务，不是一个状态。没有大厅。
+    /// 玩法流程：菜单、开局准备、加载、对局。加载状态跑切换任务，完成后再进入目标状态。没有大厅。
     /// </summary>
     public enum ProcedureState
     {

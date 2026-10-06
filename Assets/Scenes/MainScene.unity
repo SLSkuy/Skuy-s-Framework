@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 1789597559}
   - component: {fileID: 1789597560}
   - component: {fileID: 1789597561}
+  - component: {fileID: 1789597562}
   m_Layer: 0
   m_Name: '[GameRoot]'
   m_TagString: Untagged
@@ -313,6 +314,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c638a782c80098f4c92855ee95a982fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Procedure.ProcedureManager
+--- !u!114 &1789597562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789597558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77516fa795d34bc1913385b820ec3534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebugCore
 --- !u!1 &1856375603
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,6 +37,8 @@ namespace GamePlay.Procedure
             _sceneLoader.Failed += OnSceneLoadFailed;
             _sceneLoader.LoadScene(_sceneName);
 
+            ClearRes();
+            
             Global.ShowUI("LoadingPanel");
         }
 
@@ -52,6 +54,13 @@ namespace GamePlay.Procedure
             _sceneLoader.Completed -= OnSceneLoadCompleted;
             _sceneLoader.Failed -= OnSceneLoadFailed;
             _sceneLoader = null;
+        }
+
+        private void ClearRes()
+        {
+            Global.Get<InstantiateManager>().ClearSceneGroups();
+            Global.Get<ResourceManager>().ClearUnused();
+            Global.HideAllUI();
         }
 
         #region 事件回调

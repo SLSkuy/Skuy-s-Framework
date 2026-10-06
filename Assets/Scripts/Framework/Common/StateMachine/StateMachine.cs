@@ -72,12 +72,13 @@ namespace Framework
             
             _pendingStates.Enqueue(stateState);
             if (_isTransition) return;
-            
+
             _isTransition = true;
             while (_pendingStates.Count > 0)
             {
                 Transit(_pendingStates.Dequeue());
             }
+            _isTransition = false;
         }
         
         /// <summary>
@@ -104,6 +105,15 @@ namespace Framework
             _pendingStates.Clear();
             _current?.Exit();
             _current = null;
+            _isTransition = false;
+        }
+        
+        /// <summary>
+        /// 切换任务失败，没有进入目标状态。
+        /// </summary>
+        public void NotifyTransitionFailed(ProcedureTransition<TEnum> transition)
+        {
+            OnTransitionFailed?.Invoke(transition);
         }
 
         #endregion
