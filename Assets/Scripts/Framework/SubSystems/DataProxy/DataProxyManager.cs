@@ -40,7 +40,7 @@ namespace Framework
         public void UnregisterDataProxy<T>() where T : class, IDataProxy
         {
             if (!_dataProxyDict.TryGetValue(typeof(T), out var proxy)) return;
-            proxy._Clear();
+            proxy._Destroy();
             _dataProxyDict.Remove(typeof(T));
         }
 
@@ -79,7 +79,7 @@ namespace Framework
         {
             foreach (IDataProxy proxy in _dataProxyDict.Values)
             {
-                proxy._Clear();
+                proxy._Destroy();
             }
 
             _dataProxyDict.Clear();

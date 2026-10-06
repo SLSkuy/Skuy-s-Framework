@@ -119,15 +119,14 @@ namespace Framework
         {
             CurrentProgress = 1f;
             _currentSceneName = _loadingSceneName;
-            Global.Get<InstantiateManager>().ClearSceneGroups();
-            Global.Get<ResourceManager>().ClearUnused();
-            Global.HideAllUI();
             _isHolding = true;
             _holdElapsed = 0f;
         }
 
         private void CompleteLoading()
         {
+            ClearRes();
+            
             _isLoading = false;
             _isActivating = false;
             _isHolding = false;
@@ -137,12 +136,21 @@ namespace Framework
 
         private void FailLoading(string errorMessage)
         {
+            ClearRes();
+            
             _isLoading = false;
             _isActivating = false;
             _isHolding = false;
             _currentOperation = null;
             IsCompleted = false;
             Failed?.Invoke(_loadingSceneName, errorMessage);
+        }
+
+        private void ClearRes()
+        {
+            Global.Get<InstantiateManager>().ClearSceneGroups();
+            Global.Get<ResourceManager>().ClearUnused();
+            Global.HideAllUI();
         }
     }
 }

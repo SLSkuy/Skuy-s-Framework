@@ -8,7 +8,7 @@
         /// <summary>
         /// 数据代理名，由实现类定义，为网络协议同步考虑
         /// </summary>
-        string DataName { get; }
+        string DataPath { get; }
         bool IsInitialized { get; }
 
         /// <summary>
@@ -19,6 +19,6 @@
         /// <summary>
         /// 清理当前的所有数据
         /// </summary>
-        void _Clear();
+        void _Destroy();
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Framework
 {
     /// <summary>
@@ -7,15 +5,13 @@ namespace Framework
     /// </summary>
     public abstract class BaseDataProxy : IDataProxy
     {
-        public abstract string DataName { get; }
+        public abstract string DataPath { get; }
         public abstract bool IsNeedSaveToLocal { get; }
         public bool IsInitialized { get; private set; }
 
-        private readonly HashSet<string> _loadedAssetPaths = new();
-        private readonly HashSet<string> _loadedAssetPrefixes = new();
-
         public virtual void Init()
         {
+            
         }
 
         public void _Init()
@@ -33,6 +29,7 @@ namespace Framework
         /// </summary>
         public virtual void Load()
         {
+            
         }
 
         /// <summary>
@@ -41,21 +38,23 @@ namespace Framework
         /// </summary>
         public virtual void Save()
         {
+            
         }
 
         /// <summary>
         /// 清理当前的所有数据
         /// </summary>
-        public virtual void Clear()
+        public virtual void Destroy()
         {
+            
         }
 
-        public void _Clear()
+        public void _Destroy()
         {
             if (!IsInitialized) return;
 
             if (IsNeedSaveToLocal) Save();
-            Clear();
+            Destroy();
             IsInitialized = false;
         }
     }

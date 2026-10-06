@@ -1,5 +1,6 @@
 using Core;
 using Framework;
+using GamePlay.DataProxy;
 using GamePlay.Room;
 using NetSync;
 using Network;
@@ -32,15 +33,35 @@ namespace GamePlay.Procedure
         /// </summary>
         public void StartUp()
         {
+            // 初始化需要的局内数据
+            InitDataProxy();
+            
+            // 直接切换到主菜单状态
             _fsm.ChangeState(ProcedureState.Menu);
         }
+
+        private void InitDataProxy()
+        {
+            Global.RegisterDataProxy<EntityConfigProxy>();
+        }
+
+        #region 状态切换
 
         /// <summary>
         /// 投递界面意图，交给当前流程状态决定响应与否。
         /// </summary>
         public void PostIntent(ProcedureIntent intent)
         {
-            ((ProcedureStateBase)_fsm.Current).ProcessIntent(intent);
+            if (_fsm.Current is ProcedureStateBase state)
+            {
+                state.ProcessIntent(intent);
+                return;
+            }
+
+            if (intent == ProcedureIntent.BackToMenu)
+            {
+                RequestMenu();
+            }
         }
 
         public void StartLocalPlay() => PostIntent(ProcedureIntent.LocalPlay);
@@ -49,7 +70,7 @@ namespace GamePlay.Procedure
         public void BackToMainMenu() => PostIntent(ProcedureIntent.BackToMenu);
 
         /// <summary>
-        /// 经由加载闸门换场景，场景就绪之后才进入目标状态。
+        /// 经由加载闸门换场景。当前状态立刻退出，场景就绪之后才进入目标状态。
         /// </summary>
         public void RequestScene(ProcedureState nextState, string sceneName)
         {
@@ -64,6 +85,8 @@ namespace GamePlay.Procedure
             RequestScene(ProcedureState.Menu, GlobalConstants.MENU_SCENE_NAME);
         }
 
+        #endregion
+        
         #region 游戏会话管理
 
         /// <summary>
@@ -141,16 +164,16 @@ namespace GamePlay.Procedure
 
         protected override void Init()
         {
-            // 子系统就绪之后才启动流程，已经就绪时立刻回调
-            AppCore.OnAppReady += StartUp;
-            AppCore.OnAppQuit += ShutDown;
-
             _fsm = new StateMachine<ProcedureState>();
             _fsm.OnStateChange += OnProcedureStateChange;
             _fsm.OnTransitionFailed += OnTransitionFailed;
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedurePreparingState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
+
+            // 子系统就绪之后才启动流程，已经就绪时立刻回调
+            AppCore.OnAppReady += StartUp;
+            AppCore.OnAppQuit += ShutDown;
         }
 
         private void Update()

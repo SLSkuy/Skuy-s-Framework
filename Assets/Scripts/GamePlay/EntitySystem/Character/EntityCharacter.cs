@@ -1,7 +1,7 @@
 using Framework;
+using GamePlay.DataProxy;
 using UnityEngine;
 using Utils;
-using YooAsset;
 
 namespace GamePlay.EntitySystem
 {
@@ -11,7 +11,6 @@ namespace GamePlay.EntitySystem
     public class EntityCharacter : MonoBehaviour, IPoolable
     {
         [SerializeField] private EntityConfig config;
-        private AssetHandle _assetHandle;
         
         private EntityContext _context;
         private bool _isInitialized;
@@ -43,18 +42,11 @@ namespace GamePlay.EntitySystem
             _isInitialized = true;
         }
 
-        private void OnDestroy()
-        {
-            // 释放引用的资源
-            _assetHandle?.Dispose();
-        }
-
         protected virtual void InitConfig()
         {
             if (config) return;
             
-            _assetHandle = Global.Load<EntityConfig>("Config_EntityConfig");
-            config = _assetHandle.AssetObject as EntityConfig;
+            config = Global.GetDataProxy<EntityConfigProxy>().Config;
         }
         
         /// <summary>
