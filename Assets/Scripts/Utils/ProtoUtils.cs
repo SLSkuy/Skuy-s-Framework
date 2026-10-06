@@ -79,16 +79,16 @@ namespace Utils
         }
 
         public static Player_Snapshot ToPlayerSnapshot(uint entityId, uint lastProcessedInputTick,
-            in EntityRollbackState state)
+            in EntitySnapshot state)
         {
-            MovementRollbackState movement = state.movementState;
+            MovementSnapshot movement = state.movement;
             return new Player_Snapshot
             {
                 EntityId = entityId,
-                LocomotionState = (uint)state.simulationState.entityState,
+                LocomotionState = (uint)state.state.entityState,
                 Position = ToProto(movement.rootPosition),
                 Rotation = ToProto(movement.meshRotation),
-                ViewRotation = ToProto(state.viewState.viewRotation),
+                ViewRotation = ToProto(state.view.viewRotation),
                 LinearVelocity = ToProto(movement.rootLinearVelocity),
                 AngularVelocity = ToProto(movement.meshAngularVelocity),
                 LastProcessedInputTick = lastProcessedInputTick,
@@ -107,24 +107,24 @@ namespace Utils
             };
         }
 
-        public static EntityRollbackState ToRollbackState(Player_Snapshot snapshot)
+        public static EntitySnapshot ToRollbackState(Player_Snapshot snapshot)
         {
             Quaternion viewRotation = ToUnity(snapshot.ViewRotation);
             Vector3 euler = viewRotation.eulerAngles;
-            return new EntityRollbackState
+            return new EntitySnapshot
             {
-                simulationState = new EntitySimulationState
+                state = new StateSnapshot
                 {
                     entityState = (EntityState)snapshot.LocomotionState
                 },
-                movementState = new MovementRollbackState
+                movement = new MovementSnapshot
                 {
                     rootPosition = ToUnity(snapshot.Position),
                     meshRotation = ToUnity(snapshot.Rotation),
                     rootLinearVelocity = ToUnity(snapshot.LinearVelocity),
                     meshAngularVelocity = ToUnity(snapshot.AngularVelocity),
                 },
-                viewState = new ViewRollbackState
+                view = new ViewSnapshot
                 {
                     viewRotation = viewRotation,
                     yaw = euler.y,

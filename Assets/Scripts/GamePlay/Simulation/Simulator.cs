@@ -215,7 +215,7 @@ namespace GamePlay.Simulation
 
         #region 快照处理
 
-        public bool TryCaptureEntityState(uint entityId, out EntityRollbackState state)
+        public bool TryCaptureEntityState(uint entityId, out EntitySnapshot state)
         {
             state = default;
             if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
@@ -228,7 +228,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 将回滚状态写回已注册且已初始化的实体；不解释网络序号。
         /// </summary>
-        public bool TryRestoreEntityState(uint entityId, in EntityRollbackState state)
+        public bool TryRestoreEntityState(uint entityId, in EntitySnapshot state)
         {
             if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
             if (!entity.Character || !entity.Character.IsInitialized) return false;

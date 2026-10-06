@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// 视角旋转状态定义
     /// </summary>
     [Serializable]
-    public struct ViewRollbackState
+    public struct ViewSnapshot
     {
         public Quaternion viewRotation;
         public Vector3 viewAngularVelocity;

@@ -64,7 +64,7 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 根据已采样输入构建预测命令。
+        /// 根据已采样输入构建预测命令，服务端进行预测，用于无输入时的逻辑处理
         /// </summary>
         public EntityCommand BuildPredictedCommand(uint inputTick, in InputState input)
         {

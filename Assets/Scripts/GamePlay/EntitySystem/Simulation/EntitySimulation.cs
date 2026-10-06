@@ -3,7 +3,7 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 单机、预测与权威模式共用的实体模拟实现。
     /// </summary>
-    public sealed class EntitySimulation : IEntitySimulation, IEntityStateStore<EntityRollbackState>
+    public sealed class EntitySimulation : IEntitySimulation, IEntityStateStore<EntitySnapshot>
     {
         private readonly EntityContext _context;
 
@@ -36,42 +36,42 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获完整回滚状态。
         /// </summary>
-        public EntityRollbackState CaptureRollbackState()
+        public EntitySnapshot CaptureRollbackState()
         {
-            EntitySimulationState simulationState = new EntitySimulationState()
+            StateSnapshot state = new StateSnapshot()
             {
                 entityState = _context.StateMachine.CurrentState,
             };
             
-            MovementRollbackState movementState = _context.Movement.CaptureRollbackState();
-            movementState.desiredLocomotionSpeed = _context.LocomotionSpeed;
-            movementState.isSprinting = _context.IsSprinting;
-            movementState.isRunning = _context.IsRunning;
+            MovementSnapshot movement = _context.Movement.CaptureRollbackState();
+            movement.desiredLocomotionSpeed = _context.LocomotionSpeed;
+            movement.isSprinting = _context.IsSprinting;
+            movement.isRunning = _context.IsRunning;
 
-            ViewRollbackState viewState = _context.View.CaptureRollbackState();
-            viewState.isFocus = _context.IsFocus;
+            ViewSnapshot view = _context.View.CaptureRollbackState();
+            view.isFocus = _context.IsFocus;
 
-            return new EntityRollbackState
+            return new EntitySnapshot
             {
-                simulationState = simulationState,
-                movementState = movementState,
-                viewState = viewState
+                state = state,
+                movement = movement,
+                view = view
             };
         }
 
         /// <summary>
         /// 一次性恢复完整回滚状态。
         /// </summary>
-        public void RestoreRollbackState(in EntityRollbackState state)
+        public void RestoreRollbackState(in EntitySnapshot state)
         {
-            _context.Movement.RestoreRollbackState(state.movementState);
-            _context.View.RestoreRollbackState(state.viewState);
-            _context.LocomotionSpeed = state.movementState.desiredLocomotionSpeed;
-            _context.IsSprinting = state.movementState.isSprinting;
-            _context.IsRunning = state.movementState.isRunning;
-            _context.IsFocus = state.viewState.isFocus;
+            _context.Movement.RestoreRollbackState(state.movement);
+            _context.View.RestoreRollbackState(state.view);
+            _context.LocomotionSpeed = state.movement.desiredLocomotionSpeed;
+            _context.IsSprinting = state.movement.isSprinting;
+            _context.IsRunning = state.movement.isRunning;
+            _context.IsFocus = state.view.isFocus;
             _context.ResetTickFlags();
-            _context.StateMachine.ChangeState(state.simulationState.entityState);
+            _context.StateMachine.ChangeState(state.state.entityState);
         }
     }
 }

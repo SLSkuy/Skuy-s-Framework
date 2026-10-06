@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// 移动回滚状态定义
     /// </summary>
     [Serializable]
-    public struct MovementRollbackState
+    public struct MovementSnapshot
     {
         // 根节点位置
         public Vector3 rootPosition;

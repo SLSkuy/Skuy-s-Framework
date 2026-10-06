@@ -1,14 +1,15 @@
 using System;
+using GamePlay.EntitySystem;
 
-namespace GamePlay.EntitySystem
+namespace GamePlay.Simulation
 {
     /// <summary>
     /// 可供远端角色插值使用的服务端快照
     /// </summary>
     [Serializable]
-    public struct EntityAuthorityState
+    public struct EntityAuthorityFrame
     {
         public uint snapshotTick;
-        public EntityRollbackState state;
+        public EntitySnapshot state;
     }
 }

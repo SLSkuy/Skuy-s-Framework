@@ -10,6 +10,6 @@ namespace GamePlay.Simulation
         public uint entityId;
         public uint playerId;
         public uint lastProcessedInputTick;
-        public EntityRollbackState state;
+        public EntitySnapshot state;
     }
 }

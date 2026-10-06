@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 第三人称视角节点模拟：在实体根上查找 orientation，用瞄准增量驱动偏航与俯仰。
     /// </summary>
-    public sealed class ViewModule : EntityModuleBase<ViewRollbackState>
+    public sealed class ViewModule : EntityModuleBase<ViewSnapshot>
     {
         private const string ORIENTATION_CHILD_NAME = "orientation";
 
@@ -68,9 +68,9 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获视角回滚状态
         /// </summary>
-        public override ViewRollbackState CaptureRollbackState()
+        public override ViewSnapshot CaptureRollbackState()
         {
-            return new ViewRollbackState
+            return new ViewSnapshot
             {
                 viewAngularVelocity = AngularVelocity,
                 viewRotation = ViewRotation,
@@ -82,7 +82,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 恢复视角回滚状态
         /// </summary>
-        public override void RestoreRollbackState(in ViewRollbackState state)
+        public override void RestoreRollbackState(in ViewSnapshot state)
         {
             _yaw = state.yaw;
             _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);

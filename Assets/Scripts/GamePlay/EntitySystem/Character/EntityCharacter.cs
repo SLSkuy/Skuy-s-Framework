@@ -133,7 +133,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 获取回退状态
         /// </summary>
-        public EntityRollbackState CaptureRollbackState()
+        public EntitySnapshot CaptureRollbackState()
         {
             return _simulation.CaptureRollbackState();
         }
@@ -141,7 +141,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 缓存回退状态
         /// </summary>
-        public void RestoreRollbackState(in EntityRollbackState state)
+        public void RestoreRollbackState(in EntitySnapshot state)
         {
             _simulation.RestoreRollbackState(state);
             _visualPresentation.SnapToAuthority();
