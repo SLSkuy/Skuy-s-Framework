@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Core;
 using Framework;
 using GamePlay.DataProxy;
@@ -15,6 +16,7 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureCore : MonoSingleton<ProcedureCore>
     {
+        private Queue<ProcedureTransition<ProcedureState>> _pendingTransitions;
         private StateMachine<ProcedureState> _fsm;
         private RoomManager _room;
         private NetClient _netClient;
@@ -70,11 +72,25 @@ namespace GamePlay.Procedure
         public void BackToMainMenu() => PostIntent(ProcedureIntent.BackToMenu);
 
         /// <summary>
+        /// 请求切换新的状态
+        /// </summary>
+        private void RequestState(ProcedureState state, ILoadTask task = null)
+        {
+            if (task == null)
+            {
+                _fsm.ChangeState(state);
+                return;
+            }
+            
+            
+        }
+        
+        /// <summary>
         /// 经由加载闸门换场景。当前状态立刻退出，场景就绪之后才进入目标状态。
         /// </summary>
         public void RequestScene(ProcedureState nextState, string sceneName)
         {
-            _fsm.RequestState(new StateTransition<ProcedureState>(nextState, new SceneLoadTask(sceneName)));
+            RequestState(nextState, new SceneLoadTask(sceneName));
         }
 
         /// <summary>
@@ -170,6 +186,8 @@ namespace GamePlay.Procedure
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedurePreparingState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
+            _fsm.RegisterState(new ProcedureLoadingState(_fsm, this));
+            _pendingTransitions = new Queue<ProcedureTransition<ProcedureState>>();
 
             // 子系统就绪之后才启动流程，已经就绪时立刻回调
             AppCore.OnAppReady += StartUp;
@@ -237,7 +255,7 @@ namespace GamePlay.Procedure
         /// <summary>
         /// 加载任务失败时场景没有换过去，仍停在发起加载时的那张图，直接回菜单。
         /// </summary>
-        private void OnTransitionFailed(StateTransition<ProcedureState> transition)
+        private void OnTransitionFailed(ProcedureTransition<ProcedureState> transition)
         {
             if (transition.NextState == ProcedureState.Menu) return;
 

@@ -7,6 +7,7 @@ namespace GamePlay.Procedure
     {
         Menu = 0,
         Preparing = 1,
-        Match = 2
+        Loading = 2,
+        Match = 3,
     }
 }
