@@ -161,6 +161,8 @@ GameObject:
   - component: {fileID: 887249010015456515}
   - component: {fileID: 1252323905495556113}
   - component: {fileID: 1205384250075988817}
+  - component: {fileID: 1156975036568101564}
+  - component: {fileID: 1895593956757648572}
   m_Layer: 5
   m_Name: LoadingPanel
   m_TagString: Untagged
@@ -213,8 +215,8 @@ MonoBehaviour:
   controllerTypeName: UI.LoadingPanel, Assembly-CSharp
   properties:
     rid: 2511793658892910692
-  animIn: {fileID: 0}
-  animOut: {fileID: 0}
+  animIn: {fileID: 1156975036568101564}
+  animOut: {fileID: 1895593956757648572}
   bindings:
   - fieldName: progressBar
     target: {fileID: 965850174408952360}
@@ -224,3 +226,31 @@ MonoBehaviour:
     - rid: 2511793658892910692
       type: {class: LoadingPanelProperties, ns: UI, asm: Assembly-CSharp}
       data: 
+--- !u!114 &1156975036568101564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6961586564279232478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d3345d2a2fd4fbc89d96069f1843574, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Framework.FadeAni
+  fadeDuration: 0.2
+  fadeOut: 0
+--- !u!114 &1895593956757648572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6961586564279232478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d3345d2a2fd4fbc89d96069f1843574, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Framework.FadeAni
+  fadeDuration: 0.5
+  fadeOut: 1

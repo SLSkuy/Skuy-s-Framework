@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityWalkState : EntityLocomotionState
     {
-        public override uint StateKey => EntityState.WALK;
+        public override EntityState StateKey => EntityState.WALK;
 
         public EntityWalkState(EntityContext context) : base(context) { }
 

@@ -6,7 +6,7 @@ namespace GamePlay.EntitySystem
     /// <summary>
     /// 实体最基础状态，持有 EntityContext，提供所有状态共有属性
     /// </summary>
-    public abstract class EntityBaseState : ExtendableStateBase<uint>
+    public abstract class EntityBaseState : StateBase<EntityState>
     {
         protected readonly EntityContext Context;
 

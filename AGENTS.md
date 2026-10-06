@@ -18,3 +18,4 @@ Persistent project rules live in `.cursor/rules/` (apply when editing `Assets/Sc
 
 - `architecture.md` — project structure, namespaces, composition/lifetimes, patterns
 - `coding-style.md` — C# naming, member order, regions, network Handler split, and data-flow (no `EnsureXxx` / silent guards)
+- `unity-meta.md` — do not author `.meta` files; Unity generates them

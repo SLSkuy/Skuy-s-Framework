@@ -25,7 +25,7 @@ namespace GamePlay.EntitySystem
         #region 属性
         public EntityContext Context => _context;
         public bool IsInitialized => _isInitialized;
-        public uint CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
+        public EntityState CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         #endregion
 
         /// <summary>
@@ -51,11 +51,10 @@ namespace GamePlay.EntitySystem
 
         protected virtual void InitConfig()
         {
-            if (!config)
-            {
-                _assetHandle = Global.Load<EntityConfig>("Config_EntityConfig");
-                config = _assetHandle.AssetObject as EntityConfig;
-            }
+            if (config) return;
+            
+            _assetHandle = Global.Load<EntityConfig>("Config_EntityConfig");
+            config = _assetHandle.AssetObject as EntityConfig;
         }
         
         /// <summary>

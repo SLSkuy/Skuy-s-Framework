@@ -4,27 +4,36 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 主菜单流程。
+    /// 主菜单流程。进入时菜单场景已经就绪，这里只负责呈现菜单；
+    /// 上一场对局的拆除由 ProcedureCore 在进入菜单的那条边上完成。
     /// </summary>
-    public sealed class ProcedureMenuState : EnumStateBase<ProcedureState>
+    public sealed class ProcedureMenuState : ProcedureStateBase
     {
-        private readonly ProcedureCore _procedures;
+        public override ProcedureState StateKey => ProcedureState.Menu;
 
-        public override int StateKey => (int)ProcedureState.Menu;
-
-        public ProcedureMenuState(EnumStateMachine<ProcedureState> stateMachine, ProcedureCore procedures)
-            : base(stateMachine)
+        public ProcedureMenuState(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+            : base(stateMachine, procedure)
         {
-            _procedures = procedures;
         }
-        
+
+        /// <summary>
+        /// 菜单接受三种开局意图：按意图打开对局，再进入准备。
+        /// </summary>
+        public override void ProcessIntent(ProcedureIntent intent)
+        {
+            if (intent == ProcedureIntent.BackToMenu) return;
+
+            Procedure.OpenSession(intent);
+            _stateMachine.ChangeState(ProcedureState.Preparing);
+        }
+
         #region 状态周期
 
         public override void Enter()
         {
-            _procedures.TearDownSession();
-            
             Cursor.lockState = CursorLockMode.None;
+
+            Global.ShowUI("MainScenePanel");
         }
 
         #endregion

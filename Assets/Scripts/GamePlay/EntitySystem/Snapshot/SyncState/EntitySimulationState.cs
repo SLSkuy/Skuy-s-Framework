@@ -8,6 +8,6 @@ namespace GamePlay.EntitySystem
     [Serializable]
     public struct EntitySimulationState
     {
-        public uint entityState;    // 实体当前状态（待机、死亡等）
+        public EntityState entityState;    // 实体当前状态（待机、死亡等）
     }
 }

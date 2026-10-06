@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityContext
     {
-        public readonly ExtendableStateMachine<uint> StateMachine;
+        public readonly StateMachine<EntityState> StateMachine;
         public readonly EntityConfig Config;
         public readonly MovementModule Movement;
         public readonly ViewModule View;
@@ -34,7 +34,7 @@ namespace GamePlay.EntitySystem
         public EntityContext(EntityConfig config, MovementModule movement, ViewModule view)
         {
             Config = config;
-            StateMachine = new ExtendableStateMachine<uint>();
+            StateMachine = new StateMachine<EntityState>();
             Movement = movement;
             View = view;
         }

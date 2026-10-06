@@ -7,7 +7,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityIdleState : EntityLocomotionState
     {
-        public override uint StateKey => EntityState.IDLE;
+        public override EntityState StateKey => EntityState.IDLE;
 
         public EntityIdleState(EntityContext context) : base(context) { }
 

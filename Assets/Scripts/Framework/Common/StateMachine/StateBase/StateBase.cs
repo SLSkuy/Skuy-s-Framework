@@ -6,27 +6,36 @@ namespace Framework
     /// 状态机状态基类
     /// </summary>
     /// <typeparam name="TEnum"></typeparam>
-    public abstract class EnumStateBase<TEnum> : IEnumState where TEnum : Enum
+    public abstract class StateBase<TEnum> : IState<TEnum> where TEnum : Enum
     {
-        public abstract int StateKey { get; }
+        public abstract TEnum StateKey { get; }
 
-        protected EnumStateMachine<TEnum> _stateMachine;
+        protected readonly StateMachine<TEnum> _stateMachine;
 
-        protected EnumStateBase(EnumStateMachine<TEnum> stateMachine)
+        protected StateBase(StateMachine<TEnum> stateMachine)
         {
             _stateMachine = stateMachine;
         }
 
+        /// <summary>
+        /// 进入状态，每次进入状态时调用一次
+        /// </summary>
         public virtual void Enter()
         {
 
         }
 
+        /// <summary>
+        /// 退出状态，每次退出状态时调用一次
+        /// </summary>
         public virtual void Exit()
         {
 
         }
 
+        /// <summary>
+        /// 状态更新
+        /// </summary>
         public void Update(float deltaTime)
         {
             Tick(deltaTime);

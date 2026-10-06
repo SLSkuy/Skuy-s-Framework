@@ -124,7 +124,7 @@ namespace Framework
         /// <param name="uiTransform">UI界面Transform</param>
         public virtual void ReParentUI(IUIController controller, Transform uiTransform)
         {
-            uiTransform.SetParent(this.transform);
+            uiTransform.SetParent(transform, false);
             uiTransform.localPosition = Vector3.zero;
         }
 

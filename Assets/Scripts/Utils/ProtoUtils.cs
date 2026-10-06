@@ -85,7 +85,7 @@ namespace Utils
             return new Player_Snapshot
             {
                 EntityId = entityId,
-                LocomotionState = state.simulationState.entityState,
+                LocomotionState = (uint)state.simulationState.entityState,
                 Position = ToProto(movement.rootPosition),
                 Rotation = ToProto(movement.meshRotation),
                 ViewRotation = ToProto(state.viewState.viewRotation),
@@ -115,7 +115,7 @@ namespace Utils
             {
                 simulationState = new EntitySimulationState
                 {
-                    entityState = snapshot.LocomotionState
+                    entityState = (EntityState)snapshot.LocomotionState
                 },
                 movementState = new MovementRollbackState
                 {

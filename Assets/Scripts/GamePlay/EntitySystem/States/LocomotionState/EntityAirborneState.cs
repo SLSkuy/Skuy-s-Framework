@@ -9,7 +9,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityAirborneState : EntityLocomotionState
     {
-        public override uint StateKey => EntityState.AIRBORNE;
+        public override EntityState StateKey => EntityState.AIRBORNE;
 
         public EntityAirborneState(EntityContext context) : base(context) { }
 

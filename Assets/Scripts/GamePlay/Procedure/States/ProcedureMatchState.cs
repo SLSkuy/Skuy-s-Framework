@@ -1,7 +1,6 @@
 using Framework;
 using GamePlay.EntitySpawn;
 using GamePlay.EntitySystem;
-using GamePlay.LevelControl;
 using GamePlay.Room;
 using GamePlay.Simulation;
 using UnityEngine;
@@ -9,31 +8,35 @@ using UnityEngine;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 对局流程状态，粘合其他的所有游戏功能模块
+    /// 对局流程状态，粘合其他的所有游戏功能模块。进入时关卡已经就绪。
     /// </summary>
-    public sealed class ProcedureMatchState : EnumStateBase<ProcedureState>
+    public sealed class ProcedureMatchState : ProcedureStateBase
     {
-        private readonly ProcedureCore _procedure;
         private ISimulationKernel _simulation;
-        
+
         #region 游戏业务逻辑
         private EntitySpawner _entitySpawner;
-        private LevelManager _levelMgr;
         private RoomManager _room;
         #endregion
 
-        public ProcedureMatchState(EnumStateMachine<ProcedureState> stateMachine, ProcedureCore procedure) : base(stateMachine)
+        public override ProcedureState StateKey => ProcedureState.Match;
+
+        public ProcedureMatchState(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+            : base(stateMachine, procedure)
         {
-            _procedure = procedure;
         }
 
-        public override int StateKey => (int)ProcedureState.Match;
-        
+        public override void ProcessIntent(ProcedureIntent intent)
+        {
+            if (intent != ProcedureIntent.BackToMenu) return;
+
+            Procedure.RequestMenu();
+        }
+
         private bool StartGameplay()
         {
-            // 注册房间管理器
             _room = Global.Get<RoomManager>();
-            
+
             // 注册模拟核，确定如何进行游戏逻辑Tick
             SessionRole sessionRole = _room.SessionRole;
             SystemManager systems = Global.Get<SystemManager>();
@@ -45,7 +48,7 @@ namespace GamePlay.Procedure
                 return false;
             }
             _simulation = kernel;
-            
+
             // 注册实体生成管理器
             _entitySpawner = Global.Register<EntitySpawner>();
             _entitySpawner.BindSimulation(_simulation.SimulationKernal);
@@ -54,14 +57,31 @@ namespace GamePlay.Procedure
             {
                 _entitySpawner.OnSpawnRemotePlayer += OnRemotePlayerSpawned;
             }
-            
-            // 注册关卡管理器
-            _levelMgr = Global.Register<LevelManager>();
-            _levelMgr.Completed += OnLevelLoadCompleted;
-            _levelMgr.Failed += OnLevelLoadFailed;
-            _levelMgr.LoadMatchLevel();
-            
+
+            StartRoster(sessionRole);
+
             return true;
+        }
+
+        /// <summary>
+        /// 关卡已就绪，按会话角色把名册里的玩家放进世界。
+        /// </summary>
+        private void StartRoster(SessionRole sessionRole)
+        {
+            if (sessionRole == SessionRole.Client)
+            {
+                _entitySpawner.StartClient();
+                return;
+            }
+
+            _entitySpawner.SpawnRosterPlayers();
+            if (_room.AcceptsRemoteJoin)
+            {
+                _entitySpawner.StartHost();
+            }
+
+            _room.PlayerJoined += OnPlayerJoined;
+            _room.PlayerRemoved += OnPlayerRemoved;
         }
 
         private void StopGameplay()
@@ -72,7 +92,7 @@ namespace GamePlay.Procedure
                 _room.PlayerRemoved -= OnPlayerRemoved;
                 _room = null;
             }
-            
+
             if (_entitySpawner != null)
             {
                 _entitySpawner.OnSpawnLocalPlayer -= OnLocalPlayerSpawned;
@@ -82,20 +102,12 @@ namespace GamePlay.Procedure
             }
 
             Global.Get<CameraManager>().SetTarget(null);
-            
+
             if (_simulation != null)
             {
                 _simulation.StopSession();
                 Global.Get<SystemManager>().UnregisterSystem(_simulation);
                 _simulation = null;
-            }
-            
-            if (_levelMgr != null)
-            {
-                _levelMgr.Completed -= OnLevelLoadCompleted;
-                _levelMgr.Failed -= OnLevelLoadFailed;
-                Global.Unregister<LevelManager>();
-                _levelMgr = null;
             }
         }
 
@@ -104,10 +116,10 @@ namespace GamePlay.Procedure
         public override void Enter()
         {
             Cursor.lockState = CursorLockMode.Locked;
-            
+
             if (!StartGameplay())
             {
-                _stateMachine.ChangeState(ProcedureState.Menu);
+                Procedure.RequestMenu();
             }
         }
 
@@ -119,7 +131,7 @@ namespace GamePlay.Procedure
         #endregion
 
         #region 事件回调
-        
+
         /// <summary>
         /// 生成本机玩家，绑定输入来源，设置摄像机跟随目标
         /// </summary>
@@ -144,29 +156,6 @@ namespace GamePlay.Procedure
             _entitySpawner.SetPlayerInputSource(playerId, provider);
             
             ((HostSimulationKernel)_simulation).RegisterRemoteInput(playerId, provider);
-        }
-
-        private void OnLevelLoadCompleted(string sceneName)
-        {
-            if (_room.SessionRole == SessionRole.Client)
-            {
-                _entitySpawner.StartClient();
-                return;
-            }
-
-            _entitySpawner.SpawnRosterPlayers();
-            if (_room.AcceptsRemoteJoin)
-            {
-                _entitySpawner.StartHost();
-            }
-
-            _room.PlayerJoined += OnPlayerJoined;
-            _room.PlayerRemoved += OnPlayerRemoved;
-        }
-
-        private void OnLevelLoadFailed(string sceneName, string errorMessage)
-        {
-            _stateMachine.ChangeState(ProcedureState.Menu);
         }
 
         private void OnPlayerJoined(uint playerId)

@@ -1,12 +1,12 @@
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 玩法流程：菜单、加入远端、对局。没有大厅。
+    /// 玩法流程：菜单、开局准备、对局。换场景是状态切换上的任务，不是一个状态。没有大厅。
     /// </summary>
     public enum ProcedureState
     {
         Menu = 0,
-        Joining = 1,
+        Preparing = 1,
         Match = 2
     }
 }

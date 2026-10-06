@@ -1,10 +1,14 @@
-﻿namespace Framework
+﻿using System;
+
+namespace Framework
 {
     /// <summary>
     /// 状态接口
     /// </summary>
-    public interface IState
+    public interface IState<TEnum> where TEnum : Enum
     {
+        TEnum StateKey { get; }
+        
         /// <summary>
         /// 进入状态
         /// </summary>

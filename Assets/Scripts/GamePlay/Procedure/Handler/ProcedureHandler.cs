@@ -11,12 +11,12 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureHandler
     {
-        private readonly ProcedureCore _procedure;
+        private readonly ProcedurePreparingState _preparing;
         private NetClient _client;
 
-        public ProcedureHandler(ProcedureCore procedure)
+        public ProcedureHandler(ProcedurePreparingState preparing)
         {
-            _procedure = procedure;
+            _preparing = preparing;
         }
 
         #region 消息绑定
@@ -61,12 +61,12 @@ namespace GamePlay.Procedure
 
         private void HandleGameJoinResponse(Room_Join_Response message)
         {
-            _procedure.HandleGameJoinResponse(message);
+            _preparing.HandleGameJoinResponse(message);
         }
 
         private void HandleOnConnectionFailed()
         {
-            _procedure.HandleConnectionFailed();
+            _preparing.HandleConnectionFailed();
         }
 
         #endregion

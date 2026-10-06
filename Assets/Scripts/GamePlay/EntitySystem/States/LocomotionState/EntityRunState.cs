@@ -8,7 +8,7 @@ namespace GamePlay.EntitySystem
     /// </summary>
     public class EntityRunState : EntityLocomotionState
     {
-        public override uint StateKey => EntityState.RUN;
+        public override EntityState StateKey => EntityState.RUN;
 
         public EntityRunState(EntityContext context) : base(context) { }
 
