@@ -24,7 +24,7 @@ namespace GamePlay.Procedure
             if (intent == ProcedureIntent.BackToMenu) return;
 
             Procedure.OpenSession(intent);
-            _stateMachine.ChangeState(ProcedureState.Preparing);
+            Procedure.RequestState(ProcedureState.Preparing);
         }
 
         #region 状态周期

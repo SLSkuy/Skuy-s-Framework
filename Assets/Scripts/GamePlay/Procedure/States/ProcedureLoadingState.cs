@@ -1,14 +1,13 @@
 ﻿using Framework;
-using UnityEngine;
 
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 加载闸门。进入后跑一段切换任务，成功才进入目标状态。
+    /// 加载状态。
+    /// 负责执行 PendingTransition 的加载任务，完成后进入目标状态。
     /// </summary>
     public sealed class ProcedureLoadingState : ProcedureStateBase
     {
-        private ProcedureTransition<ProcedureState> _transition;
         private ILoadTask _task;
 
         public override ProcedureState StateKey => ProcedureState.Loading;
@@ -17,15 +16,14 @@ namespace GamePlay.Procedure
             : base(stateMachine, procedure)
         {
         }
-        
+
         #region 状态周期
 
         public override void Enter()
         {
-            _transition = Procedure.PendingTransition;
-            _task = _transition.Task;
-            _task.Finished += OnTaskFinished;
-            _task.Start();
+            StartTask();
+            
+            Global.ShowUI("LoadingPanel");
         }
 
         public override void Exit()
@@ -39,25 +37,38 @@ namespace GamePlay.Procedure
         }
 
         #endregion
+        
+        private void StartTask()
+        {
+            StopTask();
+
+            var transition = Procedure.PendingTransition;
+            _task = transition.Task;
+
+            _task.Finished += OnTaskFinished;
+            _task.Start();
+        }
 
         private void OnTaskFinished()
         {
-            ILoadTask task = _task;
-            ProcedureState next = _transition.NextState;
+            var task = _task;
+            var transition = Procedure.PendingTransition;
+
             StopTask();
 
             if (task.IsFailed)
             {
-                _stateMachine.NotifyTransitionFailed(_transition);
+                Procedure.FailTransition(transition.NextState);
                 return;
             }
 
-            _stateMachine.ChangeState(next);
+            _stateMachine.ChangeState(transition.NextState);
         }
 
         private void StopTask()
         {
-            if (_task == null) return;
+            if (_task == null)
+                return;
 
             _task.Finished -= OnTaskFinished;
             _task.Stop();

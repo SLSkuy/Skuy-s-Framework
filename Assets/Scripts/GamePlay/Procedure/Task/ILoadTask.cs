@@ -1,9 +1,9 @@
 using System;
 
-namespace Framework
+namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 状态机切换工作，可在状态切换之间插入流程，流程完成之后才会进行状态切换
+    /// 流程切换中的一段工作。工作完成之后，加载状态才进入目标状态。
     /// </summary>
     public interface ILoadTask
     {

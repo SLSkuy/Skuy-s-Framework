@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 换场景这一段工作。场景 IO 自带加载界面、最短展示与激活时的资源清理，这里只等它的回调。
-    /// 已经在目标场景时当场结束。
+    /// 换场景这一段工作。这里只等场景 IO 的回调，并在开载前清掉上一场留下的资源和界面。
+    /// 加载界面由加载状态持有。已经在目标场景时当场结束。
     /// </summary>
     public sealed class SceneLoadTask : ILoadTask
     {
@@ -36,10 +36,8 @@ namespace GamePlay.Procedure
             _sceneLoader.Completed += OnSceneLoadCompleted;
             _sceneLoader.Failed += OnSceneLoadFailed;
             _sceneLoader.LoadScene(_sceneName);
-
-            ClearRes();
             
-            Global.ShowUI("LoadingPanel");
+            ClearRes();
         }
 
         public void Update(float deltaTime)

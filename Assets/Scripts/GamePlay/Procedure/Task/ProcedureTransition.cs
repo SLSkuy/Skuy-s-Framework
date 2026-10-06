@@ -1,17 +1,14 @@
-﻿using System;
-
-namespace Framework
+﻿namespace GamePlay.Procedure
 {
     /// <summary>
-    /// 状态切换请求，等待<see cref="Task"/>任务完成之后，才会进入<see cref="NextState"/>
+    /// 一次带任务的流程切换。任务完成之后才进入 <see cref="NextState"/>。同时只有一个。
     /// </summary>
-    /// <typeparam name="TEnum"></typeparam>
-    public struct ProcedureTransition<TEnum> where TEnum : Enum
+    public struct ProcedureTransition
     {
-        public TEnum NextState { get; }
+        public ProcedureState NextState { get; }
         public ILoadTask Task { get; }
 
-        public ProcedureTransition(TEnum nextState, ILoadTask task)
+        public ProcedureTransition(ProcedureState nextState, ILoadTask task)
         {
             NextState = nextState;
             Task = task;

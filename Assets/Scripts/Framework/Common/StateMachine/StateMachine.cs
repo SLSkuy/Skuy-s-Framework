@@ -35,12 +35,6 @@ namespace Framework
 
         #region 事件
         public event Action<TEnum, TEnum> OnStateChange;
-
-        /// <summary>
-        /// 切换任务失败，没有进入 <see cref="ProcedureTransition{TEnum}.NextState"/>
-        /// 状态停留在当前状态中
-        /// </summary>
-        public event Action<ProcedureTransition<TEnum>> OnTransitionFailed;
         #endregion
 
         #region 状态管理
@@ -106,14 +100,6 @@ namespace Framework
             _current?.Exit();
             _current = null;
             _isTransition = false;
-        }
-        
-        /// <summary>
-        /// 切换任务失败，没有进入目标状态。
-        /// </summary>
-        public void NotifyTransitionFailed(ProcedureTransition<TEnum> transition)
-        {
-            OnTransitionFailed?.Invoke(transition);
         }
 
         #endregion

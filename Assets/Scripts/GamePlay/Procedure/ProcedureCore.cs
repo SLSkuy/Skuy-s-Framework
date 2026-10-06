@@ -29,7 +29,7 @@ namespace GamePlay.Procedure
         /// <summary>
         /// 当前这一次带任务的切换。同时只有一个。
         /// </summary>
-        public ProcedureTransition<ProcedureState> PendingTransition { get; private set; }
+        public ProcedureTransition PendingTransition { get; private set; }
         #endregion
 
         /// <summary>
@@ -75,8 +75,9 @@ namespace GamePlay.Procedure
 
         /// <summary>
         /// 请求切换新的状态。没有任务时立刻切换；有任务时先进入加载状态，任务完成后再进入目标状态。
+        /// 加载中再次请求会停掉当前任务，换成这一次。
         /// </summary>
-        private void RequestState(ProcedureState state, ILoadTask task = null)
+        public void RequestState(ProcedureState state, ILoadTask task = null)
         {
             if (task == null)
             {
@@ -84,8 +85,7 @@ namespace GamePlay.Procedure
                 return;
             }
 
-            // 更新当前转换的任务
-            PendingTransition = new ProcedureTransition<ProcedureState>(state, task);
+            PendingTransition = new ProcedureTransition(state, task);
             _fsm.ChangeState(ProcedureState.Loading);
         }
 
@@ -186,7 +186,6 @@ namespace GamePlay.Procedure
         {
             _fsm = new StateMachine<ProcedureState>();
             _fsm.OnStateChange += OnProcedureStateChange;
-            _fsm.OnTransitionFailed += OnTransitionFailed;
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedurePreparingState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
@@ -217,7 +216,6 @@ namespace GamePlay.Procedure
             AppCore.OnAppReady -= StartUp;
             AppCore.OnAppQuit -= ShutDown;
             _fsm.OnStateChange -= OnProcedureStateChange;
-            _fsm.OnTransitionFailed -= OnTransitionFailed;
 
             // 退出时不走回菜单那条业务路径，只拆对局，避免在退出过程中发起场景加载
             _fsm.Stop();
@@ -227,6 +225,21 @@ namespace GamePlay.Procedure
         #endregion
 
         #region 事件回调
+        
+        /// <summary>
+        /// 加载任务失败，没有进入目标状态。目标不是菜单时再请求回菜单；
+        /// 已经是菜单则直接进入菜单状态，避免停在加载态。
+        /// </summary>
+        public void FailTransition(ProcedureState nextState)
+        {
+            if (nextState == ProcedureState.Menu)
+            {
+                _fsm.ChangeState(ProcedureState.Menu);
+                return;
+            }
+
+            RequestMenu();
+        }
 
         /// <summary>
         /// 回到菜单意味着这一场对局结束，在旧状态退出之后、菜单进入之前拆掉。
@@ -245,16 +258,6 @@ namespace GamePlay.Procedure
 
         private void OnReconnectFailed()
         {
-            RequestMenu();
-        }
-
-        /// <summary>
-        /// 加载任务失败时没有进入目标状态。目标不是菜单时，再走回菜单。
-        /// </summary>
-        private void OnTransitionFailed(ProcedureTransition<ProcedureState> transition)
-        {
-            if (transition.NextState == ProcedureState.Menu) return;
-
             RequestMenu();
         }
 
