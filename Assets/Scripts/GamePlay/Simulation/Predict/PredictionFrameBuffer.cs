@@ -25,8 +25,7 @@ namespace GamePlay.Simulation
         public uint LatestTick => _frames.Count > 0 ? _frames[^1].tick : 0;
 
         #endregion
-
-
+        
         public PredictionFrameBuffer(int maxFrameCount)
         {
             if (maxFrameCount < 2)
@@ -45,8 +44,7 @@ namespace GamePlay.Simulation
         {
             for (int i = 0; i < _frames.Count; i++)
             {
-                var current = _frames[i];
-
+                EntityPredictionFrame current = _frames[i];
                 if (current.tick == frame.tick)
                 {
                     _frames[i] = frame;

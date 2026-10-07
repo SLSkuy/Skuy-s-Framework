@@ -79,6 +79,16 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
+        /// 直接写出远端插值画面，不改上一拍与当前拍的权威缓存。
+        /// </summary>
+        public void PresentPose(Vector3 rootPosition, Quaternion meshRotation, Quaternion viewRotation)
+        {
+            _visual.position = rootPosition;
+            _mesh.rotation = meshRotation;
+            _orientation.rotation = viewRotation;
+        }
+
+        /// <summary>
         /// 采样当前状态
         /// </summary>
         private void SampleCurrent()

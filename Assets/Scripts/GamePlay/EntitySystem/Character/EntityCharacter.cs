@@ -123,6 +123,14 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
+        /// 按远端插值结果写出画面位姿，不改权威拍缓存。
+        /// </summary>
+        public void PresentReplicaPose(Vector3 rootPosition, Quaternion meshRotation, Quaternion viewRotation)
+        {
+            _visualPresentation.PresentPose(rootPosition, meshRotation, viewRotation);
+        }
+
+        /// <summary>
         /// 画面立刻对齐权威位姿。
         /// </summary>
         public void ForceToAuthority()
@@ -131,24 +139,23 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 获取回退状态
+        /// 获取快照状态
         /// </summary>
-        public EntitySnapshot CaptureRollbackState()
+        public EntitySnapshot CaptureSnapshot()
         {
-            return _simulation.CaptureRollbackState();
+            return _simulation.CaptureSnapshot();
         }
 
         /// <summary>
-        /// 缓存回退状态
+        /// 缓存快照状态
         /// </summary>
-        public void RestoreRollbackState(in EntitySnapshot state)
+        public void RestoreSnapshot(in EntitySnapshot state)
         {
-            _simulation.RestoreRollbackState(state);
+            _simulation.RestoreSnapshot(state);
             _visualPresentation.SnapToAuthority();
         }
 
         #endregion
-        
         
         /// <summary>
         /// 还池时清掉上一场的运动、视角和状态。

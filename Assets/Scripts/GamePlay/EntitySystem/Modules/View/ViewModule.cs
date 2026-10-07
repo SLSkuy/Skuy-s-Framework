@@ -68,7 +68,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获视角回滚状态
         /// </summary>
-        public override ViewSnapshot CaptureRollbackState()
+        public override ViewSnapshot CaptureSnapshot()
         {
             return new ViewSnapshot
             {
@@ -82,7 +82,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 恢复视角回滚状态
         /// </summary>
-        public override void RestoreRollbackState(in ViewSnapshot state)
+        public override void RestoreSnapshot(in ViewSnapshot state)
         {
             _yaw = state.yaw;
             _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);

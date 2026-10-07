@@ -218,7 +218,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获移动模块完整回滚状态
         /// </summary>
-        public override MovementSnapshot CaptureRollbackState()
+        public override MovementSnapshot CaptureSnapshot()
         {
             return new MovementSnapshot
             {
@@ -239,7 +239,7 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 恢复位置、姿态和全部移动内部状态
         /// </summary>
-        public override void RestoreRollbackState(in MovementSnapshot state)
+        public override void RestoreSnapshot(in MovementSnapshot state)
         {
             Teleport(state.rootPosition);
             Restore(state.meshRotation, state.meshAngularVelocity);

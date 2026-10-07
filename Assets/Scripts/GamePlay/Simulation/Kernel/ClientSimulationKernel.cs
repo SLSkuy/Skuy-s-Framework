@@ -1,20 +1,22 @@
 using Framework;
+using GamePlay.EntitySystem;
 using NetSync;
 using Utils;
 
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 客户端模拟核：沿用模拟核节拍上传本机输入，并直接写入主机发来的世界快照。
+    /// 客户端模拟核：沿用模拟核节拍上传本机输入，并把主机快照交给远端插值。
     /// </summary>
     public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
     {
+        private AuthorityFrameInterpolation _interpolation;
         private IInputStateProvider _localInputProvider;
         private SimulationClientHandler _clientHandler;
         private Simulator _simulator;
         
-        // 记录已经应用的最新的快照状态，丢弃过时的快照
-        private uint _appliedSnapshotTick;
+        // 记录已经收到的最新快照序号，丢弃过时的快照
+        private uint _latestSnapshotTick;
 
         #region 属性
         public override int Priority => 500;
@@ -47,7 +49,9 @@ namespace GamePlay.Simulation
             
             _clientHandler.Unbind();
             _clientHandler = null;
-            _appliedSnapshotTick = 0;
+            
+            _interpolation.Clear();
+            _latestSnapshotTick = 0;
             
             IsSessionRunning = false;
         }
@@ -58,16 +62,20 @@ namespace GamePlay.Simulation
         {
             _simulator = new Simulator();
             _simulator.Init();
+            _interpolation = new AuthorityFrameInterpolation(_simulator, _simulator.InterpolationDelayTicks, _simulator.SnapshotTickRate);
         }
 
         public override void Update(float deltaTime)
         {
             _simulator.Update(deltaTime);
+            _interpolation.Present(deltaTime);
         }
 
         public override void Destroy()
         {
             StopSession();
+            _interpolation.Clear();
+            _interpolation = null;
             _simulator.Destroy();
             _simulator = null;
         }
@@ -87,16 +95,35 @@ namespace GamePlay.Simulation
         #region 客户端消息处理
 
         /// <summary>
-        /// 收到快照后立即把每个实体写成这份快照。
+        /// 收到快照后按实体写入权威帧缓冲，画面由插值模块逐帧推进。
         /// </summary>
         public void HandleWorldSnapshot(World_Snapshot snapshot)
         {
-            if (snapshot.SnapshotTick <= _appliedSnapshotTick) return;
+            if (snapshot.SnapshotTick <= _latestSnapshotTick) return;
 
-            _appliedSnapshotTick = snapshot.SnapshotTick;
+            // 更新已处理的快照Tick
+            _latestSnapshotTick = snapshot.SnapshotTick;
             foreach (var playerState in snapshot.PlayerSnapshots)
             {
-                _simulator.TryRestoreEntityState(playerState.EntityId, ProtoUtils.ToRollbackState(playerState));
+                
+                if (!_simulator.TryGet(playerState.EntityId, out EntityObjectIdentity identity, out EntityCharacter character)) continue;
+                if (!identity || !character.IsInitialized) continue;
+
+                // 只有 Replica 的实体进行插值处理
+                if (identity.IsReplica)
+                {
+                    _interpolation.AddFrame(playerState.EntityId, new EntityAuthorityFrame
+                    {
+                        snapshotTick = snapshot.SnapshotTick,
+                        state = ProtoUtils.ToRollbackState(playerState),
+                    });
+                }
+
+                // 记录权威状态，进行预测和解
+                if (identity.IsPredict)
+                {
+                    // TODO: 预测和解
+                }
             }
         }
 

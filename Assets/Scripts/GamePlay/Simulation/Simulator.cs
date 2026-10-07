@@ -20,12 +20,20 @@ namespace GamePlay.Simulation
         
         private int _maxBufferedInputs;
         private int _maxFutureInputTicks;
+        private int _snapshotTickRate;
+        private int _interpolationDelayTicks;
+        private float _positionSnapThreshold;
+        private float _rotationSnapThresholdDegrees;
 
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
         public bool IsRunning => _tickSystem is { IsRunning: true };
         public int MaxBufferedInputs => _maxBufferedInputs;
         public int MaxFutureInputTicks => _maxFutureInputTicks;
+        public int SnapshotTickRate => _snapshotTickRate;
+        public int InterpolationDelayTicks => _interpolationDelayTicks;
+        public float PositionSnapThreshold => _positionSnapThreshold;
+        public float RotationSnapThresholdDegrees => _rotationSnapThresholdDegrees;
         #endregion
 
         #region 事件
@@ -221,7 +229,7 @@ namespace GamePlay.Simulation
             if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
             if (!entity.Character.IsInitialized) return false;
             
-            state = entity.Character.CaptureRollbackState();
+            state = entity.Character.CaptureSnapshot();
             return true;
         }
 
@@ -233,7 +241,7 @@ namespace GamePlay.Simulation
             if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
             if (!entity.Character || !entity.Character.IsInitialized) return false;
 
-            entity.Character.RestoreRollbackState(state);
+            entity.Character.RestoreSnapshot(state);
             return true;
         }
 
@@ -252,7 +260,7 @@ namespace GamePlay.Simulation
                 {
                     entityId = pair.Key,
                     playerId = entity.Identity.PlayerId,
-                    state = entity.Character.CaptureRollbackState(),
+                    state = entity.Character.CaptureSnapshot(),
                 });
             }
         }
@@ -267,6 +275,10 @@ namespace GamePlay.Simulation
             SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
             _maxBufferedInputs = config.maxBufferedInputs;
             _maxFutureInputTicks = config.maxFutureInputTicks;
+            _snapshotTickRate = config.snapshotTickRate;
+            _interpolationDelayTicks = config.interpolationDelayTicks;
+            _positionSnapThreshold = config.positionSnapThreshold;
+            _rotationSnapThresholdDegrees = config.rotationSnapThresholdDegrees;
             
             _entityRegistry = new EntityRegistry();
             

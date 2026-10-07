@@ -38,8 +38,8 @@ namespace GamePlay.EntitySystem
             OnUnbound(oldTarget);
         }
 
-        public abstract TState CaptureRollbackState();
-        public abstract void RestoreRollbackState(in TState state);
+        public abstract TState CaptureSnapshot();
+        public abstract void RestoreSnapshot(in TState state);
 
         protected virtual void OnBound(EntityCharacter target) { }
         protected virtual void OnEnabledChanged(bool isEnabled) { }

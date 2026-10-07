@@ -8,11 +8,11 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获当前实体完整状态
         /// </summary>
-        T CaptureRollbackState();
+        T CaptureSnapshot();
         
         /// <summary>
         /// 恢复当前实体完整状态
         /// </summary>
-        void RestoreRollbackState(in T state);
+        void RestoreSnapshot(in T state);
     }
 }

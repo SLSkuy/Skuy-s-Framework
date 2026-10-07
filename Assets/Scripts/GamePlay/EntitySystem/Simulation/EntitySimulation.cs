@@ -36,19 +36,19 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 捕获完整回滚状态。
         /// </summary>
-        public EntitySnapshot CaptureRollbackState()
+        public EntitySnapshot CaptureSnapshot()
         {
             StateSnapshot state = new StateSnapshot()
             {
                 entityState = _context.StateMachine.CurrentState,
             };
             
-            MovementSnapshot movement = _context.Movement.CaptureRollbackState();
+            MovementSnapshot movement = _context.Movement.CaptureSnapshot();
             movement.desiredLocomotionSpeed = _context.LocomotionSpeed;
             movement.isSprinting = _context.IsSprinting;
             movement.isRunning = _context.IsRunning;
 
-            ViewSnapshot view = _context.View.CaptureRollbackState();
+            ViewSnapshot view = _context.View.CaptureSnapshot();
             view.isFocus = _context.IsFocus;
 
             return new EntitySnapshot
@@ -62,10 +62,10 @@ namespace GamePlay.EntitySystem
         /// <summary>
         /// 一次性恢复完整回滚状态。
         /// </summary>
-        public void RestoreRollbackState(in EntitySnapshot state)
+        public void RestoreSnapshot(in EntitySnapshot state)
         {
-            _context.Movement.RestoreRollbackState(state.movement);
-            _context.View.RestoreRollbackState(state.view);
+            _context.Movement.RestoreSnapshot(state.movement);
+            _context.View.RestoreSnapshot(state.view);
             _context.LocomotionSpeed = state.movement.desiredLocomotionSpeed;
             _context.IsSprinting = state.movement.isSprinting;
             _context.IsRunning = state.movement.isRunning;
