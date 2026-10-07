@@ -46,7 +46,7 @@ namespace GamePlay.EntitySystem
         }
         
         /// <summary>
-        /// 直接设置实体位置，用于权威快照或插值快照应用
+        /// 直接设置实体根位置
         /// </summary>
         public void Teleport(Vector3 position)
         {
@@ -56,8 +56,6 @@ namespace GamePlay.EntitySystem
             transform.position = position;
 
             if (wasEnabled) _controller.enabled = true;
-
-            Target.ForceToAuthority();
         }
 
         /// <summary>

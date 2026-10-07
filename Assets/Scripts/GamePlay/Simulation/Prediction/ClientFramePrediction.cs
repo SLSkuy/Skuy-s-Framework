@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GamePlay.EntitySystem;
 
 namespace GamePlay.Simulation
 {
@@ -30,9 +31,32 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 接收到权威状态，执行回滚，并重放操作
         /// </summary>
-        public void ReceiveAuthorityFrame(uint inputTick, in EntityAuthorityFrame frame)
+        public void ReceiveAuthorityFrame(uint entityId, uint lastProcessedTick, in EntityAuthorityFrame frame)
         {
+            if (lastProcessedTick == 0) return;
+
+            EntitySnapshot snapshot = frame.state;
             
+            if (_buffers.TryGetFrame(lastProcessedTick, out var predictionFrame))
+            {
+                if (_simulator.TryGet(entityId, out _, out EntityCharacter character))
+                {
+                    // 回滚状态
+                    character.RestoreSimulation(predictionFrame.state);
+                    _buffers.GetFramesAfter(lastProcessedTick, _frames);
+                    _buffers.RemoveFramesUntil(lastProcessedTick);
+                    
+                    // 重放
+                    float stepDeltaTime = _simulator.TickDeltaTime;
+                    for (int i = 0; i < _frames.Count; i++)
+                    {
+                        EntityPredictionFrame predicted = _frames[i];
+                        character.Step(predicted.tick, stepDeltaTime, predicted.command);
+                        predicted.state = character.CaptureSnapshot();
+                        _buffers.AddFrame(predicted);
+                    }
+                }
+            }
         }
 
         /// <summary>

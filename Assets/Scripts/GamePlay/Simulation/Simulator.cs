@@ -23,19 +23,21 @@ namespace GamePlay.Simulation
         private int _snapshotTickRate;
         private int _interpolationDelayTicks;
         private int _predictionHistorySize;
-        private float _positionSnapThreshold;
-        private float _rotationSnapThresholdDegrees;
+        private float _positionReconcileThreshold;
+        private float _rotationReconcileThresholdDegrees;
 
         #region 属性
         public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
         public bool IsRunning => _tickSystem is { IsRunning: true };
+        public float TickDeltaTime => _tickSystem?.TickDeltaTime ?? 0f;
+        
         public int MaxBufferedInputs => _maxBufferedInputs;
         public int MaxFutureInputTicks => _maxFutureInputTicks;
         public int SnapshotTickRate => _snapshotTickRate;
         public int InterpolationDelayTicks => _interpolationDelayTicks;
         public int PredictionHistorySize => _predictionHistorySize;
-        public float PositionSnapThreshold => _positionSnapThreshold;
-        public float RotationSnapThresholdDegrees => _rotationSnapThresholdDegrees;
+        public float PositionReconcileThreshold => _positionReconcileThreshold;
+        public float RotationReconcileThresholdDegrees => _rotationReconcileThresholdDegrees;
         #endregion
 
         #region 事件
@@ -304,8 +306,8 @@ namespace GamePlay.Simulation
             _snapshotTickRate = config.snapshotTickRate;
             _interpolationDelayTicks = config.interpolationDelayTicks;
             _predictionHistorySize = config.predictionHistorySize;
-            _positionSnapThreshold = config.positionSnapThreshold;
-            _rotationSnapThresholdDegrees = config.rotationSnapThresholdDegrees;
+            _positionReconcileThreshold = config.positionReconcileThreshold;
+            _rotationReconcileThresholdDegrees = config.rotationReconcileThresholdDegrees;
             
             _entityRegistry = new EntityRegistry();
             

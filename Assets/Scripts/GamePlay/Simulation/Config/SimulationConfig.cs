@@ -22,7 +22,5 @@ namespace GamePlay.Simulation
         [Min(2)] public int predictionHistorySize = 64;
         [Tooltip("角色位置差距插值过渡阈值")][Min(0f)] public float positionReconcileThreshold = 0.02f;
         [Tooltip("角色旋转差距插值过渡阈值")][Min(0f)] public float rotationReconcileThresholdDegrees = 1f;
-        [Tooltip("角色位置差距强制拉回阈值")][Min(0f)] public float positionSnapThreshold = 2f;
-        [Tooltip("角色旋转差距强制拉回阈值")][Min(0f)] public float rotationSnapThresholdDegrees = 45f;
     }
 }

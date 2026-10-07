@@ -131,14 +131,6 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 画面立刻对齐权威位姿。
-        /// </summary>
-        public void ForceToAuthority()
-        {
-            _visualPresentation.SnapToAuthority();
-        }
-
-        /// <summary>
         /// 获取快照状态
         /// </summary>
         public EntitySnapshot CaptureSnapshot()
@@ -147,11 +139,19 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
-        /// 缓存快照状态
+        /// 写回模拟状态，不改画面采样
+        /// </summary>
+        public void RestoreSimulation(in EntitySnapshot state)
+        {
+            _simulation.RestoreSnapshot(state);
+        }
+
+        /// <summary>
+        /// 写回模拟状态并让画面立刻对齐。
         /// </summary>
         public void RestoreSnapshot(in EntitySnapshot state)
         {
-            _simulation.RestoreSnapshot(state);
+            RestoreSimulation(state);
             _visualPresentation.SnapToAuthority();
         }
 

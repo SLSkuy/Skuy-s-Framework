@@ -133,7 +133,11 @@ namespace GamePlay.Simulation
                 // 记录权威状态，进行预测和解
                 if (identity.IsPredict)
                 {
-                    // TODO: 预测和解
+                    _prediction.ReceiveAuthorityFrame(playerState.EntityId, playerState.LastProcessedInputTick, new EntityAuthorityFrame
+                    {
+                        snapshotTick = snapshot.SnapshotTick,
+                        state = ProtoUtils.ToRollbackState(playerState),
+                    });
                 }
             }
         }
