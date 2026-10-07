@@ -2,25 +2,29 @@
 
 namespace GamePlay.Simulation
 {
-    public class ClientFramePrediction
+    /// <summary>
+    /// 客户端预测历史。按输入 Tick 保存主控实体已执行的命令和执行后的快照。
+    /// </summary>
+    public sealed class ClientFramePrediction
     {
-        private PredictionFrameBuffer _frameBuffer;
-        private List<EntityPredictionFrame> _frames;
-        private Simulator _simulator;
+        private readonly List<EntityPredictionFrame> _frames;
+        private readonly PredictionFrameBuffer _buffers;
+        private readonly Simulator _simulator;
 
         public ClientFramePrediction(int maxFrameCount, Simulator simulator)
         {
-            _frameBuffer = new PredictionFrameBuffer(maxFrameCount);
+            _buffers = new PredictionFrameBuffer(maxFrameCount);
             _frames = new List<EntityPredictionFrame>();
             _simulator = simulator;
         }
 
         /// <summary>
-        /// 执行一次预测，缓存预测后的状态
+        /// 本拍模拟完成后，记下主控实体执行过的命令和完整快照。
         /// </summary>
         public void Predict(uint inputTick)
         {
-            
+            EntityPredictionFrame frame = _simulator.CapturePredictedFrames(inputTick);
+            _buffers.AddFrame(frame);
         }
 
         /// <summary>
@@ -29,6 +33,15 @@ namespace GamePlay.Simulation
         public void ReceiveAuthorityFrame(uint inputTick, in EntityAuthorityFrame frame)
         {
             
+        }
+
+        /// <summary>
+        /// 清空已记录的预测帧。
+        /// </summary>
+        public void Clear()
+        {
+            _buffers.Clear();
+            _frames.Clear();
         }
     }
 }

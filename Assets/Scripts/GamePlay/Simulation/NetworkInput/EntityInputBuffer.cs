@@ -57,18 +57,18 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 构建服务端当前 Tick 应执行的命令；按客户端输入序号消费，缺失时使用空输入。
         /// </summary>
-        public EntityCommand BuildAuthorityCommand(uint tick)
+        public EntityCommand BuildAuthorityCommand()
         {
             InputState input = ConsumeNext();
-            return _commandBuilder.Build(tick, input);
+            return _commandBuilder.Build(input);
         }
 
         /// <summary>
         /// 根据已采样输入构建预测命令，服务端进行预测，用于无输入时的逻辑处理
         /// </summary>
-        public EntityCommand BuildPredictedCommand(uint inputTick, in InputState input)
+        public EntityCommand BuildPredictedCommand(in InputState input)
         {
-            return _commandBuilder.Build(inputTick, input);
+            return _commandBuilder.Build(input);
         }
 
         /// <summary>

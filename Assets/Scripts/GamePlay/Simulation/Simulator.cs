@@ -22,6 +22,7 @@ namespace GamePlay.Simulation
         private int _maxFutureInputTicks;
         private int _snapshotTickRate;
         private int _interpolationDelayTicks;
+        private int _predictionHistorySize;
         private float _positionSnapThreshold;
         private float _rotationSnapThresholdDegrees;
 
@@ -32,6 +33,7 @@ namespace GamePlay.Simulation
         public int MaxFutureInputTicks => _maxFutureInputTicks;
         public int SnapshotTickRate => _snapshotTickRate;
         public int InterpolationDelayTicks => _interpolationDelayTicks;
+        public int PredictionHistorySize => _predictionHistorySize;
         public float PositionSnapThreshold => _positionSnapThreshold;
         public float RotationSnapThresholdDegrees => _rotationSnapThresholdDegrees;
         #endregion
@@ -111,7 +113,7 @@ namespace GamePlay.Simulation
                 RegisteredEntity entity = pair.Value;
                 if (!entity.Character || !entity.Character.IsInitialized) continue;
                 if (entity.Identity != null && entity.Identity.IsReplica) continue;
-                _tickCommands[pair.Key] = entity.CollectCommand(tick);
+                _tickCommands[pair.Key] = entity.CollectCommand();
             }
 
             foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
@@ -246,6 +248,29 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
+        /// 采集本拍主控实体已预测的命令和模拟快照
+        /// </summary>
+        public EntityPredictionFrame CapturePredictedFrames(uint tick)
+        {
+            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            {
+                // 只有一个主控预测玩家
+                RegisteredEntity entity = pair.Value;
+                if (entity.Identity.IsPredict)
+                {
+                    return new EntityPredictionFrame
+                    {
+                        tick = tick,
+                        command = entity.CurTickInput,
+                        state = entity.Character.CaptureSnapshot(),
+                    };
+                }
+            }
+            
+            return default;
+        }
+
+        /// <summary>
         /// 采样当前已初始化实体的快照状态
         /// </summary>
         public void CaptureEntities(List<PlayerProcessedSnapshot> samples)
@@ -278,6 +303,7 @@ namespace GamePlay.Simulation
             _maxFutureInputTicks = config.maxFutureInputTicks;
             _snapshotTickRate = config.snapshotTickRate;
             _interpolationDelayTicks = config.interpolationDelayTicks;
+            _predictionHistorySize = config.predictionHistorySize;
             _positionSnapThreshold = config.positionSnapThreshold;
             _rotationSnapThresholdDegrees = config.rotationSnapThresholdDegrees;
             

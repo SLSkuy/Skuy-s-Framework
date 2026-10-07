@@ -36,6 +36,7 @@ namespace GamePlay.Simulation
             _clientHandler.Bind();
             
             _simulator.TickPlayerInput += OnPlayerInputTick;
+            _simulator.TickCaptured += OnPredict;
             _simulator.StartClock();
             
             IsSessionRunning = true;
@@ -47,12 +48,14 @@ namespace GamePlay.Simulation
             if (!IsSessionRunning) return;
 
             _simulator.TickPlayerInput -= OnPlayerInputTick;
+            _simulator.TickCaptured -= OnPredict;
             _simulator.StopClock();
             
             _clientHandler.Unbind();
             _clientHandler = null;
             
             _interpolation.Clear();
+            _prediction.Clear();
             _latestSnapshotTick = 0;
             
             IsSessionRunning = false;
@@ -65,7 +68,7 @@ namespace GamePlay.Simulation
             _simulator = new Simulator();
             _simulator.Init();
             _interpolation = new AuthorityFrameInterpolation(_simulator, _simulator.InterpolationDelayTicks, _simulator.SnapshotTickRate);
-            _prediction = new ClientFramePrediction(_simulator.MaxFutureInputTicks, _simulator);
+            _prediction = new ClientFramePrediction(_simulator.PredictionHistorySize, _simulator);
         }
 
         public override void Update(float deltaTime)
@@ -91,6 +94,11 @@ namespace GamePlay.Simulation
         {
             InputState input = _localInputProvider.GetInputState();
             _clientHandler.SendPlayerInput(inputTick, input);
+        }
+
+        private void OnPredict(uint inputTick, float deltaTime)
+        {
+            _prediction.Predict(inputTick);
         }
 
         #endregion

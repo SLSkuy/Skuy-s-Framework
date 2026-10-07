@@ -9,7 +9,6 @@ namespace GamePlay.EntitySystem
     [Serializable]
     public struct EntityCommand
     {
-        public uint tick;
         public Vector2 move;
         public Vector2 aim;
         [Tooltip("持续按住的命令按键集合")] public EntityCommandFlags flagsHeld;

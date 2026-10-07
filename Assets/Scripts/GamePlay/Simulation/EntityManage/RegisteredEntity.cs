@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Framework;
+﻿using Framework;
 using GamePlay.EntitySystem;
 
 namespace GamePlay.Simulation
@@ -15,6 +14,7 @@ namespace GamePlay.Simulation
         #region 属性
         public EntityObjectIdentity Identity { get; }
         public EntityCharacter Character { get; }
+        public EntityCommand CurTickInput { get; private set; }
         #endregion
 
         public RegisteredEntity(EntityObjectIdentity identity, EntityCharacter character)
@@ -29,12 +29,12 @@ namespace GamePlay.Simulation
         /// </summary>
         public uint GetLastProcessInputTick()
         {
-            if (Identity.IsAuthority)
+            if (_inputSource is AuthorityInputProvider input)
             {
-                return ((AuthorityInputProvider)_inputSource).LastProcessedTick;
+                return input.LastProcessedTick;
             }
 
-            throw new InvalidExpressionException("非主机端不能获取已经处理的输入Tick");
+            return 0;
         }
 
         /// <summary>
@@ -48,10 +48,12 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 从意图来源取快照并转为命令；无来源时按空快照构建。
         /// </summary>
-        public EntityCommand CollectCommand(uint tick)
+        public EntityCommand CollectCommand()
         {
             InputState input = _inputSource?.GetInputState() ?? default;
-            return _commandBuilder.Build(tick, input);
+            EntityCommand command = _commandBuilder.Build(input);
+            CurTickInput = command;
+            return command;
         }
     }
 }

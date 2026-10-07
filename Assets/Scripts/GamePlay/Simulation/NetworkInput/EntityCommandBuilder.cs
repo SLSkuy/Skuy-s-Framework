@@ -14,12 +14,11 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 根据当前输入状态构建命令。
         /// </summary>
-        public EntityCommand Build(uint tick, in InputState input)
+        public EntityCommand Build(in InputState input)
         {
             EntityCommandFlags heldFlags = SnapshotUtils.GetHeldFlags(input);
             EntityCommand command = new()
             {
-                tick = tick,
                 move = input.MoveInput,
                 aim = input.AimInput,
                 flagsHeld = heldFlags,
