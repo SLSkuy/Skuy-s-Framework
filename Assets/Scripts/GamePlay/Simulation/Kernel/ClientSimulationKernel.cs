@@ -10,10 +10,12 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private AuthorityFrameInterpolation _interpolation;
         private IInputStateProvider _localInputProvider;
         private SimulationClientHandler _clientHandler;
         private Simulator _simulator;
+        
+        private AuthorityFrameInterpolation _interpolation;
+        private ClientFramePrediction _prediction;
         
         // 记录已经收到的最新快照序号，丢弃过时的快照
         private uint _latestSnapshotTick;
@@ -63,6 +65,7 @@ namespace GamePlay.Simulation
             _simulator = new Simulator();
             _simulator.Init();
             _interpolation = new AuthorityFrameInterpolation(_simulator, _simulator.InterpolationDelayTicks, _simulator.SnapshotTickRate);
+            _prediction = new ClientFramePrediction(_simulator.MaxFutureInputTicks, _simulator);
         }
 
         public override void Update(float deltaTime)

@@ -12,7 +12,7 @@ namespace GamePlay.Simulation
         private readonly List<EntityPredictionFrame> _frames;
         private readonly int _maxFrameCount;
 
-        #region Properties
+        #region 属性
 
         /// <summary>
         /// 当前缓存帧数量。

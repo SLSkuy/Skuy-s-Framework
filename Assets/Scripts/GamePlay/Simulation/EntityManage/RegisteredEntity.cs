@@ -1,4 +1,5 @@
-﻿using Framework;
+﻿using System.Data;
+using Framework;
 using GamePlay.EntitySystem;
 
 namespace GamePlay.Simulation
@@ -21,6 +22,19 @@ namespace GamePlay.Simulation
             Identity = identity;
             Character = character;
             _commandBuilder = new EntityCommandBuilder();
+        }
+
+        /// <summary>
+        /// 获取已经处理了的客户端输入Tick
+        /// </summary>
+        public uint GetLastProcessInputTick()
+        {
+            if (Identity.IsAuthority)
+            {
+                return ((AuthorityInputProvider)_inputSource).LastProcessedTick;
+            }
+
+            throw new InvalidExpressionException("非主机端不能获取已经处理的输入Tick");
         }
 
         /// <summary>

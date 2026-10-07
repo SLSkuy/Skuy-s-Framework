@@ -246,7 +246,7 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 采样当前已初始化实体的回滚状态。
+        /// 采样当前已初始化实体的快照状态
         /// </summary>
         public void CaptureEntities(List<PlayerProcessedSnapshot> samples)
         {
@@ -260,6 +260,7 @@ namespace GamePlay.Simulation
                 {
                     entityId = pair.Key,
                     playerId = entity.Identity.PlayerId,
+                    lastProcessedInputTick = entity.GetLastProcessInputTick(),
                     state = entity.Character.CaptureSnapshot(),
                 });
             }
