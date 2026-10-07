@@ -19,7 +19,5 @@ MonoBehaviour:
   maxBufferedInputs: 32
   maxFutureInputTicks: 32
   predictionHistorySize: 64
-  positionReconcileThreshold: 0.02
-  rotationReconcileThresholdDegrees: 1
-  positionSnapThreshold: 2
-  rotationSnapThresholdDegrees: 45
+  positionReconcileThreshold: 0.1
+  rotationReconcileThresholdDegrees: 3
