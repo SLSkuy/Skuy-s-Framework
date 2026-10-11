@@ -19,6 +19,8 @@ namespace Network
             public uint SessionId;
             public KcpSession Session;
             public string EndPointKey;
+            public DateTimeOffset CreatedTime;
+            public bool Bound;
         }
         
         private const int KCP_HEADER_SIZE = 24;
@@ -89,21 +91,20 @@ namespace Network
             }
         }
 
-        public void Broadcast(byte[] data)
-        {
-            foreach (ClientSession session in _clientsById.Values)
-            {
-                int result = session.Session.Send(data);
-                if (result < 0)
-                {
-                    RaiseError($"KCP server broadcast failed for client {session.SessionId} with code: {result}");
-                }
-            }
-        }
-
         public void Disconnect(uint sessionId)
         {
             _pendingDisconnects.Add(sessionId);
+        }
+
+        public void AcceptSession(uint sessionId)
+        {
+            if (!_clientsById.TryGetValue(sessionId, out ClientSession session))
+            {
+                RaiseError($"KCP server accept failed, session not found: {sessionId}");
+                return;
+            }
+
+            session.Bound = true;
         }
 
         public void Update(float deltaTime)
@@ -206,6 +207,7 @@ namespace Network
             {
                 SessionId = _nextClientId++,
                 EndPointKey = endPointKey,
+                CreatedTime = DateTimeOffset.UtcNow,
                 Session = new KcpSession(remoteEndPoint, SendRaw, conv)
             };
 
@@ -241,18 +243,34 @@ namespace Network
 
         private void RemoveTimedOutClients(DateTimeOffset now)
         {
-            if (_config.maxReconnectTime <= 0f)
-            {
-                return;
-            }
-            
             foreach (var session in _clientsById.Values)
             {
+                if (!session.Bound)
+                {
+                    if (_config.unboundFastSessionSeconds <= 0f)
+                    {
+                        continue;
+                    }
+
+                    if ((now - session.CreatedTime).TotalSeconds >= _config.unboundFastSessionSeconds)
+                    {
+                        _timeOutSessionIds.Add(session.SessionId);
+                    }
+
+                    continue;
+                }
+
+                if (_config.maxReconnectTime <= 0f)
+                {
+                    continue;
+                }
+
                 double inactiveSeconds = (now - session.Session.LastReceiveTime).TotalSeconds;
                 if (inactiveSeconds < _config.maxReconnectTime)
                 {
                     continue;
                 }
+
                 _timeOutSessionIds.Add(session.SessionId);
             }
 

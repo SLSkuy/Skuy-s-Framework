@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Network.NetServerConfig
   reliablePort: 11451
   fastPort: 19198
+  rttStep: 1
   maxReconnectTime: 20
+  unboundFastSessionSeconds: 2

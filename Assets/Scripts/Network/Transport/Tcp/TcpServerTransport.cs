@@ -142,20 +142,6 @@ namespace Network
             session.EnqueueSend(data);
         }
 
-        public void Broadcast(byte[] data)
-        {
-            if (!IsRunning)
-            {
-                RaiseError("TCP server is not running.");
-                return;
-            }
-
-            foreach (TcpSession session in GetSessionSnapshot())
-            {
-                session.EnqueueSend(data);
-            }
-        }
-
         public void Update(float deltaTime)
         {
             while (_connectedSessions.TryDequeue(out uint connectedClientId))
@@ -215,6 +201,13 @@ namespace Network
         public void Disconnect(uint sessionId)
         {
             RemoveClient(sessionId, true);
+        }
+
+        /// <summary>
+        /// TCP 会话在套接字接入时建立，连接层握手前不另设未绑定超时。
+        /// </summary>
+        public void AcceptSession(uint sessionId)
+        {
         }
 
         public void Dispose()

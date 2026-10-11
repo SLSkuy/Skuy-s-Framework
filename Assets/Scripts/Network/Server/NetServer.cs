@@ -238,6 +238,7 @@ namespace Network
                 // 特殊处理KCP连接请求
                 if (_connectionManager.BindFastSession(request.Token, transportSessionId, out uint oldFastSessionId))
                 {
+                    _fastTransport.AcceptSession(transportSessionId);
                     // 关闭旧的KCP session（若有），避免悬挂连接
                     if (oldFastSessionId != 0) _fastTransport.Disconnect(oldFastSessionId);
                 }
