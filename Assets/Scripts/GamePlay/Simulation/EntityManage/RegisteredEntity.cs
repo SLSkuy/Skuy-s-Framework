@@ -46,14 +46,28 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 从意图来源取快照并转为命令；无来源时按空快照构建。
+        /// 从意图来源取快照并转为命令。权威输入还没到时返回 false，这一拍不步进。
+        /// 无来源时按空快照构建。
         /// </summary>
-        public EntityCommand CollectCommand()
+        public bool TryCollectCommand(out EntityCommand command)
         {
-            InputState input = _inputSource?.GetInputState() ?? default;
-            EntityCommand command = _commandBuilder.Build(input);
+            InputState input;
+            if (_inputSource is AuthorityInputProvider authority)
+            {
+                if (!authority.TryGetInputState(out input))
+                {
+                    command = default;
+                    return false;
+                }
+            }
+            else
+            {
+                input = _inputSource?.GetInputState() ?? default;
+            }
+
+            command = _commandBuilder.Build(input);
             CurTickInput = command;
-            return command;
+            return true;
         }
     }
 }

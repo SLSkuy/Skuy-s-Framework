@@ -115,7 +115,8 @@ namespace GamePlay.Simulation
                 RegisteredEntity entity = pair.Value;
                 if (!entity.Character || !entity.Character.IsInitialized) continue;
                 if (entity.Identity != null && entity.Identity.IsReplica) continue;
-                _tickCommands[pair.Key] = entity.CollectCommand();
+                if (!entity.TryCollectCommand(out EntityCommand command)) continue;
+                _tickCommands[pair.Key] = command;
             }
 
             foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)

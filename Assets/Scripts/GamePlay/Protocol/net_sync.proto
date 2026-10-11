@@ -50,8 +50,8 @@ message Room_Host_Dissolved_Notify{
 // ========== 房间管理 ==========
 
 // ========== 状态同步 ==========
-// 本机玩家输入。玩家由发送这条消息的连接决定。
-message Player_Input {
+// 一拍玩家输入。
+message Input_Sample {
     uint32 inputTick = 1;
     Vec2 move_input = 2;
     Vec2 aim_input = 3;
@@ -64,6 +64,22 @@ message Player_Input {
     bool is_switch_mode_pressed = 10;
 }
 
+// 本机玩家输入。玩家由发送这条消息的连接决定。
+// 最新一拍同时写在顶层字段里；recent_inputs 带上最近若干拍，供主机补上迟到或丢失的指令。
+message Player_Input {
+    uint32 inputTick = 1;
+    Vec2 move_input = 2;
+    Vec2 aim_input = 3;
+    bool is_primary_attack_pressed = 4;
+    bool is_special_attack_pressed = 5;
+    bool is_special_action_pressed = 6;
+    bool is_interact_pressed = 7;
+    bool is_sprint_pressed = 8;
+    bool is_jump_pressed = 9;
+    bool is_switch_mode_pressed = 10;
+    repeated Input_Sample recent_inputs = 11;
+}
+
 // 玩家实体在某一Tick的状态
 message Player_Snapshot {
     uint32 entityId = 1;
@@ -74,6 +90,17 @@ message Player_Snapshot {
     Vec3 linear_velocity = 6;
     Vec3 angular_velocity = 7;
     uint32 lastProcessedInputTick = 8;
+    float vertical_velocity = 9;
+    int32 jump_count = 10;
+    bool is_running = 11;
+    bool is_sprinting = 12;
+    bool is_dashing = 13;
+    bool is_grounded = 14;
+    Vec3 dash_direction = 15;
+    float dash_remaining_time = 16;
+    float desired_locomotion_speed = 17;
+    float applied_locomotion_speed = 18;
+    Vec3 last_move_direction = 19;
 }
 
 message World_Snapshot {

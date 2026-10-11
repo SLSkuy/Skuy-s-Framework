@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Events;
 using Framework;
 using NetSync;
@@ -11,7 +12,10 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class SimulationClientHandler
     {
+        private const int RecentInputCount = 8;
+
         private readonly ClientSimulationKernel _kernel;
+        private readonly List<Input_Sample> _recentInputs = new();
         private NetClient _client;
 
         public SimulationClientHandler(ClientSimulationKernel kernel)
@@ -30,6 +34,7 @@ namespace GamePlay.Simulation
 
         public void Unbind()
         {
+            _recentInputs.Clear();
             if (_client == null) return;
 
             _client.UnregisterHandler<World_Snapshot>(NetEvent.GAME_WORLD_SNAPSHOT, HandleWorldSnapshot);
@@ -42,7 +47,20 @@ namespace GamePlay.Simulation
 
         public void SendPlayerInput(uint inputTick, in InputState input)
         {
-            _client.Send(NetEvent.GAME_PLAYER_INPUT, ProtoUtils.ToPlayerInput(inputTick, input));
+            Input_Sample sample = ProtoUtils.ToInputSample(inputTick, input);
+            _recentInputs.Add(sample);
+            if (_recentInputs.Count > RecentInputCount)
+            {
+                _recentInputs.RemoveAt(0);
+            }
+
+            Player_Input message = ProtoUtils.ToPlayerInput(inputTick, input);
+            for (int i = 0; i < _recentInputs.Count; i++)
+            {
+                message.RecentInputs.Add(_recentInputs[i]);
+            }
+
+            _client.Send(NetEvent.GAME_PLAYER_INPUT, message);
         }
 
         #endregion

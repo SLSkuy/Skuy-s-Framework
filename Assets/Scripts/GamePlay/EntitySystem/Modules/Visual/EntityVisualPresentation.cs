@@ -69,6 +69,15 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
+        /// 用当前逻辑骨骼旋转覆盖画面当前拍，位置采样保持不动。
+        /// </summary>
+        public void SyncLogicalRotation()
+        {
+            _current.MeshRotation = _mesh.rotation;
+            _current.OrientationRotation = _orientation.rotation;
+        }
+
+        /// <summary>
         /// 按残差写出画面位移与朝向。
         /// </summary>
         public void Present(float alpha)

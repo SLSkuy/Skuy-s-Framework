@@ -122,6 +122,17 @@ namespace GamePlay.Simulation
         {
             if (!_remoteInputs.TryGetValue(playerId, out AuthorityInputProvider provider)) return;
 
+            if (input.RecentInputs.Count > 0)
+            {
+                for (int i = 0; i < input.RecentInputs.Count; i++)
+                {
+                    Input_Sample sample = input.RecentInputs[i];
+                    provider.Enqueue(sample.InputTick, ProtoUtils.ToInputState(sample));
+                }
+
+                return;
+            }
+
             provider.Enqueue(input.InputTick, ProtoUtils.ToInputState(input));
         }
 

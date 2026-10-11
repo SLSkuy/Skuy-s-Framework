@@ -25,8 +25,22 @@ namespace GamePlay.Simulation
 
         public InputState GetInputState()
         {
-            if (_buffer.LastProcessedTick == 0 && !_buffer.HasQueued) return default;
-            return _buffer.ConsumeNext();
+            if (!TryGetInputState(out InputState input)) return default;
+            return input;
+        }
+
+        /// <summary>
+        /// 取出下一拍已入队的输入。还没有可消费的输入时返回 false，确认点保持不动。
+        /// </summary>
+        public bool TryGetInputState(out InputState input)
+        {
+            if (_buffer.LastProcessedTick == 0 && !_buffer.HasQueued)
+            {
+                input = default;
+                return false;
+            }
+
+            return _buffer.TryConsumeNext(out input);
         }
 
         public void Reset()

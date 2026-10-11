@@ -22,6 +22,7 @@ namespace GamePlay.EntitySystem
         private float _dashAccumulator;
         private int _jumpCount;
         private bool _isDashing;
+        private bool _isGrounded;
 
         #region 属性
         public override ModuleType ModuleType => ModuleType.Movement;
@@ -29,7 +30,7 @@ namespace GamePlay.EntitySystem
         public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
         public Vector3 LinearVelocity { get; private set; }
         public Vector3 AngularVelocity { get; private set; }
-        public bool IsGrounded => _controller && _controller.isGrounded;
+        public bool IsGrounded => _isGrounded;
         public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion
@@ -98,6 +99,7 @@ namespace GamePlay.EntitySystem
 
             ApplyGravity(dt);
             ApplyMovement(dt);
+            _isGrounded = _controller.isGrounded;
             TickDash(dt);
         }
 
@@ -135,7 +137,7 @@ namespace GamePlay.EntitySystem
 
         private void ApplyGravity(float dt)
         {
-            if (_controller.isGrounded)
+            if (_isGrounded)
             {
                 if (_verticalVelocity < 0f)
                 {
@@ -230,7 +232,8 @@ namespace GamePlay.EntitySystem
                 verticalVelocity = _verticalVelocity,
                 dashRemainingTime = _dashAccumulator,
                 jumpCount = _jumpCount,
-                isDashing = _isDashing
+                isDashing = _isDashing,
+                isGrounded = _isGrounded
             };
         }
 
@@ -249,6 +252,7 @@ namespace GamePlay.EntitySystem
             _dashAccumulator = state.dashRemainingTime;
             _jumpCount = state.jumpCount;
             _isDashing = state.isDashing;
+            _isGrounded = state.isGrounded;
         }
 
         #endregion
@@ -265,6 +269,7 @@ namespace GamePlay.EntitySystem
             _dashAccumulator = 0f;
             _jumpCount = 0;
             _isDashing = false;
+            _isGrounded = false;
             LinearVelocity = Vector3.zero;
             AngularVelocity = Vector3.zero;
         }

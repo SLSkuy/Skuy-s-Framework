@@ -7,13 +7,17 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 角色输入缓冲：服务端按客户端 Tick 做窗口校验与顺序消费，并构建每 Tick 命令
     /// LastProcessedTick 为已消费的客户端输入序号，0 表示尚未消费；下一拍固定取 LastProcessedTick + 1
+    /// 下一拍还没到时不推进确认点；连续缺席超过上限后才消费一拍空指令
     /// 环形槽位以 0 表示空，有效输入 Tick 从 1 起
     /// </summary>
     public sealed class EntityInputBuffer
     {
+        private const int MaxMissedInputTicks = 8;
+
         private readonly EntityCommandQueue<InputState> _commands;
         private readonly EntityCommandBuilder _commandBuilder;
         private readonly int _maxFutureInputTicks;
+        private int _missedInputTicks;
 
         #region 属性
         public uint LastProcessedTick { get; private set; }
@@ -55,15 +59,6 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 构建服务端当前 Tick 应执行的命令；按客户端输入序号消费，缺失时使用空输入。
-        /// </summary>
-        public EntityCommand BuildAuthorityCommand()
-        {
-            InputState input = ConsumeNext();
-            return _commandBuilder.Build(input);
-        }
-
-        /// <summary>
         /// 根据已采样输入构建预测命令，服务端进行预测，用于无输入时的逻辑处理
         /// </summary>
         public EntityCommand BuildPredictedCommand(in InputState input)
@@ -79,6 +74,7 @@ namespace GamePlay.Simulation
             _commands.Clear();
             _commandBuilder.Reset();
             LastProcessedTick = 0;
+            _missedInputTicks = 0;
         }
 
         /// <summary>
@@ -106,18 +102,30 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 消费 LastProcessedTick 之后的下一序号；槽位缺失时返回默认空输入并仍推进确认点。
+        /// 消费 LastProcessedTick 之后的下一序号。
+        /// 槽位还空着时不推进确认点；连续缺席超过上限后消费一拍空指令并推进。
         /// </summary>
-        public InputState ConsumeNext()
+        public bool TryConsumeNext(out InputState input)
         {
             uint inputTick = LastProcessedTick + 1;
-            if (!_commands.TryDequeue(inputTick, out InputState input))
+            if (_commands.TryDequeue(inputTick, out input))
             {
-                input = default;
+                LastProcessedTick = inputTick;
+                _missedInputTicks = 0;
+                return true;
             }
 
+            _missedInputTicks++;
+            if (_missedInputTicks <= MaxMissedInputTicks)
+            {
+                input = default;
+                return false;
+            }
+
+            input = default;
             LastProcessedTick = inputTick;
-            return input;
+            _missedInputTicks = 0;
+            return true;
         }
     }
 }

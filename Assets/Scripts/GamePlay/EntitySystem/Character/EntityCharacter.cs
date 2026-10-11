@@ -147,6 +147,14 @@ namespace GamePlay.EntitySystem
         }
 
         /// <summary>
+        /// 把当前逻辑旋转写入画面当前拍，不改位置采样。
+        /// </summary>
+        public void SyncPresentationRotation()
+        {
+            _visualPresentation.SyncLogicalRotation();
+        }
+
+        /// <summary>
         /// 写回模拟状态并让画面立刻对齐。
         /// </summary>
         public void RestoreSnapshot(in EntitySnapshot state)

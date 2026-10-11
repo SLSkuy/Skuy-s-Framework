@@ -47,23 +47,38 @@ namespace Utils
 
         public static InputState ToInputState(Player_Input input)
         {
-            return new InputState
-            {
-                MoveInput = ToUnity(input.MoveInput),
-                AimInput = ToUnity(input.AimInput),
-                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
-                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
-                IsSpecialActionPressed = input.IsSpecialActionPressed,
-                IsInteractPressed = input.IsInteractPressed,
-                IsSprintPressed = input.IsSprintPressed,
-                IsJumpPressed = input.IsJumpPressed,
-                IsSwitchModePressed = input.IsSwitchModePressed,
-            };
+            return ToInputState(input.MoveInput, input.AimInput, input.IsPrimaryAttackPressed,
+                input.IsSpecialAttackPressed, input.IsSpecialActionPressed, input.IsInteractPressed,
+                input.IsSprintPressed, input.IsJumpPressed, input.IsSwitchModePressed);
+        }
+
+        public static InputState ToInputState(Input_Sample input)
+        {
+            return ToInputState(input.MoveInput, input.AimInput, input.IsPrimaryAttackPressed,
+                input.IsSpecialAttackPressed, input.IsSpecialActionPressed, input.IsInteractPressed,
+                input.IsSprintPressed, input.IsJumpPressed, input.IsSwitchModePressed);
         }
 
         public static Player_Input ToPlayerInput(uint inputTick, InputState state)
         {
             return new Player_Input
+            {
+                InputTick = inputTick,
+                MoveInput = ToProto(state.MoveInput),
+                AimInput = ToProto(state.AimInput),
+                IsPrimaryAttackPressed = state.IsPrimaryAttackPressed,
+                IsSpecialAttackPressed = state.IsSpecialAttackPressed,
+                IsSpecialActionPressed = state.IsSpecialActionPressed,
+                IsInteractPressed = state.IsInteractPressed,
+                IsSprintPressed = state.IsSprintPressed,
+                IsJumpPressed = state.IsJumpPressed,
+                IsSwitchModePressed = state.IsSwitchModePressed,
+            };
+        }
+
+        public static Input_Sample ToInputSample(uint inputTick, in InputState state)
+        {
+            return new Input_Sample
             {
                 InputTick = inputTick,
                 MoveInput = ToProto(state.MoveInput),
@@ -92,6 +107,17 @@ namespace Utils
                 LinearVelocity = ToProto(movement.rootLinearVelocity),
                 AngularVelocity = ToProto(movement.meshAngularVelocity),
                 LastProcessedInputTick = lastProcessedInputTick,
+                VerticalVelocity = movement.verticalVelocity,
+                JumpCount = movement.jumpCount,
+                IsRunning = movement.isRunning,
+                IsSprinting = movement.isSprinting,
+                IsDashing = movement.isDashing,
+                IsGrounded = movement.isGrounded,
+                DashDirection = ToProto(movement.dashDirection),
+                DashRemainingTime = movement.dashRemainingTime,
+                DesiredLocomotionSpeed = movement.desiredLocomotionSpeed,
+                AppliedLocomotionSpeed = movement.appliedLocomotionSpeed,
+                LastMoveDirection = ToProto(movement.lastMoveDirection),
             };
         }
 
@@ -123,6 +149,17 @@ namespace Utils
                     meshRotation = ToUnity(snapshot.Rotation),
                     rootLinearVelocity = ToUnity(snapshot.LinearVelocity),
                     meshAngularVelocity = ToUnity(snapshot.AngularVelocity),
+                    verticalVelocity = snapshot.VerticalVelocity,
+                    jumpCount = snapshot.JumpCount,
+                    isRunning = snapshot.IsRunning,
+                    isSprinting = snapshot.IsSprinting,
+                    isDashing = snapshot.IsDashing,
+                    isGrounded = snapshot.IsGrounded,
+                    dashDirection = ToUnity(snapshot.DashDirection),
+                    dashRemainingTime = snapshot.DashRemainingTime,
+                    desiredLocomotionSpeed = snapshot.DesiredLocomotionSpeed,
+                    appliedLocomotionSpeed = snapshot.AppliedLocomotionSpeed,
+                    lastMoveDirection = ToUnity(snapshot.LastMoveDirection),
                 },
                 view = new ViewSnapshot
                 {
@@ -130,6 +167,23 @@ namespace Utils
                     yaw = euler.y,
                     pitch = MathUtils.NormalizePitch(euler.x)
                 }
+            };
+        }
+
+        private static InputState ToInputState(Vec2 move, Vec2 aim, bool primaryAttack, bool specialAttack,
+            bool specialAction, bool interact, bool sprint, bool jump, bool switchMode)
+        {
+            return new InputState
+            {
+                MoveInput = ToUnity(move),
+                AimInput = ToUnity(aim),
+                IsPrimaryAttackPressed = primaryAttack,
+                IsSpecialAttackPressed = specialAttack,
+                IsSpecialActionPressed = specialAction,
+                IsInteractPressed = interact,
+                IsSprintPressed = sprint,
+                IsJumpPressed = jump,
+                IsSwitchModePressed = switchMode,
             };
         }
 
