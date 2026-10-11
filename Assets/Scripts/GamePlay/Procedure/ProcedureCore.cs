@@ -1,6 +1,7 @@
 using Core;
 using Framework;
 using GamePlay.DataProxy;
+using GamePlay.GameSave;
 using GamePlay.Room;
 using NetSync;
 using Network;
@@ -37,16 +38,19 @@ namespace GamePlay.Procedure
         /// </summary>
         public void StartUp()
         {
-            // 初始化需要的局内数据
             InitDataProxy();
             
             // 直接切换到主菜单状态
             _fsm.ChangeState(ProcedureState.Menu);
         }
-
+        
+        /// <summary>
+        /// 初始化需要的游戏业务数据
+        /// </summary>
         private void InitDataProxy()
         {
             Global.RegisterDataProxy<EntityConfigProxy>();
+            Global.RegisterDataProxy<PlayerDataProxy>();
         }
 
         #region 状态切换
@@ -190,7 +194,7 @@ namespace GamePlay.Procedure
             _fsm.RegisterState(new ProcedurePreparingState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
             _fsm.RegisterState(new ProcedureLoadingState(_fsm, this));
-
+            
             // 子系统就绪之后才启动流程，已经就绪时立刻回调
             AppCore.OnAppReady += StartUp;
             AppCore.OnAppQuit += ShutDown;

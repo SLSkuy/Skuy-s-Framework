@@ -23,14 +23,16 @@ namespace Framework
         /// </summary>
         public bool Load<T>(string fileName, out T data)
         {
-            if (!Exists(fileName))
+            string fileFullName = GetJsonFileFullName(fileName);
+            
+            if (!Exists(fileFullName))
             {
-                Debug.LogWarning($"[{GetType().Name}] 不存在 {fileName} 文件");
+                Debug.LogWarning($"[{GetType().Name}] 不存在 {fileFullName} 文件");
                 data = default;
                 return false;
             }
             
-            string json = File.ReadAllText(GetPath(fileName), Utf8);
+            string json = File.ReadAllText(GetPath(fileFullName), Utf8);
             data = JsonConvert.DeserializeObject<T>(json);
             return true;
         }
@@ -40,7 +42,7 @@ namespace Framework
         /// </summary>
         public void SaveJson<T>(string fileName, T data)
         {
-            string path = GetPath(fileName);
+            string path = GetPath(GetJsonFileFullName(fileName));
             Directory.CreateDirectory(Path.GetDirectoryName(path) ?? "");
             string json = JsonConvert.SerializeObject(data, Formatting.Indented);
             File.WriteAllText(path, json, Utf8);
@@ -59,6 +61,11 @@ namespace Framework
         private static bool Exists(string fileName)
         {
             return File.Exists(GetPath(fileName));
+        }
+
+        private static string GetJsonFileFullName(string fileName)
+        {
+            return fileName + ".json";
         }
 
         /// <summary>

@@ -8,6 +8,11 @@ namespace Framework
         public abstract string DataPath { get; }
         public abstract bool IsNeedSaveToLocal { get; }
         public bool IsInitialized { get; private set; }
+        
+        /// <summary>
+        /// 标记数据为脏，需要重新存储，避免重复写入存档文件
+        /// </summary>
+        private bool _dataChanged = false;
 
         public virtual void Init()
         {
@@ -24,12 +29,29 @@ namespace Framework
         }
 
         /// <summary>
+        /// 标记数据为脏数据，数据已经变更，需要重新保存
+        /// </summary>
+        public void MarkDataDirty()
+        {
+            if(!_dataChanged) _dataChanged = true;
+        }
+
+        /// <summary>
         /// 加载本地数据，适用于存储在本地的数据
         /// 若需加载本地数据需重写加载逻辑
         /// </summary>
         public virtual void Load()
         {
             
+        }
+
+        private void _Save()
+        {
+            // 只有变更了的数据才需要重新保存
+            if (!_dataChanged) return;
+            
+            _dataChanged = false;
+            Save();
         }
 
         /// <summary>
@@ -53,7 +75,7 @@ namespace Framework
         {
             if (!IsInitialized) return;
 
-            if (IsNeedSaveToLocal) Save();
+            if (IsNeedSaveToLocal) _Save();
             Destroy();
             IsInitialized = false;
         }

@@ -3,23 +3,21 @@
 namespace Core
 {
     /// <summary>
-    /// 全局游戏数据（存档、玩家进度等）
+    /// 全局游戏配置
     /// </summary>
-    [Serializable]
     public class AppModel
     {
-        #region 玩家基础数据
-        public string playerName;
+        #region 性能设置
+        public int FrameLimit = 60;
         #endregion
 
+        #region 分辨率设置
+        public int Width = 1920;
+        public int Height = 1080;
+        #endregion
+        
         #region 游戏统计
         public DateTime LastPlayTime;
         #endregion
-
-        public AppModel()
-        {
-            playerName = "Player";
-            LastPlayTime = DateTime.Now;
-        }
     }
 }

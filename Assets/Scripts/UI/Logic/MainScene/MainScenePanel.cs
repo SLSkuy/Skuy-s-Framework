@@ -1,5 +1,5 @@
-using Core;
 using Framework;
+using GamePlay.GameSave;
 using GamePlay.Procedure;
 
 namespace UI
@@ -9,13 +9,13 @@ namespace UI
     /// </summary>
     public partial class MainScenePanel
     {
-        private AppModelProxy _appModelProxy;
+        private PlayerDataProxy _playerData;
         
         #region 生命周期
 
         protected override void Init()
         {
-            _appModelProxy = Global.GetDataProxy<AppModelProxy>();
+            _playerData = Global.GetDataProxy<PlayerDataProxy>();
         }
 
         protected override void AddListener()
@@ -47,7 +47,7 @@ namespace UI
 
         protected override void UpdateView()
         {
-            _nameInputField.text = _appModelProxy.PlayerName;
+            _nameInputField.text = _playerData.PlayerName;
         }
 
         #endregion
@@ -82,7 +82,7 @@ namespace UI
         private void OnRenameBtn()
         {
             string playerName = _nameInputField.text;
-            _appModelProxy.Rename(playerName);
+            _playerData.Rename(playerName);
         }
 
         #endregion

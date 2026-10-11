@@ -57,8 +57,7 @@ namespace Core
         private void InitializeGameCore()
         {
             _config = AppCoreConfig.Instance;
-            Application.targetFrameRate = _config.targetFrame;
-
+            
             SystemMgr = new SystemManager();
             SystemMgr._Init();
             
@@ -74,6 +73,7 @@ namespace Core
         {
             InitSubSystems();
             InitDataProxy();
+            InitConfig();
 
             // 子系统全部就绪，通知业务逻辑开始处理
             IsReady = true;
@@ -103,6 +103,12 @@ namespace Core
         private void InitDataProxy()
         {
             Global.RegisterDataProxy<AppModelProxy>();
+        }
+
+        private void InitConfig()
+        {
+            // TODO: 初始化游戏设置（画面、音量等）
+            Application.targetFrameRate = _config.targetFrame;
         }
 
         #endregion

@@ -11,24 +11,13 @@ namespace Core
         public override string DataPath => "AppModel";
         public override bool IsNeedSaveToLocal => true;
         
-        private string FileName => DataPath + ".json";
-        
         private AppModel _model;
-
-        #region 属性
-        public string PlayerName => _model.playerName;
-        #endregion
-
-        public void Rename(string name)
-        {
-            _model.playerName = name;
-        }
-
+        
         #region 数据管理方法
                 
         public override void Load()
         {
-            if (Global.LoadJson<AppModel>(FileName, out var data))
+            if (Global.LoadJson<AppModel>(DataPath, out var data))
             {
                 _model = data;
                 return;
@@ -40,10 +29,10 @@ namespace Core
         public override void Save()
         {
             _model.LastPlayTime = DateTime.Now;
-            Global.SaveJson(FileName, _model);
+            
+            Global.SaveJson(DataPath, _model);
         }
 
         #endregion
-
     }
 }
