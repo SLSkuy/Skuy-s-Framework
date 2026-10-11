@@ -3,6 +3,7 @@
 // </auto-generated>
 
 using Framework;
+using TMPro;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
 
@@ -18,7 +19,9 @@ namespace UI
         private Button _hostPlayBtn;
         private Button _localPlayBtn;
         private Button _multiPlayBtn;
+        private Button _renameBtn;
         private Button _settings;
+        private TMP_InputField _nameInputField;
 
         /// <summary>
         /// 由 UIView 在挂载后调用，写入预制体上绑定的控件、界面属性和过渡动画
@@ -29,7 +32,9 @@ namespace UI
             _hostPlayBtn = (Button)view.GetBinding("hostPlayBtn");
             _localPlayBtn = (Button)view.GetBinding("localPlayBtn");
             _multiPlayBtn = (Button)view.GetBinding("multiPlayBtn");
+            _renameBtn = (Button)view.GetBinding("renameBtn");
             _settings = (Button)view.GetBinding("settings");
+            _nameInputField = (TMP_InputField)view.GetBinding("nameInputField");
 
             Properties = (MainScenePanelProperties)view.Properties;
             AnimIn = view.AnimIn;

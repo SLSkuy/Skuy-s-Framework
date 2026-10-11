@@ -222,5 +222,19 @@ namespace Framework
         {
             SubSystems.Clear();
         }
+
+        #region 本地存储
+
+        public static bool LoadJson<T>(string fileName, out T data)
+        {
+            return Get<StorageManager>().Load<T>(fileName, out data);
+        }
+
+        public static void SaveJson<T>(string fileName, T data)
+        {
+            Get<StorageManager>().SaveJson(fileName, data);
+        }
+
+        #endregion
     }
 }

@@ -10,6 +10,7 @@ namespace Framework
         SystemManager = int.MinValue,
         NetWorkManager = -114514,
         ResourceManager = -200,
+        StorageManager = -190,
         SpawnManager = -175,
         PoolManager = -150,
         TimerManager = -120,

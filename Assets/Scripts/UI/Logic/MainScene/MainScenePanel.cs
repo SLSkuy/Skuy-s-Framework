@@ -1,3 +1,4 @@
+using Core;
 using Framework;
 using GamePlay.Procedure;
 
@@ -8,23 +9,26 @@ namespace UI
     /// </summary>
     public partial class MainScenePanel
     {
+        private AppModelProxy _appModelProxy;
+        
         #region 生命周期
 
         protected override void Init()
         {
-            // TODO: 初始化界面数据与控件状态
-            // <ui-bind:add>
-            _exitBtn.onClick.AddListener(OnExitBtn);
-            _hostPlayBtn.onClick.AddListener(OnHostPlayBtn);
-            _localPlayBtn.onClick.AddListener(OnLocalPlayBtn);
-            _multiPlayBtn.onClick.AddListener(OnMultiPlayBtn);
-            _settings.onClick.AddListener(OnSettings);
-            // </ui-bind:add>
+            _appModelProxy = Global.GetDataProxy<AppModelProxy>();
         }
 
         protected override void AddListener()
         {
             // TODO: 订阅界面以外的事件
+            // <ui-bind:add>
+            _exitBtn.onClick.AddListener(OnExitBtn);
+            _hostPlayBtn.onClick.AddListener(OnHostPlayBtn);
+            _localPlayBtn.onClick.AddListener(OnLocalPlayBtn);
+            _multiPlayBtn.onClick.AddListener(OnMultiPlayBtn);
+            _renameBtn.onClick.AddListener(OnRenameBtn);
+            _settings.onClick.AddListener(OnSettings);
+            // </ui-bind:add>
         }
 
         protected override void RemoveListener()
@@ -35,6 +39,7 @@ namespace UI
             _hostPlayBtn.onClick.RemoveListener(OnHostPlayBtn);
             _localPlayBtn.onClick.RemoveListener(OnLocalPlayBtn);
             _multiPlayBtn.onClick.RemoveListener(OnMultiPlayBtn);
+            _renameBtn.onClick.RemoveListener(OnRenameBtn);
             _settings.onClick.RemoveListener(OnSettings);
             // </ui-bind:remove>
             base.RemoveListener();
@@ -42,7 +47,7 @@ namespace UI
 
         protected override void UpdateView()
         {
-            // TODO: 用界面属性刷新控件显示
+            _nameInputField.text = _appModelProxy.PlayerName;
         }
 
         #endregion
@@ -72,6 +77,12 @@ namespace UI
         private void OnExitBtn()
         {
             Global.QuitGame();
+        }
+
+        private void OnRenameBtn()
+        {
+            string playerName = _nameInputField.text;
+            _appModelProxy.Rename(playerName);
         }
 
         #endregion
