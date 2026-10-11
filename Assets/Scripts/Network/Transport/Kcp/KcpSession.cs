@@ -14,9 +14,11 @@ namespace Network
         private readonly Action<KcpSession, byte[], int> _output;
         private readonly SimpleSegManager.Kcp _kcp;
 
+        #region 属性
         public uint Conv { get; }
         public EndPoint RemoteEndPoint { get; }
         public DateTimeOffset LastReceiveTime { get; private set; }
+        #endregion
 
         public KcpSession(EndPoint remoteEndPoint, Action<KcpSession, byte[], int> output, uint conv = 0)
         {

@@ -15,10 +15,6 @@ namespace Network
         private const int RECEIVE_BUFFER_SIZE = 1024 * 64;
         private const int MAX_MESSAGE_SIZE = 1024 * 512;
         
-        public bool Connected => _socket is { Connected: true };
-        public EndPoint RemoteEndPoint => _socket.RemoteEndPoint;
-        public DateTimeOffset LastReceiveTime { get; private set; }
-
         private readonly ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
         private readonly SemaphoreSlim _sendSignal = new SemaphoreSlim(0);
 
@@ -29,9 +25,17 @@ namespace Network
         private int _disconnectRaised;
         private bool _isDisposed;
 
+        #region 属性
+        public bool Connected => _socket is { Connected: true };
+        public EndPoint RemoteEndPoint => _socket.RemoteEndPoint;
+        public DateTimeOffset LastReceiveTime { get; private set; }
+        #endregion
+
+        #region 事件
         public event Action<byte[]> OnMessageReceived;
         public event Action OnDisconnected;
         public event Action<string> OnError;
+        #endregion
 
         public void Connect(string targetIp, short targetPort)
         {

@@ -4,14 +4,14 @@ using System.Collections.Generic;
 namespace Network
 {
     /// <summary>
-    /// 客户端抽象管理，控制客户端在服务端的连接抽象
+    /// 客户端连接抽象管理
     /// </summary>
-    public sealed class ClientManager
+    public sealed class ConnectionManager
     {
         /// <summary>
         /// 客户端抽象
         /// </summary>
-        public struct Client
+        public struct Connection
         {
             public readonly uint Id;
             public readonly ulong Token;
@@ -27,7 +27,7 @@ namespace Network
 
             public bool IsConnected => ReliableSessionId != 0 || FastSessionId != 0;
 
-            public Client(uint id, ulong token)
+            public Connection(uint id, ulong token)
             {
                 Id = id;
                 Token = token;
@@ -45,8 +45,8 @@ namespace Network
 
         private readonly object _lock = new object();
         private uint _nextClientId = 1;
-        private readonly Dictionary<uint, Client> _clientsById = new Dictionary<uint, Client>();
-        private readonly Dictionary<ulong, Client> _clientsByToken = new Dictionary<ulong, Client>();
+        private readonly Dictionary<uint, Connection> _clientsById = new Dictionary<uint, Connection>();
+        private readonly Dictionary<ulong, Connection> _clientsByToken = new Dictionary<ulong, Connection>();
         private readonly Dictionary<uint, uint> _clientIdsByReliableSessionId = new Dictionary<uint, uint>();
         private readonly Dictionary<uint, uint> _clientIdsByFastSessionId = new Dictionary<uint, uint>();
         private readonly List<uint> _clientToRemove = new List<uint>();
@@ -60,32 +60,32 @@ namespace Network
         /// <summary>
         /// 注册新客户端连接，生成唯一Token
         /// </summary>
-        public Client AddClient(uint reliableSessionId = 0)
+        public Connection AddClient(uint reliableSessionId = 0)
         {
             lock (_lock)
             {
                 if (reliableSessionId != 0 && 
                     _clientIdsByReliableSessionId.TryGetValue(reliableSessionId, out uint existingClientId) &&
-                    _clientsById.TryGetValue(existingClientId, out Client existingClient))
+                    _clientsById.TryGetValue(existingClientId, out Connection existingClient))
                 {
                     return existingClient;
                 }
 
                 ulong token = CreateUniqueToken();
-                Client client = new Client(_nextClientId, token)
+                Connection connection = new Connection(_nextClientId, token)
                 {
                     ReliableSessionId = reliableSessionId
                 };
 
-                _clientsById[_nextClientId] = client;
-                _clientsByToken[token] = client;
+                _clientsById[_nextClientId] = connection;
+                _clientsByToken[token] = connection;
                 if (reliableSessionId != 0)
                 {
                     _clientIdsByReliableSessionId[reliableSessionId] = _nextClientId;
                 }
 
                 _nextClientId++;
-                return client;
+                return connection;
             }
         }
 
@@ -153,7 +153,7 @@ namespace Network
                     return false;
                 }
 
-                if (_clientsById.TryGetValue(clientId, out Client client) && client.ReliableSessionId == reliableSessionId)
+                if (_clientsById.TryGetValue(clientId, out Connection client) && client.ReliableSessionId == reliableSessionId)
                 {
                     client.ReliableSessionId = 0;
                     _clientsById[clientId] = client;
@@ -161,7 +161,7 @@ namespace Network
                 }
 
                 // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
-                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Client disconnected))
+                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Connection disconnected))
                 {
                     disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
                     _clientsById[clientId] = disconnected;
@@ -182,7 +182,7 @@ namespace Network
                     return false;
                 }
 
-                if (_clientsById.TryGetValue(clientId, out Client client) && client.FastSessionId == fastSessionId)
+                if (_clientsById.TryGetValue(clientId, out Connection client) && client.FastSessionId == fastSessionId)
                 {
                     client.FastSessionId = 0;
                     _clientsById[clientId] = client;
@@ -190,7 +190,7 @@ namespace Network
                 }
                 
                 // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
-                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Client disconnected))
+                if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Connection disconnected))
                 {
                     disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
                     _clientsById[clientId] = disconnected;
@@ -221,7 +221,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (!_clientsById.Remove(clientId, out Client client))
+                if (!_clientsById.Remove(clientId, out Connection client))
                 {
                     return false;
                 }
@@ -251,7 +251,7 @@ namespace Network
             uint removedClientId;
             lock (_lock)
             {
-                if (!_clientsByToken.TryGetValue(token, out Client client))
+                if (!_clientsByToken.TryGetValue(token, out Connection client))
                 {
                     return false;
                 }
@@ -278,19 +278,19 @@ namespace Network
 
         #region 客户端查询
 
-        public bool TryGetClient(uint clientId, out Client client)
+        public bool TryGetClient(uint clientId, out Connection connection)
         {
             lock (_lock)
             {
-                return _clientsById.TryGetValue(clientId, out client);
+                return _clientsById.TryGetValue(clientId, out connection);
             }
         }
 
-        public bool TryGetClient(ulong token, out Client client)
+        public bool TryGetClient(ulong token, out Connection connection)
         {
             lock (_lock)
             {
-                return _clientsByToken.TryGetValue(token, out client);
+                return _clientsByToken.TryGetValue(token, out connection);
             }
         }
 
@@ -298,7 +298,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (_clientsByToken.TryGetValue(token, out Client client))
+                if (_clientsByToken.TryGetValue(token, out Connection client))
                 {
                     clientId = client.Id;
                     return true;
@@ -313,7 +313,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (_clientsById.TryGetValue(clientId, out Client client))
+                if (_clientsById.TryGetValue(clientId, out Connection client))
                 {
                     token = client.Token;
                     return true;
@@ -340,7 +340,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (_clientsById.TryGetValue(clientId, out Client client) && client.ReliableSessionId != 0)
+                if (_clientsById.TryGetValue(clientId, out Connection client) && client.ReliableSessionId != 0)
                 {
                     reliableSessionId = client.ReliableSessionId;
                     return true;
@@ -355,7 +355,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (_clientsById.TryGetValue(clientId, out Client client) && client.FastSessionId != 0)
+                if (_clientsById.TryGetValue(clientId, out Connection client) && client.FastSessionId != 0)
                 {
                     fastSessionId = client.FastSessionId;
                     return true;
@@ -366,11 +366,11 @@ namespace Network
             }
         }
 
-        public IEnumerable<Client> GetAllClients()
+        public IEnumerable<Connection> GetAllClients()
         {
             lock (_lock)
             {
-                Client[] snapshot = new Client[_clientsById.Count];
+                Connection[] snapshot = new Connection[_clientsById.Count];
                 _clientsById.Values.CopyTo(snapshot, 0);
                 return snapshot;
             }
@@ -393,11 +393,11 @@ namespace Network
             {
                 foreach (var kv in _clientsById)
                 {
-                    Client client = kv.Value;
-                    if (client.DisconnectTime < 0f) continue;
-                    if (currentTime - client.DisconnectTime >= gracePeriodSeconds)
+                    Connection connection = kv.Value;
+                    if (connection.DisconnectTime < 0f) continue;
+                    if (currentTime - connection.DisconnectTime >= gracePeriodSeconds)
                     {
-                        _clientToRemove.Add(client.Id);
+                        _clientToRemove.Add(connection.Id);
                     }
                 }
 
@@ -419,7 +419,7 @@ namespace Network
         {
             lock (_lock)
             {
-                if (_clientsById.TryGetValue(clientId, out Client client))
+                if (_clientsById.TryGetValue(clientId, out Connection client))
                 {
                     client.RTT = rtt;
                     _clientsById[clientId] = client;

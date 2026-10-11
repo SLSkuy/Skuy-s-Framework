@@ -9,19 +9,23 @@ namespace Network
     /// </summary>
     public sealed class KcpClientTransport : IClientTransport
     {
-        public TransportType Type => TransportType.KCP;
-        public bool IsRunning { get; private set; }
-        
         private UdpClient _udpClient;
         private KcpSession _session;
         private IPEndPoint _serverEndPoint;
         private bool _isDisposed;
         private bool _disconnected;
 
+        #region 属性
+        public TransportType Type => TransportType.KCP;
+        public bool IsRunning { get; private set; }
+        #endregion
+
+        #region 事件
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
         public event Action OnConnected;
         public event Action OnDisconnected;
+        #endregion
 
         #region 暴露接口
 

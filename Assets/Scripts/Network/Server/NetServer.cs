@@ -15,6 +15,16 @@ namespace Network
     /// </summary>
     public class NetServer : SubSystemBase
     {
+        private IServerTransport _reliableTransport;
+        private IServerTransport _fastTransport;
+        private MessageProcessor _messageProcessor;
+        private ConnectionManager _connectionManager;
+        private NetServerConfig _serverConfig;
+        private AssetHandle _assetHandle;
+        private float _serverPingAccumulator;
+
+        #region 属性
+
         public override int Priority => (int)SubSystemPriority.NetWorkManager;
         
         /// <summary>
@@ -26,14 +36,8 @@ namespace Network
         /// 检测当前是否存在快速传输通道
         /// </summary>
         public bool HasFastChannel => _fastTransport?.IsRunning == true;
-        
-        private IServerTransport _reliableTransport;
-        private IServerTransport _fastTransport;
-        private MessageProcessor _messageProcessor;
-        private ClientManager _clientManager;
-        private NetServerConfig _serverConfig;
-        private AssetHandle _assetHandle;
-        private float _serverPingAccumulator;
+
+        #endregion
 
         #region 事件
         public event Action<uint> OnClientRemoved;
@@ -63,7 +67,7 @@ namespace Network
 
         public void StopServer()
         {
-            _clientManager?.Clear();
+            _connectionManager?.Clear();
             _reliableTransport?.Stop();
             _fastTransport?.Stop();
         }
@@ -109,7 +113,7 @@ namespace Network
         /// </summary>
         public void Send(uint clientId, byte[] data)
         {
-            if (!_clientManager.TryGetFastSessionId(clientId, out uint fastSessionId))
+            if (!_connectionManager.TryGetFastSessionId(clientId, out uint fastSessionId))
             {
                 Debug.LogWarning($"[NetServer] Fast session not found for client {clientId}");
                 return;
@@ -124,7 +128,7 @@ namespace Network
         /// </summary>
         public void SendReliable(uint clientId, byte[] data)
         {
-            if (!_clientManager.TryGetReliableSessionId(clientId, out uint reliableSessionId))
+            if (!_connectionManager.TryGetReliableSessionId(clientId, out uint reliableSessionId))
             {
                 Debug.LogWarning($"[NetServer] Reliable session not found for client {clientId}");
                 return;
@@ -173,7 +177,7 @@ namespace Network
 
         public void Broadcast(byte[] data)
         {
-            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
             {
                 if (client.FastSessionId != 0)
                 {
@@ -187,7 +191,7 @@ namespace Network
         /// </summary>
         public void BroadcastReliable(byte[] data)
         {
-            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
             {
                 if (client.ReliableSessionId != 0)
                 {
@@ -207,7 +211,7 @@ namespace Network
         {
             var msg = NetUtils.Bytes2Proto(data);
             
-            if (_clientManager.TryGetClientId(_reliableTransport.Type, transportSessionId, out var clientId))
+            if (_connectionManager.TryGetClientId(_reliableTransport.Type, transportSessionId, out var clientId))
             {
                 _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
             }
@@ -225,14 +229,14 @@ namespace Network
         private void HandleFastDataReceived(uint transportSessionId, byte[] data)
         {
             var msg = NetUtils.Bytes2Proto(data);
-            if (_clientManager.TryGetClientId(_fastTransport.Type, transportSessionId, out var clientId))
+            if (_connectionManager.TryGetClientId(_fastTransport.Type, transportSessionId, out var clientId))
             {
                 _messageProcessor.HandleServerMessage(clientId, msg.Item1, msg.Item2);
             }
             else if(msg is { Item1: NetEvent.FAST_CONNECT_REQUEST, Item2: Client_Fast_Connect_Request request })
             {
                 // 特殊处理KCP连接请求
-                if (_clientManager.BindFastSession(request.Token, transportSessionId, out uint oldFastSessionId))
+                if (_connectionManager.BindFastSession(request.Token, transportSessionId, out uint oldFastSessionId))
                 {
                     // 关闭旧的KCP session（若有），避免悬挂连接
                     if (oldFastSessionId != 0) _fastTransport.Disconnect(oldFastSessionId);
@@ -257,10 +261,10 @@ namespace Network
 
         private void HandleReliableClientDisconnect(uint transportSessionId)
         {
-            if (_clientManager.UnBindReliableSession(transportSessionId, out uint clientId, Time.time))
+            if (_connectionManager.UnBindReliableSession(transportSessionId, out uint clientId, Time.time))
             {
                 Debug.Log($"[NetServer] Reliable session {transportSessionId} unbound from client {clientId}");
-                if (_clientManager.TryGetFastSessionId(clientId, out uint fastSessionId))
+                if (_connectionManager.TryGetFastSessionId(clientId, out uint fastSessionId))
                 {
                     _fastTransport.Disconnect(fastSessionId);
                 }
@@ -273,7 +277,7 @@ namespace Network
 
         private void HandleFastClientDisconnect(uint transportSessionId)
         {
-            if (_clientManager.UnbindFastSession(transportSessionId, out uint clientId, Time.time))
+            if (_connectionManager.UnbindFastSession(transportSessionId, out uint clientId, Time.time))
             {
                 Debug.Log($"[NetServer] Fast session {transportSessionId} unbound from client {clientId}");
                 return;
@@ -286,14 +290,14 @@ namespace Network
 
         #region 事件回调
         
-        private void HandleClientRemoved(uint clientId)
+        private void HandleConnectionRemoved(uint clientId)
         {
             OnClientRemoved?.Invoke(clientId);
         }
         
         private void HandleDebugChat(uint clientId, Chat_Test msg)
         {
-            if (_clientManager.TryGetClient(clientId, out var client))
+            if (_connectionManager.TryGetClient(clientId, out var client))
             {
                 Debug.Log($"[NetServer] Chat Test From Client: {clientId}\n" +
                           $"FastSessionId: {client.FastSessionId}\n" +
@@ -311,7 +315,7 @@ namespace Network
         /// </summary>
         private void HandleReliableConnectRequest(uint transportSessionId, Client_Reliable_Connect_Request request)
         {
-            if (request.Token != 0 && request.ClientId != 0 && _clientManager.TryGetClient(request.Token, out var client) && client.Id == request.ClientId)
+            if (request.Token != 0 && request.ClientId != 0 && _connectionManager.TryGetClient(request.Token, out var client) && client.Id == request.ClientId)
             {
                 // --- token + clientId 双重匹配 ---
                 if (client.IsConnected)
@@ -320,7 +324,7 @@ namespace Network
                     uint oldReliableId = client.ReliableSessionId;
                     uint oldFastId = client.FastSessionId;
 
-                    _clientManager.RebindReliableSession(request.Token, transportSessionId, out _);
+                    _connectionManager.RebindReliableSession(request.Token, transportSessionId, out _);
 
                     // 关闭旧transport session，避免悬挂连接
                     if (oldReliableId != 0) _reliableTransport.Disconnect(oldReliableId);
@@ -332,7 +336,7 @@ namespace Network
                 else if (client.DisconnectTime >= 0f)
                 {
                     // 断线恢复：client在宽限期内，重新绑定TCP
-                    _clientManager.RebindReliableSession(request.Token, transportSessionId, out uint oldReliableId);
+                    _connectionManager.RebindReliableSession(request.Token, transportSessionId, out uint oldReliableId);
 
                     // 关闭旧TCP session（若有），避免残留
                     if (oldReliableId != 0) _reliableTransport.Disconnect(oldReliableId);
@@ -367,7 +371,7 @@ namespace Network
 
         private void CreateNewClient(uint transportSessionId)
         {
-            var client = _clientManager.AddClient(transportSessionId);
+            var client = _connectionManager.AddClient(transportSessionId);
             SendReliableConnectResponse(transportSessionId, client.Id, client.Token);
             Debug.Log($"[NetServer] New client {client.Id} created, TCP session {transportSessionId}");
         }
@@ -400,7 +404,7 @@ namespace Network
             long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             long nowMsWithFrameDelay = nowMs + (long)(Time.deltaTime * 1000f);
             float rtt = Math.Clamp((nowMsWithFrameDelay - pong.Timestamp) / 1000f, 0f, float.MaxValue);
-            _clientManager.UpdateRTT(clientId, rtt);
+            _connectionManager.UpdateRTT(clientId, rtt);
         }
         
         #endregion
@@ -429,7 +433,7 @@ namespace Network
             Ping ping = new Ping { Timestamp = nowMsWithFrameDelay };
             byte[] data = NetUtils.Proto2Bytes(NetEvent.PING, ping);
 
-            foreach (ClientManager.Client client in _clientManager.GetAllClients())
+            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
             {
                 if (client.FastSessionId != 0)
                 {
@@ -449,8 +453,8 @@ namespace Network
             _serverConfig = _assetHandle.AssetObject as NetServerConfig;
             
             _messageProcessor = new MessageProcessor();
-            _clientManager = new ClientManager();
-            _clientManager.OnClientRemoved += HandleClientRemoved;
+            _connectionManager = new ConnectionManager();
+            _connectionManager.OnClientRemoved += HandleConnectionRemoved;
             
             _reliableTransport = new TcpServerTransport(_serverConfig);
             _reliableTransport.OnDataReceived += HandleReliableDataReceived;
@@ -479,7 +483,7 @@ namespace Network
         {
             _reliableTransport?.Update(deltaTime);
             _fastTransport?.Update(deltaTime);
-            _clientManager?.CleanupDisconnectedClients(Time.time, _serverConfig.maxReconnectTime);
+            _connectionManager?.CleanupDisconnectedClients(Time.time, _serverConfig.maxReconnectTime);
             UpdateServerPing(deltaTime);
         }
 
@@ -507,10 +511,10 @@ namespace Network
                 _reliableTransport = null;
             }
             
-            if (_clientManager != null)
+            if (_connectionManager != null)
             {
-                _clientManager.OnClientRemoved -= HandleClientRemoved;
-                _clientManager.Clear();
+                _connectionManager.OnClientRemoved -= HandleConnectionRemoved;
+                _connectionManager.Clear();
             }
 
             UnregisterHandler<Ping>(NetEvent.PING, HandlePing);

@@ -15,13 +15,6 @@ namespace Network
     /// </summary>
     public class NetClient : SubSystemBase
     {
-        public override int Priority => (int)SubSystemPriority.NetWorkManager;
-
-        /// <summary>
-        /// 当前网络延迟
-        /// </summary>
-        public float RTT => _lastRtt;
-        
         private IClientTransport _reliableTransport;
         private IClientTransport _fastTransport;
         private MessageProcessor _messageProcessor;
@@ -47,6 +40,17 @@ namespace Network
         private float _lastRtt;
         private bool _connectionFailed;
         // ========== RTT ==========
+
+        #region 属性
+
+        public override int Priority => (int)SubSystemPriority.NetWorkManager;
+
+        /// <summary>
+        /// 当前网络延迟
+        /// </summary>
+        public float RTT => _lastRtt;
+        
+        #endregion
 
         #region 事件
         public event Action OnConnectionFailed; // 连接失败
@@ -484,6 +488,8 @@ namespace Network
             {
                 _reliableTransport.OnDataReceived -= HandleDataReceived;
                 _reliableTransport.OnTransportError -= HandleTransportError;
+                _reliableTransport.OnConnected -= HandleConnected;
+                _reliableTransport.OnDisconnected -= HandleDisconnected;
                 _reliableTransport.Dispose();
                 _reliableTransport = null;
             }

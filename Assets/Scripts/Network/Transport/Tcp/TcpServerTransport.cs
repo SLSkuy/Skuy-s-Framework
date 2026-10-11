@@ -13,11 +13,14 @@ namespace Network
     /// </summary>
     public sealed class TcpServerTransport : IServerTransport
     {
+        /// <summary>
+        /// 客户端TCP连接会话抽象
+        /// </summary>
         private sealed class ClientSession
         {
             public TcpServerTransport Owner;
-            public uint SessionId;
             public TcpSession Session;
+            public uint SessionId;
 
             public void Bind()
             {
@@ -60,10 +63,6 @@ namespace Network
             public string Message;
         }
 
-        public TransportType Type => TransportType.TCP;
-        public short Port { get; private set; }
-        public bool IsRunning { get; private set; }
-        
         private readonly object _clientLock = new object();
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly ConcurrentQueue<uint> _connectedSessions = new ConcurrentQueue<uint>();
@@ -77,10 +76,18 @@ namespace Network
         private uint _nextClientId = 1;
         private bool _isDisposed;
 
+        #region 属性
+        public TransportType Type => TransportType.TCP;
+        public short Port { get; private set; }
+        public bool IsRunning { get; private set; }
+        #endregion
+
+        #region 事件
         public event Action<uint> OnClientConnected;
         public event Action<uint> OnClientDisconnected;
         public event Action<uint, byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
+        #endregion
 
         public TcpServerTransport(NetServerConfig serverConfig)
         {

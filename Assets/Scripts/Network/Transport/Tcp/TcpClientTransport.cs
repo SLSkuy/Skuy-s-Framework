@@ -8,19 +8,23 @@ namespace Network
     /// </summary>
     public sealed class TcpClientTransport : IClientTransport
     {
-        public TransportType Type => TransportType.TCP;
-        public bool IsRunning { get; private set; }
-
         private readonly ConcurrentQueue<byte[]> _receivedMessages = new ConcurrentQueue<byte[]>();
         private readonly ConcurrentQueue<string> _errors = new ConcurrentQueue<string>();
         private TcpSession _session;
         private bool _isDisposed;
         private volatile bool _disconnected;    // 主线程派发，防止跨线程访问
 
+        #region 属性
+        public TransportType Type => TransportType.TCP;
+        public bool IsRunning { get; private set; }
+        #endregion
+        
+        #region 事件
         public event Action<byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
         public event Action OnConnected;
         public event Action OnDisconnected;
+        #endregion
 
         #region 暴露接口
         
@@ -133,13 +137,8 @@ namespace Network
 
         private void ClearQueues()
         {
-            while (_receivedMessages.TryDequeue(out _))
-            {
-            }
-
-            while (_errors.TryDequeue(out _))
-            {
-            }
+            _receivedMessages.Clear();
+            _errors.Clear();
         }
 
         private void ThrowIfDisposed()

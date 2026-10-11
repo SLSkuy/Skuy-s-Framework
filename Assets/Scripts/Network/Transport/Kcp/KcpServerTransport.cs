@@ -11,6 +11,9 @@ namespace Network
     /// </summary>
     public sealed class KcpServerTransport : IServerTransport
     {
+        /// <summary>
+        /// 客户端KCP连接会话抽象
+        /// </summary>
         private sealed class ClientSession
         {
             public uint SessionId;
@@ -19,10 +22,6 @@ namespace Network
         }
         
         private const int KCP_HEADER_SIZE = 24;
-        
-        public TransportType Type => TransportType.KCP;
-        public short Port { get; private set; }
-        public bool IsRunning { get; private set; }
         
         private readonly Dictionary<uint, ClientSession> _clientsById = new Dictionary<uint, ClientSession>();
         private readonly Dictionary<string, ClientSession> _clientsByEndPoint = new Dictionary<string, ClientSession>();
@@ -33,10 +32,19 @@ namespace Network
         private uint _nextClientId = 1;
         private bool _isDisposed;
 
+        #region 属性
+        public TransportType Type => TransportType.KCP;
+        public short Port { get; private set; }
+        public bool IsRunning { get; private set; }
+        #endregion
+
+
+        #region 事件
         public event Action<uint> OnClientConnected;
         public event Action<uint> OnClientDisconnected;
         public event Action<uint, byte[]> OnDataReceived;
         public event Action<string> OnTransportError;
+        #endregion
 
         public KcpServerTransport(NetServerConfig config)
         {

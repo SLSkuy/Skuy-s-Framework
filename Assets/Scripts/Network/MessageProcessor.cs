@@ -7,27 +7,47 @@ using Utils;
 namespace Network
 {
     /// <summary>
-    /// 按事件标识分发已解码消息。同一事件可挂多条回调，按事件与回调成对注销。
+    /// 按事件标识分发已解码消息，同一事件可挂多条回调，按事件与回调成对注销
     /// </summary>
-    public sealed class MessageProcessor
+    public class MessageProcessor
     {
-        private readonly Dictionary<NetEvent, List<Binding>> _clientBindings = new();
-        private readonly Dictionary<NetEvent, List<Binding>> _serverBindings = new();
+        /// <summary>
+        /// 槽位：Callback 按登记时的同一委托实例注销；Invoke 在登记时闭包具体 T，分发时直接调用。
+        /// </summary>
+        private readonly struct CallBackBinding
+        {
+            public readonly Delegate Callback;
+            public readonly Action<uint, IMessage> Invoke;
+
+            public CallBackBinding(Delegate callback, Action<uint, IMessage> invoke)
+            {
+                Callback = callback;
+                Invoke = invoke;
+            }
+        }
+        
+        private readonly Dictionary<NetEvent, List<CallBackBinding>> _clientBindings = new();
+        private readonly Dictionary<NetEvent, List<CallBackBinding>> _serverBindings = new();
 
         /// <summary>
-        /// 分发客户端消息。
+        /// 分发客户端消息
         /// </summary>
+        /// <param name="evt">消息类型</param>
+        /// <param name="message">消息包体</param>
         public void HandleMessage(NetEvent evt, IMessage message)
         {
             Dispatch(evt, 0, message, server: false);
         }
 
         /// <summary>
-        /// 分发服务端消息（含发送方连接标识）。
+        /// 分发服务端接收到的消息
         /// </summary>
-        public void HandleServerMessage(uint clientId, NetEvent evt, IMessage message)
+        /// <param name="senderId">发送方连接ID</param>
+        /// <param name="evt">消息类型</param>
+        /// <param name="message">消息包体</param>
+        public void HandleServerMessage(uint senderId, NetEvent evt, IMessage message)
         {
-            Dispatch(evt, clientId, message, server: true);
+            Dispatch(evt, senderId, message, server: true);
         }
 
         /// <summary>
@@ -68,23 +88,23 @@ namespace Network
 
         private bool Add(NetEvent eventId, Delegate callback, bool server, Action<uint, IMessage> invoke)
         {
-            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
-            if (!map.TryGetValue(eventId, out List<Binding> list))
+            Dictionary<NetEvent, List<CallBackBinding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(eventId, out List<CallBackBinding> list))
             {
-                list = new List<Binding>();
+                list = new List<CallBackBinding>();
                 map[eventId] = list;
             }
 
             if (IndexOf(list, callback) >= 0) return false;
-            list.Add(new Binding(callback, invoke));
+            list.Add(new CallBackBinding(callback, invoke));
             return true;
         }
 
         private void Remove(NetEvent eventId, Delegate callback, bool server)
         {
             if (callback == null) return;
-            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
-            if (!map.TryGetValue(eventId, out List<Binding> list)) return;
+            Dictionary<NetEvent, List<CallBackBinding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(eventId, out List<CallBackBinding> list)) return;
 
             int index = IndexOf(list, callback);
             if (index < 0) return;
@@ -93,8 +113,8 @@ namespace Network
 
         private void Dispatch(NetEvent evt, uint senderId, IMessage message, bool server)
         {
-            Dictionary<NetEvent, List<Binding>> map = server ? _serverBindings : _clientBindings;
-            if (!map.TryGetValue(evt, out List<Binding> list) || list.Count == 0) return;
+            Dictionary<NetEvent, List<CallBackBinding>> map = server ? _serverBindings : _clientBindings;
+            if (!map.TryGetValue(evt, out List<CallBackBinding> list) || list.Count == 0) return;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -102,7 +122,7 @@ namespace Network
             }
         }
 
-        private static int IndexOf(List<Binding> list, Delegate callback)
+        private static int IndexOf(List<CallBackBinding> list, Delegate callback)
         {
             for (int i = 0; i < list.Count; i++)
             {
@@ -110,21 +130,6 @@ namespace Network
             }
 
             return -1;
-        }
-
-        /// <summary>
-        /// 槽位：Callback 按登记时的同一委托实例注销；Invoke 在登记时闭包具体 T，分发时直接调用。
-        /// </summary>
-        private readonly struct Binding
-        {
-            public readonly Delegate Callback;
-            public readonly Action<uint, IMessage> Invoke;
-
-            public Binding(Delegate callback, Action<uint, IMessage> invoke)
-            {
-                Callback = callback;
-                Invoke = invoke;
-            }
         }
     }
 }
