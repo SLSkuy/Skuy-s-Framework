@@ -177,7 +177,7 @@ namespace Network
 
         public void Broadcast(byte[] data)
         {
-            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
+            foreach (Connection client in _connectionManager.GetAllConnections())
             {
                 if (client.FastSessionId != 0)
                 {
@@ -191,7 +191,7 @@ namespace Network
         /// </summary>
         public void BroadcastReliable(byte[] data)
         {
-            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
+            foreach (Connection client in _connectionManager.GetAllConnections())
             {
                 if (client.ReliableSessionId != 0)
                 {
@@ -434,7 +434,7 @@ namespace Network
             Ping ping = new Ping { Timestamp = nowMsWithFrameDelay };
             byte[] data = NetUtils.Proto2Bytes(NetEvent.PING, ping);
 
-            foreach (ConnectionManager.Connection client in _connectionManager.GetAllClients())
+            foreach (Connection client in _connectionManager.GetAllConnections())
             {
                 if (client.FastSessionId != 0)
                 {

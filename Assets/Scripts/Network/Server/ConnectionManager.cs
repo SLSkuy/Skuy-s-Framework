@@ -8,36 +8,6 @@ namespace Network
     /// </summary>
     public sealed class ConnectionManager
     {
-        /// <summary>
-        /// 一条连接。Id 与 Token 索引、可靠会话表、快速会话表都指向同一个对象。
-        /// </summary>
-        public sealed class Connection
-        {
-            public readonly uint Id;
-            public readonly ulong Token;
-            public uint ReliableSessionId;
-            public uint FastSessionId;
-            /// <summary>断连时间戳，-1表示已连接，>=0表示断连时刻</summary>
-            public float DisconnectTime;
-
-            /// <summary>
-            /// 网络延迟
-            /// </summary>
-            public float RTT;
-
-            public bool IsConnected => ReliableSessionId != 0 || FastSessionId != 0;
-
-            public Connection(uint id, ulong token)
-            {
-                Id = id;
-                Token = token;
-                ReliableSessionId = 0;
-                FastSessionId = 0;
-                DisconnectTime = -1f;
-                RTT = 0;
-            }
-        }
-
         public int ClientCount => _clientsById.Count;
 
         private uint _nextClientId = 1;
@@ -305,7 +275,7 @@ namespace Network
             return false;
         }
 
-        public IEnumerable<Connection> GetAllClients()
+        public IEnumerable<Connection> GetAllConnections()
         {
             return _clientsById.Values;
         }

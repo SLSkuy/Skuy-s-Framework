@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Events;
 using Framework;
+using GamePlay.PlayerInfo;
 using Google.Protobuf;
 using NetSync;
 using Network;
@@ -29,7 +30,7 @@ namespace GamePlay.Room
         private NetClient _netClient;
 
         #region 属性
-        public override int Priority => 150;
+        public override int Priority => (int)GamePlaySystemPriority.RoomManager;
         
         // 房间状态
         public SessionRole SessionRole { get; private set; }
@@ -215,7 +216,9 @@ namespace GamePlay.Room
         {
             if (_playersById.Count >= Capacity) return false;
 
-            Player player = new(playerId);
+            // TODO
+            // Player player = new(playerId);
+            Player player = new();
             _playersById[playerId] = player;
             if (HostPlayerId == 0) HostPlayerId = playerId;
 
@@ -227,7 +230,8 @@ namespace GamePlay.Room
         {
             if (_playersById.Remove(playerId, out Player player))
             {
-                player.State = PlayerState.Left;
+                // TODO
+                // player.State = PlayerState.Left;
             }
         }
 
@@ -235,7 +239,8 @@ namespace GamePlay.Room
         {
             foreach (Player player in _playersById.Values)
             {
-                player.State = PlayerState.Left;
+                // TODO
+                // player.State = PlayerState.Left;
             }
 
             _playersById.Clear();

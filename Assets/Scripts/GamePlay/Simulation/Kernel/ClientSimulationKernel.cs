@@ -21,7 +21,7 @@ namespace GamePlay.Simulation
         private uint _latestSnapshotTick;
 
         #region 属性
-        public override int Priority => 500;
+        public override int Priority => (int)GamePlaySystemPriority.SimulationKernal;
         public Simulator SimulationKernal => _simulator;
         public bool IsSessionRunning { get; private set; }
         #endregion
