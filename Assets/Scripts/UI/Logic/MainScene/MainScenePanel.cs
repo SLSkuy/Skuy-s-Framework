@@ -1,5 +1,5 @@
 using Framework;
-using GamePlay.GameSave;
+using GamePlay.DataProxy;
 using GamePlay.Procedure;
 
 namespace UI
@@ -56,17 +56,17 @@ namespace UI
 
         private void OnLocalPlayBtn()
         {
-            ProcedureCore.Instance.StartLocalPlay();
+
         }
 
         private void OnHostPlayBtn()
         {
-            ProcedureCore.Instance.HostMultiplay();
+            ProcedureCore.Instance.StartHostPlay();
         }
 
         private void OnMultiPlayBtn()
         {
-            ProcedureCore.Instance.JoinRemote();
+            ProcedureCore.Instance.StartMultiPlay();
         }
 
         private void OnSettings()

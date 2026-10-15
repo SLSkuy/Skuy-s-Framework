@@ -1,6 +1,9 @@
+using System;
 using Framework;
 using GamePlay.EntityFactory;
 using GamePlay.EntitySystem;
+using GamePlay.GameSave;
+using GamePlay.Room;
 using UnityEngine;
 using NetSync;
 
@@ -58,8 +61,27 @@ namespace Utils
                 input.IsSpecialAttackPressed, input.IsSpecialActionPressed, input.IsInteractPressed,
                 input.IsSprintPressed, input.IsJumpPressed, input.IsSwitchModePressed);
         }
+        
+        public static PlayerData ToData(this PlayerDataProto player)
+        {
+            return new PlayerData
+            {
+                uuid = Guid.Parse(player.UUID),
+                playerName = player.PlayerName,
+            };
+        }
 
-        public static Player_Input ToPlayerInput(uint inputTick, InputState state)
+        public static RoomConfig ToData(this RoomConfigProto config)
+        {
+            return new RoomConfig
+            {
+                hostUUID = Guid.Parse(config.HostUUID),
+                acceptRemoteJoin = config.AcceptRemoteJoin,
+                capacity = config.Capacity,
+            };
+        }
+
+        public static Player_Input ToProto(this InputState state, uint inputTick)
         {
             return new Player_Input
             {
@@ -90,6 +112,23 @@ namespace Utils
                 IsSprintPressed = state.IsSprintPressed,
                 IsJumpPressed = state.IsJumpPressed,
                 IsSwitchModePressed = state.IsSwitchModePressed,
+            };
+        }
+        
+        private static InputState ToInputState(Vec2 move, Vec2 aim, bool primaryAttack, bool specialAttack,
+            bool specialAction, bool interact, bool sprint, bool jump, bool switchMode)
+        {
+            return new InputState
+            {
+                MoveInput = ToUnity(move),
+                AimInput = ToUnity(aim),
+                IsPrimaryAttackPressed = primaryAttack,
+                IsSpecialAttackPressed = specialAttack,
+                IsSpecialActionPressed = specialAction,
+                IsInteractPressed = interact,
+                IsSprintPressed = sprint,
+                IsJumpPressed = jump,
+                IsSwitchModePressed = switchMode,
             };
         }
 
@@ -169,23 +208,5 @@ namespace Utils
                 }
             };
         }
-
-        private static InputState ToInputState(Vec2 move, Vec2 aim, bool primaryAttack, bool specialAttack,
-            bool specialAction, bool interact, bool sprint, bool jump, bool switchMode)
-        {
-            return new InputState
-            {
-                MoveInput = ToUnity(move),
-                AimInput = ToUnity(aim),
-                IsPrimaryAttackPressed = primaryAttack,
-                IsSpecialAttackPressed = specialAttack,
-                IsSpecialActionPressed = specialAction,
-                IsInteractPressed = interact,
-                IsSprintPressed = sprint,
-                IsJumpPressed = jump,
-                IsSwitchModePressed = switchMode,
-            };
-        }
-
     }
 }

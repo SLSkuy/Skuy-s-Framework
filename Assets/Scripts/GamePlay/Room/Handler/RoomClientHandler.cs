@@ -1,7 +1,10 @@
 using Events;
 using Framework;
+using GamePlay.GameSave;
+using NetConnect;
 using NetSync;
 using Network;
+using UnityEditor.PackageManager;
 
 namespace GamePlay.Room
 {
@@ -24,24 +27,33 @@ namespace GamePlay.Room
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.RegisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoined);
-            _client.RegisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandleGameLeaveNotify);
-            _client.RegisterHandler<Room_Host_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleHostDissolvedNotify);
+            _client.RegisterHandler<Room_Join_Response>(NetEvent.ROOM_JOIN_RESPONSE, HandleJoinResponse);
+            _client.RegisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoinNotify);
+            _client.RegisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandlePlayerLeaveNotify);
+            _client.RegisterHandler<Room_Server_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleServerDissolveNotify);
+            _client.RegisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
         }
 
         public void Unbind()
         {
             if (_client == null) return;
 
-            _client.UnregisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoined);
-            _client.UnregisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandleGameLeaveNotify);
-            _client.UnregisterHandler<Room_Host_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleHostDissolvedNotify);
+            _client.UnregisterHandler<Room_Join_Response>(NetEvent.ROOM_JOIN_RESPONSE, HandleJoinResponse);
+            _client.UnregisterHandler<Room_Player_Joined_Notify>(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, HandlePlayerJoinNotify);
+            _client.UnregisterHandler<Room_Player_Leave_Notify>(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, HandlePlayerLeaveNotify);
+            _client.UnregisterHandler<Room_Server_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleServerDissolveNotify);
+            _client.UnregisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             _client = null;
         }
 
         #endregion
 
         #region 发送消息
+
+        public void SendJoinRequest(PlayerData player)
+        {
+            _client.SendReliable(NetEvent.ROOM_JOIN_REQUEST, new Room_Join_Request { Player = player.ToProto() });
+        }
 
         public void SendGameLeaveRequest()
         {
@@ -52,19 +64,30 @@ namespace GamePlay.Room
 
         #region 接收消息
 
-        private void HandlePlayerJoined(Room_Player_Joined_Notify message)
+        private void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
         {
-            _room.HandlePlayerJoinedNotify(message);
+            // TODO: 由独立模块处理连接，现临时使用
+            _room.HandleReliableConnectResponse(response);
         }
 
-        private void HandleGameLeaveNotify(Room_Player_Leave_Notify message)
+        private void HandleJoinResponse(Room_Join_Response response)
+        {
+            _room.HandleJoinResponse(response);
+        }
+
+        private void HandlePlayerJoinNotify(Room_Player_Joined_Notify message)
+        {
+            _room.HandlePlayerJoinNotify(message);
+        }
+
+        private void HandlePlayerLeaveNotify(Room_Player_Leave_Notify message)
         {
             _room.HandlePlayerLeaveNotify(message);
         }
 
-        private void HandleHostDissolvedNotify(Room_Host_Dissolved_Notify message)
+        private void HandleServerDissolveNotify(Room_Server_Dissolved_Notify message)
         {
-            _room.HandleHostDissolvedNotify(message);
+            _room.HandleServerDissolveNotify(message);
         }
 
         #endregion

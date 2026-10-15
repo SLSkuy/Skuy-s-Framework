@@ -5,6 +5,7 @@ namespace GamePlay.Room
     /// </summary>
     public enum SessionRole
     {
+        None,
         Host,
         Client
     }

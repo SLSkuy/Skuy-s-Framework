@@ -54,7 +54,7 @@ namespace GamePlay.Simulation
                 _recentInputs.RemoveAt(0);
             }
 
-            Player_Input message = ProtoUtils.ToPlayerInput(inputTick, input);
+            Player_Input message = input.ToProto(inputTick);
             for (int i = 0; i < _recentInputs.Count; i++)
             {
                 message.RecentInputs.Add(_recentInputs[i]);

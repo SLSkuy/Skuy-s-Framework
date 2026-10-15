@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using Events;
 using Framework;
+using GamePlay.GameSave;
 using NetSync;
 using Network;
 
@@ -43,42 +46,36 @@ namespace GamePlay.Room
 
         #region 发送消息
         
-        public void SendGameJoinResponse(uint connectionId)
+        public void SendPlayerJoinResponse(uint connectionId, bool accepted, PlayerData player)
         {
-            uint playerId = _room.Admit(connectionId);
-            
             Room_Join_Response response = new()
             {
-                Accepted = playerId != 0 && _room.IsInMatch,
-                PlayerId = playerId,
-                HostPlayerId = _room.HostPlayerId
+                Accepted = accepted,
             };
-            response.PlayerIds.AddRange(_room.GetPlayerIds());
-            
-            // 返回加入结果，若加入成功则通知房间内的其他玩家有新玩家加入
-            _server.SendReliable(connectionId, NetEvent.ROOM_JOIN_RESPONSE, response);
-            if (response.Accepted)
+
+            if (accepted)
             {
-                BroadcastPlayerJoined(new Room_Player_Joined_Notify { PlayerId = playerId });
+                response.RoomCfg = _room.Config.ToProto();
+                List<PlayerDataProto> infos = _room.GetPlayerInfos().Select(info => info.ToProto()).ToList();
+                response.Remotes.AddRange(infos);
+                
+                _server.BroadcastReliable(NetEvent.ROOM_JOIN_RESPONSE, new Room_Player_Joined_Notify { Player = player.ToProto()});
             }
+            
+            _server.SendReliable(connectionId, NetEvent.ROOM_JOIN_RESPONSE, response);
         }
-
-        public void BroadcastPlayerJoined(Room_Player_Joined_Notify notify)
+        
+        public void BroadcastPlayerLeaved(string playerUUID)
         {
-            _server.BroadcastReliable(NetEvent.ROOM_PLAYER_JOINED_NOTIFY, notify);
-        }
-
-        public void BroadcastPlayerLeaved(Room_Player_Leave_Notify notify)
-        {
-            _server.BroadcastReliable(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, notify);
+            _server.BroadcastReliable(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, new Room_Player_Leave_Notify { UUID = playerUUID });
         }
 
         /// <summary>
         /// 主机销毁通知
         /// </summary>
-        public void BroadcastHostDissolved(Room_Host_Dissolved_Notify notify)
+        public void BroadcastHostDissolved()
         {
-            _server.BroadcastReliable(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, notify);
+            _server.BroadcastReliable(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, new Room_Server_Dissolved_Notify());
         }
         
         #endregion
@@ -90,7 +87,7 @@ namespace GamePlay.Room
         /// </summary>
         private void HandleGameJoinRequest(uint connectionId, Room_Join_Request request)
         {
-            SendGameJoinResponse(connectionId);
+            _room.HandlePlayerJoinRequest(connectionId, request);
         }
 
         /// <summary>
@@ -98,24 +95,15 @@ namespace GamePlay.Room
         /// </summary>
         private void HandleGameLeaveRequest(uint connectionId, Room_Leave_Request request)
         {
-            NotifyLeave(connectionId);
+            _room.HandlePlayerLeaveRequest(connectionId, request);
         }
 
         /// <summary>
-        /// 玩家连接断开
+        /// 玩家异常断开连接
         /// </summary>
         private void HandleClientRemoved(uint connectionId)
         {
-            NotifyLeave(connectionId);
-        }
-
-        private void NotifyLeave(uint connectionId)
-        {
-            uint playerId = _room.HandlePlayerLeaveRequest(connectionId);
-            if (playerId != 0 && _room.IsInMatch)
-            {
-                BroadcastPlayerLeaved(new Room_Player_Leave_Notify { PlayerId = playerId });
-            }
+            _room.HandlePlayerUnexpectedLeave(connectionId);
         }
 
         #endregion

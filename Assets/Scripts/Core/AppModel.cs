@@ -12,8 +12,8 @@ namespace Core
         #endregion
 
         #region 分辨率设置
-        public int Width = 1920;
-        public int Height = 1080;
+        public int ScreenWidth = 1920;
+        public int ScreenHeight = 1080;
         #endregion
         
         #region 游戏统计

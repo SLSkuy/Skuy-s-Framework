@@ -3,49 +3,65 @@ syntax = "proto3";
 package NetSync;
 
 message Vec2 {
-  float x = 1;
-  float y = 2;
+    float x = 1;
+    float y = 2;
 }
 
 message Vec3 {
-  float x = 1;
-  float y = 2;
-  float z = 3;
+    float x = 1;
+    float y = 2;
+    float z = 3;
 }
 
 message Quat {
-  float x = 1;
-  float y = 2;
-  float z = 3;
-  float w = 4;
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
 }
+
+// ========== 玩家数据 ==========
+message PlayerDataProto  {
+    string UUID = 1;
+    string playerName = 2;
+}
+// ========== 玩家数据 ==========
+
+// ========== 房间数据 ==========
+message RoomConfigProto {
+    string hostUUID = 1;    // 房主UUID
+    bool acceptRemoteJoin = 2;   // 是否接受远端连接（考虑后面房间设置可能会变更） 
+    int32 capacity = 3; // 房间容量
+}
+// ========== 房间数据 ==========
 
 // ========== 房间管理 ==========
 message Room_Join_Request {
+    PlayerDataProto player = 1;
 }
 
 message Room_Join_Response {
-  bool accepted = 1;    // 是否接收加入请求
-  uint32 playerId = 2;  // 分配的玩家ID
-  uint32 hostPlayerId = 3;  // 主机玩家ID
-  repeated uint32 playerIds = 4;  // 所有玩家ID
+    bool accepted = 1;    // 是否接收加入请求
+    RoomConfigProto roomCfg = 2;
+    repeated PlayerDataProto remotes = 3;    // 房间内玩家消息
 }
 
 // 通知新的玩家加入房间
 message Room_Player_Joined_Notify {
-  uint32 playerId = 1;  // 分配的玩家ID
+    PlayerDataProto player = 1;    // 新加入玩家UUID
 }
 
 message Room_Leave_Request {
+    string UUID = 1;
 }
 
 // 玩家退出通知
 message Room_Player_Leave_Notify {
-  uint32 playerId = 1;
+    string UUID = 1;
 }
 
-// 房主退出，房间销毁通知
-message Room_Host_Dissolved_Notify{
+// 房主退出，服务器销毁通知
+message Room_Server_Dissolved_Notify{
 }
 // ========== 房间管理 ==========
 
@@ -112,16 +128,16 @@ message World_Snapshot {
 // ========== 实体生成 ==========
 // 主机通知客户端生成实体
 message Entity_Spawn_Notify {
-  uint32 entityId = 1;
-  uint32 entityTypeId = 2;
-  uint32 playerId = 3;
-  Vec3 position = 4;
-  Quat rotation = 5;
+    uint32 entityId = 1;
+    uint32 entityTypeId = 2;
+    uint32 playerId = 3;
+    Vec3 position = 4;
+    Quat rotation = 5;
 }
 
 // 主机通知客户端销毁实体
 message Entity_Destroy_Notify {
-  uint32 entityId = 1;
+    uint32 entityId = 1;
 }
 
 // 客户端关卡就绪后，向主机请求已有实体

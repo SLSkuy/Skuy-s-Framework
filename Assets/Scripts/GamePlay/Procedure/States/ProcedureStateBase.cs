@@ -14,13 +14,5 @@ namespace GamePlay.Procedure
         {
             Procedure = procedure;
         }
-
-        /// <summary>
-        /// 处理界面意图。当前状态不认识的意图不响应。
-        /// </summary>
-        public virtual void ProcessIntent(ProcedureIntent intent)
-        {
-
-        }
     }
 }

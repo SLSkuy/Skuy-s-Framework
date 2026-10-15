@@ -6,8 +6,7 @@ namespace GamePlay.Procedure
     public enum ProcedureState
     {
         Menu = 0,
-        Preparing = 1,
-        Loading = 2,
-        Match = 3,
+        Loading = 1,
+        Match = 2,
     }
 }

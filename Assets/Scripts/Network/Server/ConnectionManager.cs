@@ -8,8 +8,11 @@ namespace Network
     /// </summary>
     public sealed class ConnectionManager
     {
-        public int ClientCount => _clientsById.Count;
+        public int ConnectionCount => _clientsById.Count;
 
+        /// <summary>
+        /// 连接ID从1开始，0标识本地连接
+        /// </summary>
         private uint _nextClientId = 1;
         private readonly Dictionary<uint, Connection> _clientsById = new Dictionary<uint, Connection>();
         private readonly Dictionary<ulong, Connection> _clientsByToken = new Dictionary<ulong, Connection>();

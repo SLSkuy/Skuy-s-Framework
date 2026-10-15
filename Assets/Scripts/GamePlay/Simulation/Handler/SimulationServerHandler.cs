@@ -26,14 +26,14 @@ namespace GamePlay.Simulation
         {
             Unbind();
             _room = Global.Get<RoomManager>();
-            _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            // _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
         }
 
         public void Unbind()
         {
             if (_room == null) return;
 
-            _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            // _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             _room = null;
         }
 
@@ -52,7 +52,7 @@ namespace GamePlay.Simulation
                 message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.state));
             }
 
-            _room.Broadcast(NetEvent.GAME_WORLD_SNAPSHOT, message);
+            // _room.Broadcast(NetEvent.GAME_WORLD_SNAPSHOT, message);
         }
 
         #endregion

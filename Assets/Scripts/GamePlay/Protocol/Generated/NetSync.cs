@@ -27,60 +27,68 @@ namespace NetSync {
             "Cg5uZXRfc3luYy5wcm90bxIHTmV0U3luYyIcCgRWZWMyEgkKAXgYASABKAIS",
             "CQoBeRgCIAEoAiInCgRWZWMzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6",
             "GAMgASgCIjIKBFF1YXQSCQoBeBgBIAEoAhIJCgF5GAIgASgCEgkKAXoYAyAB",
-            "KAISCQoBdxgEIAEoAiITChFSb29tX0pvaW5fUmVxdWVzdCJhChJSb29tX0pv",
-            "aW5fUmVzcG9uc2USEAoIYWNjZXB0ZWQYASABKAgSEAoIcGxheWVySWQYAiAB",
-            "KA0SFAoMaG9zdFBsYXllcklkGAMgASgNEhEKCXBsYXllcklkcxgEIAMoDSIt",
-            "ChlSb29tX1BsYXllcl9Kb2luZWRfTm90aWZ5EhAKCHBsYXllcklkGAEgASgN",
-            "IhQKElJvb21fTGVhdmVfUmVxdWVzdCIsChhSb29tX1BsYXllcl9MZWF2ZV9O",
-            "b3RpZnkSEAoIcGxheWVySWQYASABKA0iHAoaUm9vbV9Ib3N0X0Rpc3NvbHZl",
-            "ZF9Ob3RpZnkiwAIKDElucHV0X1NhbXBsZRIRCglpbnB1dFRpY2sYASABKA0S",
-            "IQoKbW92ZV9pbnB1dBgCIAEoCzINLk5ldFN5bmMuVmVjMhIgCglhaW1faW5w",
-            "dXQYAyABKAsyDS5OZXRTeW5jLlZlYzISIQoZaXNfcHJpbWFyeV9hdHRhY2tf",
-            "cHJlc3NlZBgEIAEoCBIhChlpc19zcGVjaWFsX2F0dGFja19wcmVzc2VkGAUg",
-            "ASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYBiABKAgSGwoTaXNf",
-            "aW50ZXJhY3RfcHJlc3NlZBgHIAEoCBIZChFpc19zcHJpbnRfcHJlc3NlZBgI",
-            "IAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCSABKAgSHgoWaXNfc3dpdGNoX21v",
-            "ZGVfcHJlc3NlZBgKIAEoCCLuAgoMUGxheWVyX0lucHV0EhEKCWlucHV0VGlj",
-            "axgBIAEoDRIhCgptb3ZlX2lucHV0GAIgASgLMg0uTmV0U3luYy5WZWMyEiAK",
-            "CWFpbV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhIhChlpc19wcmltYXJ5",
-            "X2F0dGFja19wcmVzc2VkGAQgASgIEiEKGWlzX3NwZWNpYWxfYXR0YWNrX3By",
-            "ZXNzZWQYBSABKAgSIQoZaXNfc3BlY2lhbF9hY3Rpb25fcHJlc3NlZBgGIAEo",
-            "CBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAcgASgIEhkKEWlzX3NwcmludF9w",
-            "cmVzc2VkGAggASgIEhcKD2lzX2p1bXBfcHJlc3NlZBgJIAEoCBIeChZpc19z",
-            "d2l0Y2hfbW9kZV9wcmVzc2VkGAogASgIEiwKDXJlY2VudF9pbnB1dHMYCyAD",
-            "KAsyFS5OZXRTeW5jLklucHV0X1NhbXBsZSLMBAoPUGxheWVyX1NuYXBzaG90",
-            "EhAKCGVudGl0eUlkGAEgASgNEhgKEGxvY29tb3Rpb25fc3RhdGUYAiABKA0S",
-            "HwoIcG9zaXRpb24YAyABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
-            "BCABKAsyDS5OZXRTeW5jLlF1YXQSJAoNdmlld19yb3RhdGlvbhgFIAEoCzIN",
-            "Lk5ldFN5bmMuUXVhdBImCg9saW5lYXJfdmVsb2NpdHkYBiABKAsyDS5OZXRT",
-            "eW5jLlZlYzMSJwoQYW5ndWxhcl92ZWxvY2l0eRgHIAEoCzINLk5ldFN5bmMu",
-            "VmVjMxIeChZsYXN0UHJvY2Vzc2VkSW5wdXRUaWNrGAggASgNEhkKEXZlcnRp",
-            "Y2FsX3ZlbG9jaXR5GAkgASgCEhIKCmp1bXBfY291bnQYCiABKAUSEgoKaXNf",
-            "cnVubmluZxgLIAEoCBIUCgxpc19zcHJpbnRpbmcYDCABKAgSEgoKaXNfZGFz",
-            "aGluZxgNIAEoCBITCgtpc19ncm91bmRlZBgOIAEoCBIlCg5kYXNoX2RpcmVj",
-            "dGlvbhgPIAEoCzINLk5ldFN5bmMuVmVjMxIbChNkYXNoX3JlbWFpbmluZ190",
-            "aW1lGBAgASgCEiAKGGRlc2lyZWRfbG9jb21vdGlvbl9zcGVlZBgRIAEoAhIg",
-            "ChhhcHBsaWVkX2xvY29tb3Rpb25fc3BlZWQYEiABKAISKgoTbGFzdF9tb3Zl",
-            "X2RpcmVjdGlvbhgTIAEoCzINLk5ldFN5bmMuVmVjMyJaCg5Xb3JsZF9TbmFw",
-            "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SMgoQUGxheWVyX3NuYXBzaG90",
-            "cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1NuYXBzaG90IpEBChNFbnRpdHlf",
-            "U3Bhd25fTm90aWZ5EhAKCGVudGl0eUlkGAEgASgNEhQKDGVudGl0eVR5cGVJ",
-            "ZBgCIAEoDRIQCghwbGF5ZXJJZBgDIAEoDRIfCghwb3NpdGlvbhgEIAEoCzIN",
-            "Lk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgFIAEoCzINLk5ldFN5bmMuUXVh",
-            "dCIpChVFbnRpdHlfRGVzdHJveV9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0i",
-            "GwoZRW50aXR5X1NwYXduX1N5bmNfUmVxdWVzdGIGcHJvdG8z"));
+            "KAISCQoBdxgEIAEoAiIzCg9QbGF5ZXJEYXRhUHJvdG8SDAoEVVVJRBgBIAEo",
+            "CRISCgpwbGF5ZXJOYW1lGAIgASgJIk8KD1Jvb21Db25maWdQcm90bxIQCgho",
+            "b3N0VVVJRBgBIAEoCRIYChBhY2NlcHRSZW1vdGVKb2luGAIgASgIEhAKCGNh",
+            "cGFjaXR5GAMgASgFIj0KEVJvb21fSm9pbl9SZXF1ZXN0EigKBnBsYXllchgB",
+            "IAEoCzIYLk5ldFN5bmMuUGxheWVyRGF0YVByb3RvInwKElJvb21fSm9pbl9S",
+            "ZXNwb25zZRIQCghhY2NlcHRlZBgBIAEoCBIpCgdyb29tQ2ZnGAIgASgLMhgu",
+            "TmV0U3luYy5Sb29tQ29uZmlnUHJvdG8SKQoHcmVtb3RlcxgDIAMoCzIYLk5l",
+            "dFN5bmMuUGxheWVyRGF0YVByb3RvIkUKGVJvb21fUGxheWVyX0pvaW5lZF9O",
+            "b3RpZnkSKAoGcGxheWVyGAEgASgLMhguTmV0U3luYy5QbGF5ZXJEYXRhUHJv",
+            "dG8iIgoSUm9vbV9MZWF2ZV9SZXF1ZXN0EgwKBFVVSUQYASABKAkiKAoYUm9v",
+            "bV9QbGF5ZXJfTGVhdmVfTm90aWZ5EgwKBFVVSUQYASABKAkiHgocUm9vbV9T",
+            "ZXJ2ZXJfRGlzc29sdmVkX05vdGlmeSLAAgoMSW5wdXRfU2FtcGxlEhEKCWlu",
+            "cHV0VGljaxgBIAEoDRIhCgptb3ZlX2lucHV0GAIgASgLMg0uTmV0U3luYy5W",
+            "ZWMyEiAKCWFpbV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhIhChlpc19w",
+            "cmltYXJ5X2F0dGFja19wcmVzc2VkGAQgASgIEiEKGWlzX3NwZWNpYWxfYXR0",
+            "YWNrX3ByZXNzZWQYBSABKAgSIQoZaXNfc3BlY2lhbF9hY3Rpb25fcHJlc3Nl",
+            "ZBgGIAEoCBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAcgASgIEhkKEWlzX3Nw",
+            "cmludF9wcmVzc2VkGAggASgIEhcKD2lzX2p1bXBfcHJlc3NlZBgJIAEoCBIe",
+            "ChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAogASgIIu4CCgxQbGF5ZXJfSW5w",
+            "dXQSEQoJaW5wdXRUaWNrGAEgASgNEiEKCm1vdmVfaW5wdXQYAiABKAsyDS5O",
+            "ZXRTeW5jLlZlYzISIAoJYWltX2lucHV0GAMgASgLMg0uTmV0U3luYy5WZWMy",
+            "EiEKGWlzX3ByaW1hcnlfYXR0YWNrX3ByZXNzZWQYBCABKAgSIQoZaXNfc3Bl",
+            "Y2lhbF9hdHRhY2tfcHJlc3NlZBgFIAEoCBIhChlpc19zcGVjaWFsX2FjdGlv",
+            "bl9wcmVzc2VkGAYgASgIEhsKE2lzX2ludGVyYWN0X3ByZXNzZWQYByABKAgS",
+            "GQoRaXNfc3ByaW50X3ByZXNzZWQYCCABKAgSFwoPaXNfanVtcF9wcmVzc2Vk",
+            "GAkgASgIEh4KFmlzX3N3aXRjaF9tb2RlX3ByZXNzZWQYCiABKAgSLAoNcmVj",
+            "ZW50X2lucHV0cxgLIAMoCzIVLk5ldFN5bmMuSW5wdXRfU2FtcGxlIswECg9Q",
+            "bGF5ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SGAoQbG9jb21vdGlv",
+            "bl9zdGF0ZRgCIAEoDRIfCghwb3NpdGlvbhgDIAEoCzINLk5ldFN5bmMuVmVj",
+            "MxIfCghyb3RhdGlvbhgEIAEoCzINLk5ldFN5bmMuUXVhdBIkCg12aWV3X3Jv",
+            "dGF0aW9uGAUgASgLMg0uTmV0U3luYy5RdWF0EiYKD2xpbmVhcl92ZWxvY2l0",
+            "eRgGIAEoCzINLk5ldFN5bmMuVmVjMxInChBhbmd1bGFyX3ZlbG9jaXR5GAcg",
+            "ASgLMg0uTmV0U3luYy5WZWMzEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sY",
+            "CCABKA0SGQoRdmVydGljYWxfdmVsb2NpdHkYCSABKAISEgoKanVtcF9jb3Vu",
+            "dBgKIAEoBRISCgppc19ydW5uaW5nGAsgASgIEhQKDGlzX3NwcmludGluZxgM",
+            "IAEoCBISCgppc19kYXNoaW5nGA0gASgIEhMKC2lzX2dyb3VuZGVkGA4gASgI",
+            "EiUKDmRhc2hfZGlyZWN0aW9uGA8gASgLMg0uTmV0U3luYy5WZWMzEhsKE2Rh",
+            "c2hfcmVtYWluaW5nX3RpbWUYECABKAISIAoYZGVzaXJlZF9sb2NvbW90aW9u",
+            "X3NwZWVkGBEgASgCEiAKGGFwcGxpZWRfbG9jb21vdGlvbl9zcGVlZBgSIAEo",
+            "AhIqChNsYXN0X21vdmVfZGlyZWN0aW9uGBMgASgLMg0uTmV0U3luYy5WZWMz",
+            "IloKDldvcmxkX1NuYXBzaG90EhQKDHNuYXBzaG90VGljaxgBIAEoDRIyChBQ",
+            "bGF5ZXJfc25hcHNob3RzGAIgAygLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNo",
+            "b3QikQEKE0VudGl0eV9TcGF3bl9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0S",
+            "FAoMZW50aXR5VHlwZUlkGAIgASgNEhAKCHBsYXllcklkGAMgASgNEh8KCHBv",
+            "c2l0aW9uGAQgASgLMg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAUgASgL",
+            "Mg0uTmV0U3luYy5RdWF0IikKFUVudGl0eV9EZXN0cm95X05vdGlmeRIQCghl",
+            "bnRpdHlJZBgBIAEoDSIbChlFbnRpdHlfU3Bhd25fU3luY19SZXF1ZXN0YgZw",
+            "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec2), global::NetSync.Vec2.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Request), global::NetSync.Room_Join_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Response), global::NetSync.Room_Join_Response.Parser, new[]{ "Accepted", "PlayerId", "HostPlayerId", "PlayerIds" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Joined_Notify), global::NetSync.Room_Player_Joined_Notify.Parser, new[]{ "PlayerId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Leave_Request), global::NetSync.Room_Leave_Request.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Leave_Notify), global::NetSync.Room_Player_Leave_Notify.Parser, new[]{ "PlayerId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Host_Dissolved_Notify), global::NetSync.Room_Host_Dissolved_Notify.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.PlayerDataProto), global::NetSync.PlayerDataProto.Parser, new[]{ "UUID", "PlayerName" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.RoomConfigProto), global::NetSync.RoomConfigProto.Parser, new[]{ "HostUUID", "AcceptRemoteJoin", "Capacity" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Request), global::NetSync.Room_Join_Request.Parser, new[]{ "Player" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Response), global::NetSync.Room_Join_Response.Parser, new[]{ "Accepted", "RoomCfg", "Remotes" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Joined_Notify), global::NetSync.Room_Player_Joined_Notify.Parser, new[]{ "Player" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Leave_Request), global::NetSync.Room_Leave_Request.Parser, new[]{ "UUID" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Leave_Notify), global::NetSync.Room_Player_Leave_Notify.Parser, new[]{ "UUID" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Server_Dissolved_Notify), global::NetSync.Room_Server_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Sample), global::NetSync.Input_Sample.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Input), global::NetSync.Player_Input.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed", "RecentInputs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsDashing", "IsGrounded", "DashDirection", "DashRemainingTime", "DesiredLocomotionSpeed", "AppliedLocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
@@ -94,7 +102,6 @@ namespace NetSync {
 
   }
   #region Messages
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Vec2 : pb::IMessage<Vec2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -321,7 +328,6 @@ namespace NetSync {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Vec3 : pb::IMessage<Vec3>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -585,7 +591,6 @@ namespace NetSync {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Quat : pb::IMessage<Quat>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -887,9 +892,512 @@ namespace NetSync {
   }
 
   /// <summary>
+  /// ========== 玩家数据 ==========
+  /// </summary>
+  public sealed partial class PlayerDataProto : pb::IMessage<PlayerDataProto>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PlayerDataProto> _parser = new pb::MessageParser<PlayerDataProto>(() => new PlayerDataProto());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PlayerDataProto> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PlayerDataProto() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PlayerDataProto(PlayerDataProto other) : this() {
+      uUID_ = other.uUID_;
+      playerName_ = other.playerName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PlayerDataProto Clone() {
+      return new PlayerDataProto(this);
+    }
+
+    /// <summary>Field number for the "UUID" field.</summary>
+    public const int UUIDFieldNumber = 1;
+    private string uUID_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string UUID {
+      get { return uUID_; }
+      set {
+        uUID_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "playerName" field.</summary>
+    public const int PlayerNameFieldNumber = 2;
+    private string playerName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PlayerName {
+      get { return playerName_; }
+      set {
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PlayerDataProto);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PlayerDataProto other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (UUID != other.UUID) return false;
+      if (PlayerName != other.PlayerName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (UUID.Length != 0) hash ^= UUID.GetHashCode();
+      if (PlayerName.Length != 0) hash ^= PlayerName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
+      }
+      if (PlayerName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PlayerName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
+      }
+      if (PlayerName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PlayerName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (UUID.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UUID);
+      }
+      if (PlayerName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PlayerDataProto other) {
+      if (other == null) {
+        return;
+      }
+      if (other.UUID.Length != 0) {
+        UUID = other.UUID;
+      }
+      if (other.PlayerName.Length != 0) {
+        PlayerName = other.PlayerName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            UUID = input.ReadString();
+            break;
+          }
+          case 18: {
+            PlayerName = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            UUID = input.ReadString();
+            break;
+          }
+          case 18: {
+            PlayerName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// ========== 房间数据 ==========
+  /// </summary>
+  public sealed partial class RoomConfigProto : pb::IMessage<RoomConfigProto>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<RoomConfigProto> _parser = new pb::MessageParser<RoomConfigProto>(() => new RoomConfigProto());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<RoomConfigProto> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RoomConfigProto() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RoomConfigProto(RoomConfigProto other) : this() {
+      hostUUID_ = other.hostUUID_;
+      acceptRemoteJoin_ = other.acceptRemoteJoin_;
+      capacity_ = other.capacity_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RoomConfigProto Clone() {
+      return new RoomConfigProto(this);
+    }
+
+    /// <summary>Field number for the "hostUUID" field.</summary>
+    public const int HostUUIDFieldNumber = 1;
+    private string hostUUID_ = "";
+    /// <summary>
+    /// 房主UUID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string HostUUID {
+      get { return hostUUID_; }
+      set {
+        hostUUID_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "acceptRemoteJoin" field.</summary>
+    public const int AcceptRemoteJoinFieldNumber = 2;
+    private bool acceptRemoteJoin_;
+    /// <summary>
+    /// 是否接受远端连接（考虑后面房间设置可能会变更） 
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool AcceptRemoteJoin {
+      get { return acceptRemoteJoin_; }
+      set {
+        acceptRemoteJoin_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "capacity" field.</summary>
+    public const int CapacityFieldNumber = 3;
+    private int capacity_;
+    /// <summary>
+    /// 房间容量
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Capacity {
+      get { return capacity_; }
+      set {
+        capacity_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as RoomConfigProto);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(RoomConfigProto other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (HostUUID != other.HostUUID) return false;
+      if (AcceptRemoteJoin != other.AcceptRemoteJoin) return false;
+      if (Capacity != other.Capacity) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HostUUID.Length != 0) hash ^= HostUUID.GetHashCode();
+      if (AcceptRemoteJoin != false) hash ^= AcceptRemoteJoin.GetHashCode();
+      if (Capacity != 0) hash ^= Capacity.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HostUUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(HostUUID);
+      }
+      if (AcceptRemoteJoin != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(AcceptRemoteJoin);
+      }
+      if (Capacity != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Capacity);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HostUUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(HostUUID);
+      }
+      if (AcceptRemoteJoin != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(AcceptRemoteJoin);
+      }
+      if (Capacity != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Capacity);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HostUUID.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(HostUUID);
+      }
+      if (AcceptRemoteJoin != false) {
+        size += 1 + 1;
+      }
+      if (Capacity != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Capacity);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(RoomConfigProto other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HostUUID.Length != 0) {
+        HostUUID = other.HostUUID;
+      }
+      if (other.AcceptRemoteJoin != false) {
+        AcceptRemoteJoin = other.AcceptRemoteJoin;
+      }
+      if (other.Capacity != 0) {
+        Capacity = other.Capacity;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            HostUUID = input.ReadString();
+            break;
+          }
+          case 16: {
+            AcceptRemoteJoin = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Capacity = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            HostUUID = input.ReadString();
+            break;
+          }
+          case 16: {
+            AcceptRemoteJoin = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Capacity = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
   /// ========== 房间管理 ==========
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Room_Join_Request : pb::IMessage<Room_Join_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -904,7 +1412,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[3]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -924,6 +1432,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Join_Request(Room_Join_Request other) : this() {
+      player_ = other.player_ != null ? other.player_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -931,6 +1440,18 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Join_Request Clone() {
       return new Room_Join_Request(this);
+    }
+
+    /// <summary>Field number for the "player" field.</summary>
+    public const int PlayerFieldNumber = 1;
+    private global::NetSync.PlayerDataProto player_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NetSync.PlayerDataProto Player {
+      get { return player_; }
+      set {
+        player_ = value;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -948,6 +1469,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (!object.Equals(Player, other.Player)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -955,6 +1477,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
+      if (player_ != null) hash ^= Player.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -973,6 +1496,10 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
+      if (player_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Player);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -983,6 +1510,10 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (player_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Player);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -993,6 +1524,9 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
+      if (player_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Player);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1004,6 +1538,12 @@ namespace NetSync {
     public void MergeFrom(Room_Join_Request other) {
       if (other == null) {
         return;
+      }
+      if (other.player_ != null) {
+        if (player_ == null) {
+          Player = new global::NetSync.PlayerDataProto();
+        }
+        Player.MergeFrom(other.Player);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1020,6 +1560,13 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 10: {
+            if (player_ == null) {
+              Player = new global::NetSync.PlayerDataProto();
+            }
+            input.ReadMessage(Player);
+            break;
+          }
         }
       }
     #endif
@@ -1035,6 +1582,13 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
+          case 10: {
+            if (player_ == null) {
+              Player = new global::NetSync.PlayerDataProto();
+            }
+            input.ReadMessage(Player);
+            break;
+          }
         }
       }
     }
@@ -1042,7 +1596,6 @@ namespace NetSync {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Room_Join_Response : pb::IMessage<Room_Join_Response>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1057,7 +1610,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[4]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1078,9 +1631,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Join_Response(Room_Join_Response other) : this() {
       accepted_ = other.accepted_;
-      playerId_ = other.playerId_;
-      hostPlayerId_ = other.hostPlayerId_;
-      playerIds_ = other.playerIds_.Clone();
+      roomCfg_ = other.roomCfg_ != null ? other.roomCfg_.Clone() : null;
+      remotes_ = other.remotes_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1105,48 +1657,30 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "playerId" field.</summary>
-    public const int PlayerIdFieldNumber = 2;
-    private uint playerId_;
-    /// <summary>
-    /// 分配的玩家ID
-    /// </summary>
+    /// <summary>Field number for the "roomCfg" field.</summary>
+    public const int RoomCfgFieldNumber = 2;
+    private global::NetSync.RoomConfigProto roomCfg_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint PlayerId {
-      get { return playerId_; }
+    public global::NetSync.RoomConfigProto RoomCfg {
+      get { return roomCfg_; }
       set {
-        playerId_ = value;
+        roomCfg_ = value;
       }
     }
 
-    /// <summary>Field number for the "hostPlayerId" field.</summary>
-    public const int HostPlayerIdFieldNumber = 3;
-    private uint hostPlayerId_;
+    /// <summary>Field number for the "remotes" field.</summary>
+    public const int RemotesFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::NetSync.PlayerDataProto> _repeated_remotes_codec
+        = pb::FieldCodec.ForMessage(26, global::NetSync.PlayerDataProto.Parser);
+    private readonly pbc::RepeatedField<global::NetSync.PlayerDataProto> remotes_ = new pbc::RepeatedField<global::NetSync.PlayerDataProto>();
     /// <summary>
-    /// 主机玩家ID
+    /// 房间内玩家消息
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint HostPlayerId {
-      get { return hostPlayerId_; }
-      set {
-        hostPlayerId_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "playerIds" field.</summary>
-    public const int PlayerIdsFieldNumber = 4;
-    private static readonly pb::FieldCodec<uint> _repeated_playerIds_codec
-        = pb::FieldCodec.ForUInt32(34);
-    private readonly pbc::RepeatedField<uint> playerIds_ = new pbc::RepeatedField<uint>();
-    /// <summary>
-    /// 所有玩家ID
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<uint> PlayerIds {
-      get { return playerIds_; }
+    public pbc::RepeatedField<global::NetSync.PlayerDataProto> Remotes {
+      get { return remotes_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1165,9 +1699,8 @@ namespace NetSync {
         return true;
       }
       if (Accepted != other.Accepted) return false;
-      if (PlayerId != other.PlayerId) return false;
-      if (HostPlayerId != other.HostPlayerId) return false;
-      if(!playerIds_.Equals(other.playerIds_)) return false;
+      if (!object.Equals(RoomCfg, other.RoomCfg)) return false;
+      if(!remotes_.Equals(other.remotes_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1176,9 +1709,8 @@ namespace NetSync {
     public override int GetHashCode() {
       int hash = 1;
       if (Accepted != false) hash ^= Accepted.GetHashCode();
-      if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
-      if (HostPlayerId != 0) hash ^= HostPlayerId.GetHashCode();
-      hash ^= playerIds_.GetHashCode();
+      if (roomCfg_ != null) hash ^= RoomCfg.GetHashCode();
+      hash ^= remotes_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1201,15 +1733,11 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteBool(Accepted);
       }
-      if (PlayerId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(PlayerId);
+      if (roomCfg_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(RoomCfg);
       }
-      if (HostPlayerId != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(HostPlayerId);
-      }
-      playerIds_.WriteTo(output, _repeated_playerIds_codec);
+      remotes_.WriteTo(output, _repeated_remotes_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1224,15 +1752,11 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteBool(Accepted);
       }
-      if (PlayerId != 0) {
-        output.WriteRawTag(16);
-        output.WriteUInt32(PlayerId);
+      if (roomCfg_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(RoomCfg);
       }
-      if (HostPlayerId != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(HostPlayerId);
-      }
-      playerIds_.WriteTo(ref output, _repeated_playerIds_codec);
+      remotes_.WriteTo(ref output, _repeated_remotes_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1246,13 +1770,10 @@ namespace NetSync {
       if (Accepted != false) {
         size += 1 + 1;
       }
-      if (PlayerId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
+      if (roomCfg_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(RoomCfg);
       }
-      if (HostPlayerId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(HostPlayerId);
-      }
-      size += playerIds_.CalculateSize(_repeated_playerIds_codec);
+      size += remotes_.CalculateSize(_repeated_remotes_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1268,13 +1789,13 @@ namespace NetSync {
       if (other.Accepted != false) {
         Accepted = other.Accepted;
       }
-      if (other.PlayerId != 0) {
-        PlayerId = other.PlayerId;
+      if (other.roomCfg_ != null) {
+        if (roomCfg_ == null) {
+          RoomCfg = new global::NetSync.RoomConfigProto();
+        }
+        RoomCfg.MergeFrom(other.RoomCfg);
       }
-      if (other.HostPlayerId != 0) {
-        HostPlayerId = other.HostPlayerId;
-      }
-      playerIds_.Add(other.playerIds_);
+      remotes_.Add(other.remotes_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -1294,17 +1815,15 @@ namespace NetSync {
             Accepted = input.ReadBool();
             break;
           }
-          case 16: {
-            PlayerId = input.ReadUInt32();
+          case 18: {
+            if (roomCfg_ == null) {
+              RoomCfg = new global::NetSync.RoomConfigProto();
+            }
+            input.ReadMessage(RoomCfg);
             break;
           }
-          case 24: {
-            HostPlayerId = input.ReadUInt32();
-            break;
-          }
-          case 34:
-          case 32: {
-            playerIds_.AddEntriesFrom(input, _repeated_playerIds_codec);
+          case 26: {
+            remotes_.AddEntriesFrom(input, _repeated_remotes_codec);
             break;
           }
         }
@@ -1326,17 +1845,15 @@ namespace NetSync {
             Accepted = input.ReadBool();
             break;
           }
-          case 16: {
-            PlayerId = input.ReadUInt32();
+          case 18: {
+            if (roomCfg_ == null) {
+              RoomCfg = new global::NetSync.RoomConfigProto();
+            }
+            input.ReadMessage(RoomCfg);
             break;
           }
-          case 24: {
-            HostPlayerId = input.ReadUInt32();
-            break;
-          }
-          case 34:
-          case 32: {
-            playerIds_.AddEntriesFrom(ref input, _repeated_playerIds_codec);
+          case 26: {
+            remotes_.AddEntriesFrom(ref input, _repeated_remotes_codec);
             break;
           }
         }
@@ -1349,7 +1866,6 @@ namespace NetSync {
   /// <summary>
   /// 通知新的玩家加入房间
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Room_Player_Joined_Notify : pb::IMessage<Room_Player_Joined_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1364,7 +1880,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[5]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1384,7 +1900,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Player_Joined_Notify(Room_Player_Joined_Notify other) : this() {
-      playerId_ = other.playerId_;
+      player_ = other.player_ != null ? other.player_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1394,18 +1910,18 @@ namespace NetSync {
       return new Room_Player_Joined_Notify(this);
     }
 
-    /// <summary>Field number for the "playerId" field.</summary>
-    public const int PlayerIdFieldNumber = 1;
-    private uint playerId_;
+    /// <summary>Field number for the "player" field.</summary>
+    public const int PlayerFieldNumber = 1;
+    private global::NetSync.PlayerDataProto player_;
     /// <summary>
-    /// 分配的玩家ID
+    /// 新加入玩家UUID
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint PlayerId {
-      get { return playerId_; }
+    public global::NetSync.PlayerDataProto Player {
+      get { return player_; }
       set {
-        playerId_ = value;
+        player_ = value;
       }
     }
 
@@ -1424,7 +1940,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (PlayerId != other.PlayerId) return false;
+      if (!object.Equals(Player, other.Player)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1432,7 +1948,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
+      if (player_ != null) hash ^= Player.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1451,9 +1967,9 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (PlayerId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(PlayerId);
+      if (player_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Player);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1465,9 +1981,9 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (PlayerId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(PlayerId);
+      if (player_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Player);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1479,8 +1995,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (PlayerId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
+      if (player_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Player);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1494,8 +2010,11 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.PlayerId != 0) {
-        PlayerId = other.PlayerId;
+      if (other.player_ != null) {
+        if (player_ == null) {
+          Player = new global::NetSync.PlayerDataProto();
+        }
+        Player.MergeFrom(other.Player);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1512,8 +2031,11 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            PlayerId = input.ReadUInt32();
+          case 10: {
+            if (player_ == null) {
+              Player = new global::NetSync.PlayerDataProto();
+            }
+            input.ReadMessage(Player);
             break;
           }
         }
@@ -1531,8 +2053,11 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            PlayerId = input.ReadUInt32();
+          case 10: {
+            if (player_ == null) {
+              Player = new global::NetSync.PlayerDataProto();
+            }
+            input.ReadMessage(Player);
             break;
           }
         }
@@ -1542,7 +2067,6 @@ namespace NetSync {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Room_Leave_Request : pb::IMessage<Room_Leave_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1557,7 +2081,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[6]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1577,6 +2101,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Leave_Request(Room_Leave_Request other) : this() {
+      uUID_ = other.uUID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1584,6 +2109,18 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Leave_Request Clone() {
       return new Room_Leave_Request(this);
+    }
+
+    /// <summary>Field number for the "UUID" field.</summary>
+    public const int UUIDFieldNumber = 1;
+    private string uUID_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string UUID {
+      get { return uUID_; }
+      set {
+        uUID_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1601,6 +2138,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (UUID != other.UUID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1608,6 +2146,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
+      if (UUID.Length != 0) hash ^= UUID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1626,6 +2165,10 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1636,6 +2179,10 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1646,6 +2193,9 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
+      if (UUID.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UUID);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1657,6 +2207,9 @@ namespace NetSync {
     public void MergeFrom(Room_Leave_Request other) {
       if (other == null) {
         return;
+      }
+      if (other.UUID.Length != 0) {
+        UUID = other.UUID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1673,6 +2226,10 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 10: {
+            UUID = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -1688,6 +2245,10 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
+          case 10: {
+            UUID = input.ReadString();
+            break;
+          }
         }
       }
     }
@@ -1698,7 +2259,6 @@ namespace NetSync {
   /// <summary>
   /// 玩家退出通知
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Room_Player_Leave_Notify : pb::IMessage<Room_Player_Leave_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1713,7 +2273,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[7]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1733,7 +2293,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Room_Player_Leave_Notify(Room_Player_Leave_Notify other) : this() {
-      playerId_ = other.playerId_;
+      uUID_ = other.uUID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1743,15 +2303,15 @@ namespace NetSync {
       return new Room_Player_Leave_Notify(this);
     }
 
-    /// <summary>Field number for the "playerId" field.</summary>
-    public const int PlayerIdFieldNumber = 1;
-    private uint playerId_;
+    /// <summary>Field number for the "UUID" field.</summary>
+    public const int UUIDFieldNumber = 1;
+    private string uUID_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint PlayerId {
-      get { return playerId_; }
+    public string UUID {
+      get { return uUID_; }
       set {
-        playerId_ = value;
+        uUID_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1770,7 +2330,7 @@ namespace NetSync {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (PlayerId != other.PlayerId) return false;
+      if (UUID != other.UUID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1778,7 +2338,7 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
+      if (UUID.Length != 0) hash ^= UUID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1797,9 +2357,9 @@ namespace NetSync {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (PlayerId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(PlayerId);
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1811,9 +2371,9 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (PlayerId != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(PlayerId);
+      if (UUID.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(UUID);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1825,8 +2385,8 @@ namespace NetSync {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (PlayerId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
+      if (UUID.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UUID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1840,8 +2400,8 @@ namespace NetSync {
       if (other == null) {
         return;
       }
-      if (other.PlayerId != 0) {
-        PlayerId = other.PlayerId;
+      if (other.UUID.Length != 0) {
+        UUID = other.UUID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1858,8 +2418,8 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            PlayerId = input.ReadUInt32();
+          case 10: {
+            UUID = input.ReadString();
             break;
           }
         }
@@ -1877,8 +2437,8 @@ namespace NetSync {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            PlayerId = input.ReadUInt32();
+          case 10: {
+            UUID = input.ReadString();
             break;
           }
         }
@@ -1889,24 +2449,23 @@ namespace NetSync {
   }
 
   /// <summary>
-  /// 房主退出，房间销毁通知
+  /// 房主退出，服务器销毁通知
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class Room_Host_Dissolved_Notify : pb::IMessage<Room_Host_Dissolved_Notify>
+  public sealed partial class Room_Server_Dissolved_Notify : pb::IMessage<Room_Server_Dissolved_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Room_Host_Dissolved_Notify> _parser = new pb::MessageParser<Room_Host_Dissolved_Notify>(() => new Room_Host_Dissolved_Notify());
+    private static readonly pb::MessageParser<Room_Server_Dissolved_Notify> _parser = new pb::MessageParser<Room_Server_Dissolved_Notify>(() => new Room_Server_Dissolved_Notify());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Room_Host_Dissolved_Notify> Parser { get { return _parser; } }
+    public static pb::MessageParser<Room_Server_Dissolved_Notify> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[8]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1917,7 +2476,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Room_Host_Dissolved_Notify() {
+    public Room_Server_Dissolved_Notify() {
       OnConstruction();
     }
 
@@ -1925,25 +2484,25 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Room_Host_Dissolved_Notify(Room_Host_Dissolved_Notify other) : this() {
+    public Room_Server_Dissolved_Notify(Room_Server_Dissolved_Notify other) : this() {
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Room_Host_Dissolved_Notify Clone() {
-      return new Room_Host_Dissolved_Notify(this);
+    public Room_Server_Dissolved_Notify Clone() {
+      return new Room_Server_Dissolved_Notify(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Room_Host_Dissolved_Notify);
+      return Equals(other as Room_Server_Dissolved_Notify);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Room_Host_Dissolved_Notify other) {
+    public bool Equals(Room_Server_Dissolved_Notify other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2003,7 +2562,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Room_Host_Dissolved_Notify other) {
+    public void MergeFrom(Room_Server_Dissolved_Notify other) {
       if (other == null) {
         return;
       }
@@ -2048,7 +2607,6 @@ namespace NetSync {
   /// ========== 状态同步 ==========
   /// 一拍玩家输入。
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Input_Sample : pb::IMessage<Input_Sample>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2063,7 +2621,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[9]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2593,7 +3151,6 @@ namespace NetSync {
   /// 本机玩家输入。玩家由发送这条消息的连接决定。
   /// 最新一拍同时写在顶层字段里；recent_inputs 带上最近若干拍，供主机补上迟到或丢失的指令。
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Player_Input : pb::IMessage<Player_Input>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2608,7 +3165,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[10]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3163,7 +3720,6 @@ namespace NetSync {
   /// <summary>
   /// 玩家实体在某一Tick的状态
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Player_Snapshot : pb::IMessage<Player_Snapshot>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3178,7 +3734,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[11]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4082,7 +4638,6 @@ namespace NetSync {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class World_Snapshot : pb::IMessage<World_Snapshot>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4097,7 +4652,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[12]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[14]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4302,7 +4857,6 @@ namespace NetSync {
   /// ========== 实体生成 ==========
   /// 主机通知客户端生成实体
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Entity_Spawn_Notify : pb::IMessage<Entity_Spawn_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4317,7 +4871,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[13]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4661,7 +5215,6 @@ namespace NetSync {
   /// <summary>
   /// 主机通知客户端销毁实体
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Entity_Destroy_Notify : pb::IMessage<Entity_Destroy_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4676,7 +5229,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[14]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4854,7 +5407,6 @@ namespace NetSync {
   /// <summary>
   /// 客户端关卡就绪后，向主机请求已有实体
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Entity_Spawn_Sync_Request : pb::IMessage<Entity_Spawn_Sync_Request>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4869,7 +5421,7 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[15]; }
+      get { return global::NetSync.NetSyncReflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

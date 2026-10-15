@@ -28,14 +28,14 @@ namespace GamePlay.Simulation
             if (IsSessionRunning) return true;
 
             _room = Global.Get<RoomManager>();
-            if (_room.AcceptsRemoteJoin)
-            {
-                _simulator.TickSnapshot += OnSnapshotTick;
-                _simulator.StartSnapshotClock();
-                
-                _serverHandler = new SimulationServerHandler(this);
-                _serverHandler.Bind();
-            }
+            // if (_room.AcceptsRemoteJoin)
+            // {
+            //     _simulator.TickSnapshot += OnSnapshotTick;
+            //     _simulator.StartSnapshotClock();
+            //     
+            //     _serverHandler = new SimulationServerHandler(this);
+            //     _serverHandler.Bind();
+            // }
 
             _simulator.StartClock();
             IsSessionRunning = true;

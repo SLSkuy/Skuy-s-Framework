@@ -27,14 +27,14 @@ namespace GamePlay.EntitySpawn
         {
             Unbind();
             _room = Global.Get<RoomManager>();
-            _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
+            // _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
         }
 
         public void Unbind()
         {
             if (_room == null) return;
 
-            _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
+            // _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
             _room = null;
         }
 
@@ -47,7 +47,7 @@ namespace GamePlay.EntitySpawn
         /// </summary>
         public void BroadcastSpawnNotify(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
         {
-            _room.BroadcastReliable(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
+            // _room.BroadcastReliable(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
         }
 
         /// <summary>
@@ -55,13 +55,12 @@ namespace GamePlay.EntitySpawn
         /// </summary>
         public void SendSpawnNotify(uint playerId, uint entityId, EntityType entityTypeId, uint ownerPlayerId, Vector3 position, Quaternion rotation)
         {
-            _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY,
-                ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, ownerPlayerId, position, rotation));
+            // _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, ownerPlayerId, position, rotation));
         }
 
         public void BroadcastDestroy(uint entityId)
         {
-            _room.BroadcastReliable(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, new Entity_Destroy_Notify { EntityId = entityId });
+            // _room.BroadcastReliable(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, new Entity_Destroy_Notify { EntityId = entityId });
         }
 
         #endregion

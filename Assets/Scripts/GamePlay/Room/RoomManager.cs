@@ -1,420 +1,290 @@
-using System;
-using System.Collections.Generic;
-using Events;
+﻿using System;
 using Framework;
-using GamePlay.PlayerInfo;
-using Google.Protobuf;
+using GamePlay.DataProxy;
+using GamePlay.GameSave;
+using NetConnect;
 using NetSync;
 using Network;
+using Utils;
 
 namespace GamePlay.Room
 {
     /// <summary>
-    /// 对局名册：入座、开听与解散。已入座的消息按玩家号收发，连接只用于入座和断开。
+    /// 房间对局管理器，对接存档、玩家管理，对业务层屏蔽网络连接数据
     /// </summary>
-    public sealed class RoomManager : SubSystemBase
+    public class RoomManager : SubSystemBase
     {
-        private const int DEFAULT_CAPACITY = 4;
-        private const int LOCAL_CAPACITY = 1;
-        private const uint LOCAL_CONNECTION_ID = 0; // 房主没有连接的标识，不是远端客户端
-
-        private readonly Dictionary<uint, Player> _playersById = new();
-        private readonly Dictionary<Delegate, Delegate> _playerHandlers = new();
-        private Dictionary<uint, uint> _playerByConnection;
-        private Dictionary<uint, uint> _connectionByPlayer;
-        private uint _nextPlayerId = 1; // 玩家ID从1开始分配
-
-        private RoomServerHandler _serverHandler;
+        private const uint LOCAL_CONNECTION_ID = 0;
+        
+        private PlayerDataProxy _playerData;
+        private RoomDataProxy _roomData;
+        
+        private PlayerManager _playerManager;
+        
         private RoomClientHandler _clientHandler;
+        private RoomServerHandler _serverHandler;
         private NetServer _netServer;
         private NetClient _netClient;
-
+        
         #region 属性
         public override int Priority => (int)GamePlaySystemPriority.RoomManager;
-        
-        // 房间状态
-        public SessionRole SessionRole { get; private set; }
-        public int Capacity { get; private set; }
-        public int MemberCount => _playersById.Count;
-        public bool IsInMatch { get; private set; }
-        public bool AcceptsRemoteJoin { get; private set; }
 
-        public uint HostPlayerId { get; private set; }
-        public uint LocalPlayerId { get; private set; }
+        public SessionRole Role { get; private set; } = SessionRole.None;
+        public RoomConfig Config => _roomData.CurrentConfig;
+        public bool IsInMatch { get; private set; }
         #endregion
 
         #region 事件
-        public event Action SessionEnded;   // 游戏会话结束
-        public event Action<uint> PlayerJoined;  // 玩家加入
-        public event Action<uint> PlayerRemoved;    // 玩家退出
+        public event Action SessionConnected;   // 游戏会话连接成功 
+        public event Action SessionDisconnected;   // 游戏会话断开连接 
+        public event Action SessionReconnectFailed; // 游戏会话重连失败
+        public event Action<Guid> PlayerJoined; // 玩家加入
+        public event Action<Guid> PlayerLeft;   // 玩家退出
         #endregion
 
-        #region 对局管理
+        #region 连接管理
 
         /// <summary>
-        /// 创建不接远端的对局，并让本机玩家入座。
-        /// </summary>
-        public void CreateLocalRoom()
-        {
-            OpenMatch(false);
-        }
-
-        /// <summary>
-        /// 创建接远端的对局，本机入座后开启监听。
-        /// </summary>
-        public void CreateHostRoom()
-        {
-            if (!OpenMatch(true))
-            {
-                return;
-            }
-
-            StartListening();
-        }
-
-        /// <summary>
-        /// 打开对局名册。本机玩与开多人共用；测试可只开名册而不启动监听。
-        /// </summary>
-        public bool OpenMatch(bool acceptsRemoteJoin, SessionRole sessionRole = SessionRole.Host)
-        {
-            if (IsInMatch)
-            {
-                return false;
-            }
-
-            AcceptsRemoteJoin = acceptsRemoteJoin;
-            Capacity = acceptsRemoteJoin ? DEFAULT_CAPACITY : LOCAL_CAPACITY;
-            SessionRole = sessionRole;
-
-            uint playerId = _nextPlayerId;
-            if (!TryAdmitPlayer(playerId))
-            {
-                return false;
-            }
-
-            _nextPlayerId++;
-            BindConnection(LOCAL_CONNECTION_ID, playerId);
-            LocalPlayerId = playerId;
-            IsInMatch = true;
-            return true;
-        }
-
-        /// <summary>
-        /// 开启监听客户端连接
+        /// 开启服务端监听，不开启时就为本地游戏
         /// </summary>
         private void StartListening()
         {
-            _netServer = Global.Get<NetServer>();
+            _netServer = Global.Register<NetServer>();
+            _serverHandler = new RoomServerHandler(this);
             _serverHandler.Bind();
             _netServer.StartServer();
         }
 
-        private void StopHost()
+        public void StartConnecting()
         {
-            if (_netServer == null)
-            {
-                return;
-            }
-
-            _netServer.StopServer();
-            _serverHandler.Unbind();
-            _netServer = null;
+            _netClient = Global.Register<NetClient>();
+            _netClient.OnReconnectFailed += OnReconnectFailed;
+            
+            _clientHandler = new RoomClientHandler(this);
+            _clientHandler.Bind();
+            _netClient.StartReliableConnect();
         }
 
         private void StopClient()
         {
-            if (_netClient == null)
-            {
-                return;
-            }
+            if (_netClient == null) return;
+            
+            // 发送退出通知
+            if (IsInMatch) _clientHandler.SendGameLeaveRequest();
 
-            if (IsInMatch)
-            {
-                _clientHandler.SendGameLeaveRequest();
-            }
-
+            _netClient.OnReconnectFailed -= OnReconnectFailed;
             _netClient.StopClient();
             _clientHandler.Unbind();
+            Global.Unregister<NetClient>();
+            
+            _clientHandler = null;
             _netClient = null;
         }
 
-        public uint[] GetPlayerIds()
+        private void StopServer()
         {
-            uint[] playerIds = new uint[_playersById.Count];
-            _playersById.Keys.CopyTo(playerIds, 0);
-            return playerIds;
-        }
-        
-        private bool TryGetPlayerId(uint connectionId, out uint playerId)
-        {
-            return _playerByConnection.TryGetValue(connectionId, out playerId);
-        }
-        
-        /// <summary>
-        /// 将远端连接加入当前对局。connectionId 为 0 表示房主没有连接，不能入座。
-        /// </summary>
-        public uint Admit(uint connectionId)
-        {
-            if (!IsInMatch) return 0;
-            if (connectionId == LOCAL_CONNECTION_ID || !AcceptsRemoteJoin) return 0;
-            if (_playerByConnection.ContainsKey(connectionId)) return 0;
-            if (_playersById.Count >= Capacity) return 0;
+            if (_netServer == null) return;
             
-            uint playerId = _nextPlayerId;
-            if (!TryAdmitPlayer(playerId)) return 0;
-
-            _nextPlayerId++;
-            BindConnection(connectionId, playerId);
+            _serverHandler.Unbind();
+            _netServer.StopServer();
+            Global.Unregister<NetServer>();
             
-            return playerId;
-        }
-
-        /// <summary>
-        /// 连接离开。connectionId 为 0 表示房主没有连接，结束整场对局。
-        /// </summary>
-        public void Leave(uint connectionId)
-        {
-            if (!IsInMatch) return;
-            if (connectionId == LOCAL_CONNECTION_ID)
-            {
-                Dissolve();
-                return;
-            }
-
-            if (!UnbindConnection(connectionId, out uint playerId)) return;
-
-            RemovePlayer(playerId);
-            PlayerRemoved?.Invoke(playerId);
-        }
-
-        /// <summary>
-        /// 处理房间关闭事件并通知其他玩家房间关闭
-        /// </summary>
-        private void Dissolve()
-        {
-            if (IsInMatch)
-            {
-                ClearMembers();
-                IsInMatch = false;
-            }
-
-            if (_netServer != null)
-            {
-                // 房主销毁房间，广播销毁房间通知
-                _serverHandler.BroadcastHostDissolved(new Room_Host_Dissolved_Notify());
-            }
-
-            StopHost();
-            StopClient();
-        }
-
-        /// <summary>
-        /// 尝试添加玩家
-        /// 主机和客户端都走这套逻辑，客户端应用主机下发的玩家增量，按理说是不会出任何问题
-        /// </summary>
-        private bool TryAdmitPlayer(uint playerId)
-        {
-            if (_playersById.Count >= Capacity) return false;
-
-            // TODO
-            // Player player = new(playerId);
-            Player player = new();
-            _playersById[playerId] = player;
-            if (HostPlayerId == 0) HostPlayerId = playerId;
-
-            PlayerJoined?.Invoke(playerId);
-            return true;
-        }
-
-        private void RemovePlayer(uint playerId)
-        {
-            if (_playersById.Remove(playerId, out Player player))
-            {
-                // TODO
-                // player.State = PlayerState.Left;
-            }
-        }
-
-        private void ClearMembers()
-        {
-            foreach (Player player in _playersById.Values)
-            {
-                // TODO
-                // player.State = PlayerState.Left;
-            }
-
-            _playersById.Clear();
-            _playerByConnection.Clear();
-            _connectionByPlayer.Clear();
-            _nextPlayerId = 1;
-            HostPlayerId = 0;
-            LocalPlayerId = 0;
+            _serverHandler = null;
+            _netServer = null;
         }
 
         #endregion
+        
+        #region 战局启动管理
+        
+        public void StartServer(RoomConfig config)
+        {
+            // 记录主机本地玩家数据
+            PlayerJoinServer(LOCAL_CONNECTION_ID, _playerData.LocalPlayerData);
+            _roomData.UpdateConfig(config);
+            
+            if (_roomData.AcceptRemoteJoin) StartListening();
+            
+            Role = SessionRole.Host;
+            IsInMatch = true;
+        }
 
+        /// <summary>
+        /// 开启客户端连接，当远端连接被接受时触发
+        /// </summary>
+        private void StartClient(Room_Join_Response response)
+        {
+            // 使用服务端返回的玩家数据
+            foreach (var player in response.Remotes) PlayerJoinClient(player.ToData());
+            _roomData.UpdateConfig(response.RoomCfg.ToData());
+            
+            Role = SessionRole.Client;
+            IsInMatch = true;
+        }
+        
+        /// <summary>
+        /// 房间退出/销毁
+        /// </summary>
+        public void Dissolve()
+        {
+            if (!IsInMatch) return;
+            
+            _playerManager.Dispose();
+            // 房主销毁房间，广播销毁房间通知
+            _serverHandler?.BroadcastHostDissolved();
+
+            StopClient();
+            StopServer();
+            
+            IsInMatch = false;
+        }
+        
+        #endregion
+
+        #region 玩家管理
+
+        public void PlayerJoinClient(PlayerData player)
+        {
+            _playerManager.AddPlayerClient(player);
+            PlayerJoined?.Invoke(player.uuid);
+        }
+
+        public void PlayerJoinServer(uint connectionId, PlayerData player)
+        {
+            _playerManager.AddPlayerServer(connectionId, player);
+            PlayerJoined?.Invoke(player.uuid);
+        }
+
+        public void PlayerLeaveClient(Guid uuid)
+        {
+            _playerManager.RemovePlayerClient(uuid);
+            PlayerLeft?.Invoke(uuid);
+        }
+
+        public Guid PlayerLeaveServer(uint connectionId)
+        {
+            Guid uuid = _playerManager.RemovePlayerServer(connectionId);
+            PlayerLeft?.Invoke(uuid);
+            return uuid;
+        }
+
+        /// <summary>
+        /// 获取房间内的所有玩家UUID信息
+        /// </summary>
+        public PlayerData[] GetPlayerInfos()
+        {
+            return _playerManager.GetActivePlayerInfos();
+        }
+
+        #endregion
+        
         #region 子系统生命周期
 
         public override void Init()
         {
-            _nextPlayerId = 1;
-            _playerByConnection = new Dictionary<uint, uint>();
-            _connectionByPlayer = new Dictionary<uint, uint>();
-            _serverHandler = new RoomServerHandler(this);
-            _clientHandler = new RoomClientHandler(this);
+            _playerData = Global.GetDataProxy<PlayerDataProxy>();
+            _roomData = Global.GetDataProxy<RoomDataProxy>();
+
+            _playerManager = Global.Register<PlayerManager>();
         }
 
         public override void Destroy()
         {
             Dissolve();
+            Global.Unregister<PlayerManager>();
+        }
+
+        #endregion
+
+        #region 事件回调
+
+        private void OnReconnectFailed()
+        {
+            SessionReconnectFailed?.Invoke();
         }
 
         #endregion
 
         #region 客户端消息处理
-        
-        /// <summary>
-        /// 菜单加入被接受后，接管已有客户端连接并写入名册。
-        /// </summary>
+
+        public void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
+        {
+            // TODO: 由独立模块处理连接，现临时使用
+            _clientHandler.SendJoinRequest(_playerData.LocalPlayerData);
+        }
+
         public void HandleJoinResponse(Room_Join_Response response)
         {
-            _netClient = Global.Get<NetClient>();
-            _clientHandler.Bind();
-            
-            // 设置玩家数据
-            _playersById.Clear();
-            HostPlayerId = response.HostPlayerId;
-            LocalPlayerId = response.PlayerId;
-            foreach (uint playerId in response.PlayerIds)
+            if (response.Accepted)
             {
-                TryAdmitPlayer(playerId);
+                StartClient(response);
+                SessionConnected?.Invoke();
             }
-            
-            // 设置房间属性
-            SessionRole = SessionRole.Client;
-            Capacity = DEFAULT_CAPACITY;
-            AcceptsRemoteJoin = false;
-            IsInMatch = true;
+            else
+            {
+                // TODO: 拒绝连接提示
+            }
         }
 
-        /// <summary>
-        /// 应用主机下发的权威玩家增量通知
-        /// </summary>
-        public void HandlePlayerJoinedNotify(Room_Player_Joined_Notify notify)
+        public void HandlePlayerJoinNotify(Room_Player_Joined_Notify notify)
         {
-            uint playerId = notify.PlayerId;
-            if (playerId == 0 || _playersById.ContainsKey(playerId)) return;    // 按理说这条return永远也不会触发
-            TryAdmitPlayer(playerId);
+            PlayerJoinClient(notify.Player.ToData());
         }
 
-        /// <summary>
-        /// 应用远端玩家离开通知
-        /// </summary>
         public void HandlePlayerLeaveNotify(Room_Player_Leave_Notify notify)
         {
-            if (!IsInMatch) return;
-
-            RemovePlayer(notify.PlayerId);
-            PlayerRemoved?.Invoke(notify.PlayerId);
+            PlayerLeaveClient(Guid.Parse(notify.UUID));
         }
 
-        /// <summary>
-        /// 应用远端房主关闭房间通知
-        /// </summary>
-        public void HandleHostDissolvedNotify(Room_Host_Dissolved_Notify notify)
+        public void HandleServerDissolveNotify(Room_Server_Dissolved_Notify notify)
         {
-            // 房主退出，销毁房间
             Dissolve();
-            SessionEnded?.Invoke();
+            SessionDisconnected?.Invoke();
         }
 
         #endregion
 
         #region 服务端消息处理
 
-        /// <summary>
-        /// 按连接离座。未入座或对局已不存在时返回 0
-        /// </summary>
-        public uint HandlePlayerLeaveRequest(uint connectionId)
+        public void HandlePlayerJoinRequest(uint connectionId, Room_Join_Request request)
         {
-            if (!IsInMatch || !TryGetPlayerId(connectionId, out uint playerId))
+            PlayerData player = request.Player.ToData();
+            
+            // 房间拒绝远端连接
+            if(!_roomData.AcceptRemoteJoin) _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+            
+            // 房间玩家数量已达上限
+            if(_playerManager.PlayerCount >= _roomData.MultiPlayCapacity) _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+            
+            // 判断是否在局内
+            if (_playerManager.TryGetPlayer(player.uuid, out _))
             {
-                return 0;
+                // 玩家已经在局内，拒绝当前加入连接请求
+                _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+                return;
             }
-
-            Leave(connectionId);
-            return playerId;
-        }
-
-        #endregion
-
-        #region 网路注册重映射
-
-        /// <summary>
-        /// 登记已入座玩家的消息。回调收到的是玩家号；尚未入座的连接在这里被丢掉。
-        /// </summary>
-        public void RegisterPlayerHandler<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
-        {
-            if (_playerHandlers.ContainsKey(callback)) return;
-
-            Action<uint, T> adapter = (connectionId, message) =>
-            {
-                if (!TryGetPlayerId(connectionId, out uint playerId)) return;
-
-                callback(playerId, message);
-            };
-            _playerHandlers.Add(callback, adapter);
-            Global.Get<NetServer>().RegisterHandler(eventId, adapter);
+            
+            // 添加对局内玩家实例记录
+            PlayerJoinServer(connectionId, player);
+            _serverHandler.SendPlayerJoinResponse(connectionId, true, player);
         }
 
         /// <summary>
-        /// 拆除已入座玩家的消息。须传入登记时的同一回调。
+        /// 玩家退出游戏房间请求
         /// </summary>
-        public void UnregisterPlayerHandler<T>(NetEvent eventId, Action<uint, T> callback) where T : class, IMessage, new()
+        public void HandlePlayerLeaveRequest(uint connectionId, Room_Leave_Request request)
         {
-            if (!_playerHandlers.Remove(callback, out Delegate adapter)) return;
-
-            Global.Get<NetServer>().UnregisterHandler(eventId, (Action<uint, T>)adapter);
+            Guid uuid = PlayerLeaveServer(connectionId);
+            _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
         }
 
         /// <summary>
-        /// 按玩家号可靠发送
+        /// 玩家异常退出游戏房间
         /// </summary>
-        public void SendReliable(uint playerId, NetEvent eventId, IMessage message)
+        public void HandlePlayerUnexpectedLeave(uint connectionId)
         {
-            _netServer.SendReliable(_connectionByPlayer[playerId], eventId, message);
-        }
-
-        /// <summary>
-        /// 按玩家号发送
-        /// </summary>
-        public void Send(uint playerId, NetEvent eventId, IMessage message)
-        {
-            _netServer.Send(_connectionByPlayer[playerId], eventId, message);
-        }
-
-        public void BroadcastReliable(NetEvent eventId, IMessage message)
-        {
-            _netServer.BroadcastReliable(eventId, message);
-        }
-
-        public void Broadcast(NetEvent eventId, IMessage message)
-        {
-            _netServer.Broadcast(eventId, message);
-        }
-        
-        private void BindConnection(uint connectionId, uint playerId)
-        {
-            _playerByConnection[connectionId] = playerId;
-            _connectionByPlayer[playerId] = connectionId;
-        }
-
-        private bool UnbindConnection(uint connectionId, out uint playerId)
-        {
-            if (!_playerByConnection.Remove(connectionId, out playerId)) return false;
-
-            _connectionByPlayer.Remove(playerId);
-            return true;
+            Guid uuid = PlayerLeaveServer(connectionId);
+            _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
         }
 
         #endregion

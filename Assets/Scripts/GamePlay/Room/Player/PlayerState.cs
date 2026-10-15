@@ -1,4 +1,4 @@
-namespace GamePlay.PlayerInfo
+namespace GamePlay.Room
 {
     /// <summary>
     /// 玩家战局状态，用于控制游戏流程

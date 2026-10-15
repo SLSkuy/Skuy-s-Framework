@@ -46,10 +46,10 @@ namespace GamePlay.EntitySpawn
         /// </summary>
         public void SpawnRosterPlayers()
         {
-            foreach (uint playerId in _room.GetPlayerIds())
-            {
-                SpawnPlayer(playerId);
-            }
+            // foreach (uint playerId in _room.GetPlayerIds())
+            // {
+            //     SpawnPlayer(playerId);
+            // }
         }
 
         /// <summary>
@@ -103,16 +103,16 @@ namespace GamePlay.EntitySpawn
             character.Init();
             
             // 初始化实体角色的移动快照配置
-            bool isReplica = _room.SessionRole != SessionRole.Host && playerId != _room.LocalPlayerId;
-            character.Context.Movement.SetReplicaMode(isReplica);
+            // bool isReplica = _room.SessionRole != SessionRole.Host && playerId != _room.LocalPlayerId;
+            // character.Context.Movement.SetReplicaMode(isReplica);
             
             _simulator.Register(identity, character);
             
-            if (playerId == _room.LocalPlayerId)
+            // if (playerId == _room.LocalPlayerId)
             {
                 OnSpawnLocalPlayer?.Invoke(playerId, character);
             }
-            else if (_room.SessionRole == SessionRole.Host)
+            // else if (_room.SessionRole == SessionRole.Host)
             {
                 OnSpawnRemotePlayer?.Invoke(playerId, character);
             }
@@ -150,12 +150,13 @@ namespace GamePlay.EntitySpawn
         
         private EntityObjectRole ResolveRole(uint playerId)
         {
-            if (_room.SessionRole == SessionRole.Client)
+            // if (_room.SessionRole == SessionRole.Client)
             {
-                return playerId == _room.LocalPlayerId ? EntityObjectRole.Predict : EntityObjectRole.Replica;
+                // return playerId == _room.LocalPlayerId ? EntityObjectRole.Predict : EntityObjectRole.Replica;
             }
 
-            return _room.AcceptsRemoteJoin ? EntityObjectRole.Authority : EntityObjectRole.LocalPlay;
+            // return _room.AcceptsRemoteJoin ? EntityObjectRole.Authority : EntityObjectRole.LocalPlay;
+            return default;
         }
 
         #region 子系统生命周期

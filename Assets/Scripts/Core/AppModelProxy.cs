@@ -23,7 +23,9 @@ namespace Core
                 return;
             }
             
+            // 不存在缓存数据，创建默认配置
             _model = new AppModel();
+            MarkDataDirty();
         }
 
         public override void Save()

@@ -10,6 +10,9 @@ namespace Core
     [CreateAssetMenu(fileName = "AppCoreConfig", menuName = "AppCore/AppCoreConfig")]
     public class AppCoreConfig : ScriptableObjectSingleton<AppCoreConfig>
     {
+        [Header("DEBUG模式")]
+        public bool debugMode = true;
+        
         [Header("游戏基础设置")] 
         public int targetFrame = 60;
         
