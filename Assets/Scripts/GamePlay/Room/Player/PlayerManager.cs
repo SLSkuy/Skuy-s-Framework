@@ -10,16 +10,14 @@ namespace GamePlay.Room
     /// 这一局在场的玩家，只持有本局进入过的玩家信息
     /// 完成ConnectionID -> UUID的转换，对业务逻辑屏蔽连接ID
     /// </summary>
-    public class PlayerManager : SubSystemBase, IDisposable
+    public class PlayerManager : IDisposable
     {
+        private readonly GameSaveDataProxy _gameSave = Global.GetDataProxy<GameSaveDataProxy>();
+        
         private readonly Dictionary<Guid, Player> _playersByUUID = new();
         private readonly Dictionary<uint, Player> _playersByConnectionId = new();
-
-        private GameSaveDataProxy _gameSave;
-
-        #region 属性
-        public override int Priority => (int)GamePlaySystemPriority.PlayerManager;
         
+        #region 属性
         public int PlayerCount => _playersByUUID.Count;
         #endregion
 
@@ -114,19 +112,5 @@ namespace GamePlay.Room
             _playersByUUID.Clear();
             _playersByConnectionId.Clear();
         }
-
-        #region 子系统生命周期
-
-        public override void Init()
-        {
-            _gameSave = Global.GetDataProxy<GameSaveDataProxy>();
-        }
-
-        public override void Destroy()
-        {
-            Dispose();
-        }
-
-        #endregion
     }
 }

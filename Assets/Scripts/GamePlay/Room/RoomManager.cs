@@ -59,7 +59,6 @@ namespace GamePlay.Room
         {
             _netClient = Global.Register<NetClient>();
             _netClient.OnReconnectFailed += OnReconnectFailed;
-            
             _clientHandler = new RoomClientHandler(this);
             _clientHandler.Bind();
             _netClient.StartReliableConnect();
@@ -185,13 +184,16 @@ namespace GamePlay.Room
             _playerData = Global.GetDataProxy<PlayerDataProxy>();
             _roomData = Global.GetDataProxy<RoomDataProxy>();
 
-            _playerManager = Global.Register<PlayerManager>();
+            _playerManager = new PlayerManager();
         }
 
         public override void Destroy()
         {
             Dissolve();
-            Global.Unregister<PlayerManager>();
+            
+            _playerData = null;
+            _roomData = null;
+            _playerManager = null;
         }
 
         #endregion

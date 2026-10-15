@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Framework.SubSystems
+namespace Framework
 {
     /// <summary>
     /// 全局音频管理器，提供音频控制功能
