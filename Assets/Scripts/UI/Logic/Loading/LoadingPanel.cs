@@ -35,7 +35,7 @@ namespace UI
         {
             if (!_tracking) return;
 
-            _progressBar.fillAmount = _sceneLoader.CurrentProgress;
+            UpdateView();
         }
         
         protected override void OnShow()
@@ -51,7 +51,7 @@ namespace UI
 
         protected override void UpdateView()
         {
-            // TODO: 用界面属性刷新控件显示
+            _progressBar.fillAmount = _sceneLoader.CurrentProgress;
         }
 
         #endregion
