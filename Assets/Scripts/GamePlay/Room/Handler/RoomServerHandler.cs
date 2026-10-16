@@ -48,18 +48,17 @@ namespace GamePlay.Room
         
         public void SendPlayerJoinResponse(uint connectionId, bool accepted, PlayerData player)
         {
-            Room_Join_Response response = new()
-            {
-                Accepted = accepted,
-            };
+            Room_Join_Response response = new() { Accepted = accepted };
 
             if (accepted)
             {
                 response.RoomCfg = _room.Config.ToProto();
-                List<PlayerDataProto> infos = _room.GetPlayerInfos().Select(info => info.ToProto()).ToList();
+                List<PlayerDataProto> infos = _room.GetAllPlayerData().Select(info => info.ToProto()).ToList();
                 response.Remotes.AddRange(infos);
-                
-                _server.BroadcastReliable(NetEvent.ROOM_JOIN_RESPONSE, new Room_Player_Joined_Notify { Player = player.ToProto()});
+
+                uint[] activeIDs = _room.GetAllPlayerConnectionID();
+                Room_Player_Joined_Notify notify = new Room_Player_Joined_Notify { Player = player.ToProto() };
+                _server.SendGroupReliableWithout(connectionId, activeIDs, NetEvent.ROOM_PLAYER_JOINED_NOTIFY, notify);
             }
             
             _server.SendReliable(connectionId, NetEvent.ROOM_JOIN_RESPONSE, response);
@@ -67,7 +66,9 @@ namespace GamePlay.Room
         
         public void BroadcastPlayerLeaved(string playerUUID)
         {
-            _server.BroadcastReliable(NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, new Room_Player_Leave_Notify { UUID = playerUUID });
+            uint[] activeIDs = _room.GetAllPlayerConnectionID();
+            Room_Player_Leave_Notify notify = new Room_Player_Leave_Notify { UUID = playerUUID };
+            _server.SendGroupReliable(activeIDs,  NetEvent.ROOM_PLAYER_LEAVE_NOTIFY, notify);
         }
 
         /// <summary>
@@ -75,7 +76,9 @@ namespace GamePlay.Room
         /// </summary>
         public void BroadcastHostDissolved()
         {
-            _server.BroadcastReliable(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, new Room_Server_Dissolved_Notify());
+            uint[] activeIDs = _room.GetAllPlayerConnectionID();
+            Room_Server_Dissolved_Notify notify = new Room_Server_Dissolved_Notify();
+            _server.SendGroupReliable(activeIDs,  NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, notify);
         }
         
         #endregion

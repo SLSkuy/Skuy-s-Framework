@@ -5,6 +5,7 @@ using GamePlay.GameSave;
 using NetConnect;
 using NetSync;
 using Network;
+using UnityEngine;
 using Utils;
 
 namespace GamePlay.Room
@@ -14,8 +15,6 @@ namespace GamePlay.Room
     /// </summary>
     public class RoomManager : SubSystemBase
     {
-        private const uint LOCAL_CONNECTION_ID = 0;
-        
         private PlayerDataProxy _playerData;
         private RoomDataProxy _roomData;
         
@@ -41,65 +40,13 @@ namespace GamePlay.Room
         public event Action<Guid> PlayerJoined; // 玩家加入
         public event Action<Guid> PlayerLeft;   // 玩家退出
         #endregion
-
-        #region 连接管理
-
-        /// <summary>
-        /// 开启服务端监听，不开启时就为本地游戏
-        /// </summary>
-        private void StartListening()
-        {
-            _netServer = Global.Register<NetServer>();
-            _serverHandler = new RoomServerHandler(this);
-            _serverHandler.Bind();
-            _netServer.StartServer();
-        }
-
-        public void StartConnecting()
-        {
-            _netClient = Global.Register<NetClient>();
-            _netClient.OnReconnectFailed += OnReconnectFailed;
-            _clientHandler = new RoomClientHandler(this);
-            _clientHandler.Bind();
-            _netClient.StartReliableConnect();
-        }
-
-        private void StopClient()
-        {
-            if (_netClient == null) return;
-            
-            // 发送退出通知
-            if (IsInMatch) _clientHandler.SendGameLeaveRequest();
-
-            _netClient.OnReconnectFailed -= OnReconnectFailed;
-            _netClient.StopClient();
-            _clientHandler.Unbind();
-            Global.Unregister<NetClient>();
-            
-            _clientHandler = null;
-            _netClient = null;
-        }
-
-        private void StopServer()
-        {
-            if (_netServer == null) return;
-            
-            _serverHandler.Unbind();
-            _netServer.StopServer();
-            Global.Unregister<NetServer>();
-            
-            _serverHandler = null;
-            _netServer = null;
-        }
-
-        #endregion
         
         #region 战局启动管理
         
         public void StartServer(RoomConfig config)
         {
             // 记录主机本地玩家数据
-            PlayerJoinServer(LOCAL_CONNECTION_ID, _playerData.LocalPlayerData);
+            PlayerJoinServer(GlobalConst.LOCAL_CONNECTION_ID, _playerData.LocalPlayerData);
             _roomData.UpdateConfig(config);
             
             if (_roomData.AcceptRemoteJoin) StartListening();
@@ -128,16 +75,75 @@ namespace GamePlay.Room
         {
             if (!IsInMatch) return;
             
-            _playerManager.Dispose();
             // 房主销毁房间，广播销毁房间通知
             _serverHandler?.BroadcastHostDissolved();
-
             StopClient();
             StopServer();
+            
+            _playerManager.Dispose();
             
             IsInMatch = false;
         }
         
+        #endregion
+
+        #region 连接管理
+
+        /// <summary>
+        /// 开启服务端监听，不开启时就为本地游戏
+        /// </summary>
+        private void StartListening()
+        {
+            _netServer = Global.Register<NetServer>();
+            _serverHandler = new RoomServerHandler(this);
+            _serverHandler.Bind();
+            _netServer.StartServer();
+        }
+
+        public void StartConnecting()
+        {
+            // 防止重复创建，重新连接连接时复用已经创建的配置
+            if (!Global.TryGet(out _netClient)) _netClient = Global.Register<NetClient>();
+            _netClient.OnReconnectFailed += OnReconnectFailed;
+            _clientHandler ??= new RoomClientHandler(this);
+            _clientHandler.Bind();
+            _netClient.StartReliableConnect();
+        }
+
+        private void StopConnecting()
+        {
+            _netClient.OnReconnectFailed -= OnReconnectFailed;
+            _netClient.StopClient();
+            _clientHandler.Unbind();
+        }
+
+        private void StopClient()
+        {
+            if (_netClient == null) return;
+            
+            // 发送退出通知
+            // TODO: 当前发送只是入队，并没有直接发送，夏旭注销会直接导致消息没有发送出去，还在缓冲队列中
+            if (IsInMatch) _clientHandler.SendGameLeaveRequest();
+
+            StopConnecting();
+            Global.Unregister<NetClient>();
+            
+            _clientHandler = null;
+            _netClient = null;
+        }
+
+        private void StopServer()
+        {
+            if (_netServer == null) return;
+            
+            _serverHandler.Unbind();
+            _netServer.StopServer();
+            Global.Unregister<NetServer>();
+            
+            _serverHandler = null;
+            _netServer = null;
+        }
+
         #endregion
 
         #region 玩家管理
@@ -170,9 +176,17 @@ namespace GamePlay.Room
         /// <summary>
         /// 获取房间内的所有玩家UUID信息
         /// </summary>
-        public PlayerData[] GetPlayerInfos()
+        public PlayerData[] GetAllPlayerData()
         {
-            return _playerManager.GetActivePlayerInfos();
+            return _playerManager.GetActivePlayerData();
+        }
+
+        /// <summary>
+        /// 获取房间内的所有玩家连接ID信息
+        /// </summary>
+        public uint[] GetAllPlayerConnectionID()
+        {
+            return _playerManager.GetActiveConnectionIds();
         }
 
         #endregion
@@ -183,7 +197,6 @@ namespace GamePlay.Room
         {
             _playerData = Global.GetDataProxy<PlayerDataProxy>();
             _roomData = Global.GetDataProxy<RoomDataProxy>();
-
             _playerManager = new PlayerManager();
         }
 
@@ -217,6 +230,8 @@ namespace GamePlay.Room
 
         public void HandleJoinResponse(Room_Join_Response response)
         {
+            Debug.Log(response);
+            
             if (response.Accepted)
             {
                 StartClient(response);
@@ -225,6 +240,7 @@ namespace GamePlay.Room
             else
             {
                 // TODO: 拒绝连接提示
+                StopConnecting();   // 断开本次连接
             }
         }
 
@@ -253,10 +269,18 @@ namespace GamePlay.Room
             PlayerData player = request.Player.ToData();
             
             // 房间拒绝远端连接
-            if(!_roomData.AcceptRemoteJoin) _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+            if(!_roomData.AcceptRemoteJoin)
+            {
+                _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+                return;
+            }
             
             // 房间玩家数量已达上限
-            if(_playerManager.PlayerCount >= _roomData.MultiPlayCapacity) _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+            if(_playerManager.PlayerCount >= _roomData.MultiPlayCapacity)
+            {
+                _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
+                return;
+            }
             
             // 判断是否在局内
             if (_playerManager.TryGetPlayer(player.uuid, out _))
@@ -278,6 +302,8 @@ namespace GamePlay.Room
         {
             Guid uuid = PlayerLeaveServer(connectionId);
             _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
+            
+            // TODO: NetServer删除Connection记录
         }
 
         /// <summary>
@@ -287,6 +313,8 @@ namespace GamePlay.Room
         {
             Guid uuid = PlayerLeaveServer(connectionId);
             _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
+            
+            // TODO: NetServer删除Connection记录
         }
 
         #endregion

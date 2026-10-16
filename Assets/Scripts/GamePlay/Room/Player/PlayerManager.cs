@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Framework;
 using GamePlay.DataProxy;
 using GamePlay.GameSave;
@@ -34,17 +35,22 @@ namespace GamePlay.Room
             return _playersByConnectionId.TryGetValue(connectionId, out player);
         }
 
-        public PlayerData[] GetActivePlayerInfos()
+        /// <summary>
+        /// 获取当前房间内在线的玩家信息
+        /// </summary>
+        public PlayerData[] GetActivePlayerData()
         {
-            List<PlayerData> infos = new List<PlayerData>();
-            foreach (var p in _playersByUUID.Values)
-            {
-                if (p.State == PlayerState.Active)
-                {
-                    infos.Add(new PlayerData(p));
-                }
-            }
-            return infos.ToArray();
+            return (from p in _playersByUUID.Values where p.State == PlayerState.Active select new PlayerData(p)).ToArray();
+        }
+
+        /// <summary>
+        /// 获取当前房间内在线的连接ID
+        /// </summary>
+        public uint[] GetActiveConnectionIds()
+        {
+            // 排除房主本地连接ID
+            return (from p in _playersByConnectionId 
+                where p.Value.State == PlayerState.Active && p.Key != GlobalConst.LOCAL_CONNECTION_ID select p.Key).ToArray();
         }
 
         /// <summary>

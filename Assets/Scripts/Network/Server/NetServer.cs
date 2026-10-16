@@ -148,6 +148,15 @@ namespace Network
             }
         }
 
+        public void SendGroupWithout(uint without, uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            foreach (var clientId in clientIds)
+            {
+                if (clientId == without) continue;
+                Send(clientId, evt, message);
+            }
+        }
+
         /// <summary>
         /// 给一组客户端发送消息，使用可靠传输发送
         /// </summary>
@@ -158,9 +167,18 @@ namespace Network
                 SendReliable(clientId, evt, message);
             }
         }
+        
+        public void SendGroupReliableWithout(uint without, uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            foreach (var clientId in clientIds)
+            {
+                if (clientId == without) continue;
+                SendReliable(clientId, evt, message);
+            }
+        }
 
         /// <summary>
-        /// 为所有客户端广播消息
+        /// 为所有客户端广播消息，包括只建立了Socket连接但没有正式加入的客户端
         /// </summary>
         public void Broadcast(NetEvent evt, IMessage message)
         {
@@ -168,7 +186,7 @@ namespace Network
         }
 
         /// <summary>
-        /// 为所有客户端广播消息,，使用可靠传输发送
+        /// 为所有客户端广播消息,，使用可靠传输发送，包括只建立了Socket连接但没有正式加入的客户端
         /// </summary>
         public void BroadcastReliable(NetEvent evt, IMessage message)
         {
