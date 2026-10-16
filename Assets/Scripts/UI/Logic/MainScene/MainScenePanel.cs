@@ -61,12 +61,12 @@ namespace UI
 
         private void OnHostPlayBtn()
         {
-            ProcedureCore.Instance.StartHostPlay();
+            Global.Get<ProcedureModule>().StartHostPlay();
         }
 
         private void OnMultiPlayBtn()
         {
-            ProcedureCore.Instance.StartMultiPlay();
+            Global.Get<ProcedureModule>().StartMultiPlay();
         }
 
         private void OnSettings()

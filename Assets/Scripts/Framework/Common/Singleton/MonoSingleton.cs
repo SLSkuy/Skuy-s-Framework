@@ -70,12 +70,23 @@ namespace Framework
             }
             
             Init();
+            BindEvents();
         }
 
         /// <summary>
         /// 单例初始化，由子类覆写
         /// </summary>
         protected virtual void Init()
+        {
+            
+        }
+
+        protected virtual void BindEvents()
+        {
+            
+        }
+
+        protected virtual void UnbindEvents()
         {
             
         }
@@ -87,6 +98,7 @@ namespace Framework
         {
             if (!_instance || _instance != this) return;
             
+            UnbindEvents();
             Destroy();
             
             _applicationIsQuitting = true;

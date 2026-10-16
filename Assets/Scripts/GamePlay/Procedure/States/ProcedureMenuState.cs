@@ -10,7 +10,7 @@ namespace GamePlay.Procedure
     {
         public override ProcedureState StateKey => ProcedureState.Menu;
 
-        public ProcedureMenuState(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+        public ProcedureMenuState(StateMachine<ProcedureState> stateMachine, ProcedureModule procedure)
             : base(stateMachine, procedure)
         {
         }

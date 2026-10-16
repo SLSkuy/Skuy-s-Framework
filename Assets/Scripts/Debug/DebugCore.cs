@@ -1,4 +1,5 @@
 ﻿using Core;
+using Framework;
 using GamePlay.Procedure;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,7 +12,7 @@ public class DebugCore : MonoBehaviour
         
         if (Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
         {
-            ProcedureCore.Instance.BackToMainMenu();
+            Global.Get<ProcedureModule>().BackToMainMenu();
         }
     }
 }

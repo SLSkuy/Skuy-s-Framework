@@ -7,9 +7,9 @@ namespace GamePlay.Procedure
     /// </summary>
     public abstract class ProcedureStateBase : StateBase<ProcedureState>
     {
-        protected readonly ProcedureCore Procedure;
+        protected readonly ProcedureModule Procedure;
 
-        protected ProcedureStateBase(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+        protected ProcedureStateBase(StateMachine<ProcedureState> stateMachine, ProcedureModule procedure)
             : base(stateMachine)
         {
             Procedure = procedure;

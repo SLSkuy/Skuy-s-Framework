@@ -10,7 +10,7 @@ namespace GamePlay.Procedure
     {
         public override ProcedureState StateKey => ProcedureState.Match;
 
-        public ProcedureMatchState(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+        public ProcedureMatchState(StateMachine<ProcedureState> stateMachine, ProcedureModule procedure)
             : base(stateMachine, procedure)
         {
         }

@@ -12,7 +12,7 @@ namespace GamePlay.Procedure
 
         public override ProcedureState StateKey => ProcedureState.Loading;
 
-        public ProcedureLoadingState(StateMachine<ProcedureState> stateMachine, ProcedureCore procedure)
+        public ProcedureLoadingState(StateMachine<ProcedureState> stateMachine, ProcedureModule procedure)
             : base(stateMachine, procedure)
         {
         }

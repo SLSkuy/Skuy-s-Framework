@@ -40,6 +40,11 @@ namespace Framework
             
         }
 
+        public virtual void UnbindEvents()
+        {
+            
+        }
+
         public virtual void Update(float deltaTime)
         {
 
@@ -67,10 +72,12 @@ namespace Framework
                 return;
             }
             
-            Destroy();
+            UnbindEvents();
             
             // 自动从全局服务定位器注销
             Global.Unregister(this);
+            
+            Destroy();
             
             IsInitialized = false;
             Debug.Log($"[{GetType().Name}] 销毁");
