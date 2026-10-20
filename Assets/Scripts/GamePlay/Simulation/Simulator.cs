@@ -1,358 +1,219 @@
 ﻿using System;
 using System.Collections.Generic;
 using Framework;
+using GamePlay.DataProxy;
 using GamePlay.EntitySystem;
-using YooAsset;
 
 namespace GamePlay.Simulation
 {
-    /// <summary>
-    /// 模拟核：持有唯一 Tick、实体注册表与步进调度。每拍先处理玩家移动输入，再处理业务逻辑。
-    /// </summary>
-    public sealed class Simulator
+    public class Simulator : IDisposable
     {
-        private readonly Dictionary<uint, EntityCommand> _tickCommands = new();
-        private EntityRegistry _entityRegistry;
-        private TickSystem _snapshotTickSystem;
-        private TickSystem _tickSystem;
-        
-        private AssetHandle _configHandle;
-        
-        private int _maxBufferedInputs;
-        private int _maxFutureInputTicks;
-        private int _snapshotTickRate;
-        private int _interpolationDelayTicks;
-        private int _predictionHistorySize;
-        private float _positionReconcileThreshold;
-        private float _rotationReconcileThresholdDegrees;
+        private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
+
+        private readonly Dictionary<uint, EntityCommand> _playerCommands = new();    // 玩家输入
+        private readonly SimulationEntityManager _entityManager = new();    // 模拟实体管理
+        private TickSystem _simulationTickSystem;   // 模拟Tick
+        private TickSystem _snapshotTickSystem;     // 快照Tick
 
         #region 属性
-        public uint CurrentTick => _tickSystem?.CurrentTick ?? 0;
-        public bool IsRunning => _tickSystem is { IsRunning: true };
-        public float TickDeltaTime => _tickSystem?.TickDeltaTime ?? 0f;
+        public bool IsRunning => _simulationTickSystem is { IsRunning: true };
         
-        public int MaxBufferedInputs => _maxBufferedInputs;
-        public int MaxFutureInputTicks => _maxFutureInputTicks;
-        public int SnapshotTickRate => _snapshotTickRate;
-        public int InterpolationDelayTicks => _interpolationDelayTicks;
-        public int PredictionHistorySize => _predictionHistorySize;
-        public float PositionReconcileThreshold => _positionReconcileThreshold;
-        public float RotationReconcileThresholdDegrees => _rotationReconcileThresholdDegrees;
+        public float TickDeltaTime => _simulationTickSystem?.TickDeltaTime ?? 0;
+        public float InterpolationAlpha => _simulationTickSystem?.InterpolationAlpha ?? 0f;
+        
+        public IReadOnlyDictionary<uint, SimulationEntity> Entities => _entityManager.Entities;
         #endregion
-
+        
         #region 事件
         /// <summary>
-        /// 本拍实体移动之前。订阅者在此提交玩家移动输入。
+        /// 实行步长模拟前的Tick，用于逻辑位置插值准备
         /// </summary>
-        public event Action<uint, float> TickPlayerInput;
+        public event Action PrepareSimulation;
 
         /// <summary>
-        /// 本拍移动步进完成之后、权威状态采样之前。订阅者在此推进业务逻辑。
+        /// 收集本地输入
         /// </summary>
-        public event Action<uint, float> TickBusiness;
+        public event Action<uint> CollectPlayerInput;
+        
+        /// <summary>
+        /// 所有逻辑处理完之后，用于获取最新快照状态
+        /// </summary>
+        public event Action CaptureSnapshot;
+        
+        /// <summary>
+        /// 捕获完快照之后，进行预测
+        /// </summary>
+        public event Action<uint, float> LocalPredict;
 
         /// <summary>
-        /// 本拍权威状态采样之后。
+        /// 插值视觉表现
         /// </summary>
-        public event Action<uint, float> TickCaptured;
-
-        /// <summary>
-        /// 快照节拍。与模拟节拍分开累计，开了快照时钟后才触发。
-        /// </summary>
-        public event Action<uint, float> TickSnapshot;
+        public event Action PresentVisual;
+        
+        public event Action<uint, float> SnapshotTick;
         #endregion
 
         #region Tick管理
-        
-        public void StartClock()
+
+        public void StartServerTick()
         {
-            if (IsRunning) return;
-            _tickSystem.Start();
+            StartSimulationTick();
+            StartSnapshotTick();
         }
 
-        public void StopClock()
+        public void StartClientTick()
         {
-            _tickSystem?.Stop();
+            StartSimulationTick();
         }
 
-        public void StartSnapshotClock()
+        public void StopTick()
         {
-            if (_snapshotTickSystem.IsRunning) return;
-            _snapshotTickSystem.Start();
-        }
-
-        public void StopSnapshotClock()
-        {
+            _simulationTickSystem?.Stop();
             _snapshotTickSystem?.Stop();
         }
 
-        private void HandleTick(uint tick, float deltaTime)
+        private void StartSimulationTick()
         {
-            PrepareSimulationTick();
-            TickPlayerInput?.Invoke(tick, deltaTime);
-            DispatchTick(tick, deltaTime);
-            TickBusiness?.Invoke(tick, deltaTime);
-            CaptureAuthorityTick();
-            TickCaptured?.Invoke(tick, deltaTime);
+            _simulationTickSystem = new TickSystem(_simulationData.TickRate, _simulationData.MaxTickPerFrame);
+            _simulationTickSystem.Tick += OnSimulationTick;
+            _simulationTickSystem.Start();
         }
 
-        private void HandleSnapshotTick(uint tick, float deltaTime)
+        private void StartSnapshotTick()
         {
-            TickSnapshot?.Invoke(tick, deltaTime);
+            _snapshotTickSystem = new TickSystem(_simulationData.SnapshotSyncRate, _simulationData.MaxTickPerFrame);
+            _simulationTickSystem.Tick += OnSnapshotTick;
+            _snapshotTickSystem.Start();
+        }
+        
+        private void OnSimulationTick(uint tick, float deltaTime)
+        {
+            PrepareSimulation?.Invoke();
+            CollectPlayerInput?.Invoke(tick);
+            
+            CollectCommand();
+            DoSimulator(tick, deltaTime);
+            
+            CaptureSnapshot?.Invoke();
+            LocalPredict?.Invoke(tick, deltaTime);
+        }
+
+        private void OnSnapshotTick(uint tick, float deltaTime)
+        {
+            SnapshotTick?.Invoke(tick, deltaTime);
+        }
+
+        #endregion
+
+        #region 模拟管理
+
+        /// <summary>
+        /// 收集模拟运行命令
+        /// </summary>
+        private void CollectCommand()
+        {
+            _playerCommands.Clear();
+            foreach (KeyValuePair<uint, SimulationEntity> pair in _entityManager.Entities)
+            {
+                SimulationEntity entity = pair.Value;
+                if(entity.Identity.IsReplica) continue; // 复制实体不进行步长模拟，只消耗权威快照
+                if(!entity.TryCollectCommand(out EntityCommand command)) continue;  // 获取输入命令失败，跳过本次步进模拟
+                _playerCommands.Add(pair.Key, command);
+            }
         }
 
         /// <summary>
-        /// 处理Tick逻辑，进行模拟步进
-        /// Replica 不收集、不 Step
+        /// 使用收集到的命令执行一次模拟
         /// </summary>
-        private void DispatchTick(uint tick, float deltaTime)
+        private void DoSimulator(uint tick, float deltaTime)
         {
-            if (_entityRegistry == null) return;
-
-            _tickCommands.Clear();
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
+            foreach (KeyValuePair<uint, SimulationEntity> pair in _entityManager.Entities)
             {
-                RegisteredEntity entity = pair.Value;
-                if (!entity.Character || !entity.Character.IsInitialized) continue;
-                if (entity.Identity != null && entity.Identity.IsReplica) continue;
-                if (!entity.TryCollectCommand(out EntityCommand command)) continue;
-                _tickCommands[pair.Key] = command;
-            }
-
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                if (!_tickCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
+                if(!_playerCommands.TryGetValue(pair.Key, out EntityCommand command)) continue;
                 pair.Value.Character.Step(tick, deltaTime, command);
             }
         }
 
         #endregion
 
-        #region 插值处理
-
-        /// <summary>
-        /// 获取模拟步进前的Tick状态
-        /// </summary>
-        private void PrepareSimulationTick()
-        {
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                RegisteredEntity entity = pair.Value;
-                if (!ShouldPresent(entity)) continue;
-                entity.Character.PrepareSimulationTick();
-            }
-        }
-
-        /// <summary>
-        /// 获取模拟步进后的Tick状态
-        /// </summary>
-        private void CaptureAuthorityTick()
-        {
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                RegisteredEntity entity = pair.Value;
-                if (!ShouldPresent(entity)) continue;
-                entity.Character.CaptureAuthorityAfterTick();
-            }
-        }
-
-        /// <summary>
-        /// 插值步进流程
-        /// </summary>
-        private void PresentVisualPoses()
-        {
-            float alpha = _tickSystem.InterpolationAlpha;
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                RegisteredEntity entity = pair.Value;
-                if (!ShouldPresent(entity)) continue;
-                entity.Character.PresentVisualPose(alpha);
-            }
-        }
-
-        /// <summary>
-        /// 判断实体是否应该进行插值
-        /// 只有主机端上的玩家和客户端上的主控玩家需要进行步进插值
-        /// </summary>
-        private static bool ShouldPresent(RegisteredEntity entity)
-        {
-            if (!entity.Character || !entity.Character.IsInitialized) return false;
-            if (entity.Identity && entity.Identity.IsReplica) return false;
-            return true;
-        }
-
-        #endregion
-        
         #region 模拟实体管理
 
-        public bool Register(EntityObjectIdentity identity, EntityCharacter character)
+        public bool Register(EntityIdentity identity, EntityCharacter character)
         {
-            return _entityRegistry.Register(identity, character);
+            return _entityManager.Register(identity, character);
         }
 
         public bool Unregister(uint entityId)
         {
-            return _entityRegistry.Unregister(entityId);
+            return _entityManager.Unregister(entityId);
         }
 
-        public bool TryGet(uint entityId, out EntityObjectIdentity identity, out EntityCharacter character)
+        public bool TryGet(uint entityId, out SimulationEntity entity)
         {
-            identity = null;
-            character = null;
-            
-            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
+            return _entityManager.TryGet(entityId, out entity);
+        }
+
+        public bool TryGet(uint entityId, out EntityIdentity identity, out EntityCharacter character)
+        {
+            if (TryGet(entityId, out SimulationEntity entity))
             {
-                return false;
+                identity = entity.Identity;
+                character = entity.Character;
+                return true;
             }
 
-            identity = entity.Identity;
-            character = entity.Character;
-            return true;
+            identity = null;
+            character = null;
+            return false;
         }
-        
+
         /// <summary>
-        /// 将意图来源挂到已注册槽位；不在核内缓存提供器
+        /// 设置模拟实体的控制命令来源
         /// </summary>
         public bool SetInputSource(uint entityId, IInputStateProvider inputSource)
         {
-            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity))
-            {
-                return false;
-            }
-
+            if (!TryGet(entityId, out SimulationEntity entity)) return false;
+            
             entity.SetInputSource(inputSource);
             return true;
         }
 
         #endregion
 
-        #region 快照处理
-
-        public bool TryCaptureEntityState(uint entityId, out EntitySnapshot state)
-        {
-            state = default;
-            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
-            if (!entity.Character.IsInitialized) return false;
-            
-            state = entity.Character.CaptureSnapshot();
-            return true;
-        }
-
-        /// <summary>
-        /// 将回滚状态写回已注册且已初始化的实体；不解释网络序号。
-        /// </summary>
-        public bool TryRestoreEntityState(uint entityId, in EntitySnapshot state)
-        {
-            if (!_entityRegistry.TryGet(entityId, out RegisteredEntity entity)) return false;
-            if (!entity.Character || !entity.Character.IsInitialized) return false;
-
-            entity.Character.RestoreSnapshot(state);
-            return true;
-        }
-
-        /// <summary>
-        /// 采集本拍主控实体已预测的命令和模拟快照
-        /// </summary>
-        public EntityPredictionFrame CapturePredictedFrames(uint tick)
-        {
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                // 只有一个主控预测玩家
-                RegisteredEntity entity = pair.Value;
-                if (entity.Identity.IsPredict)
-                {
-                    return new EntityPredictionFrame
-                    {
-                        tick = tick,
-                        command = entity.CurTickInput,
-                        state = entity.Character.CaptureSnapshot(),
-                    };
-                }
-            }
-            
-            return default;
-        }
-
-        /// <summary>
-        /// 采样当前已初始化实体的快照状态
-        /// </summary>
-        public void CaptureEntities(List<PlayerProcessedSnapshot> samples)
-        {
-            samples.Clear();
-            foreach (KeyValuePair<uint, RegisteredEntity> pair in _entityRegistry.Entities)
-            {
-                RegisteredEntity entity = pair.Value;
-                if (!entity.Character || !entity.Character.IsInitialized) continue;
-
-                samples.Add(new PlayerProcessedSnapshot
-                {
-                    entityId = pair.Key,
-                    playerId = entity.Identity.PlayerId,
-                    lastProcessedInputTick = entity.GetLastProcessInputTick(),
-                    state = entity.Character.CaptureSnapshot(),
-                });
-            }
-        }
-
-        #endregion
-
         #region 生命周期
-
-        public void Init()
-        {
-            _configHandle = Global.Load<SimulationConfig>("Config_SimulationConfig");
-            SimulationConfig config = _configHandle.AssetObject as SimulationConfig;
-            _maxBufferedInputs = config.maxBufferedInputs;
-            _maxFutureInputTicks = config.maxFutureInputTicks;
-            _snapshotTickRate = config.snapshotTickRate;
-            _interpolationDelayTicks = config.interpolationDelayTicks;
-            _predictionHistorySize = config.predictionHistorySize;
-            _positionReconcileThreshold = config.positionReconcileThreshold;
-            _rotationReconcileThresholdDegrees = config.rotationReconcileThresholdDegrees;
-            
-            _entityRegistry = new EntityRegistry();
-            
-            _tickSystem = new TickSystem(config.simulationTickRate, config.maxSimulationTicksPerFrame);
-            _tickSystem.Tick += HandleTick;
-            
-            _snapshotTickSystem = new TickSystem(config.snapshotTickRate, config.maxSimulationTicksPerFrame);
-            _snapshotTickSystem.Tick += HandleSnapshotTick;
-        }
 
         public void Update(float deltaTime)
         {
             if (!IsRunning) return;
             
-            _tickSystem.Update(deltaTime);
-            PresentVisualPoses();
-            _snapshotTickSystem.Update(deltaTime);
+            _simulationTickSystem?.Update(deltaTime);
+            _snapshotTickSystem?.Update(deltaTime);
+            PresentVisual?.Invoke();
         }
 
-        public void Destroy()
+        public void Dispose()
         {
-            _configHandle?.Dispose();
-            _configHandle = null;
+            StopTick();
             
-            if (_tickSystem != null)
+            if (_simulationTickSystem != null)
             {
-                _tickSystem.Tick -= HandleTick;
-                _tickSystem.Stop();
-                _tickSystem = null;
+                _simulationTickSystem.Tick -= OnSimulationTick;
+                _simulationTickSystem = null;
             }
 
             if (_snapshotTickSystem != null)
             {
-                _snapshotTickSystem.Tick -= HandleSnapshotTick;
-                _snapshotTickSystem.Stop();
+                _snapshotTickSystem.Tick -= OnSnapshotTick;
                 _snapshotTickSystem = null;
             }
             
-            _entityRegistry?.Clear();
-            _tickCommands.Clear();
-            TickPlayerInput = null;
-            TickBusiness = null;
-            TickCaptured = null;
-            TickSnapshot = null;
+            _entityManager.Dispose();
+            _playerCommands.Clear();
+            
+            PrepareSimulation = null;
+            CollectPlayerInput = null;
+            CaptureSnapshot = null;
+            SnapshotTick = null;
         }
 
         #endregion

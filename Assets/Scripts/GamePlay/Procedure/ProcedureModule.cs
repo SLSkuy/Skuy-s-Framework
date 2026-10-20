@@ -134,7 +134,6 @@ namespace GamePlay.Procedure
             _fsm.RegisterState(new ProcedureMenuState(_fsm, this));
             _fsm.RegisterState(new ProcedureMatchState(_fsm, this));
             _fsm.RegisterState(new ProcedureLoadingState(_fsm, this));
-
             _fsm.ChangeState(ProcedureState.Menu);
         }
 
@@ -148,7 +147,6 @@ namespace GamePlay.Procedure
         public override void UnbindEvents()
         {
             _fsm.OnStateChange -= OnProcedureStateChange;
-            
             _room.SessionConnected -= OnSessionConnected;
             _room.SessionDisconnected -= OnSessionEnded;
             _room.SessionReconnectFailed -= OnReconnectFailed;

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Framework;
+using GamePlay.DataProxy;
 using GamePlay.EntitySystem;
 using UnityEngine;
 
@@ -7,16 +9,18 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 客户端预测历史。按输入 Tick 保存主控实体已执行的命令和执行后的快照。
     /// </summary>
-    public sealed class ClientFramePrediction
+    public sealed class ClientPrediction
     {
+        private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
+        
         private readonly List<EntityPredictionFrame> _frames;
         private readonly PredictionFrameBuffer _buffers;
         private readonly Simulator _simulator;
         private uint _lastAckTick;
 
-        public ClientFramePrediction(int maxFrameCount, Simulator simulator)
+        public ClientPrediction(Simulator simulator)
         {
-            _buffers = new PredictionFrameBuffer(maxFrameCount);
+            _buffers = new PredictionFrameBuffer(_simulationData.MaxPredictionTicks);
             _frames = new List<EntityPredictionFrame>();
             _simulator = simulator;
         }
@@ -26,8 +30,20 @@ namespace GamePlay.Simulation
         /// </summary>
         public void Predict(uint inputTick)
         {
-            EntityPredictionFrame frame = _simulator.CapturePredictedFrames(inputTick);
-            _buffers.AddFrame(frame);
+            foreach (KeyValuePair<uint, SimulationEntity> pair in _simulator.Entities)
+            {
+                SimulationEntity entity = pair.Value;
+                if (entity.Identity.IsPredict)
+                {
+                    // TODO: 考虑优化，不再采用循环，而是缓存对应需要预测的实体，暂时不弄
+                    _buffers.AddFrame(new EntityPredictionFrame
+                    {
+                        tick = inputTick,
+                        command = entity.CurrentTickInput,
+                        state = entity.Character.CaptureSnapshot()
+                    });                    
+                }
+            }
         }
 
         /// <summary>
@@ -61,16 +77,6 @@ namespace GamePlay.Simulation
             _buffers.GetFramesAfter(lastProcessedTick, _frames);
             _buffers.RemoveFramesUntil(lastProcessedTick);
             Replay(entityId);
-        }
-
-        /// <summary>
-        /// 清空已记录的预测帧。
-        /// </summary>
-        public void Clear()
-        {
-            _buffers.Clear();
-            _frames.Clear();
-            _lastAckTick = 0;
         }
         
         /// <summary>
@@ -107,14 +113,25 @@ namespace GamePlay.Simulation
         /// </summary>
         private bool CheckThreshold(in EntitySnapshot local, in EntitySnapshot authority)
         {
-            float positionThreshold = _simulator.PositionReconcileThreshold;
+            float positionThreshold = _simulationData.PositionReconcileThreshold;
             Vector3 delta = local.movement.rootPosition - authority.movement.rootPosition;
             if (delta.sqrMagnitude > positionThreshold * positionThreshold) return false;
 
-            float rotationThreshold = _simulator.RotationReconcileThresholdDegrees;
+            float rotationThreshold = _simulationData.RotationReconcileThreshold;
             if (Quaternion.Angle(local.movement.meshRotation, authority.movement.meshRotation) > rotationThreshold) return false;
             if (Quaternion.Angle(local.view.viewRotation, authority.view.viewRotation) > rotationThreshold) return false;
             return true;
         }
+        
+        /// <summary>
+        /// 清空已记录的预测帧。
+        /// </summary>
+        public void Clear()
+        {
+            _buffers.Clear();
+            _frames.Clear();
+            _lastAckTick = 0;
+        }
+
     }
 }

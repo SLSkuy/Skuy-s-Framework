@@ -6,7 +6,7 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 远端权威帧缓存。按快照 tick 有序保存，供插值取前后两帧。
     /// </summary>
-    public sealed class AuthorityFrameBuffer
+    public sealed class SnapshotBuffer
     {
         private readonly List<EntityAuthorityFrame> _frames;
         private readonly int _maxFrameCount;
@@ -30,7 +30,7 @@ namespace GamePlay.Simulation
 
         #endregion
 
-        public AuthorityFrameBuffer(int maxFrameCount)
+        public SnapshotBuffer(int maxFrameCount)
         {
             if (maxFrameCount < 2)
             {

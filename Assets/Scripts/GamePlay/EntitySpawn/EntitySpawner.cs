@@ -97,9 +97,9 @@ namespace GamePlay.EntitySpawn
         private void DoSpawnPlayer(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
         {
             GameObject instance = _factoryCommandExecutor.Execute(new SpawnEntityCommand(entityTypeId, position, rotation));
-            EntityObjectIdentity identity = instance.GetComponent<EntityObjectIdentity>();
+            EntityIdentity identity = instance.GetComponent<EntityIdentity>();
             EntityCharacter character = instance.GetComponent<EntityCharacter>();
-            identity.Init(entityId, playerId, ResolveRole(playerId));
+            // identity.Init(entityId, playerId, ResolveRole(playerId));
             character.Init();
             
             // 初始化实体角色的移动快照配置
@@ -148,7 +148,7 @@ namespace GamePlay.EntitySpawn
             }
         }
         
-        private EntityObjectRole ResolveRole(uint playerId)
+        private EntityRole ResolveRole(uint playerId)
         {
             // if (_room.SessionRole == SessionRole.Client)
             {
@@ -215,9 +215,9 @@ namespace GamePlay.EntitySpawn
         {
             foreach (var record in _allocator.GetLiveEntityIds())
             {
-                _simulator.TryGet(record.EntityId, out EntityObjectIdentity identity, out EntityCharacter character);
-                _serverHandler.SendSpawnNotify(playerId, record.EntityId, record.EntityTypeId, identity.PlayerId,
-                    character.transform.position, character.transform.rotation);
+                _simulator.TryGet(record.EntityId, out EntityIdentity identity, out EntityCharacter character);
+                // _serverHandler.SendSpawnNotify(playerId, record.EntityId, record.EntityTypeId, identity.PlayerId,
+                    // character.transform.position, character.transform.rotation);
             }
         }
 

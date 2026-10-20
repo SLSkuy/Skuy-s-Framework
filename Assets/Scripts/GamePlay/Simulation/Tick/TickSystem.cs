@@ -7,9 +7,9 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class TickSystem
     {
+        private readonly double _tickDeltaTime;
         private readonly int _maxTicksPerFrame;
         private double _accumulator;
-        private readonly double _tickDeltaTime;
 
         #region 属性
         public bool IsRunning { get; private set; }
@@ -58,10 +58,12 @@ namespace GamePlay.Simulation
         public int Update(double deltaTime)
         {
             if (!IsRunning || deltaTime <= 0d) return 0;
+            
             _accumulator += deltaTime;
             int processedTicks = 0;
             while (_accumulator + 1e-9d >= _tickDeltaTime && processedTicks < _maxTicksPerFrame)
             {
+                // 追帧，防止每帧时间超过特定步长
                 _accumulator -= _tickDeltaTime;
                 CurrentTick++;
                 Tick?.Invoke(CurrentTick, (float)_tickDeltaTime);

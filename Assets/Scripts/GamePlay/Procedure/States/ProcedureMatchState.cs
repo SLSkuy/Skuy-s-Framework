@@ -1,5 +1,6 @@
 using Framework;
-using UnityEngine;
+using GamePlay.Room;
+using GamePlay.Simulation;
 
 namespace GamePlay.Procedure
 {
@@ -8,18 +9,64 @@ namespace GamePlay.Procedure
     /// </summary>
     public sealed class ProcedureMatchState : ProcedureStateBase
     {
-        public override ProcedureState StateKey => ProcedureState.Match;
-
         public ProcedureMatchState(StateMachine<ProcedureState> stateMachine, ProcedureModule procedure)
-            : base(stateMachine, procedure)
+            : base(stateMachine, procedure) { }
+
+        private ISimulationKernel _kernel;
+        private RoomManager _room;
+        
+        #region 属性
+        public override ProcedureState StateKey => ProcedureState.Match;
+        #endregion
+
+        /// <summary>
+        /// 初始化游戏
+        /// </summary>
+        private void InitGamePlay()
         {
+            _room = Global.Get<RoomManager>();
+            
+            InitSimulationKernel();
+        }
+
+        /// <summary>
+        /// 初始化网络同步模拟核
+        /// </summary>
+        private void InitSimulationKernel()
+        {
+            SessionRole role = _room.Role;
+            _kernel = role == SessionRole.Host ? Global.Register<HostSimulationKernel>() 
+                : Global.Register<ClientSimulationKernel>();
+            _kernel.StartSession();
+        }
+
+        private void DestroyGamePlay()
+        {
+            DestroySimulationKernel();
+            
+            _room = null;
+        }
+        
+        private void DestroySimulationKernel()
+        {
+            _kernel?.StopSession();
+            _kernel = null;
+            
+            SessionRole role = _room.Role;
+            if (role == SessionRole.Host) Global.Unregister<HostSimulationKernel>();
+            else Global.Unregister<ClientSimulationKernel>();
         }
         
         #region 状态周期
 
         public override void Enter()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            InitGamePlay();
+        }
+
+        public override void Exit()
+        {
+            DestroyGamePlay();   
         }
         
         #endregion

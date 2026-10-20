@@ -3,7 +3,7 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 实体对象身份枚举
     /// </summary>
-    public enum EntityObjectRole
+    public enum EntityRole
     {
         /// <summary>
         /// 消耗输入命令进行模拟

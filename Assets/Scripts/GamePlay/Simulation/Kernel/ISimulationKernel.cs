@@ -7,7 +7,6 @@ namespace GamePlay.Simulation
     /// </summary>
     public interface ISimulationKernel : ISubSystem
     {
-        Simulator SimulationKernal { get; }
         bool IsSessionRunning { get; }
 
         bool StartSession();

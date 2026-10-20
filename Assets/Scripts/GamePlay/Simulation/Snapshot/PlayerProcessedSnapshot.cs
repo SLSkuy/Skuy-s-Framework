@@ -1,3 +1,4 @@
+using System;
 using GamePlay.EntitySystem;
 
 namespace GamePlay.Simulation
@@ -8,7 +9,7 @@ namespace GamePlay.Simulation
     public struct PlayerProcessedSnapshot
     {
         public uint entityId;
-        public uint playerId;
+        public Guid playerId;
         public uint lastProcessedInputTick;
         public EntitySnapshot state;
     }

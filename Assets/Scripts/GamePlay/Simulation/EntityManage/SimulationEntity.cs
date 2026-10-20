@@ -6,22 +6,22 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 模拟注册槽：身份、角色、命令边沿；收集时把输入源快照转为命令。
     /// </summary>
-    public sealed class RegisteredEntity
+    public sealed class SimulationEntity
     {
-        private readonly EntityCommandBuilder _commandBuilder;
+        private readonly SimulationCommandBuilder _commandBuilder;
         private IInputStateProvider _inputSource;
 
         #region 属性
-        public EntityObjectIdentity Identity { get; }
+        public EntityIdentity Identity { get; }
         public EntityCharacter Character { get; }
-        public EntityCommand CurTickInput { get; private set; }
+        public EntityCommand CurrentTickInput { get; private set; }
         #endregion
 
-        public RegisteredEntity(EntityObjectIdentity identity, EntityCharacter character)
+        public SimulationEntity(EntityIdentity identity, EntityCharacter character)
         {
-            Identity = identity;
+            _commandBuilder = new SimulationCommandBuilder();
             Character = character;
-            _commandBuilder = new EntityCommandBuilder();
+            Identity = identity;
         }
 
         /// <summary>
@@ -54,6 +54,7 @@ namespace GamePlay.Simulation
             InputState input;
             if (_inputSource is AuthorityInputProvider authority)
             {
+                // 远端输入
                 if (!authority.TryGetInputState(out input))
                 {
                     command = default;
@@ -62,11 +63,12 @@ namespace GamePlay.Simulation
             }
             else
             {
+                // 本地输入
                 input = _inputSource?.GetInputState() ?? default;
             }
 
             command = _commandBuilder.Build(input);
-            CurTickInput = command;
+            CurrentTickInput = command;
             return true;
         }
     }

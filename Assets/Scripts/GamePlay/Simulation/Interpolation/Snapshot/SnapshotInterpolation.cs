@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Framework;
+using GamePlay.DataProxy;
 using GamePlay.EntitySystem;
 using UnityEngine;
 
@@ -7,11 +9,13 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 缓冲权威帧，插值 Replica 实体快照
     /// </summary>
-    public sealed class AuthorityFrameInterpolation
+    public class SnapshotInterpolation
     {
-        private sealed class EntityTrack
+        private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
+        
+        private class EntityTrack
         {
-            public AuthorityFrameBuffer Buffer;
+            public SnapshotBuffer Buffer;
             public uint AppliedSnapshotTick;
             public bool HasAppliedSnapshot;
         }
@@ -31,11 +35,11 @@ namespace GamePlay.Simulation
         private double _playbackTick;
         private bool _hasPlayback;
 
-        public AuthorityFrameInterpolation(Simulator simulator, int interpolationDelayTicks, int snapshotTickRate, int bufferCapacity = 32)
+        public SnapshotInterpolation(Simulator simulator, int bufferCapacity = 32)
         {
             _simulator = simulator;
-            _delayTicks = interpolationDelayTicks;  // 延迟插值帧，避免出现没有下一帧作为插值样本
-            _snapshotTickRate = snapshotTickRate;
+            _delayTicks = _simulationData.InterpolateDelayTick;  // 延迟插值帧，避免出现没有下一帧作为插值样本
+            _snapshotTickRate = _simulationData.SnapshotSyncRate;
             _capacity = bufferCapacity;
         }
 
@@ -48,7 +52,7 @@ namespace GamePlay.Simulation
             {
                 track = new EntityTrack
                 {
-                    Buffer = new AuthorityFrameBuffer(_capacity)
+                    Buffer = new SnapshotBuffer(_capacity)
                 };
 
                 _tracks.Add(entityId, track);
@@ -115,7 +119,7 @@ namespace GamePlay.Simulation
         {
             foreach (EntityTrack track in _tracks.Values)
             {
-                AuthorityFrameBuffer buffer = track.Buffer;
+                SnapshotBuffer buffer = track.Buffer;
                 if (buffer.Count < 2) continue;
 
                 if (buffer.LatestTick - buffer.OldestTick >= _delayTicks)
@@ -134,7 +138,7 @@ namespace GamePlay.Simulation
 
             foreach (EntityTrack track in _tracks.Values)
             {
-                AuthorityFrameBuffer buffer = track.Buffer;
+                SnapshotBuffer buffer = track.Buffer;
                 if (buffer.Count == 0) continue;
 
                 if (!hasFrame || buffer.LatestTick > latestTick)
@@ -152,7 +156,7 @@ namespace GamePlay.Simulation
         /// </summary>
         private void PresentEntity(EntityTrack track, EntityCharacter character, double playbackTick)
         {
-            AuthorityFrameBuffer buffer = track.Buffer;
+            SnapshotBuffer buffer = track.Buffer;
             if (buffer.Count == 0) return;
 
             // 当前播放头Tick位置小于缓存的最旧的快照，直接使用最旧的快照
@@ -194,7 +198,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 播放头跨过快照时写入离散状态，离散状态不能插值
         /// </summary>
-        private void ApplyCrossed(EntityTrack track, EntityCharacter character, AuthorityFrameBuffer buffer, uint throughTick)
+        private void ApplyCrossed(EntityTrack track, EntityCharacter character, SnapshotBuffer buffer, uint throughTick)
         {
             buffer.CopyFramesThrough(throughTick, track.AppliedSnapshotTick, track.HasAppliedSnapshot, _crossedFrames);
             for (int i = 0; i < _crossedFrames.Count; i++)

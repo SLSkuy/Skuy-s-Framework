@@ -1,6 +1,7 @@
 ﻿using Core;
 using Framework;
 using GamePlay.DataProxy;
+using GamePlay.Procedure;
 using GamePlay.Room;
 
 namespace GamePlay.GameManager
@@ -18,15 +19,20 @@ namespace GamePlay.GameManager
 
         private void InitGamePlayDataProxy()
         {
-            Global.RegisterDataProxy<EntityConfigProxy>();
-            Global.RegisterDataProxy<GameSaveDataProxy>();
+            // 局外数据
             Global.RegisterDataProxy<PlayerDataProxy>();
             Global.RegisterDataProxy<RoomDataProxy>();
+            Global.RegisterDataProxy<SimulationDataProxy>();
+            
+            // 局内数据
+            Global.RegisterDataProxy<EntityConfigProxy>();
+            Global.RegisterDataProxy<GameSaveDataProxy>();
         }
 
         private void InitGamePlaySystem()
         {
             Global.Register<RoomManager>();
+            Global.Register<ProcedureModule>();
         }
         
         #region 生命周期

@@ -8,37 +8,37 @@ namespace GamePlay.Simulation
     /// 对象身份识别器，决定如何进行模拟
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class EntityObjectIdentity : MonoBehaviour, IEntityObjectIdentity, IPoolable
+    public sealed class EntityIdentity : MonoBehaviour, IPoolable
     {
         [SerializeField] private uint entityId;
-        [SerializeField] private uint playerId;
-        [SerializeField] private EntityObjectRole role = EntityObjectRole.LocalPlay;
+        [SerializeField] private EntityRole role = EntityRole.LocalPlay;
+        private Guid _playerId;
 
         #region 属性
         public uint EntityId => entityId;
-        public uint PlayerId => playerId;
+        public Guid PlayerId => _playerId;
         public bool IsInitialized => entityId != 0;
         
-        public EntityObjectRole Role => role;
-        public bool IsAuthority => role == EntityObjectRole.Authority;
-        public bool IsPredict => role == EntityObjectRole.Predict;
-        public bool IsReplica => role == EntityObjectRole.Replica;
-        public bool IsLocalPlay => role == EntityObjectRole.LocalPlay;
+        public EntityRole Role => role;
+        public bool IsAuthority => role == EntityRole.Authority;
+        public bool IsPredict => role == EntityRole.Predict;
+        public bool IsReplica => role == EntityRole.Replica;
+        public bool IsLocalPlay => role == EntityRole.LocalPlay;
         #endregion
 
         /// <summary>
         /// 初始化网络对象身份
         /// </summary>
-        public void Init(uint newEntityId, uint newPlayerId = 0, EntityObjectRole newRole = EntityObjectRole.LocalPlay)
+        public void Init(uint newEntityId, Guid newPlayerId, EntityRole newRole = EntityRole.LocalPlay)
         {
             if (newEntityId == 0) throw new ArgumentOutOfRangeException(nameof(newEntityId), "NetworkObjectId 不能为 0。");
             if (entityId != 0 && entityId != newEntityId)
             {
-                throw new InvalidOperationException($"网络对象 {name} 已绑定 ID {entityId}，不能在运行时改为 {newEntityId}。");
+                throw new InvalidOperationException($"网络对象 {name} 已绑定 ID {entityId}，不能在激活时改为 {newEntityId}。");
             }
 
             entityId = newEntityId;
-            playerId = newPlayerId;
+            _playerId = newPlayerId;
             role = newRole;
         }
 
@@ -48,8 +48,8 @@ namespace GamePlay.Simulation
         void IPoolable.Reset()
         {
             entityId = 0;
-            playerId = 0;
-            role = EntityObjectRole.LocalPlay;
+            _playerId = Guid.Empty;
+            role = EntityRole.LocalPlay;
         }
     }
 }

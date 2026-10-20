@@ -7,7 +7,7 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 将输入状态转换为每 Tick 完整命令，并在命令边界计算按钮边沿。
     /// </summary>
-    public sealed class EntityCommandBuilder
+    public class SimulationCommandBuilder
     {
         private EntityCommandFlags _previousHeldFlags;
 

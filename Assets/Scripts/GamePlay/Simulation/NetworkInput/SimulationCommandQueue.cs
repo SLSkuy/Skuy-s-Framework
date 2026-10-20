@@ -5,7 +5,7 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 按客户端输入 Tick 索引的环形命令缓冲；未命中时返回默认空命令
     /// </summary>
-    public class EntityCommandQueue<TCommand>
+    public class SimulationCommandQueue<TCommand>
     {
         private readonly TCommand[] _commands;
         private readonly uint[] _storedTicks;
@@ -19,7 +19,7 @@ namespace GamePlay.Simulation
         public bool IsFull => _count == _capacity;
         #endregion
 
-        public EntityCommandQueue(int capacity)
+        public SimulationCommandQueue(int capacity)
         {
             if (capacity < 1)
             {

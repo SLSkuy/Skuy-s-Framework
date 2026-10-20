@@ -14,14 +14,14 @@ namespace GamePlay.Simulation
     {
         private const int MaxMissedInputTicks = 8;
 
-        private readonly EntityCommandQueue<InputState> _commands;
-        private readonly EntityCommandBuilder _commandBuilder;
+        private readonly SimulationCommandQueue<InputState> _simulationCommands;
+        private readonly SimulationCommandBuilder _commandBuilder;
         private readonly int _maxFutureInputTicks;
         private int _missedInputTicks;
 
         #region 属性
         public uint LastProcessedTick { get; private set; }
-        public bool HasQueued => _commands.Count > 0;
+        public bool HasQueued => _simulationCommands.Count > 0;
         #endregion
 
         public EntityInputBuffer(int capacity, int maxFutureInputTicks)
@@ -32,8 +32,8 @@ namespace GamePlay.Simulation
             }
 
             int resolvedCapacity = Math.Max(2, capacity);
-            _commandBuilder = new EntityCommandBuilder();
-            _commands = new EntityCommandQueue<InputState>(resolvedCapacity);
+            _commandBuilder = new SimulationCommandBuilder();
+            _simulationCommands = new SimulationCommandQueue<InputState>(resolvedCapacity);
             _maxFutureInputTicks = Math.Min(Math.Max(1, maxFutureInputTicks), resolvedCapacity);
         }
 
@@ -55,7 +55,7 @@ namespace GamePlay.Simulation
                 return false;
             }
 
-            return _commands.TryEnqueue(inputTick, input);
+            return _simulationCommands.TryEnqueue(inputTick, input);
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace GamePlay.Simulation
         /// </summary>
         public void Reset()
         {
-            _commands.Clear();
+            _simulationCommands.Clear();
             _commandBuilder.Reset();
             LastProcessedTick = 0;
             _missedInputTicks = 0;
@@ -108,7 +108,7 @@ namespace GamePlay.Simulation
         public bool TryConsumeNext(out InputState input)
         {
             uint inputTick = LastProcessedTick + 1;
-            if (_commands.TryDequeue(inputTick, out input))
+            if (_simulationCommands.TryDequeue(inputTick, out input))
             {
                 LastProcessedTick = inputTick;
                 _missedInputTicks = 0;

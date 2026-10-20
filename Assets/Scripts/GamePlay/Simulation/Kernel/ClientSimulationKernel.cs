@@ -10,19 +10,19 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
     {
-        private IInputStateProvider _localInputProvider;
         private SimulationClientHandler _clientHandler;
+        private IInputStateProvider _localInputProvider;
         private Simulator _simulator;
         
-        private AuthorityFrameInterpolation _interpolation;
-        private ClientFramePrediction _prediction;
+        private VisualInterpolation _visualInterpolation;
+        private SnapshotInterpolation _snapshotInterpolation;
+        private ClientPrediction _clientPrediction;
         
         // 记录已经收到的最新快照序号，丢弃过时的快照
         private uint _latestSnapshotTick;
 
         #region 属性
         public override int Priority => (int)GamePlaySystemPriority.SimulationKernal;
-        public Simulator SimulationKernal => _simulator;
         public bool IsSessionRunning { get; private set; }
         #endregion
 
@@ -35,9 +35,9 @@ namespace GamePlay.Simulation
             _clientHandler = new SimulationClientHandler(this);
             _clientHandler.Bind();
             
-            _simulator.TickPlayerInput += OnPlayerInputTick;
-            _simulator.TickCaptured += OnPredict;
-            _simulator.StartClock();
+            _simulator.CollectPlayerInput += OnPlayerInputTick;
+            _simulator.LocalPredict += OnPredict;
+            _simulator.StartClientTick();
             
             IsSessionRunning = true;
             return true;
@@ -47,15 +47,15 @@ namespace GamePlay.Simulation
         {
             if (!IsSessionRunning) return;
 
-            _simulator.TickPlayerInput -= OnPlayerInputTick;
-            _simulator.TickCaptured -= OnPredict;
-            _simulator.StopClock();
+            _simulator.CollectPlayerInput -= OnPlayerInputTick;
+            _simulator.LocalPredict -= OnPredict;
+            _simulator.StopTick();
             
             _clientHandler.Unbind();
             _clientHandler = null;
             
-            _interpolation.Clear();
-            _prediction.Clear();
+            _snapshotInterpolation.Clear();
+            _clientPrediction.Clear();
             _latestSnapshotTick = 0;
             
             IsSessionRunning = false;
@@ -66,23 +66,32 @@ namespace GamePlay.Simulation
         public override void Init()
         {
             _simulator = new Simulator();
-            _simulator.Init();
-            _interpolation = new AuthorityFrameInterpolation(_simulator, _simulator.InterpolationDelayTicks, _simulator.SnapshotTickRate);
-            _prediction = new ClientFramePrediction(_simulator.PredictionHistorySize, _simulator);
+            
+            _visualInterpolation = new VisualInterpolation(_simulator); // 视觉效果插值，逻辑位置保持固定Tick步进
+            _snapshotInterpolation = new SnapshotInterpolation(_simulator); // 快照插值，插值权威快照间过渡
+            _clientPrediction = new ClientPrediction(_simulator);   // 客户端预测
         }
 
         public override void Update(float deltaTime)
         {
             _simulator.Update(deltaTime);
-            _interpolation.Present(deltaTime);
+            _snapshotInterpolation.Present(deltaTime);
         }
 
         public override void Destroy()
         {
             StopSession();
-            _interpolation.Clear();
-            _interpolation = null;
-            _simulator.Destroy();
+            
+            _visualInterpolation.Dispose();
+            _visualInterpolation = null;
+            
+            _snapshotInterpolation.Clear();
+            _snapshotInterpolation = null;
+            
+            _clientPrediction.Clear();
+            _clientPrediction = null;
+            
+            _simulator.Dispose();
             _simulator = null;
         }
 
@@ -90,7 +99,7 @@ namespace GamePlay.Simulation
 
         #region 回调处理
         
-        private void OnPlayerInputTick(uint inputTick, float deltaTime)
+        private void OnPlayerInputTick(uint inputTick)
         {
             InputState input = _localInputProvider.GetInputState();
             _clientHandler.SendPlayerInput(inputTick, input);
@@ -98,7 +107,7 @@ namespace GamePlay.Simulation
 
         private void OnPredict(uint inputTick, float deltaTime)
         {
-            _prediction.Predict(inputTick);
+            _clientPrediction.Predict(inputTick);
         }
 
         #endregion
@@ -117,13 +126,13 @@ namespace GamePlay.Simulation
             foreach (var playerState in snapshot.PlayerSnapshots)
             {
                 
-                if (!_simulator.TryGet(playerState.EntityId, out EntityObjectIdentity identity, out EntityCharacter character)) continue;
+                if (!_simulator.TryGet(playerState.EntityId, out EntityIdentity identity, out EntityCharacter character)) continue;
                 if (!identity || !character.IsInitialized) continue;
 
                 // 只有 Replica 的实体进行插值处理
                 if (identity.IsReplica)
                 {
-                    _interpolation.AddFrame(playerState.EntityId, new EntityAuthorityFrame
+                    _snapshotInterpolation.AddFrame(playerState.EntityId, new EntityAuthorityFrame
                     {
                         snapshotTick = snapshot.SnapshotTick,
                         state = ProtoUtils.ToRollbackState(playerState),
@@ -133,7 +142,7 @@ namespace GamePlay.Simulation
                 // 记录权威状态，进行预测和解
                 if (identity.IsPredict)
                 {
-                    _prediction.ReceiveAuthorityFrame(playerState.EntityId, playerState.LastProcessedInputTick, new EntityAuthorityFrame
+                    _clientPrediction.ReceiveAuthorityFrame(playerState.EntityId, playerState.LastProcessedInputTick, new EntityAuthorityFrame
                     {
                         snapshotTick = snapshot.SnapshotTick,
                         state = ProtoUtils.ToRollbackState(playerState),

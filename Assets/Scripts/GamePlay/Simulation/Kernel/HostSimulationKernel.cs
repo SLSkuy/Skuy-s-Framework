@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Framework;
-using GamePlay.Room;
+using GamePlay.DataProxy;
 using NetSync;
 using Utils;
 
@@ -11,15 +11,15 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
     {
+        private readonly RoomDataProxy _roomData = Global.GetDataProxy<RoomDataProxy>();
+        
         private readonly Dictionary<uint, AuthorityInputProvider> _remoteInputs = new();
         private readonly List<PlayerProcessedSnapshot> _snapshotBuffer = new();
         private SimulationServerHandler _serverHandler;
         private Simulator _simulator;
-        private RoomManager _room;
 
         #region 属性
         public override int Priority => (int)GamePlaySystemPriority.SimulationKernal;
-        public Simulator SimulationKernal => _simulator;
         public bool IsSessionRunning { get; private set; }
         #endregion
 
@@ -27,17 +27,15 @@ namespace GamePlay.Simulation
         {
             if (IsSessionRunning) return true;
 
-            _room = Global.Get<RoomManager>();
-            // if (_room.AcceptsRemoteJoin)
-            // {
-            //     _simulator.TickSnapshot += OnSnapshotTick;
-            //     _simulator.StartSnapshotClock();
-            //     
-            //     _serverHandler = new SimulationServerHandler(this);
-            //     _serverHandler.Bind();
-            // }
+            if (_roomData.AcceptRemoteJoin)
+            {
+                _simulator.SnapshotTick += OnSnapshotTick;
+                
+                _serverHandler = new SimulationServerHandler(this);
+                _serverHandler.Bind();
+            }
 
-            _simulator.StartClock();
+            _simulator.StartServerTick();
             IsSessionRunning = true;
             return true;
         }
@@ -48,15 +46,14 @@ namespace GamePlay.Simulation
 
             if (_serverHandler != null)
             {
-                _simulator.TickSnapshot -= OnSnapshotTick;
-                _simulator.StopSnapshotClock();
+                _simulator.SnapshotTick -= OnSnapshotTick;
                 
                 _serverHandler.Unbind();
                 _serverHandler = null;
             }
 
             _remoteInputs.Clear();
-            _simulator.StopClock();
+            _simulator.StopTick();
             IsSessionRunning = false;
         }
 
@@ -81,7 +78,6 @@ namespace GamePlay.Simulation
         public override void Init()
         {
             _simulator = new Simulator();
-            _simulator.Init();
         }
 
         public override void Update(float deltaTime)
@@ -92,7 +88,8 @@ namespace GamePlay.Simulation
         public override void Destroy()
         {
             StopSession();
-            _simulator.Destroy();
+            
+            _simulator.Dispose();
             _simulator = null;
         }
 
@@ -105,12 +102,20 @@ namespace GamePlay.Simulation
         /// </summary>
         private void OnSnapshotTick(uint snapshotTick, float deltaTime)
         {
-            _simulator.CaptureEntities(_snapshotBuffer);
-            for (int i = 0; i < _snapshotBuffer.Count; i++)
+            _snapshotBuffer.Clear();
+            foreach (KeyValuePair<uint, SimulationEntity> pair in _simulator.Entities)
             {
-                _snapshotBuffer[i] = _snapshotBuffer[i];
-            }
+                SimulationEntity entity = pair.Value;
+                if (!entity.Character || !entity.Character.IsInitialized) continue;
 
+                _snapshotBuffer.Add(new PlayerProcessedSnapshot
+                {
+                    entityId = pair.Key,
+                    playerId = entity.Identity.PlayerId,
+                    lastProcessedInputTick = entity.GetLastProcessInputTick(),
+                    state = entity.Character.CaptureSnapshot(),
+                });
+            }
             _serverHandler.BroadcastWorldSnapshot(snapshotTick, _snapshotBuffer);
         }
 
