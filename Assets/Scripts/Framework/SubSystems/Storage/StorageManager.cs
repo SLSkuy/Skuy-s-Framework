@@ -11,6 +11,11 @@ namespace Framework
     public class StorageManager : SubSystemBase
     {
         private static readonly UTF8Encoding Utf8 = new(false);
+        private static readonly JsonSerializerSettings JsonSettings = new()
+        {
+            Formatting = Formatting.Indented,
+            Converters = { new UnityTypeJsonConverter() }
+        };
 
         #region 属性
         public override int Priority => (int)SubSystemPriority.StorageManager;
@@ -33,7 +38,7 @@ namespace Framework
             }
             
             string json = File.ReadAllText(GetPath(fileFullName), Utf8);
-            data = JsonConvert.DeserializeObject<T>(json);
+            data = JsonConvert.DeserializeObject<T>(json, JsonSettings);
             return true;
         }
 
@@ -44,7 +49,7 @@ namespace Framework
         {
             string path = GetPath(GetJsonFileFullName(fileName));
             Directory.CreateDirectory(Path.GetDirectoryName(path) ?? "");
-            string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(data, JsonSettings);
             File.WriteAllText(path, json, Utf8);
         }
 
