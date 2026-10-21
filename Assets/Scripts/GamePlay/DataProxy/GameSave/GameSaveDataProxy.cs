@@ -37,7 +37,10 @@ namespace GamePlay.DataProxy
         {
             foreach (var t in _gameSave.playerInfos.Where(t => t.uuid == playerInfo.uuid))
             {
-                t.UpdateInfo(playerInfo);
+                // TODO: 更新记录的玩家信息
+                t.playerName = playerInfo.playerName;
+                // TODO: 更新记录的玩家信息
+                
                 MarkDataDirty();
                 return;
             }

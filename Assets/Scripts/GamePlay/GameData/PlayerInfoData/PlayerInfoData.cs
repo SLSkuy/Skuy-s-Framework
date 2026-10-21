@@ -1,6 +1,4 @@
 ﻿using System;
-using GamePlay.Room;
-using NetSync;
 
 namespace GamePlay.GameData
 {
@@ -19,28 +17,5 @@ namespace GamePlay.GameData
         /// 玩家名称
         /// </summary>
         public string playerName = "DefaultPlayerName";
-
-        public PlayerInfoData() { }
-
-        public PlayerInfoData(Player player)
-        {
-            uuid = player.UUID;
-            playerName = player.PlayerName;
-        }
-
-        public void UpdateInfo(PlayerInfoData infoData)
-        {
-            // TODO: 后续添加额外的信息更新
-            playerName = infoData.playerName;
-        }
-
-        public PlayerInfoDataProto ToProto()
-        {
-            return new PlayerInfoDataProto
-            {
-                UUID = uuid.ToString(),
-                PlayerName = playerName,
-            };
-        }
     }
 }

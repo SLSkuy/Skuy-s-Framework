@@ -1,5 +1,4 @@
 ﻿using System;
-using NetSync;
 
 namespace GamePlay.Room
 {
@@ -19,16 +18,6 @@ namespace GamePlay.Room
                 hostUUID = hostUUID,
                 acceptRemoteJoin = acceptRemoteJoin,
                 capacity = capacity
-            };
-        }
-
-        public RoomConfigProto ToProto()
-        {
-            return new RoomConfigProto
-            {
-                HostUUID = hostUUID.ToString(),
-                AcceptRemoteJoin = acceptRemoteJoin,
-                Capacity = capacity
             };
         }
     }

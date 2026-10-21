@@ -18,6 +18,15 @@ namespace Utils
                 playerName = player.PlayerName,
             };
         }
+
+        public static PlayerInfoDataProto ToProto(this PlayerInfoData playerInfo)
+        {
+            return new PlayerInfoDataProto
+            {
+                UUID = playerInfo.uuid.ToString(),
+                PlayerName = playerInfo.playerName,
+            };
+        }
         
         public static RoomConfig ToData(this RoomConfigProto config)
         {
@@ -26,6 +35,16 @@ namespace Utils
                 hostUUID = Guid.Parse(config.HostUUID),
                 acceptRemoteJoin = config.AcceptRemoteJoin,
                 capacity = config.Capacity,
+            };
+        }
+
+        public static RoomConfigProto ToProto(this RoomConfig config)
+        {
+            return new RoomConfigProto
+            {
+                HostUUID = config.hostUUID.ToString(),
+                AcceptRemoteJoin = config.acceptRemoteJoin,
+                Capacity = config.capacity,
             };
         }
     }

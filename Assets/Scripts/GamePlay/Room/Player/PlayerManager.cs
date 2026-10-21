@@ -40,7 +40,14 @@ namespace GamePlay.Room
         /// </summary>
         public PlayerInfoData[] GetActivePlayerData()
         {
-            return (from p in _playersByUUID.Values where p.State == PlayerState.Active select new PlayerInfoData(p)).ToArray();
+            return (from p in _playersByUUID.Values where p.State == PlayerState.Active
+                select new PlayerInfoData
+                {
+                    // TODO: 构造玩家信息数据示例
+                    uuid = p.UUID, 
+                    playerName = p.PlayerName,
+                    // TODO: 构造玩家信息数据示例
+                }).ToArray();
         }
 
         /// <summary>
