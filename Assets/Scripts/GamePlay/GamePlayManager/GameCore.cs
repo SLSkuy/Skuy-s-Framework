@@ -4,7 +4,7 @@ using GamePlay.DataProxy;
 using GamePlay.Procedure;
 using GamePlay.Room;
 
-namespace GamePlay.GameManager
+namespace GamePlay.GamePlayManager
 {
     /// <summary>
     /// 玩法启动根，桥接框架层，注册游戏业务逻辑驱动器
