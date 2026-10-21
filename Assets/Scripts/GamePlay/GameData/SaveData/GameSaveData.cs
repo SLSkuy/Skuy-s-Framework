@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace GamePlay.GameData
@@ -9,13 +8,8 @@ namespace GamePlay.GameData
     public class GameSaveData
     {
         /// <summary>
-        /// 进入过存档的玩家信息
+        /// 进入过这个存档的玩家
         /// </summary>
-        public List<PlayerInfoData> playerInfos = new();
-        
-        /// <summary>
-        /// 玩家实体数据，通过UUID索引
-        /// </summary>
-        public Dictionary<Guid, PlayerEntityData> playerEntities = new();
+        public List<PlayerData> players = new();
     }
 }

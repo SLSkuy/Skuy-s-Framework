@@ -11,7 +11,7 @@ namespace GamePlay.GameData
         /// <summary>
         /// 玩家唯一实例ID，首次运行时创建本机玩家UUID
         /// </summary>
-        public Guid uuid;
+        public Guid uuid = Guid.Empty;
 
         /// <summary>
         /// 玩家名称

@@ -79,15 +79,15 @@ namespace GamePlay.Room
         public void AddPlayerServer(uint connectionId, PlayerInfoData playerInfo)
         {
             // 判断是否加入过对局，获取数据缓存
-            if (_gameSave.TryGetPlayerInfo(playerInfo.uuid, out PlayerInfoData info))
+            if (_gameSave.TryGetPlayerInfo(playerInfo.uuid, out _))
             {
                 // 更新缓存的玩家数据
-                _gameSave.UpdatePlayer(playerInfo);
+                _gameSave.UpdatePlayerInfo(playerInfo);
             }
             else
             {
                 // 未加入过对局，更新玩家记录
-                _gameSave.RecordPlayer(playerInfo);
+                _gameSave.RecordPlayerInfo(playerInfo);
             }
             
             Player p = new Player(playerInfo);

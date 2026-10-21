@@ -1,22 +1,20 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GamePlay.GameData
 {
     /// <summary>
-    /// 玩家实体数据信息，独立于PlayerInfoData
-    /// 只存在于游戏存档中，记录玩家实体的各种数据（位置，旋转，血量等）
-    /// 通过UUID索引PlayerInfoData
+    /// 玩家在这一局里的出场进度，只放在存档的 PlayerData 里
     /// </summary>
     public class PlayerEntityData
     {
         /// <summary>
-        /// 实体唯一ID，与PlayerInfo.UUID对应
+        /// 上一次保存时玩家的位置
         /// </summary>
-        public Guid uuid;
+        public Vector3 position = Vector3.zero;
 
-        public Vector3 position;
-        
-        public Quaternion rotation;
+        /// <summary>
+        /// 上一次保存时玩家的旋转
+        /// </summary>
+        public Quaternion rotation = Quaternion.identity;
     }
 }

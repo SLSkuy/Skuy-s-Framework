@@ -58,11 +58,10 @@ namespace GamePlay.DataProxy
 
         public override void Save()
         {
-            if (!AppCoreConfig.Instance.debugMode)
-            {
-                // DEBUG模式下不保存随机生成的玩家数据
-                Global.SaveJson(DataPath, _playerInfoData);    
-            }
+            // DEBUG模式下不保存随机生成的玩家数据
+            if (AppCoreConfig.Instance.debugMode) return;
+            
+            Global.SaveJson(DataPath, _playerInfoData);
         }
 
         public override void Destroy()

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Core;
 using Framework;
 using GamePlay.GameData;
 
@@ -15,14 +16,16 @@ namespace GamePlay.DataProxy
 
         private GameSaveData _gameSave;
 
+        #region 玩家信息处理
+
         /// <summary>
-        /// 尝试获取玩家信息
+        /// 按 UUID 取这一局存档里的玩家记录
         /// </summary>
         public bool TryGetPlayerInfo(Guid uuid, out PlayerInfoData playerInfoData)
         {
-            foreach (var player in _gameSave.playerInfos.Where(player => player.uuid == uuid))
+            foreach (var player in _gameSave.players.Where(player => player.info.uuid == uuid))
             {
-                playerInfoData = player;
+                playerInfoData = player.info;
                 return true;
             }
 
@@ -31,14 +34,14 @@ namespace GamePlay.DataProxy
         }
 
         /// <summary>
-        /// 按 UUID 更新已经记录过的玩家数据
+        /// 按 UUID 更新已经记录过的玩家信息
         /// </summary>
-        public void UpdatePlayer(PlayerInfoData playerInfo)
+        public void UpdatePlayerInfo(PlayerInfoData playerInfo)
         {
-            foreach (var t in _gameSave.playerInfos.Where(t => t.uuid == playerInfo.uuid))
+            foreach (var player in _gameSave.players.Where(player => player.info.uuid == playerInfo.uuid))
             {
                 // TODO: 更新记录的玩家信息
-                t.playerName = playerInfo.playerName;
+                player.info.playerName = playerInfo.playerName;
                 // TODO: 更新记录的玩家信息
                 
                 MarkDataDirty();
@@ -47,14 +50,19 @@ namespace GamePlay.DataProxy
         }
         
         /// <summary>
-        /// 按 UUID 记录新的玩家
+        /// 按 UUID 记录新的玩家，出场进度用默认值
         /// </summary>
-        public void RecordPlayer(PlayerInfoData playerInfo)
+        public void RecordPlayerInfo(PlayerInfoData playerInfo)
         {
-            _gameSave.playerInfos.Add(playerInfo);
+            // DEBUG模式下不保存随机生成的玩家数据
+            if (AppCoreConfig.Instance.debugMode) return;
+            
+            _gameSave.players.Add(new PlayerData { info = playerInfo });
             MarkDataDirty();
         }
 
+        #endregion
+        
         #region 数据管理方法
 
         public override void Load()
