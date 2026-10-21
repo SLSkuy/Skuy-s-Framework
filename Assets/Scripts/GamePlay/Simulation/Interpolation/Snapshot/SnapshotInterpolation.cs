@@ -237,8 +237,7 @@ namespace GamePlay.Simulation
             MovementSnapshot toMovement = to.state.movement;
 
             // 旋转使用球形插值
-            character.PresentReplicaPose(
-                Vector3.Lerp(fromMovement.rootPosition, toMovement.rootPosition, alpha),
+            character.PresentReplicaPose(Vector3.Lerp(fromMovement.rootPosition, toMovement.rootPosition, alpha),
                 Quaternion.Slerp(fromMovement.meshRotation, toMovement.meshRotation, alpha),
                 Quaternion.Slerp(from.state.view.viewRotation, to.state.view.viewRotation, alpha));
         }

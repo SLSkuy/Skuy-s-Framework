@@ -4,13 +4,13 @@ using GamePlay.EntitySystem;
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 实体预测状态数据缓存
+    /// 玩家预测帧状态
     /// </summary>
     [Serializable]
-    public struct EntityPredictionFrame
+    public struct PlayerPredictionFrame
     {
         public uint tick;
         public EntityCommand command;
-        public EntitySnapshot state;
+        public EntitySnapshot snapshot;
     }
 }

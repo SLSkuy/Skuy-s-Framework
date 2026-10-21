@@ -14,7 +14,7 @@ namespace GamePlay.Simulation
         private readonly RoomDataProxy _roomData = Global.GetDataProxy<RoomDataProxy>();
         
         private readonly Dictionary<uint, AuthorityInputProvider> _remoteInputs = new();
-        private readonly List<PlayerProcessedSnapshot> _snapshotBuffer = new();
+        private readonly List<PlayerProcessedFrame> _snapshotBuffer = new();
         private SimulationServerHandler _serverHandler;
         private Simulator _simulator;
 
@@ -108,12 +108,12 @@ namespace GamePlay.Simulation
                 SimulationEntity entity = pair.Value;
                 if (!entity.Character || !entity.Character.IsInitialized) continue;
 
-                _snapshotBuffer.Add(new PlayerProcessedSnapshot
+                _snapshotBuffer.Add(new PlayerProcessedFrame
                 {
                     entityId = pair.Key,
                     playerId = entity.Identity.PlayerId,
                     lastProcessedInputTick = entity.GetLastProcessInputTick(),
-                    state = entity.Character.CaptureSnapshot(),
+                    snapshot = entity.Character.CaptureSnapshot(),
                 });
             }
             _serverHandler.BroadcastWorldSnapshot(snapshotTick, _snapshotBuffer);

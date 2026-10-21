@@ -13,7 +13,7 @@ namespace GamePlay.Simulation
     {
         private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
         
-        private readonly List<EntityPredictionFrame> _frames;
+        private readonly List<PlayerPredictionFrame> _frames;
         private readonly PredictionFrameBuffer _buffers;
         private readonly Simulator _simulator;
         private uint _lastAckTick;
@@ -21,7 +21,7 @@ namespace GamePlay.Simulation
         public ClientPrediction(Simulator simulator)
         {
             _buffers = new PredictionFrameBuffer(_simulationData.MaxPredictionTicks);
-            _frames = new List<EntityPredictionFrame>();
+            _frames = new List<PlayerPredictionFrame>();
             _simulator = simulator;
         }
 
@@ -36,11 +36,11 @@ namespace GamePlay.Simulation
                 if (entity.Identity.IsPredict)
                 {
                     // TODO: 考虑优化，不再采用循环，而是缓存对应需要预测的实体，暂时不弄
-                    _buffers.AddFrame(new EntityPredictionFrame
+                    _buffers.AddFrame(new PlayerPredictionFrame
                     {
                         tick = inputTick,
                         command = entity.CurrentTickInput,
-                        state = entity.Character.CaptureSnapshot()
+                        snapshot = entity.Character.CaptureSnapshot()
                     });                    
                 }
             }
@@ -56,7 +56,7 @@ namespace GamePlay.Simulation
             _lastAckTick = lastProcessedTick;
             EntitySnapshot authority = frame.state;
             // 这一拍不在历史里：写入权威状态，丢掉该确认点及之前的记录，再重放仍留着的后续命令。
-            if (!_buffers.TryGetFrame(lastProcessedTick, out EntityPredictionFrame local))
+            if (!_buffers.TryGetFrame(lastProcessedTick, out PlayerPredictionFrame local))
             {
                 Restore(entityId, authority);
                 _buffers.GetFramesAfter(lastProcessedTick, _frames);
@@ -66,7 +66,7 @@ namespace GamePlay.Simulation
             }
 
             // 位置和朝向都在阈值内：预测仍然有效，只丢掉已确认的历史。
-            if (CheckThreshold(local.state, authority))
+            if (CheckThreshold(local.snapshot, authority))
             {
                 _buffers.RemoveFramesUntil(lastProcessedTick);
                 return;
@@ -99,9 +99,9 @@ namespace GamePlay.Simulation
             float stepDeltaTime = _simulator.TickDeltaTime;
             for (int i = 0; i < _frames.Count; i++)
             {
-                EntityPredictionFrame predicted = _frames[i];
+                PlayerPredictionFrame predicted = _frames[i];
                 character.Step(predicted.tick, stepDeltaTime, predicted.command);
-                predicted.state = character.CaptureSnapshot();
+                predicted.snapshot = character.CaptureSnapshot();
                 _buffers.AddFrame(predicted);
             }
 

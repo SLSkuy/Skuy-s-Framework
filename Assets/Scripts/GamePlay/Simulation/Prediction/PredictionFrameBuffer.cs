@@ -9,7 +9,7 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class PredictionFrameBuffer
     {
-        private readonly List<EntityPredictionFrame> _frames;
+        private readonly List<PlayerPredictionFrame> _frames;
         private readonly int _maxFrameCount;
 
         #region 属性
@@ -34,17 +34,17 @@ namespace GamePlay.Simulation
             }
 
             _maxFrameCount = maxFrameCount;
-            _frames = new List<EntityPredictionFrame>(maxFrameCount);
+            _frames = new List<PlayerPredictionFrame>(maxFrameCount);
         }
         
         /// <summary>
         /// 添加或更新预测帧。
         /// </summary>
-        public void AddFrame(in EntityPredictionFrame frame)
+        public void AddFrame(in PlayerPredictionFrame frame)
         {
             for (int i = 0; i < _frames.Count; i++)
             {
-                EntityPredictionFrame current = _frames[i];
+                PlayerPredictionFrame current = _frames[i];
                 if (current.tick == frame.tick)
                 {
                     _frames[i] = frame;
@@ -66,7 +66,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 获取指定 Tick 的预测帧。
         /// </summary>
-        public bool TryGetFrame(uint tick, out EntityPredictionFrame frame)
+        public bool TryGetFrame(uint tick, out PlayerPredictionFrame frame)
         {
             for (int i = 0; i < _frames.Count; i++)
             {
@@ -85,7 +85,7 @@ namespace GamePlay.Simulation
         /// 获取指定 Tick 之后的所有预测帧。
         /// 用于服务器校正后的输入重演。
         /// </summary>
-        public void GetFramesAfter(uint tick, List<EntityPredictionFrame> result)
+        public void GetFramesAfter(uint tick, List<PlayerPredictionFrame> result)
         {
             if (result == null)
             {

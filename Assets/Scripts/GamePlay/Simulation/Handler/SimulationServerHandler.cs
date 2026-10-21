@@ -41,7 +41,7 @@ namespace GamePlay.Simulation
 
         #region 发送消息
 
-        public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedSnapshot> samples)
+        public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedFrame> samples)
         {
             World_Snapshot message = new World_Snapshot
             {
@@ -49,7 +49,7 @@ namespace GamePlay.Simulation
             };
             foreach (var sample in samples)
             {
-                message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.state));
+                message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.snapshot));
             }
 
             // _room.Broadcast(NetEvent.GAME_WORLD_SNAPSHOT, message);
