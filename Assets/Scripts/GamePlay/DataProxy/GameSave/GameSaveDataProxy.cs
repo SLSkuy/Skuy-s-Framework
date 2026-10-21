@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using Core;
 using Framework;
 using GamePlay.GameData;
@@ -14,23 +14,24 @@ namespace GamePlay.DataProxy
         public override string DataPath => "SaveData";
         public override bool IsNeedSaveToLocal => true;
 
+        private readonly Dictionary<Guid, PlayerData> _playerData = new();
         private GameSaveData _gameSave;
 
-        #region 玩家信息处理
+        #region 玩家信息管理
 
         /// <summary>
         /// 按 UUID 取这一局存档里的玩家记录
         /// </summary>
         public bool TryGetPlayerInfo(Guid uuid, out PlayerInfoData playerInfoData)
         {
-            foreach (var player in _gameSave.players.Where(player => player.info.uuid == uuid))
+            if (!_playerData.TryGetValue(uuid, out PlayerData player))
             {
-                playerInfoData = player.info;
-                return true;
+                playerInfoData = null;
+                return false;
             }
 
-            playerInfoData = null;
-            return false;
+            playerInfoData = player.info;
+            return true;
         }
 
         /// <summary>
@@ -38,15 +39,14 @@ namespace GamePlay.DataProxy
         /// </summary>
         public void UpdatePlayerInfo(PlayerInfoData playerInfo)
         {
-            foreach (var player in _gameSave.players.Where(player => player.info.uuid == playerInfo.uuid))
-            {
-                // TODO: 更新记录的玩家信息
-                player.info.playerName = playerInfo.playerName;
-                // TODO: 更新记录的玩家信息
-                
-                MarkDataDirty();
-                return;
-            }
+            PlayerData player = _playerData[playerInfo.uuid];
+            // TODO: 更新记录的玩家信息
+            player.info.playerName = playerInfo.playerName;
+            // TODO: 更新记录的玩家信息
+
+            // DEBUG模式下不保存随机生成的玩家数据
+            if (AppCoreConfig.Instance.debugMode) return;
+            MarkDataDirty();
         }
         
         /// <summary>
@@ -54,11 +54,41 @@ namespace GamePlay.DataProxy
         /// </summary>
         public void RecordPlayerInfo(PlayerInfoData playerInfo)
         {
+            PlayerData player = new() { info = playerInfo };
+            _gameSave.players.Add(player);
+            _playerData.Add(playerInfo.uuid, player);
+            
             // DEBUG模式下不保存随机生成的玩家数据
             if (AppCoreConfig.Instance.debugMode) return;
-            
-            _gameSave.players.Add(new PlayerData { info = playerInfo });
             MarkDataDirty();
+        }
+
+        #endregion
+
+        #region 玩家存档数据管理
+        
+        /// <summary>
+        /// 尝试获取玩家存档中的实体数据，存档中不存在实体数据时返回默认值
+        /// </summary>
+        public PlayerEntityData GetPlayerEntityData(Guid uuid)
+        {
+            if (_playerData.TryGetValue(uuid, out PlayerData player))
+            {
+                return player.entity;
+            }
+
+            return new PlayerEntityData();
+        }
+
+        /// <summary>
+        /// 保存玩家实体数据
+        /// </summary>
+        public void RestorePlayerEntityData(Guid uuid, PlayerEntityData playerEntityData)
+        {
+            if (_playerData.TryGetValue(uuid, out PlayerData player))
+            {
+                player.entity = playerEntityData;
+            }
         }
 
         #endregion
@@ -67,23 +97,29 @@ namespace GamePlay.DataProxy
 
         public override void Load()
         {
-            if (Global.LoadJson<GameSaveData>(DataPath, out var data))
+            if (!Global.LoadJson<GameSaveData>(DataPath, out var data))
             {
-                _gameSave = data;
-                return;
+                data = new GameSaveData();
+                MarkDataDirty();
             }
 
-            _gameSave = new GameSaveData();
-            MarkDataDirty();
+            _gameSave = data;
+            _playerData.Clear();
+            foreach (PlayerData player in _gameSave.players)
+            {
+                _playerData.Add(player.info.uuid, player);
+            }
         }
 
         public override void Save()
         {
             Global.SaveJson(DataPath, _gameSave);
+            MarkDataSaved();
         }
 
         public override void Destroy()
         {
+            _playerData.Clear();
             _gameSave = null;
         }
 

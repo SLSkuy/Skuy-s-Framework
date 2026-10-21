@@ -24,5 +24,10 @@ namespace GamePlay.Simulation
         /// 单机游玩
         /// </summary>
         LocalPlay,
+        
+        /// <summary>
+        /// AI实体，由服务端逻辑驱动或是固定命令控制
+        /// </summary>
+        AI,
     }
 }

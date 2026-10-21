@@ -19,7 +19,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 托管注册实体
         /// </summary>
-        public bool Register(EntityIdentity identity, EntityCharacter character)
+        public bool Register(PlayerIdentity identity, EntityCharacter character)
         {
             if (!identity || !character) return false;
 

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 526bf21f76ad47ea9e955a9bca521fc8, type: 3}
   m_Name: AppCoreConfig
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameCoreConfig
-  debugMode: 1
+  debugMode: 0
   targetFrame: 60
   resourceMode: 1
   defaultPackageName: DefaultPackage

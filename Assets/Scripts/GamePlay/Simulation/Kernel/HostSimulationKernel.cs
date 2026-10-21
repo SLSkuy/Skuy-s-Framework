@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Framework;
+using GamePlay.BattleSystem;
 using GamePlay.DataProxy;
 using NetSync;
 using Utils;
@@ -9,19 +11,24 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 主机权威模拟核：持有 Simulator，以及远端玩家的输入来源。
     /// </summary>
-    public sealed class HostSimulationKernel : SubSystemBase, ISimulationKernel
+    public sealed class HostSimulationKernel : ISimulationKernel
     {
         private readonly RoomDataProxy _roomData = Global.GetDataProxy<RoomDataProxy>();
         
-        private readonly Dictionary<uint, AuthorityInputProvider> _remoteInputs = new();
+        private readonly Dictionary<Guid, AuthorityInputProvider> _remoteInputs = new();
         private readonly List<PlayerProcessedFrame> _snapshotBuffer = new();
-        private SimulationServerHandler _serverHandler;
-        private Simulator _simulator;
+        private BattleServerHandler _serverHandler;
 
         #region 属性
-        public override int Priority => (int)GamePlaySystemPriority.SimulationKernal;
-        public bool IsSessionRunning { get; private set; }
+        public bool IsSessionRunning => Kernel.IsRunning;
+        public Simulator Kernel { get; private set; }
         #endregion
+
+        public HostSimulationKernel(BattleServerHandler handler)
+        {
+            _serverHandler = handler;
+            Kernel = new Simulator();
+        }
 
         public bool StartSession()
         {
@@ -29,14 +36,10 @@ namespace GamePlay.Simulation
 
             if (_roomData.AcceptRemoteJoin)
             {
-                _simulator.SnapshotTick += OnSnapshotTick;
-                
-                _serverHandler = new SimulationServerHandler(this);
-                _serverHandler.Bind();
+                Kernel.SnapshotTick += OnSnapshotTick;
             }
 
-            _simulator.StartServerTick();
-            IsSessionRunning = true;
+            Kernel.StartServerTick();
             return true;
         }
 
@@ -44,23 +47,19 @@ namespace GamePlay.Simulation
         {
             if (!IsSessionRunning) return;
 
-            if (_serverHandler != null)
+            if (_roomData.AcceptRemoteJoin)
             {
-                _simulator.SnapshotTick -= OnSnapshotTick;
-                
-                _serverHandler.Unbind();
-                _serverHandler = null;
+                Kernel.SnapshotTick -= OnSnapshotTick;
             }
 
             _remoteInputs.Clear();
-            _simulator.StopTick();
-            IsSessionRunning = false;
+            Kernel.StopTick();
         }
 
         /// <summary>
         /// 记下远端玩家的输入来源，供随后到达的玩家输入入队。
         /// </summary>
-        public void RegisterRemoteInput(uint playerId, AuthorityInputProvider provider)
+        public void RegisterRemoteInput(Guid playerId, AuthorityInputProvider provider)
         {
             _remoteInputs[playerId] = provider;
         }
@@ -68,29 +67,26 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 远端玩家离开后不再接收其玩家输入。
         /// </summary>
-        public void UnregisterRemoteInput(uint playerId)
+        public void UnregisterRemoteInput(Guid playerId)
         {
             _remoteInputs.Remove(playerId);
         }
 
         #region 子系统生命周期
 
-        public override void Init()
+        public void Update(float deltaTime)
         {
-            _simulator = new Simulator();
+            Kernel.Update(deltaTime);
         }
 
-        public override void Update(float deltaTime)
-        {
-            _simulator.Update(deltaTime);
-        }
-
-        public override void Destroy()
+        public void Dispose()
         {
             StopSession();
+
+            _serverHandler = null;
             
-            _simulator.Dispose();
-            _simulator = null;
+            Kernel.Dispose();
+            Kernel = null;
         }
 
         #endregion
@@ -103,7 +99,7 @@ namespace GamePlay.Simulation
         private void OnSnapshotTick(uint snapshotTick, float deltaTime)
         {
             _snapshotBuffer.Clear();
-            foreach (KeyValuePair<uint, SimulationEntity> pair in _simulator.Entities)
+            foreach (KeyValuePair<uint, SimulationEntity> pair in Kernel.Entities)
             {
                 SimulationEntity entity = pair.Value;
                 if (!entity.Character || !entity.Character.IsInitialized) continue;
@@ -111,7 +107,7 @@ namespace GamePlay.Simulation
                 _snapshotBuffer.Add(new PlayerProcessedFrame
                 {
                     entityId = pair.Key,
-                    playerId = entity.Identity.PlayerId,
+                    playerId = entity.Identity.PlayerID,
                     lastProcessedInputTick = entity.GetLastProcessInputTick(),
                     snapshot = entity.Character.CaptureSnapshot(),
                 });
@@ -123,7 +119,7 @@ namespace GamePlay.Simulation
 
         #region 服务端消息处理
 
-        public void HandlePlayerInput(uint playerId, Player_Input input)
+        public void HandlePlayerInput(Guid playerId, Player_Input input)
         {
             if (!_remoteInputs.TryGetValue(playerId, out AuthorityInputProvider provider)) return;
 

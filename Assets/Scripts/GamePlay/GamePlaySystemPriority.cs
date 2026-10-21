@@ -4,6 +4,6 @@
     {
         RoomManager = 200,
         Procedure = 0,
-        SimulationKernal = 500,
+        BattleManager = 700,
     }
 }

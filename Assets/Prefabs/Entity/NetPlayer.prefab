@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 6309289621052532212}
   - component: {fileID: 8705368391808782593}
   - component: {fileID: 600000000000000002}
-  - component: {fileID: 600000000000000001}
+  - component: {fileID: -3892562791115840830}
   m_Layer: 0
   m_Name: NetPlayer
   m_TagString: Untagged
@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityCharacter
   config: {fileID: 0}
---- !u!114 &600000000000000001
+--- !u!114 &-3892562791115840830
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -136,11 +136,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6549454998251404434}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4da1e754ec294f628cdf67d55fe4f1c1, type: 3}
+  m_Script: {fileID: 11500000, guid: 675f29f8b7d540ebaccf39ab107fb486, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulation.EntityObjectIdentity
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.Simulation.PlayerIdentity
   entityId: 0
-  ownerClientId: 0
   role: 3
 --- !u!1 &7744112233445566771
 GameObject:

@@ -36,6 +36,11 @@ namespace Framework
             if(!_dataChanged) _dataChanged = true;
         }
 
+        public void MarkDataSaved()
+        {
+            if(_dataChanged) _dataChanged = false;
+        }
+
         /// <summary>
         /// 加载本地数据，适用于存储在本地的数据
         /// 若需加载本地数据需重写加载逻辑

@@ -13,8 +13,13 @@ namespace GamePlay.GameData
         public Vector3 position = Vector3.zero;
 
         /// <summary>
-        /// 上一次保存时玩家的旋转
+        /// 上一次保存时玩家Mesh的旋转
         /// </summary>
         public Quaternion rotation = Quaternion.identity;
+        
+        /// <summary>
+        /// 上一次保存时玩家视角的旋转
+        /// </summary>
+        public Quaternion orientation = Quaternion.identity;
     }
 }

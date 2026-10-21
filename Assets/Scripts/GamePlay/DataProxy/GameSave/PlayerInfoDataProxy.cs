@@ -28,6 +28,8 @@ namespace GamePlay.DataProxy
         {
             _playerInfoData.playerName = playerName;
             
+            // DEBUG模式下不保存随机生成的玩家数据
+            if (AppCoreConfig.Instance.debugMode) return;
             MarkDataDirty();
         }
 
@@ -58,10 +60,8 @@ namespace GamePlay.DataProxy
 
         public override void Save()
         {
-            // DEBUG模式下不保存随机生成的玩家数据
-            if (AppCoreConfig.Instance.debugMode) return;
-            
             Global.SaveJson(DataPath, _playerInfoData);
+            MarkDataSaved();
         }
 
         public override void Destroy()

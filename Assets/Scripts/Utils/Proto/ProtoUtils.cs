@@ -1,5 +1,5 @@
 using Framework;
-using GamePlay.EntityFactory;
+using GamePlay.EntitySpawn;
 using GamePlay.EntitySystem;
 using UnityEngine;
 using NetSync;

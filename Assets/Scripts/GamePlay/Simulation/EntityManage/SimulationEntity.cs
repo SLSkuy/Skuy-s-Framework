@@ -12,12 +12,12 @@ namespace GamePlay.Simulation
         private IInputStateProvider _inputSource;
 
         #region 属性
-        public EntityIdentity Identity { get; }
+        public PlayerIdentity Identity { get; }
         public EntityCharacter Character { get; }
         public EntityCommand CurrentTickInput { get; private set; }
         #endregion
 
-        public SimulationEntity(EntityIdentity identity, EntityCharacter character)
+        public SimulationEntity(PlayerIdentity identity, EntityCharacter character)
         {
             _commandBuilder = new SimulationCommandBuilder();
             Character = character;

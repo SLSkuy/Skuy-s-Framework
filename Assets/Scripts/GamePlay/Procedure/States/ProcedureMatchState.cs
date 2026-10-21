@@ -1,5 +1,6 @@
 using Framework;
 using GamePlay.GamePlayManager;
+using UnityEngine;
 
 namespace GamePlay.Procedure
 {
@@ -24,11 +25,13 @@ namespace GamePlay.Procedure
 
         public override void Enter()
         {
+            Cursor.lockState = CursorLockMode.Locked;
             _gameManager.InitGamePlay();
         }
 
         public override void Exit()
         {
+            Cursor.lockState = CursorLockMode.None;
             _gameManager.DestroyGamePlay();
         }
         

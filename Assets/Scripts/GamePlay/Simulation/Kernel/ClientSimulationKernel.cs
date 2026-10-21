@@ -1,4 +1,5 @@
 using Framework;
+using GamePlay.BattleSystem;
 using GamePlay.EntitySystem;
 using NetSync;
 using Utils;
@@ -8,12 +9,11 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 客户端模拟核：沿用模拟核节拍上传本机输入，并把主机快照交给远端插值。
     /// </summary>
-    public sealed class ClientSimulationKernel : SubSystemBase, ISimulationKernel
+    public class ClientSimulationKernel : ISimulationKernel
     {
-        private SimulationClientHandler _clientHandler;
+        private BattleClientHandler _clientHandler;
         private IInputStateProvider _localInputProvider;
-        private Simulator _simulator;
-        
+
         private VisualInterpolation _visualInterpolation;
         private SnapshotInterpolation _snapshotInterpolation;
         private ClientPrediction _clientPrediction;
@@ -22,9 +22,19 @@ namespace GamePlay.Simulation
         private uint _latestSnapshotTick;
 
         #region 属性
-        public override int Priority => (int)GamePlaySystemPriority.SimulationKernal;
-        public bool IsSessionRunning { get; private set; }
+        public bool IsSessionRunning => Kernel.IsRunning;
+        public Simulator Kernel { get; private set; }
         #endregion
+
+        public ClientSimulationKernel(BattleClientHandler handler)
+        {
+            _clientHandler = handler;
+            Kernel = new Simulator();
+            
+            _visualInterpolation = new VisualInterpolation(Kernel); // 视觉效果插值，逻辑位置保持固定Tick步进
+            _snapshotInterpolation = new SnapshotInterpolation(Kernel); // 快照插值，插值权威快照间过渡
+            _clientPrediction = new ClientPrediction(Kernel);   // 客户端预测
+        }
 
         public bool StartSession()
         {
@@ -32,14 +42,10 @@ namespace GamePlay.Simulation
             
             _localInputProvider = Global.Get<LocalInputManager>().Provider;
             
-            _clientHandler = new SimulationClientHandler(this);
-            _clientHandler.Bind();
-            
-            _simulator.CollectPlayerInput += OnPlayerInputTick;
-            _simulator.LocalPredict += OnPredict;
-            _simulator.StartClientTick();
-            
-            IsSessionRunning = true;
+            Kernel.CollectPlayerInput += OnPlayerInputTick;
+            Kernel.LocalPredict += OnPredict;
+            Kernel.StartClientTick();
+
             return true;
         }
 
@@ -47,38 +53,24 @@ namespace GamePlay.Simulation
         {
             if (!IsSessionRunning) return;
 
-            _simulator.CollectPlayerInput -= OnPlayerInputTick;
-            _simulator.LocalPredict -= OnPredict;
-            _simulator.StopTick();
-            
-            _clientHandler.Unbind();
-            _clientHandler = null;
+            Kernel.CollectPlayerInput -= OnPlayerInputTick;
+            Kernel.LocalPredict -= OnPredict;
+            Kernel.StopTick();
             
             _snapshotInterpolation.Clear();
             _clientPrediction.Clear();
             _latestSnapshotTick = 0;
-            
-            IsSessionRunning = false;
         }
         
         #region 子系统生命周期
 
-        public override void Init()
+        public void Update(float deltaTime)
         {
-            _simulator = new Simulator();
-            
-            _visualInterpolation = new VisualInterpolation(_simulator); // 视觉效果插值，逻辑位置保持固定Tick步进
-            _snapshotInterpolation = new SnapshotInterpolation(_simulator); // 快照插值，插值权威快照间过渡
-            _clientPrediction = new ClientPrediction(_simulator);   // 客户端预测
-        }
-
-        public override void Update(float deltaTime)
-        {
-            _simulator.Update(deltaTime);
+            Kernel.Update(deltaTime);
             _snapshotInterpolation.Present(deltaTime);
         }
 
-        public override void Destroy()
+        public void Dispose()
         {
             StopSession();
             
@@ -91,8 +83,10 @@ namespace GamePlay.Simulation
             _clientPrediction.Clear();
             _clientPrediction = null;
             
-            _simulator.Dispose();
-            _simulator = null;
+            _clientHandler = null;
+            
+            Kernel.Dispose();
+            Kernel = null;
         }
 
         #endregion
@@ -126,7 +120,7 @@ namespace GamePlay.Simulation
             foreach (var playerState in snapshot.PlayerSnapshots)
             {
                 
-                if (!_simulator.TryGet(playerState.EntityId, out EntityIdentity identity, out EntityCharacter character)) continue;
+                if (!Kernel.TryGet(playerState.EntityId, out EntityIdentity identity, out EntityCharacter character)) continue;
                 if (!identity || !character.IsInitialized) continue;
 
                 // 只有 Replica 的实体进行插值处理

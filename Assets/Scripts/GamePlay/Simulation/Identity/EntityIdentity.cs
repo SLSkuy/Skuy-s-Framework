@@ -5,18 +5,16 @@ using UnityEngine;
 namespace GamePlay.Simulation
 {
     /// <summary>
-    /// 对象身份识别器，决定如何进行模拟
+    /// 网络同步对象身份识别器，决定如何进行模拟
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class EntityIdentity : MonoBehaviour, IPoolable
+    public class EntityIdentity : MonoBehaviour, IPoolable
     {
         [SerializeField] private uint entityId;
-        [SerializeField] private EntityRole role = EntityRole.LocalPlay;
-        private Guid _playerId;
+        [SerializeField] private EntityRole role = EntityRole.AI;
 
         #region 属性
         public uint EntityId => entityId;
-        public Guid PlayerId => _playerId;
         public bool IsInitialized => entityId != 0;
         
         public EntityRole Role => role;
@@ -24,12 +22,13 @@ namespace GamePlay.Simulation
         public bool IsPredict => role == EntityRole.Predict;
         public bool IsReplica => role == EntityRole.Replica;
         public bool IsLocalPlay => role == EntityRole.LocalPlay;
+        public bool IsAI => role == EntityRole.AI;
         #endregion
 
         /// <summary>
-        /// 初始化网络对象身份
+        /// 分配实体ID
         /// </summary>
-        public void Init(uint newEntityId, Guid newPlayerId, EntityRole newRole = EntityRole.LocalPlay)
+        public void BindEntityID(uint newEntityId)
         {
             if (newEntityId == 0) throw new ArgumentOutOfRangeException(nameof(newEntityId), "NetworkObjectId 不能为 0。");
             if (entityId != 0 && entityId != newEntityId)
@@ -38,17 +37,23 @@ namespace GamePlay.Simulation
             }
 
             entityId = newEntityId;
-            _playerId = newPlayerId;
+        }
+
+        /// <summary>
+        /// 分配实体角色
+        /// </summary>
+        /// <param name="newRole"></param>
+        public void BindEntityRole(EntityRole newRole = EntityRole.AI)
+        {
             role = newRole;
         }
 
         /// <summary>
         /// 还池时解开本次实体号，下一次借出可以重新绑定。
         /// </summary>
-        void IPoolable.Reset()
+        public virtual void Reset()
         {
             entityId = 0;
-            _playerId = Guid.Empty;
             role = EntityRole.LocalPlay;
         }
     }

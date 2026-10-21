@@ -1,46 +1,57 @@
-using Events;
-using Framework;
-using GamePlay.EntityFactory;
-using GamePlay.Room;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using GamePlay.EntitySpawn;
+using GamePlay.Simulation;
 using NetSync;
-using UnityEngine;
+using Network;
 using Utils;
 
-namespace GamePlay.EntitySpawn
+namespace GamePlay.BattleSystem
 {
-    /// <summary>
-    /// 实体生成的主机收发。只组包和解包，生成与注册在 EntitySpawner。
-    /// </summary>
-    public sealed class EntitySpawnServerHandler
+    public class BattleServerHandler
     {
-        private readonly EntitySpawner _spawner;
-        private RoomManager _room;
+        private BattleManager _battleManager;
+        private NetServer _server;
 
-        public EntitySpawnServerHandler(EntitySpawner spawner)
+        public BattleServerHandler(BattleManager battleManager)
         {
-            _spawner = spawner;
+            _battleManager = battleManager;
         }
-
+        
         #region 消息绑定
 
         public void Bind()
         {
             Unbind();
-            _room = Global.Get<RoomManager>();
+
+            // _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             // _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
         }
 
         public void Unbind()
         {
-            if (_room == null) return;
-
+            // _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             // _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
-            _room = null;
         }
-
+        
         #endregion
-
+        
         #region 发送消息
+        
+        public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedFrame> samples)
+        {
+            World_Snapshot message = new World_Snapshot
+            {
+                SnapshotTick = snapshotTick,
+            };
+            foreach (var sample in samples)
+            {
+                message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.snapshot));
+            }
+
+            // _room.Broadcast(NetEvent.GAME_WORLD_SNAPSHOT, message);
+        }
 
         /// <summary>
         /// 广播实体生成消息，用于已经在房间中的玩家
@@ -66,13 +77,18 @@ namespace GamePlay.EntitySpawn
         #endregion
 
         #region 接收消息
+        
+        private void HandlePlayerInput(Guid playerId, Player_Input message)
+        {
+            _battleManager.HandlePlayerInput(playerId, message);
+        }
 
         /// <summary>
         /// 客户端首次连接时请求所有实体信息
         /// </summary>
-        private void HandleEntitySpawnSyncRequest(uint playerId, Entity_Spawn_Sync_Request request)
+        private void HandleEntitySpawnSyncRequest(Guid playerId, Entity_Spawn_Sync_Request request)
         {
-            _spawner.HandleSpawnSyncRequest(playerId);
+            _battleManager.HandleSpawnSyncRequest(playerId);
         }
 
         #endregion

@@ -138,7 +138,7 @@ namespace GamePlay.Simulation
 
         #region 模拟实体管理
 
-        public bool Register(EntityIdentity identity, EntityCharacter character)
+        public bool Register(PlayerIdentity identity, EntityCharacter character)
         {
             return _entityManager.Register(identity, character);
         }

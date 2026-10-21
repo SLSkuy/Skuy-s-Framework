@@ -1,6 +1,5 @@
 ﻿using Framework;
-using GamePlay.Room;
-using GamePlay.Simulation;
+using GamePlay.BattleSystem;
 
 namespace GamePlay.GamePlayManager
 {
@@ -9,9 +8,8 @@ namespace GamePlay.GamePlayManager
     /// </summary>
     public class GameManager
     {
-        private ISimulationKernel _kernel;
-        private RoomManager _room;
-
+        private BattleManager _battleManager;
+        
         #region 游戏进程管理
 
         /// <summary>
@@ -19,39 +17,16 @@ namespace GamePlay.GamePlayManager
         /// </summary>
         public void InitGamePlay()
         {
-            _room = Global.Get<RoomManager>();
-            
-            InitSimulationKernel();
+            _battleManager = Global.Register<BattleManager>();
+            _battleManager.InitBattle();
         }
         
         public void DestroyGamePlay()
         {
-            DestroySimulationKernel();
-            
-            _room = null;
+            _battleManager.StopBattle();
+            Global.Register<BattleManager>();
         }
         
         #endregion
-        
-        /// <summary>
-        /// 初始化网络同步模拟核
-        /// </summary>
-        private void InitSimulationKernel()
-        {
-            SessionRole role = _room.Role;
-            _kernel = role == SessionRole.Host ? Global.Register<HostSimulationKernel>() 
-                : Global.Register<ClientSimulationKernel>();
-            _kernel.StartSession();
-        }
-        
-        private void DestroySimulationKernel()
-        {
-            _kernel?.StopSession();
-            _kernel = null;
-            
-            SessionRole role = _room.Role;
-            if (role == SessionRole.Host) Global.Unregister<HostSimulationKernel>();
-            else Global.Unregister<ClientSimulationKernel>();
-        }
     }
 }
