@@ -1,5 +1,5 @@
 using System;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 
 namespace GamePlay.Room
 {
@@ -21,10 +21,10 @@ namespace GamePlay.Room
             State = PlayerState.Left;
         }
 
-        public Player(PlayerData playerData)
+        public Player(PlayerInfoData playerInfoData)
         {
-            UUID = playerData.uuid;
-            PlayerName = playerData.playerName;
+            UUID = playerInfoData.uuid;
+            PlayerName = playerInfoData.playerName;
             State = PlayerState.Left;
         }
 

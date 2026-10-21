@@ -21,7 +21,7 @@ message Quat {
 }
 
 // ========== 玩家数据 ==========
-message PlayerDataProto  {
+message PlayerInfoDataProto  {
     string UUID = 1;
     string playerName = 2;
 }
@@ -37,18 +37,18 @@ message RoomConfigProto {
 
 // ========== 房间管理 ==========
 message Room_Join_Request {
-    PlayerDataProto player = 1;
+    PlayerInfoDataProto player = 1;
 }
 
 message Room_Join_Response {
     bool accepted = 1;    // 是否接收加入请求
     RoomConfigProto roomCfg = 2;
-    repeated PlayerDataProto remotes = 3;    // 房间内玩家消息
+    repeated PlayerInfoDataProto remotes = 3;    // 房间内玩家消息
 }
 
 // 通知新的玩家加入房间
 message Room_Player_Joined_Notify {
-    PlayerDataProto player = 1;    // 新加入玩家UUID
+    PlayerInfoDataProto player = 1;    // 新加入玩家UUID
 }
 
 message Room_Leave_Request {

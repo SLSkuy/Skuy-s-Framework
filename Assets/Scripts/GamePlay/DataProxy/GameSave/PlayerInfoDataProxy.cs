@@ -1,24 +1,24 @@
 ﻿using System;
 using Core;
 using Framework;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 
 namespace GamePlay.DataProxy
 {
     /// <summary>
     /// 本机玩家数据代理，记录处理本机玩家的数据信息
     /// </summary>
-    public class PlayerDataProxy : BaseDataProxy
+    public class PlayerInfoDataProxy : BaseDataProxy
     {
         public override string DataPath => "PlayerData";
         public override bool IsNeedSaveToLocal => true;
 
-        private PlayerData _playerData;
+        private PlayerInfoData _playerInfoData;
         
         #region 属性
-        public PlayerData LocalPlayerData => _playerData;
-        public Guid UUID => _playerData.uuid;
-        public string PlayerName => _playerData.playerName;
+        public PlayerInfoData LocalPlayerInfoData => _playerInfoData;
+        public Guid UUID => _playerInfoData.uuid;
+        public string PlayerName => _playerInfoData.playerName;
         #endregion
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace GamePlay.DataProxy
         /// </summary>
         public void Rename(string playerName)
         {
-            _playerData.playerName = playerName;
+            _playerInfoData.playerName = playerName;
             
             MarkDataDirty();
         }
@@ -38,21 +38,21 @@ namespace GamePlay.DataProxy
             if (AppCoreConfig.Instance.debugMode)
             {
                 // DEBUG模式下随机生成UUID，防止因UUID相同导致的冲突问题
-                _playerData = new PlayerData { uuid = Guid.NewGuid() };
+                _playerInfoData = new PlayerInfoData { uuid = Guid.NewGuid() };
                 return;
             }
             
-            if (!Global.LoadJson<PlayerData>(DataPath, out var data))
+            if (!Global.LoadJson<PlayerInfoData>(DataPath, out var data))
             {
                 // 不存在数据文件时，创建新的数据配置
-                data = new PlayerData();
+                data = new PlayerInfoData();
             }
 
-            _playerData = data;
-            if (_playerData.uuid != Guid.Empty) return;
+            _playerInfoData = data;
+            if (_playerInfoData.uuid != Guid.Empty) return;
 
             // 生成本机玩家UUID
-            _playerData.uuid = Guid.NewGuid();
+            _playerInfoData.uuid = Guid.NewGuid();
             MarkDataDirty();
         }
 
@@ -61,13 +61,13 @@ namespace GamePlay.DataProxy
             if (!AppCoreConfig.Instance.debugMode)
             {
                 // DEBUG模式下不保存随机生成的玩家数据
-                Global.SaveJson(DataPath, _playerData);    
+                Global.SaveJson(DataPath, _playerInfoData);    
             }
         }
 
         public override void Destroy()
         {
-            _playerData = null;
+            _playerInfoData = null;
         }
 
         #endregion

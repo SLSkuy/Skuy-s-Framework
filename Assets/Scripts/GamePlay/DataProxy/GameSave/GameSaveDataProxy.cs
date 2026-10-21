@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Framework;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 
 namespace GamePlay.DataProxy
 {
@@ -18,26 +18,26 @@ namespace GamePlay.DataProxy
         /// <summary>
         /// 尝试获取玩家信息
         /// </summary>
-        public bool TryGetPlayerInfo(Guid uuid, out PlayerData playerData)
+        public bool TryGetPlayerInfo(Guid uuid, out PlayerInfoData playerInfoData)
         {
-            foreach (var player in _gameSave.players.Where(player => player.uuid == uuid))
+            foreach (var player in _gameSave.playerInfos.Where(player => player.uuid == uuid))
             {
-                playerData = player;
+                playerInfoData = player;
                 return true;
             }
 
-            playerData = null;
+            playerInfoData = null;
             return false;
         }
 
         /// <summary>
         /// 按 UUID 更新已经记录过的玩家数据
         /// </summary>
-        public void UpdatePlayer(PlayerData player)
+        public void UpdatePlayer(PlayerInfoData playerInfo)
         {
-            foreach (var t in _gameSave.players.Where(t => t.uuid == player.uuid))
+            foreach (var t in _gameSave.playerInfos.Where(t => t.uuid == playerInfo.uuid))
             {
-                t.UpdateInfo(player);
+                t.UpdateInfo(playerInfo);
                 MarkDataDirty();
                 return;
             }
@@ -46,9 +46,9 @@ namespace GamePlay.DataProxy
         /// <summary>
         /// 按 UUID 记录新的玩家
         /// </summary>
-        public void RecordPlayer(PlayerData player)
+        public void RecordPlayer(PlayerInfoData playerInfo)
         {
-            _gameSave.players.Add(player);
+            _gameSave.playerInfos.Add(playerInfo);
             MarkDataDirty();
         }
 

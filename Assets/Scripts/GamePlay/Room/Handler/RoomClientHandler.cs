@@ -1,6 +1,6 @@
 using Events;
 using Framework;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 using NetConnect;
 using NetSync;
 using Network;
@@ -49,9 +49,9 @@ namespace GamePlay.Room
 
         #region 发送消息
 
-        public void SendJoinRequest(PlayerData player)
+        public void SendJoinRequest(PlayerInfoData playerInfo)
         {
-            _client.SendReliable(NetEvent.ROOM_JOIN_REQUEST, new Room_Join_Request { Player = player.ToProto() });
+            _client.SendReliable(NetEvent.ROOM_JOIN_REQUEST, new Room_Join_Request { Player = playerInfo.ToProto() });
         }
 
         public void SendGameLeaveRequest()

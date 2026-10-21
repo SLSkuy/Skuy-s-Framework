@@ -27,61 +27,61 @@ namespace NetSync {
             "Cg5uZXRfc3luYy5wcm90bxIHTmV0U3luYyIcCgRWZWMyEgkKAXgYASABKAIS",
             "CQoBeRgCIAEoAiInCgRWZWMzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6",
             "GAMgASgCIjIKBFF1YXQSCQoBeBgBIAEoAhIJCgF5GAIgASgCEgkKAXoYAyAB",
-            "KAISCQoBdxgEIAEoAiIzCg9QbGF5ZXJEYXRhUHJvdG8SDAoEVVVJRBgBIAEo",
-            "CRISCgpwbGF5ZXJOYW1lGAIgASgJIk8KD1Jvb21Db25maWdQcm90bxIQCgho",
-            "b3N0VVVJRBgBIAEoCRIYChBhY2NlcHRSZW1vdGVKb2luGAIgASgIEhAKCGNh",
-            "cGFjaXR5GAMgASgFIj0KEVJvb21fSm9pbl9SZXF1ZXN0EigKBnBsYXllchgB",
-            "IAEoCzIYLk5ldFN5bmMuUGxheWVyRGF0YVByb3RvInwKElJvb21fSm9pbl9S",
-            "ZXNwb25zZRIQCghhY2NlcHRlZBgBIAEoCBIpCgdyb29tQ2ZnGAIgASgLMhgu",
-            "TmV0U3luYy5Sb29tQ29uZmlnUHJvdG8SKQoHcmVtb3RlcxgDIAMoCzIYLk5l",
-            "dFN5bmMuUGxheWVyRGF0YVByb3RvIkUKGVJvb21fUGxheWVyX0pvaW5lZF9O",
-            "b3RpZnkSKAoGcGxheWVyGAEgASgLMhguTmV0U3luYy5QbGF5ZXJEYXRhUHJv",
-            "dG8iIgoSUm9vbV9MZWF2ZV9SZXF1ZXN0EgwKBFVVSUQYASABKAkiKAoYUm9v",
-            "bV9QbGF5ZXJfTGVhdmVfTm90aWZ5EgwKBFVVSUQYASABKAkiHgocUm9vbV9T",
-            "ZXJ2ZXJfRGlzc29sdmVkX05vdGlmeSLAAgoMSW5wdXRfU2FtcGxlEhEKCWlu",
-            "cHV0VGljaxgBIAEoDRIhCgptb3ZlX2lucHV0GAIgASgLMg0uTmV0U3luYy5W",
-            "ZWMyEiAKCWFpbV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhIhChlpc19w",
-            "cmltYXJ5X2F0dGFja19wcmVzc2VkGAQgASgIEiEKGWlzX3NwZWNpYWxfYXR0",
-            "YWNrX3ByZXNzZWQYBSABKAgSIQoZaXNfc3BlY2lhbF9hY3Rpb25fcHJlc3Nl",
-            "ZBgGIAEoCBIbChNpc19pbnRlcmFjdF9wcmVzc2VkGAcgASgIEhkKEWlzX3Nw",
-            "cmludF9wcmVzc2VkGAggASgIEhcKD2lzX2p1bXBfcHJlc3NlZBgJIAEoCBIe",
-            "ChZpc19zd2l0Y2hfbW9kZV9wcmVzc2VkGAogASgIIu4CCgxQbGF5ZXJfSW5w",
-            "dXQSEQoJaW5wdXRUaWNrGAEgASgNEiEKCm1vdmVfaW5wdXQYAiABKAsyDS5O",
-            "ZXRTeW5jLlZlYzISIAoJYWltX2lucHV0GAMgASgLMg0uTmV0U3luYy5WZWMy",
-            "EiEKGWlzX3ByaW1hcnlfYXR0YWNrX3ByZXNzZWQYBCABKAgSIQoZaXNfc3Bl",
-            "Y2lhbF9hdHRhY2tfcHJlc3NlZBgFIAEoCBIhChlpc19zcGVjaWFsX2FjdGlv",
-            "bl9wcmVzc2VkGAYgASgIEhsKE2lzX2ludGVyYWN0X3ByZXNzZWQYByABKAgS",
-            "GQoRaXNfc3ByaW50X3ByZXNzZWQYCCABKAgSFwoPaXNfanVtcF9wcmVzc2Vk",
-            "GAkgASgIEh4KFmlzX3N3aXRjaF9tb2RlX3ByZXNzZWQYCiABKAgSLAoNcmVj",
-            "ZW50X2lucHV0cxgLIAMoCzIVLk5ldFN5bmMuSW5wdXRfU2FtcGxlIswECg9Q",
-            "bGF5ZXJfU25hcHNob3QSEAoIZW50aXR5SWQYASABKA0SGAoQbG9jb21vdGlv",
-            "bl9zdGF0ZRgCIAEoDRIfCghwb3NpdGlvbhgDIAEoCzINLk5ldFN5bmMuVmVj",
-            "MxIfCghyb3RhdGlvbhgEIAEoCzINLk5ldFN5bmMuUXVhdBIkCg12aWV3X3Jv",
-            "dGF0aW9uGAUgASgLMg0uTmV0U3luYy5RdWF0EiYKD2xpbmVhcl92ZWxvY2l0",
-            "eRgGIAEoCzINLk5ldFN5bmMuVmVjMxInChBhbmd1bGFyX3ZlbG9jaXR5GAcg",
-            "ASgLMg0uTmV0U3luYy5WZWMzEh4KFmxhc3RQcm9jZXNzZWRJbnB1dFRpY2sY",
-            "CCABKA0SGQoRdmVydGljYWxfdmVsb2NpdHkYCSABKAISEgoKanVtcF9jb3Vu",
-            "dBgKIAEoBRISCgppc19ydW5uaW5nGAsgASgIEhQKDGlzX3NwcmludGluZxgM",
-            "IAEoCBISCgppc19kYXNoaW5nGA0gASgIEhMKC2lzX2dyb3VuZGVkGA4gASgI",
-            "EiUKDmRhc2hfZGlyZWN0aW9uGA8gASgLMg0uTmV0U3luYy5WZWMzEhsKE2Rh",
-            "c2hfcmVtYWluaW5nX3RpbWUYECABKAISIAoYZGVzaXJlZF9sb2NvbW90aW9u",
-            "X3NwZWVkGBEgASgCEiAKGGFwcGxpZWRfbG9jb21vdGlvbl9zcGVlZBgSIAEo",
-            "AhIqChNsYXN0X21vdmVfZGlyZWN0aW9uGBMgASgLMg0uTmV0U3luYy5WZWMz",
-            "IloKDldvcmxkX1NuYXBzaG90EhQKDHNuYXBzaG90VGljaxgBIAEoDRIyChBQ",
-            "bGF5ZXJfc25hcHNob3RzGAIgAygLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNo",
-            "b3QikQEKE0VudGl0eV9TcGF3bl9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0S",
-            "FAoMZW50aXR5VHlwZUlkGAIgASgNEhAKCHBsYXllcklkGAMgASgNEh8KCHBv",
-            "c2l0aW9uGAQgASgLMg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAUgASgL",
-            "Mg0uTmV0U3luYy5RdWF0IikKFUVudGl0eV9EZXN0cm95X05vdGlmeRIQCghl",
-            "bnRpdHlJZBgBIAEoDSIbChlFbnRpdHlfU3Bhd25fU3luY19SZXF1ZXN0YgZw",
-            "cm90bzM="));
+            "KAISCQoBdxgEIAEoAiI3ChNQbGF5ZXJJbmZvRGF0YVByb3RvEgwKBFVVSUQY",
+            "ASABKAkSEgoKcGxheWVyTmFtZRgCIAEoCSJPCg9Sb29tQ29uZmlnUHJvdG8S",
+            "EAoIaG9zdFVVSUQYASABKAkSGAoQYWNjZXB0UmVtb3RlSm9pbhgCIAEoCBIQ",
+            "CghjYXBhY2l0eRgDIAEoBSJBChFSb29tX0pvaW5fUmVxdWVzdBIsCgZwbGF5",
+            "ZXIYASABKAsyHC5OZXRTeW5jLlBsYXllckluZm9EYXRhUHJvdG8igAEKElJv",
+            "b21fSm9pbl9SZXNwb25zZRIQCghhY2NlcHRlZBgBIAEoCBIpCgdyb29tQ2Zn",
+            "GAIgASgLMhguTmV0U3luYy5Sb29tQ29uZmlnUHJvdG8SLQoHcmVtb3RlcxgD",
+            "IAMoCzIcLk5ldFN5bmMuUGxheWVySW5mb0RhdGFQcm90byJJChlSb29tX1Bs",
+            "YXllcl9Kb2luZWRfTm90aWZ5EiwKBnBsYXllchgBIAEoCzIcLk5ldFN5bmMu",
+            "UGxheWVySW5mb0RhdGFQcm90byIiChJSb29tX0xlYXZlX1JlcXVlc3QSDAoE",
+            "VVVJRBgBIAEoCSIoChhSb29tX1BsYXllcl9MZWF2ZV9Ob3RpZnkSDAoEVVVJ",
+            "RBgBIAEoCSIeChxSb29tX1NlcnZlcl9EaXNzb2x2ZWRfTm90aWZ5IsACCgxJ",
+            "bnB1dF9TYW1wbGUSEQoJaW5wdXRUaWNrGAEgASgNEiEKCm1vdmVfaW5wdXQY",
+            "AiABKAsyDS5OZXRTeW5jLlZlYzISIAoJYWltX2lucHV0GAMgASgLMg0uTmV0",
+            "U3luYy5WZWMyEiEKGWlzX3ByaW1hcnlfYXR0YWNrX3ByZXNzZWQYBCABKAgS",
+            "IQoZaXNfc3BlY2lhbF9hdHRhY2tfcHJlc3NlZBgFIAEoCBIhChlpc19zcGVj",
+            "aWFsX2FjdGlvbl9wcmVzc2VkGAYgASgIEhsKE2lzX2ludGVyYWN0X3ByZXNz",
+            "ZWQYByABKAgSGQoRaXNfc3ByaW50X3ByZXNzZWQYCCABKAgSFwoPaXNfanVt",
+            "cF9wcmVzc2VkGAkgASgIEh4KFmlzX3N3aXRjaF9tb2RlX3ByZXNzZWQYCiAB",
+            "KAgi7gIKDFBsYXllcl9JbnB1dBIRCglpbnB1dFRpY2sYASABKA0SIQoKbW92",
+            "ZV9pbnB1dBgCIAEoCzINLk5ldFN5bmMuVmVjMhIgCglhaW1faW5wdXQYAyAB",
+            "KAsyDS5OZXRTeW5jLlZlYzISIQoZaXNfcHJpbWFyeV9hdHRhY2tfcHJlc3Nl",
+            "ZBgEIAEoCBIhChlpc19zcGVjaWFsX2F0dGFja19wcmVzc2VkGAUgASgIEiEK",
+            "GWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYBiABKAgSGwoTaXNfaW50ZXJh",
+            "Y3RfcHJlc3NlZBgHIAEoCBIZChFpc19zcHJpbnRfcHJlc3NlZBgIIAEoCBIX",
+            "Cg9pc19qdW1wX3ByZXNzZWQYCSABKAgSHgoWaXNfc3dpdGNoX21vZGVfcHJl",
+            "c3NlZBgKIAEoCBIsCg1yZWNlbnRfaW5wdXRzGAsgAygLMhUuTmV0U3luYy5J",
+            "bnB1dF9TYW1wbGUizAQKD1BsYXllcl9TbmFwc2hvdBIQCghlbnRpdHlJZBgB",
+            "IAEoDRIYChBsb2NvbW90aW9uX3N0YXRlGAIgASgNEh8KCHBvc2l0aW9uGAMg",
+            "ASgLMg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAQgASgLMg0uTmV0U3lu",
+            "Yy5RdWF0EiQKDXZpZXdfcm90YXRpb24YBSABKAsyDS5OZXRTeW5jLlF1YXQS",
+            "JgoPbGluZWFyX3ZlbG9jaXR5GAYgASgLMg0uTmV0U3luYy5WZWMzEicKEGFu",
+            "Z3VsYXJfdmVsb2NpdHkYByABKAsyDS5OZXRTeW5jLlZlYzMSHgoWbGFzdFBy",
+            "b2Nlc3NlZElucHV0VGljaxgIIAEoDRIZChF2ZXJ0aWNhbF92ZWxvY2l0eRgJ",
+            "IAEoAhISCgpqdW1wX2NvdW50GAogASgFEhIKCmlzX3J1bm5pbmcYCyABKAgS",
+            "FAoMaXNfc3ByaW50aW5nGAwgASgIEhIKCmlzX2Rhc2hpbmcYDSABKAgSEwoL",
+            "aXNfZ3JvdW5kZWQYDiABKAgSJQoOZGFzaF9kaXJlY3Rpb24YDyABKAsyDS5O",
+            "ZXRTeW5jLlZlYzMSGwoTZGFzaF9yZW1haW5pbmdfdGltZRgQIAEoAhIgChhk",
+            "ZXNpcmVkX2xvY29tb3Rpb25fc3BlZWQYESABKAISIAoYYXBwbGllZF9sb2Nv",
+            "bW90aW9uX3NwZWVkGBIgASgCEioKE2xhc3RfbW92ZV9kaXJlY3Rpb24YEyAB",
+            "KAsyDS5OZXRTeW5jLlZlYzMiWgoOV29ybGRfU25hcHNob3QSFAoMc25hcHNo",
+            "b3RUaWNrGAEgASgNEjIKEFBsYXllcl9zbmFwc2hvdHMYAiADKAsyGC5OZXRT",
+            "eW5jLlBsYXllcl9TbmFwc2hvdCKRAQoTRW50aXR5X1NwYXduX05vdGlmeRIQ",
+            "CghlbnRpdHlJZBgBIAEoDRIUCgxlbnRpdHlUeXBlSWQYAiABKA0SEAoIcGxh",
+            "eWVySWQYAyABKA0SHwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMS",
+            "HwoIcm90YXRpb24YBSABKAsyDS5OZXRTeW5jLlF1YXQiKQoVRW50aXR5X0Rl",
+            "c3Ryb3lfTm90aWZ5EhAKCGVudGl0eUlkGAEgASgNIhsKGUVudGl0eV9TcGF3",
+            "bl9TeW5jX1JlcXVlc3RiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec2), global::NetSync.Vec2.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Vec3), global::NetSync.Vec3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Quat), global::NetSync.Quat.Parser, new[]{ "X", "Y", "Z", "W" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.PlayerDataProto), global::NetSync.PlayerDataProto.Parser, new[]{ "UUID", "PlayerName" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.PlayerInfoDataProto), global::NetSync.PlayerInfoDataProto.Parser, new[]{ "UUID", "PlayerName" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.RoomConfigProto), global::NetSync.RoomConfigProto.Parser, new[]{ "HostUUID", "AcceptRemoteJoin", "Capacity" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Request), global::NetSync.Room_Join_Request.Parser, new[]{ "Player" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Join_Response), global::NetSync.Room_Join_Response.Parser, new[]{ "Accepted", "RoomCfg", "Remotes" }, null, null, null, null),
@@ -894,16 +894,16 @@ namespace NetSync {
   /// <summary>
   /// ========== 玩家数据 ==========
   /// </summary>
-  public sealed partial class PlayerDataProto : pb::IMessage<PlayerDataProto>
+  public sealed partial class PlayerInfoDataProto : pb::IMessage<PlayerInfoDataProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<PlayerDataProto> _parser = new pb::MessageParser<PlayerDataProto>(() => new PlayerDataProto());
+    private static readonly pb::MessageParser<PlayerInfoDataProto> _parser = new pb::MessageParser<PlayerInfoDataProto>(() => new PlayerInfoDataProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PlayerDataProto> Parser { get { return _parser; } }
+    public static pb::MessageParser<PlayerInfoDataProto> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -919,7 +919,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PlayerDataProto() {
+    public PlayerInfoDataProto() {
       OnConstruction();
     }
 
@@ -927,7 +927,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PlayerDataProto(PlayerDataProto other) : this() {
+    public PlayerInfoDataProto(PlayerInfoDataProto other) : this() {
       uUID_ = other.uUID_;
       playerName_ = other.playerName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -935,8 +935,8 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PlayerDataProto Clone() {
-      return new PlayerDataProto(this);
+    public PlayerInfoDataProto Clone() {
+      return new PlayerInfoDataProto(this);
     }
 
     /// <summary>Field number for the "UUID" field.</summary>
@@ -966,12 +966,12 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as PlayerDataProto);
+      return Equals(other as PlayerInfoDataProto);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PlayerDataProto other) {
+    public bool Equals(PlayerInfoDataProto other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1057,7 +1057,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PlayerDataProto other) {
+    public void MergeFrom(PlayerInfoDataProto other) {
       if (other == null) {
         return;
       }
@@ -1444,10 +1444,10 @@ namespace NetSync {
 
     /// <summary>Field number for the "player" field.</summary>
     public const int PlayerFieldNumber = 1;
-    private global::NetSync.PlayerDataProto player_;
+    private global::NetSync.PlayerInfoDataProto player_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.PlayerDataProto Player {
+    public global::NetSync.PlayerInfoDataProto Player {
       get { return player_; }
       set {
         player_ = value;
@@ -1541,7 +1541,7 @@ namespace NetSync {
       }
       if (other.player_ != null) {
         if (player_ == null) {
-          Player = new global::NetSync.PlayerDataProto();
+          Player = new global::NetSync.PlayerInfoDataProto();
         }
         Player.MergeFrom(other.Player);
       }
@@ -1562,7 +1562,7 @@ namespace NetSync {
             break;
           case 10: {
             if (player_ == null) {
-              Player = new global::NetSync.PlayerDataProto();
+              Player = new global::NetSync.PlayerInfoDataProto();
             }
             input.ReadMessage(Player);
             break;
@@ -1584,7 +1584,7 @@ namespace NetSync {
             break;
           case 10: {
             if (player_ == null) {
-              Player = new global::NetSync.PlayerDataProto();
+              Player = new global::NetSync.PlayerInfoDataProto();
             }
             input.ReadMessage(Player);
             break;
@@ -1671,15 +1671,15 @@ namespace NetSync {
 
     /// <summary>Field number for the "remotes" field.</summary>
     public const int RemotesFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::NetSync.PlayerDataProto> _repeated_remotes_codec
-        = pb::FieldCodec.ForMessage(26, global::NetSync.PlayerDataProto.Parser);
-    private readonly pbc::RepeatedField<global::NetSync.PlayerDataProto> remotes_ = new pbc::RepeatedField<global::NetSync.PlayerDataProto>();
+    private static readonly pb::FieldCodec<global::NetSync.PlayerInfoDataProto> _repeated_remotes_codec
+        = pb::FieldCodec.ForMessage(26, global::NetSync.PlayerInfoDataProto.Parser);
+    private readonly pbc::RepeatedField<global::NetSync.PlayerInfoDataProto> remotes_ = new pbc::RepeatedField<global::NetSync.PlayerInfoDataProto>();
     /// <summary>
     /// 房间内玩家消息
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::NetSync.PlayerDataProto> Remotes {
+    public pbc::RepeatedField<global::NetSync.PlayerInfoDataProto> Remotes {
       get { return remotes_; }
     }
 
@@ -1912,13 +1912,13 @@ namespace NetSync {
 
     /// <summary>Field number for the "player" field.</summary>
     public const int PlayerFieldNumber = 1;
-    private global::NetSync.PlayerDataProto player_;
+    private global::NetSync.PlayerInfoDataProto player_;
     /// <summary>
     /// 新加入玩家UUID
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.PlayerDataProto Player {
+    public global::NetSync.PlayerInfoDataProto Player {
       get { return player_; }
       set {
         player_ = value;
@@ -2012,7 +2012,7 @@ namespace NetSync {
       }
       if (other.player_ != null) {
         if (player_ == null) {
-          Player = new global::NetSync.PlayerDataProto();
+          Player = new global::NetSync.PlayerInfoDataProto();
         }
         Player.MergeFrom(other.Player);
       }
@@ -2033,7 +2033,7 @@ namespace NetSync {
             break;
           case 10: {
             if (player_ == null) {
-              Player = new global::NetSync.PlayerDataProto();
+              Player = new global::NetSync.PlayerInfoDataProto();
             }
             input.ReadMessage(Player);
             break;
@@ -2055,7 +2055,7 @@ namespace NetSync {
             break;
           case 10: {
             if (player_ == null) {
-              Player = new global::NetSync.PlayerDataProto();
+              Player = new global::NetSync.PlayerInfoDataProto();
             }
             input.ReadMessage(Player);
             break;

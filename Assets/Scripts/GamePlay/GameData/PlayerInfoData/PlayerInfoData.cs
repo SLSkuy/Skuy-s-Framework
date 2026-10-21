@@ -2,12 +2,13 @@
 using GamePlay.Room;
 using NetSync;
 
-namespace GamePlay.GameSave
+namespace GamePlay.GameData
 {
     /// <summary>
-    /// 玩家数据实例
+    /// 玩家信息数据示例，与玩家实体数据相互独立
+    /// 通过UUID索引玩家的局内数据
     /// </summary>
-    public class PlayerData
+    public class PlayerInfoData
     {
         /// <summary>
         /// 玩家唯一实例ID，首次运行时创建本机玩家UUID
@@ -19,23 +20,23 @@ namespace GamePlay.GameSave
         /// </summary>
         public string playerName = "DefaultPlayerName";
 
-        public PlayerData() { }
+        public PlayerInfoData() { }
 
-        public PlayerData(Player player)
+        public PlayerInfoData(Player player)
         {
             uuid = player.UUID;
             playerName = player.PlayerName;
         }
 
-        public void UpdateInfo(PlayerData data)
+        public void UpdateInfo(PlayerInfoData infoData)
         {
             // TODO: 后续添加额外的信息更新
-            playerName = data.playerName;
+            playerName = infoData.playerName;
         }
 
-        public PlayerDataProto ToProto()
+        public PlayerInfoDataProto ToProto()
         {
-            return new PlayerDataProto
+            return new PlayerInfoDataProto
             {
                 UUID = uuid.ToString(),
                 PlayerName = playerName,

@@ -20,7 +20,7 @@ namespace GamePlay.GameManager
         private void InitGamePlayDataProxy()
         {
             // 局外数据
-            Global.RegisterDataProxy<PlayerDataProxy>();
+            Global.RegisterDataProxy<PlayerInfoDataProxy>();
             Global.RegisterDataProxy<RoomDataProxy>();
             Global.RegisterDataProxy<SimulationDataProxy>();
             

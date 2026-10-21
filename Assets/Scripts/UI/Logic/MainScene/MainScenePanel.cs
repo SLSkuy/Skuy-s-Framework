@@ -9,13 +9,13 @@ namespace UI
     /// </summary>
     public partial class MainScenePanel
     {
-        private PlayerDataProxy _playerData;
+        private PlayerInfoDataProxy _playerData;
         
         #region 生命周期
 
         protected override void Init()
         {
-            _playerData = Global.GetDataProxy<PlayerDataProxy>();
+            _playerData = Global.GetDataProxy<PlayerInfoDataProxy>();
         }
 
         protected override void AddListener()

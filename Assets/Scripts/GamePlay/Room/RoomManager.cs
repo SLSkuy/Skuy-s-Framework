@@ -1,7 +1,7 @@
 ﻿using System;
 using Framework;
 using GamePlay.DataProxy;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 using NetConnect;
 using NetSync;
 using Network;
@@ -15,7 +15,7 @@ namespace GamePlay.Room
     /// </summary>
     public class RoomManager : SubSystemBase
     {
-        private PlayerDataProxy _playerData;
+        private PlayerInfoDataProxy _playerData;
         private RoomDataProxy _roomData;
         
         private PlayerManager _playerManager;
@@ -46,7 +46,7 @@ namespace GamePlay.Room
         public void StartServer(RoomConfig config)
         {
             // 记录主机本地玩家数据
-            PlayerJoinServer(GlobalConst.LOCAL_CONNECTION_ID, _playerData.LocalPlayerData);
+            PlayerJoinServer(GlobalConst.LOCAL_CONNECTION_ID, _playerData.LocalPlayerInfoData);
             _roomData.UpdateConfig(config);
             
             if (_roomData.AcceptRemoteJoin) StartListening();
@@ -148,16 +148,16 @@ namespace GamePlay.Room
 
         #region 玩家管理
 
-        public void PlayerJoinClient(PlayerData player)
+        public void PlayerJoinClient(PlayerInfoData playerInfo)
         {
-            _playerManager.AddPlayerClient(player);
-            PlayerJoined?.Invoke(player.uuid);
+            _playerManager.AddPlayerClient(playerInfo);
+            PlayerJoined?.Invoke(playerInfo.uuid);
         }
 
-        public void PlayerJoinServer(uint connectionId, PlayerData player)
+        public void PlayerJoinServer(uint connectionId, PlayerInfoData playerInfo)
         {
-            _playerManager.AddPlayerServer(connectionId, player);
-            PlayerJoined?.Invoke(player.uuid);
+            _playerManager.AddPlayerServer(connectionId, playerInfo);
+            PlayerJoined?.Invoke(playerInfo.uuid);
         }
 
         public void PlayerLeaveClient(Guid uuid)
@@ -176,7 +176,7 @@ namespace GamePlay.Room
         /// <summary>
         /// 获取房间内的所有玩家UUID信息
         /// </summary>
-        public PlayerData[] GetAllPlayerData()
+        public PlayerInfoData[] GetAllPlayerData()
         {
             return _playerManager.GetActivePlayerData();
         }
@@ -195,7 +195,7 @@ namespace GamePlay.Room
 
         public override void Init()
         {
-            _playerData = Global.GetDataProxy<PlayerDataProxy>();
+            _playerData = Global.GetDataProxy<PlayerInfoDataProxy>();
             _roomData = Global.GetDataProxy<RoomDataProxy>();
             _playerManager = new PlayerManager();
         }
@@ -225,7 +225,7 @@ namespace GamePlay.Room
         public void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
         {
             // TODO: 由独立模块处理连接，现临时使用
-            _clientHandler.SendJoinRequest(_playerData.LocalPlayerData);
+            _clientHandler.SendJoinRequest(_playerData.LocalPlayerInfoData);
         }
 
         public void HandleJoinResponse(Room_Join_Response response)
@@ -266,7 +266,7 @@ namespace GamePlay.Room
 
         public void HandlePlayerJoinRequest(uint connectionId, Room_Join_Request request)
         {
-            PlayerData player = request.Player.ToData();
+            PlayerInfoData playerInfo = request.Player.ToData();
             
             // 房间拒绝远端连接
             if(!_roomData.AcceptRemoteJoin)
@@ -283,7 +283,7 @@ namespace GamePlay.Room
             }
             
             // 判断是否在局内
-            if (_playerManager.TryGetPlayer(player.uuid, out _))
+            if (_playerManager.TryGetPlayer(playerInfo.uuid, out _))
             {
                 // 玩家已经在局内，拒绝当前加入连接请求
                 _serverHandler.SendPlayerJoinResponse(connectionId, false, null);
@@ -291,8 +291,8 @@ namespace GamePlay.Room
             }
             
             // 添加对局内玩家实例记录
-            PlayerJoinServer(connectionId, player);
-            _serverHandler.SendPlayerJoinResponse(connectionId, true, player);
+            PlayerJoinServer(connectionId, playerInfo);
+            _serverHandler.SendPlayerJoinResponse(connectionId, true, playerInfo);
         }
 
         /// <summary>

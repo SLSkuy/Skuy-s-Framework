@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Framework;
 using GamePlay.DataProxy;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 
 namespace GamePlay.Room
 {
@@ -38,9 +38,9 @@ namespace GamePlay.Room
         /// <summary>
         /// 获取当前房间内在线的玩家信息
         /// </summary>
-        public PlayerData[] GetActivePlayerData()
+        public PlayerInfoData[] GetActivePlayerData()
         {
-            return (from p in _playersByUUID.Values where p.State == PlayerState.Active select new PlayerData(p)).ToArray();
+            return (from p in _playersByUUID.Values where p.State == PlayerState.Active select new PlayerInfoData(p)).ToArray();
         }
 
         /// <summary>
@@ -57,9 +57,9 @@ namespace GamePlay.Room
         /// 客户端添加远端玩家数据
         /// 客户端不需要使用connectionID
         /// </summary>
-        public void AddPlayerClient(PlayerData player)
+        public void AddPlayerClient(PlayerInfoData playerInfo)
         {
-            Player p = new Player(player);
+            Player p = new Player(playerInfo);
             p.Active();
             
             _playersByUUID.Add(p.UUID, p);
@@ -69,24 +69,24 @@ namespace GamePlay.Room
         /// 添加玩家局内实例记录，服务端使用
         /// 同时更新存档数据
         /// </summary>
-        public void AddPlayerServer(uint connectionId, PlayerData player)
+        public void AddPlayerServer(uint connectionId, PlayerInfoData playerInfo)
         {
             // 判断是否加入过对局，获取数据缓存
-            if (_gameSave.TryGetPlayerInfo(player.uuid, out PlayerData info))
+            if (_gameSave.TryGetPlayerInfo(playerInfo.uuid, out PlayerInfoData info))
             {
                 // 更新缓存的玩家数据
-                _gameSave.UpdatePlayer(player);
+                _gameSave.UpdatePlayer(playerInfo);
             }
             else
             {
                 // 未加入过对局，更新玩家记录
-                _gameSave.RecordPlayer(player);
+                _gameSave.RecordPlayer(playerInfo);
             }
             
-            Player p = new Player(player);
+            Player p = new Player(playerInfo);
             p.Active();
             
-            _playersByUUID.Add(player.uuid, p);
+            _playersByUUID.Add(playerInfo.uuid, p);
             _playersByConnectionId.Add(connectionId, p);
         }
 

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Events;
 using Framework;
-using GamePlay.GameSave;
+using GamePlay.GameData;
 using NetSync;
 using Network;
 
@@ -46,18 +46,18 @@ namespace GamePlay.Room
 
         #region 发送消息
         
-        public void SendPlayerJoinResponse(uint connectionId, bool accepted, PlayerData player)
+        public void SendPlayerJoinResponse(uint connectionId, bool accepted, PlayerInfoData playerInfo)
         {
             Room_Join_Response response = new() { Accepted = accepted };
 
             if (accepted)
             {
                 response.RoomCfg = _room.Config.ToProto();
-                List<PlayerDataProto> infos = _room.GetAllPlayerData().Select(info => info.ToProto()).ToList();
+                List<PlayerInfoDataProto> infos = _room.GetAllPlayerData().Select(info => info.ToProto()).ToList();
                 response.Remotes.AddRange(infos);
 
                 uint[] activeIDs = _room.GetAllPlayerConnectionID();
-                Room_Player_Joined_Notify notify = new Room_Player_Joined_Notify { Player = player.ToProto() };
+                Room_Player_Joined_Notify notify = new Room_Player_Joined_Notify { Player = playerInfo.ToProto() };
                 _server.SendGroupReliableWithout(connectionId, activeIDs, NetEvent.ROOM_PLAYER_JOINED_NOTIFY, notify);
             }
             
