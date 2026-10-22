@@ -8,33 +8,33 @@ namespace Utils
     /// </summary>
     public static partial class ProtoUtils
     {
-        public static Vec2 ToProto(Vector2 value)
+        public static Vec2 ToProto(this Vector2 value)
         {
             return new Vec2 { X = value.x, Y = value.y };
         }
         
-        public static Vector2 ToUnity(Vec2 value)
+        public static Vector2 ToUnity(this Vec2 value)
         {
             return value == null ? Vector2.zero : new Vector2(value.X, value.Y);
         }
         
-        public static Vec3 ToProto(Vector3 value)
+        public static Vec3 ToProto(this Vector3 value)
         {
             return new Vec3 { X = value.x, Y = value.y, Z = value.z };
         }
         
-        public static Vector3 ToUnity(Vec3 value)
+        public static Vector3 ToUnity(this Vec3 value)
         {
             return value == null ? Vector3.zero : new Vector3(value.X, value.Y, value.Z);
         }
         
-        public static Quat ToProto(Quaternion value)
+        public static Quat ToProto(this Quaternion value)
         {
             value.Normalize();
             return new Quat { X = value.x, Y = value.y, Z = value.z, W = value.w };
         }
 
-        public static Quaternion ToUnity(Quat value)
+        public static Quaternion ToUnity(this Quat value)
         {
             if (value == null) return Quaternion.identity;
             Quaternion rotation = new(value.X, value.Y, value.Z, value.W);

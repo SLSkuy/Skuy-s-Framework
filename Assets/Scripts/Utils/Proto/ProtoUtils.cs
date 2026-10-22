@@ -1,5 +1,4 @@
 using Framework;
-using GamePlay.EntitySpawn;
 using GamePlay.EntitySystem;
 using UnityEngine;
 using NetSync;
@@ -101,18 +100,6 @@ namespace Utils
                 DesiredLocomotionSpeed = movement.desiredLocomotionSpeed,
                 AppliedLocomotionSpeed = movement.appliedLocomotionSpeed,
                 LastMoveDirection = ToProto(movement.lastMoveDirection),
-            };
-        }
-
-        public static Entity_Spawn_Notify ToEntitySpawnNotify(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
-        {
-            return new Entity_Spawn_Notify
-            {
-                EntityId = entityId,
-                EntityTypeId = (uint)entityTypeId,
-                PlayerId = playerId,
-                Position = ToProto(position),
-                Rotation = ToProto(rotation),
             };
         }
 

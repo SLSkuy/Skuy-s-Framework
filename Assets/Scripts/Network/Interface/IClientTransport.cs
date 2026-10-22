@@ -42,7 +42,7 @@ namespace Network
         /// </summary>
         /// <param name="host">目标IP</param>
         /// <param name="port">目标端口</param>
-        void StartClient(string host, short port);
+        void StartClient(string host, ushort port);
         
         /// <summary>
         /// 发送数据

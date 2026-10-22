@@ -78,7 +78,7 @@ namespace Network
 
         #region 属性
         public TransportType Type => TransportType.TCP;
-        public short Port { get; private set; }
+        public ushort Port { get; private set; }
         public bool IsRunning { get; private set; }
         #endregion
 
@@ -96,7 +96,7 @@ namespace Network
         
         #region 暴露接口
         
-        public void StartServer(short port)
+        public void StartServer(ushort port)
         {
             ThrowIfDisposed();
             Stop();

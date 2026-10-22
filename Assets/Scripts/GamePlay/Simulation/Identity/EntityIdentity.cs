@@ -1,5 +1,6 @@
 using System;
 using Framework;
+using GamePlay.EntitySpawn;
 using UnityEngine;
 
 namespace GamePlay.Simulation
@@ -12,12 +13,14 @@ namespace GamePlay.Simulation
     {
         [SerializeField] private uint entityId;
         [SerializeField] private EntityRole role = EntityRole.AI;
+        [SerializeField] private EntityType entityType = EntityType.None;
 
         #region 属性
         public uint EntityId => entityId;
         public bool IsInitialized => entityId != 0;
         
         public EntityRole Role => role;
+        public EntityType EntityType => entityType;
         public bool IsAuthority => role == EntityRole.Authority;
         public bool IsPredict => role == EntityRole.Predict;
         public bool IsReplica => role == EntityRole.Replica;
@@ -39,6 +42,11 @@ namespace GamePlay.Simulation
             entityId = newEntityId;
         }
 
+        public void BindEntityType(EntityType newEntityType)
+        {
+            entityType = newEntityType;
+        }
+
         /// <summary>
         /// 分配实体角色
         /// </summary>
@@ -54,7 +62,8 @@ namespace GamePlay.Simulation
         public virtual void Reset()
         {
             entityId = 0;
-            role = EntityRole.LocalPlay;
+            role = EntityRole.AI;
+            entityType = EntityType.None;
         }
     }
 }

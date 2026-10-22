@@ -83,7 +83,7 @@ namespace Network
         /// <summary>
         /// 开启即使相应连接
         /// </summary>
-        public void StartFastConnect(string ip, short port)
+        public void StartFastConnect(string ip, ushort port)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace Network
             _lastRtt = 0f;
             
             // 开启实时连接
-            StartFastConnect(_clientConfig.ip, (short)response.FastPort);
+            StartFastConnect(_clientConfig.ip, (ushort)response.FastPort);
             SendFastConnectRequest();
         }
 

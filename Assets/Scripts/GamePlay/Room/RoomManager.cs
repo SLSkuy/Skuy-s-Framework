@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using Events;
 using Framework;
 using GamePlay.DataProxy;
 using GamePlay.GameData;
+using Google.Protobuf;
 using NetConnect;
 using NetSync;
 using Network;
@@ -20,6 +23,7 @@ namespace GamePlay.Room
         
         private PlayerManager _playerManager;
         
+        private readonly Dictionary<(NetEvent EventId, Delegate Callback), Delegate> _playerHandlers = new();
         private RoomClientHandler _clientHandler;
         private RoomServerHandler _serverHandler;
         private NetServer _netServer;
@@ -31,6 +35,8 @@ namespace GamePlay.Room
         public SessionRole Role { get; private set; } = SessionRole.None;
         public RoomConfig Config => _roomData.CurrentConfig;
         public bool IsInMatch { get; private set; }
+        public bool IsHost => Role == SessionRole.Host;
+        public bool IsClient => Role == SessionRole.Client;
         #endregion
 
         #region 事件
@@ -137,6 +143,7 @@ namespace GamePlay.Room
             if (_netServer == null) return;
             
             _serverHandler.Unbind();
+            _playerHandlers.Clear();
             _netServer.StopServer();
             Global.Unregister<NetServer>();
             
@@ -315,6 +322,84 @@ namespace GamePlay.Room
             _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
             
             // TODO: NetServer删除Connection记录
+        }
+
+        #endregion
+
+        #region 连接重定向
+
+        public void Send(Guid playerId, NetEvent evt, IMessage message)
+        {
+            if (_playerManager.TryGetPlayer(playerId, out Player player))
+            {
+                _netServer.Send(player.ConnectionID, evt, message);
+            }
+        }
+
+        public void SendReliable(Guid playerId, NetEvent evt, IMessage message)
+        {
+            if (_playerManager.TryGetPlayer(playerId, out Player player))
+            {
+                _netServer.SendReliable(player.ConnectionID, evt, message);
+            }
+        }
+
+        public void SendGroup(uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            _netServer.SendGroup(clientIds, evt, message);
+        }
+
+        public void SendGroupWithout(Guid without, uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            if (_playerManager.TryGetPlayer(without, out Player player))
+            {
+                _netServer.SendGroupWithout(player.ConnectionID, clientIds, evt, message);
+            }
+        }
+        
+        public void SendGroupReliable(uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            _netServer.SendGroupReliable(clientIds, evt, message);
+        }
+        
+        public void SendGroupReliableWithout(Guid without, uint[] clientIds, NetEvent evt, IMessage message)
+        {
+            if (_playerManager.TryGetPlayer(without, out Player player))
+            {
+                _netServer.SendGroupReliableWithout(player.ConnectionID, clientIds, evt, message);
+            }
+        }
+
+        /// <summary>
+        /// 登记服务端消息回调。入座后的连接号会先换成玩家号，再交给 callback
+        /// 尚未入座的连接没有玩家号，不转发。没有开启监听时无法登记
+        /// </summary>
+        public void RegisterPlayerHandler<T>(NetEvent eventId, Action<Guid, T> callback)
+            where T : class, IMessage, new()
+        {
+            if (callback == null || _netServer == null) return;
+
+            (NetEvent EventId, Delegate Callback) key = (eventId, callback);
+            if (_playerHandlers.ContainsKey(key)) return;
+
+            Action<uint, T> adapter = (connectionId, message) =>
+            {
+                if (!_playerManager.TryGetPlayer(connectionId, out Player player)) return;
+                callback(player.UUID, message);
+            };
+
+            _playerHandlers.Add(key, adapter);
+            _netServer.RegisterHandler(eventId, adapter);
+        }
+
+        /// <summary>
+        /// 拆除 RegisterPlayerHandler 登记的回调。
+        /// </summary>
+        public void UnregisterPlayerHandler<T>(NetEvent eventId, Action<Guid, T> callback)
+            where T : class, IMessage, new()
+        {
+            if (!_playerHandlers.Remove((eventId, callback), out Delegate adapter)) return;
+            if (_netServer != null) _netServer.UnregisterHandler(eventId, (Action<uint, T>)adapter);
         }
 
         #endregion

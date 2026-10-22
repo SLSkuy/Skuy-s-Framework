@@ -98,7 +98,7 @@ namespace Network
             _clientIdsByReliableSessionId[reliableSessionId] = client.Id;
             return true;
         }
-
+        
         public bool UnBindReliableSession(uint reliableSessionId, out uint clientId, float currentTime = 0f)
         {
             if (!_clientIdsByReliableSessionId.Remove(reliableSessionId, out clientId))
@@ -111,13 +111,7 @@ namespace Network
             {
                 client.ReliableSessionId = 0;
             }
-
-            // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
-            if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Connection disconnected))
-            {
-                disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
-            }
-
+            
             return true;
         }
 
@@ -131,29 +125,13 @@ namespace Network
 
             if (_clientsById.TryGetValue(clientId, out Connection client) && client.FastSessionId == fastSessionId)
             {
+                // TODO: 重新设计宽限重连机制
+                // 可靠通道还在时，设置重连宽限
                 client.FastSessionId = 0;
+                if(client.ReliableSessionId != 0) client.DisconnectTime = currentTime > 0f ? currentTime : -1f;
             }
-
-            // 两个session都断开时，记录断连时间（宽限期内保留client等待重连）
-            if (!CheckClientConnected(clientId) && _clientsById.TryGetValue(clientId, out Connection disconnected))
-            {
-                disconnected.DisconnectTime = currentTime > 0f ? currentTime : -1f;
-            }
-
+            
             return true;
-        }
-
-        /// <summary>
-        /// 检测当前Client是否还存在某一个连接，若都不存在，则Client彻底断连
-        /// </summary>
-        public bool CheckClientConnected(uint clientId)
-        {
-            if (TryGetClient(clientId, out var client))
-            {
-                return (client.ReliableSessionId != 0 || client.FastSessionId != 0);
-            }
-
-            return false;
         }
 
         /// <summary>

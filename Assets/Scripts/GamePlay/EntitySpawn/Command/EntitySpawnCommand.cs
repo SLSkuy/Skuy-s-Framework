@@ -17,7 +17,7 @@ namespace GamePlay.EntitySpawn
             position = Vector3.zero;
             rotation = Quaternion.identity;
         }
-        
+
         public EntitySpawnCommand(EntityType typeId, Vector3 pos, Quaternion rot)
         {
             entityTypeId = typeId;

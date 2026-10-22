@@ -71,7 +71,7 @@ namespace NetSync {
             "b3RUaWNrGAEgASgNEjIKEFBsYXllcl9zbmFwc2hvdHMYAiADKAsyGC5OZXRT",
             "eW5jLlBsYXllcl9TbmFwc2hvdCKRAQoTRW50aXR5X1NwYXduX05vdGlmeRIQ",
             "CghlbnRpdHlJZBgBIAEoDRIUCgxlbnRpdHlUeXBlSWQYAiABKA0SEAoIcGxh",
-            "eWVySWQYAyABKA0SHwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMS",
+            "eWVySWQYAyABKAkSHwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMS",
             "HwoIcm90YXRpb24YBSABKAsyDS5OZXRTeW5jLlF1YXQiKQoVRW50aXR5X0Rl",
             "c3Ryb3lfTm90aWZ5EhAKCGVudGl0eUlkGAEgASgNIhsKGUVudGl0eV9TcGF3",
             "bl9TeW5jX1JlcXVlc3RiBnByb3RvMw=="));
@@ -4931,13 +4931,13 @@ namespace NetSync {
 
     /// <summary>Field number for the "playerId" field.</summary>
     public const int PlayerIdFieldNumber = 3;
-    private uint playerId_;
+    private string playerId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint PlayerId {
+    public string PlayerId {
       get { return playerId_; }
       set {
-        playerId_ = value;
+        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4994,7 +4994,7 @@ namespace NetSync {
       int hash = 1;
       if (EntityId != 0) hash ^= EntityId.GetHashCode();
       if (EntityTypeId != 0) hash ^= EntityTypeId.GetHashCode();
-      if (PlayerId != 0) hash ^= PlayerId.GetHashCode();
+      if (PlayerId.Length != 0) hash ^= PlayerId.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (rotation_ != null) hash ^= Rotation.GetHashCode();
       if (_unknownFields != null) {
@@ -5023,9 +5023,9 @@ namespace NetSync {
         output.WriteRawTag(16);
         output.WriteUInt32(EntityTypeId);
       }
-      if (PlayerId != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(PlayerId);
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(PlayerId);
       }
       if (position_ != null) {
         output.WriteRawTag(34);
@@ -5053,9 +5053,9 @@ namespace NetSync {
         output.WriteRawTag(16);
         output.WriteUInt32(EntityTypeId);
       }
-      if (PlayerId != 0) {
-        output.WriteRawTag(24);
-        output.WriteUInt32(PlayerId);
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(PlayerId);
       }
       if (position_ != null) {
         output.WriteRawTag(34);
@@ -5081,8 +5081,8 @@ namespace NetSync {
       if (EntityTypeId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityTypeId);
       }
-      if (PlayerId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(PlayerId);
+      if (PlayerId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -5108,7 +5108,7 @@ namespace NetSync {
       if (other.EntityTypeId != 0) {
         EntityTypeId = other.EntityTypeId;
       }
-      if (other.PlayerId != 0) {
+      if (other.PlayerId.Length != 0) {
         PlayerId = other.PlayerId;
       }
       if (other.position_ != null) {
@@ -5146,8 +5146,8 @@ namespace NetSync {
             EntityTypeId = input.ReadUInt32();
             break;
           }
-          case 24: {
-            PlayerId = input.ReadUInt32();
+          case 26: {
+            PlayerId = input.ReadString();
             break;
           }
           case 34: {
@@ -5187,8 +5187,8 @@ namespace NetSync {
             EntityTypeId = input.ReadUInt32();
             break;
           }
-          case 24: {
-            PlayerId = input.ReadUInt32();
+          case 26: {
+            PlayerId = input.ReadString();
             break;
           }
           case 34: {

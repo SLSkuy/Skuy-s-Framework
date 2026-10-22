@@ -43,11 +43,18 @@ namespace GamePlay.EntitySpawn
         /// <summary>
         /// 入队请求销毁实体
         /// </summary>
-        /// <param name="entityId"></param>
+        public void RequireDestroyEntity(EntityDestroyCommand command)
+        {
+            EnqueueCommand(command);
+        }
+        
+        /// <summary>
+        /// 入队请求销毁实体
+        /// </summary>
         public void RequireDestroyEntity(uint entityId)
         {
             EntityDestroyCommand command = new EntityDestroyCommand(entityId);
-            EnqueueCommand(command);
+            RequireDestroyEntity(command);
         }
 
         /// <summary>
@@ -70,20 +77,22 @@ namespace GamePlay.EntitySpawn
         /// </summary>
         public EntityIdentity SpawnNetEntity(EntityType type)
         {
-            return SpawnNetEntity(type, Vector3.zero, Quaternion.identity);
+            EntitySpawnCommand command = new EntitySpawnCommand(type);
+            return SpawnNetEntity(command);
         }
 
         /// <summary>
         /// 同步生成网络实体
         /// </summary>
-        public EntityIdentity SpawnNetEntity(EntityType type, Vector3 position, Quaternion rotation)
+        public EntityIdentity SpawnNetEntity(EntitySpawnCommand command)
         {
-            string location = _spawnConfigData.GetEntityLocation(type);
-            InstantiateOptions options = new (true, position, rotation);
+            string location = _spawnConfigData.GetEntityLocation(command.entityTypeId);
+            InstantiateOptions options = new (true, command.position, command.rotation);
             GameObject instance = Global.Instantiate(location, options);
             if (instance.TryGetComponent(out EntityIdentity entityIdentity))
             {
                 _allocator.AllocateEntityId(entityIdentity);
+                entityIdentity.BindEntityType(command.entityTypeId);
                 return entityIdentity;
             }
             
@@ -141,7 +150,6 @@ namespace GamePlay.EntitySpawn
             {
                 case EntitySpawnCommand spawnCommand:
                 {
-                    // TODO: 完善实体ID分配逻辑
                     string location = _spawnConfigData.GetEntityLocation(spawnCommand.entityTypeId);
                     InstantiateOptions options = new (true, spawnCommand.position, spawnCommand.rotation);
                     GameObject instance = Global.Instantiate(location, options);
@@ -178,8 +186,33 @@ namespace GamePlay.EntitySpawn
         
         public void Dispose()
         {
+            DestroyAll();
             _allocator.Dispose();
             _allocator = null;
+        }
+
+        #endregion
+
+        #region 网络消息处理
+
+        public EntityIdentity HandleSpawnEntityCommand(uint entityId, in EntitySpawnCommand command)
+        {
+            string location = _spawnConfigData.GetEntityLocation(command.entityTypeId);
+            InstantiateOptions options = new (true, command.position, command.rotation);
+            GameObject instance = Global.Instantiate(location, options);
+            if (instance.TryGetComponent(out EntityIdentity entityIdentity))
+            {
+                _allocator.AddEntity(entityId, entityIdentity);
+                entityIdentity.BindEntityType(command.entityTypeId);
+                return entityIdentity;
+            }
+            
+            throw new InvalidOperationException($"实例 {instance.name} 缺少 {nameof(EntityIdentity)}，不能分配实体号"); 
+        }
+
+        public void HandleDestroyEntityCommand(in EntityDestroyCommand command)
+        {
+            DoExecute(command);
         }
 
         #endregion

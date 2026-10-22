@@ -13,6 +13,7 @@ namespace GamePlay.Simulation
     /// </summary>
     public sealed class HostSimulationKernel : ISimulationKernel
     {
+        private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
         private readonly RoomDataProxy _roomData = Global.GetDataProxy<RoomDataProxy>();
         
         private readonly Dictionary<Guid, AuthorityInputProvider> _remoteInputs = new();
@@ -57,11 +58,14 @@ namespace GamePlay.Simulation
         }
 
         /// <summary>
-        /// 记下远端玩家的输入来源，供随后到达的玩家输入入队。
+        /// 为已注册的远端玩家建立权威输入来源，并接到该实体上。
+        /// 随后到达的玩家输入写入这个来源。
         /// </summary>
-        public void RegisterRemoteInput(Guid playerId, AuthorityInputProvider provider)
+        public void RegisterRemoteInput(Guid playerId, uint entityId)
         {
+            AuthorityInputProvider provider = new AuthorityInputProvider(_simulationData.MaxBufferedInputs, _simulationData.MaxFutureInputs);
             _remoteInputs[playerId] = provider;
+            Kernel.SetInputSource(entityId, provider);
         }
 
         /// <summary>

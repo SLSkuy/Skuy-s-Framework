@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Events;
 using Framework;
 using NetSync;
@@ -12,7 +13,7 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class BattleClientHandler
     {
-        private const int RECENT_INPUT_COUNT = 8;
+        private const int RECENT_INPUT_COUNT = 4;
         
         private readonly List<Input_Sample> _recentInputs = new();
         private readonly BattleManager _battleManager;
@@ -49,6 +50,11 @@ namespace GamePlay.BattleSystem
         
         #region 发送消息
 
+        public void SendSpawnSyncRequest()
+        {
+            _client.SendReliable(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
+        }
+
         public void SendPlayerInput(uint inputTick, in InputState input)
         {
             Input_Sample sample = ProtoUtils.ToInputSample(inputTick, input);
@@ -59,9 +65,9 @@ namespace GamePlay.BattleSystem
             }
 
             Player_Input message = input.ToProto(inputTick);
-            for (int i = 0; i < _recentInputs.Count; i++)
+            foreach (var inputSample in _recentInputs)
             {
-                message.RecentInputs.Add(_recentInputs[i]);
+                message.RecentInputs.Add(inputSample);
             }
 
             _client.Send(NetEvent.GAME_PLAYER_INPUT, message);
@@ -76,15 +82,14 @@ namespace GamePlay.BattleSystem
             _battleManager.HandleWorldSnapshot(message);
         }
 
-        private void HandleEntitySpawnNotify(Entity_Spawn_Notify message)
+        private void HandleEntitySpawnNotify(Entity_Spawn_Notify notify)
         {
-            // _factory.HandleSpawnNotify(message.EntityId, (EntityType)message.EntityTypeId, message.PlayerId,
-                // ProtoUtils.ToUnity(message.Position), ProtoUtils.ToUnity(message.Rotation));
+            _battleManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand());
         }
 
-        private void HandleEntityDestroyNotify(Entity_Destroy_Notify message)
+        private void HandleEntityDestroyNotify(Entity_Destroy_Notify notify)
         {
-            _battleManager.HandleDestroyNotify(message.EntityId);
+            _battleManager.HandleDestroyNotify(notify.ToCommand());
         }
 
         #endregion

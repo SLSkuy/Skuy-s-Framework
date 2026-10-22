@@ -10,6 +10,7 @@ namespace GamePlay.Room
     {
         #region 属性
         public Guid UUID { get; }
+        public uint ConnectionID { get; }
         public string PlayerName { get; private set; }
         public PlayerState State { get; private set; }
         #endregion
@@ -21,9 +22,10 @@ namespace GamePlay.Room
             State = PlayerState.Left;
         }
 
-        public Player(PlayerInfoData playerInfoData)
+        public Player(PlayerInfoData playerInfoData, uint connectionID = 0)
         {
             UUID = playerInfoData.uuid;
+            ConnectionID = connectionID;
             PlayerName = playerInfoData.playerName;
             State = PlayerState.Left;
         }

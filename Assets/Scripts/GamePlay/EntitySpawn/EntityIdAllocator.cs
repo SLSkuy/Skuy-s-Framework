@@ -28,6 +28,15 @@ namespace GamePlay.EntitySpawn
             return _entityIdentity.TryGetValue(entityId, out identity);
         }
 
+        /// <summary>
+        /// 记录网络远端传入的实体
+        /// </summary>
+        public void AddEntity(uint entityId, EntityIdentity identity)
+        {
+            identity.BindEntityID(entityId);
+            _entityIdentity.Add(entityId, identity);
+        }
+
         public bool RemoveEntity(uint entityId, out EntityIdentity identity)
         {
             return _entityIdentity.Remove(entityId, out identity);

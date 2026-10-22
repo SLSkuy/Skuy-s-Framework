@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
+using Events;
+using Framework;
 using GamePlay.EntitySpawn;
+using GamePlay.Room;
 using GamePlay.Simulation;
 using NetSync;
-using Network;
 using Utils;
 
 namespace GamePlay.BattleSystem
 {
     public class BattleServerHandler
     {
-        private BattleManager _battleManager;
-        private NetServer _server;
+        private readonly BattleManager _battleManager;
+        private RoomManager _room;
 
         public BattleServerHandler(BattleManager battleManager)
         {
@@ -24,15 +25,18 @@ namespace GamePlay.BattleSystem
         public void Bind()
         {
             Unbind();
-
-            // _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
-            // _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
+            _room = Global.Get<RoomManager>();
+            _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
         }
 
         public void Unbind()
         {
-            // _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
-            // _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
+            if (_room == null) return;
+
+            _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
+            _room = null;
         }
         
         #endregion
@@ -50,28 +54,31 @@ namespace GamePlay.BattleSystem
                 message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.snapshot));
             }
 
-            // _room.Broadcast(NetEvent.GAME_WORLD_SNAPSHOT, message);
+            uint[] activeIDs = _room.GetAllPlayerConnectionID();
+            _room.SendGroup(activeIDs, NetEvent.GAME_WORLD_SNAPSHOT, message);
         }
 
         /// <summary>
         /// 广播实体生成消息，用于已经在房间中的玩家
         /// </summary>
-        public void BroadcastSpawnNotify(uint entityId, EntityType entityTypeId, uint playerId, Vector3 position, Quaternion rotation)
+        public void BroadcastSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command)
         {
-            // _room.BroadcastReliable(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, playerId, position, rotation));
+            uint[] activeIDs = _room.GetAllPlayerConnectionID();
+            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, playerId));
         }
 
         /// <summary>
         /// 发送实体生成消息，用于给新加入的玩家
         /// </summary>
-        public void SendSpawnNotify(uint playerId, uint entityId, EntityType entityTypeId, uint ownerPlayerId, Vector3 position, Quaternion rotation)
+        public void SendSpawnNotify(Guid playerId, uint entityId, Guid ownerPlayerId, in EntitySpawnCommand command)
         {
-            // _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, ProtoUtils.ToEntitySpawnNotify(entityId, entityTypeId, ownerPlayerId, position, rotation));
+            _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, ownerPlayerId));
         }
 
-        public void BroadcastDestroy(uint entityId)
+        public void BroadcastDestroyNotify(in EntityDestroyCommand command)
         {
-            // _room.BroadcastReliable(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, new Entity_Destroy_Notify { EntityId = entityId });
+            uint[] activeIDs = _room.GetAllPlayerConnectionID();
+            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_DESTROY_NOTIFY, command.ToProto());
         }
 
         #endregion

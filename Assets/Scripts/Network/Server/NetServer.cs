@@ -287,7 +287,9 @@ namespace Network
                 {
                     _fastTransport.Disconnect(fastSessionId);
                 }
-
+                
+                // 可靠连接断开，视作断线，不等待重连
+                _connectionManager.RemoveClient(clientId);
                 return;
             }
 

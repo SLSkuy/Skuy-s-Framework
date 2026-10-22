@@ -5,6 +5,7 @@ namespace GamePlay.EntitySpawn
     /// </summary>
     public enum EntityType : uint
     {
+        None,
         Player,
     }
 }

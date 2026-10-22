@@ -28,7 +28,7 @@ namespace Network
 
         #region 暴露接口
         
-        public void StartClient(string host, short port)
+        public void StartClient(string host, ushort port)
         {
             ThrowIfDisposed();
             Stop();

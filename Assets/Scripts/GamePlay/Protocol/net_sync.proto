@@ -130,7 +130,7 @@ message World_Snapshot {
 message Entity_Spawn_Notify {
     uint32 entityId = 1;
     uint32 entityTypeId = 2;
-    uint32 playerId = 3;
+    string playerId = 3;
     Vec3 position = 4;
     Quat rotation = 5;
 }

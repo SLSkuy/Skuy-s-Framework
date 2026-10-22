@@ -8,13 +8,13 @@ namespace Network
     public interface IServerTransport : IDisposable
     {
         TransportType Type { get; }
-        short Port { get; }
+        ushort Port { get; }
         bool IsRunning { get; }
         event Action<uint> OnClientConnected;
         event Action<uint> OnClientDisconnected;
         event Action<uint, byte[]> OnDataReceived;
         event Action<string> OnTransportError;
-        void StartServer(short port);
+        void StartServer(ushort port);
         void Stop();
         void Disconnect(uint sessionId);
         void Send(uint sessionId, byte[] data);

@@ -10,7 +10,7 @@ namespace Network
     {
         [Header("服务器配置")]
         public string ip = "127.0.0.1";
-        public short reliablePort = 11451;
+        public ushort reliablePort = 11451;
 
         [Header("连接配置")]
         [Tooltip("心跳发送间隔(秒)")] public float heartBeatStep = 5f;

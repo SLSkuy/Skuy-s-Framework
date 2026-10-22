@@ -90,7 +90,7 @@ namespace GamePlay.Room
                 _gameSave.RecordPlayerInfo(playerInfo);
             }
             
-            Player p = new Player(playerInfo);
+            Player p = new Player(playerInfo, connectionId);
             p.Active();
             
             _playersByUUID.Add(playerInfo.uuid, p);

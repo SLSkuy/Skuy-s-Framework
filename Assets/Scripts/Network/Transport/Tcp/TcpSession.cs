@@ -37,7 +37,7 @@ namespace Network
         public event Action<string> OnError;
         #endregion
 
-        public void Connect(string targetIp, short targetPort)
+        public void Connect(string targetIp, ushort targetPort)
         {
             if (string.IsNullOrWhiteSpace(targetIp))
             {
