@@ -3,7 +3,6 @@ using Framework;
 using GamePlay.DataProxy;
 using GamePlay.EntitySpawn;
 using GamePlay.EntitySystem;
-using GamePlay.GameData;
 using GamePlay.Room;
 using GamePlay.Simulation;
 using NetSync;
@@ -102,15 +101,14 @@ namespace GamePlay.BattleSystem
         /// </summary>
         private void InitEntitySystem()
         {
-            // TODO: 生成本地玩家实体
+            // 生成本地主控玩家
             Guid localPlayerUUID = _playerData.UUID;
-            var playerEntityData = _saveData.GetPlayerEntityData(localPlayerUUID);
-            var entityIdentity = _entityFactory.SpawnNetEntity(EntityType.Player, playerEntityData.position, playerEntityData.rotation);
+            var entityIdentity = _entityFactory.SpawnNetEntity(EntityType.Player);
             var entityCharacter = entityIdentity.GetComponent<EntityCharacter>();
+            var playerSnapshot = _saveData.GetPlayerSnapshot(localPlayerUUID);
             
             entityCharacter.Init();
-            entityCharacter.Context.View.Restore(playerEntityData.orientation, Vector3.zero);
-            entityCharacter.Context.Movement.Restore(playerEntityData.rotation, Vector3.zero);
+            entityCharacter.RestoreSnapshot(playerSnapshot);
 
             if (entityIdentity is PlayerIdentity playerIdentity)
             {
@@ -119,23 +117,19 @@ namespace GamePlay.BattleSystem
                 _simulator.Kernel.Register(playerIdentity, entityCharacter);
                 _simulator.Kernel.SetInputSource(playerIdentity.EntityId, Global.Get<LocalInputManager>().Provider);
             }
+            // 生成本地主控玩家
         }
 
         private void DestroyEntitySystem()
         {
-            // 存储玩家信息
+            // 存储所有实体信息
             foreach (var identity in _entityFactory.GetActiveEntities())
             {
                 if (identity is PlayerIdentity playerIdentity)
                 {
                     EntityCharacter entityCharacter = playerIdentity.GetComponent<EntityCharacter>();
-                    _saveData.RestorePlayerEntityData(playerIdentity.PlayerID, new PlayerEntityData
-                    {
-                        // TODO: 存储快照，而非直接读取数据
-                        position = playerIdentity.gameObject.transform.position,
-                        rotation = entityCharacter.Context.Movement.Rotation,
-                        orientation = entityCharacter.Context.View.ViewRotation
-                    });
+                    EntitySnapshot snapshot = entityCharacter.CaptureSnapshot();
+                    _saveData.RestorePlayerSnapshot(playerIdentity.PlayerID, snapshot);
                 }
             }
             

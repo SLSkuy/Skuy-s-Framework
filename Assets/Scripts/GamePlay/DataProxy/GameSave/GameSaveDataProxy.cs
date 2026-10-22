@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Core;
 using Framework;
+using GamePlay.EntitySystem;
 using GamePlay.GameData;
 
 namespace GamePlay.DataProxy
@@ -70,24 +71,24 @@ namespace GamePlay.DataProxy
         /// <summary>
         /// 尝试获取玩家存档中的实体数据，存档中不存在实体数据时返回默认值
         /// </summary>
-        public PlayerEntityData GetPlayerEntityData(Guid uuid)
+        public EntitySnapshot GetPlayerSnapshot(Guid uuid)
         {
             if (_playerData.TryGetValue(uuid, out PlayerData player))
             {
-                return player.entity;
+                return player.Snapshot;
             }
 
-            return new PlayerEntityData();
+            return new EntitySnapshot();
         }
 
         /// <summary>
         /// 保存玩家实体数据
         /// </summary>
-        public void RestorePlayerEntityData(Guid uuid, PlayerEntityData playerEntityData)
+        public void RestorePlayerSnapshot(Guid uuid, EntitySnapshot snapshot)
         {
             if (_playerData.TryGetValue(uuid, out PlayerData player))
             {
-                player.entity = playerEntityData;
+                player.Snapshot = snapshot;
             }
         }
 

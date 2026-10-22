@@ -68,6 +68,14 @@ namespace GamePlay.EntitySpawn
         /// <summary>
         /// 同步生成网络实体
         /// </summary>
+        public EntityIdentity SpawnNetEntity(EntityType type)
+        {
+            return SpawnNetEntity(type, Vector3.zero, Quaternion.identity);
+        }
+
+        /// <summary>
+        /// 同步生成网络实体
+        /// </summary>
         public EntityIdentity SpawnNetEntity(EntityType type, Vector3 position, Quaternion rotation)
         {
             string location = _spawnConfigData.GetEntityLocation(type);

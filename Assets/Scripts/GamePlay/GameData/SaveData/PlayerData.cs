@@ -1,3 +1,5 @@
+using GamePlay.EntitySystem;
+
 namespace GamePlay.GameData
 {
     /// <summary>
@@ -13,6 +15,6 @@ namespace GamePlay.GameData
         /// <summary>
         /// 该玩家在这一局里的出场进度
         /// </summary>
-        public PlayerEntityData entity = new();
+        public EntitySnapshot Snapshot = new();
     }
 }

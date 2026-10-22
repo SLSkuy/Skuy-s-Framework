@@ -23,8 +23,8 @@ namespace GamePlay.EntitySystem
 
         #region 属性
         public EntityContext Context => _context;
-        public bool IsInitialized => _isInitialized;
         public EntityState CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
+        public bool IsInitialized => _isInitialized;
         #endregion
 
         /// <summary>
