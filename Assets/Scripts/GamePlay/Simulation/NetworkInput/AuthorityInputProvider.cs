@@ -25,14 +25,14 @@ namespace GamePlay.Simulation
 
         public InputCommand GetInputCommand()
         {
-            if (!TryGetInputState(out InputCommand input)) return default;
+            if (!TryGetInputCommand(out InputCommand input)) return default;
             return input;
         }
 
         /// <summary>
         /// 取出下一拍已入队的输入。还没有可消费的输入时返回 false，确认点保持不动。
         /// </summary>
-        public bool TryGetInputState(out InputCommand input)
+        public bool TryGetInputCommand(out InputCommand input)
         {
             if (_buffer.LastProcessedTick == 0 && !_buffer.HasQueued)
             {

@@ -61,7 +61,7 @@ namespace Utils
             return new Entity_Spawn_Notify
             {
                 EntityId = entityId,
-                EntityTypeId = (uint)command.entityTypeId,
+                EntityTypeId = (uint)command.entityType,
                 PlayerId = playerId.ToString(),
                 Position = command.position.ToProto(),
                 Rotation = command.rotation.ToProto(),
@@ -73,7 +73,7 @@ namespace Utils
         {
             return new EntitySpawnCommand
             {
-                entityTypeId = (EntityType)notify.EntityTypeId,
+                entityType = (EntityType)notify.EntityTypeId,
                 position = notify.Position.ToUnity(),
                 rotation = notify.Rotation.ToUnity(),
             };

@@ -55,7 +55,7 @@ namespace GamePlay.Simulation
             if (_inputSource is AuthorityInputProvider authority)
             {
                 // 远端输入
-                if (!authority.TryGetInputState(out input))
+                if (!authority.TryGetInputCommand(out input))
                 {
                     command = default;
                     return false;

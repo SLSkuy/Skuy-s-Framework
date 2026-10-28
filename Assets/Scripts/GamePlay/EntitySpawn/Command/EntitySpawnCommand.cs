@@ -7,20 +7,20 @@ namespace GamePlay.EntitySpawn
     /// </summary>
     public struct EntitySpawnCommand
     {
-        public EntityType entityTypeId;
+        public EntityType entityType;
         public Vector3 position;
         public Quaternion rotation;
 
-        public EntitySpawnCommand(EntityType typeId)
+        public EntitySpawnCommand(EntityType type)
         {
-            entityTypeId = typeId;
+            entityType = type;
             position = Vector3.zero;
             rotation = Quaternion.identity;
         }
 
-        public EntitySpawnCommand(EntityType typeId, Vector3 pos, Quaternion rot)
+        public EntitySpawnCommand(EntityType type, Vector3 pos, Quaternion rot)
         {
-            entityTypeId = typeId;
+            entityType = type;
             position = pos; 
             rotation = rot;
         }

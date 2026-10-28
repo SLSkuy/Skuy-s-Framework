@@ -15,4 +15,4 @@ MonoBehaviour:
   debugMode: 1
   targetFrame: 60
   resourceMode: 1
-  defaultPackageName: DefaultPackage
+  defaultPackageName: AssetsPackage

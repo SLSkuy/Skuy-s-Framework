@@ -53,7 +53,7 @@ namespace Core
         public static event Action OnAppQuit;
         #endregion
 
-        private void InitializeGameCore()
+        private void InitializeAppCore()
         {
             _config = AppCoreConfig.Instance;
             
@@ -117,8 +117,7 @@ namespace Core
         protected override void Init()
         {
             IsReady = false;
-
-            InitializeGameCore();
+            InitializeAppCore();
         }
 
         private void Update()

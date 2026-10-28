@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Events;
 using Framework;
 using NetSync;
@@ -31,8 +30,6 @@ namespace GamePlay.BattleSystem
             Unbind();
             _client = Global.Get<NetClient>();
             _client.RegisterHandler<World_Snapshot>(NetEvent.GAME_WORLD_SNAPSHOT, HandleWorldSnapshot);
-            _client.RegisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
-            _client.RegisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
         }
 
         public void Unbind()
@@ -41,8 +38,6 @@ namespace GamePlay.BattleSystem
             if (_client == null) return;
 
             _client.UnregisterHandler<World_Snapshot>(NetEvent.GAME_WORLD_SNAPSHOT, HandleWorldSnapshot);
-            _client.UnregisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
-            _client.UnregisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
             _client = null;
         }
 
@@ -80,16 +75,6 @@ namespace GamePlay.BattleSystem
         private void HandleWorldSnapshot(World_Snapshot message)
         {
             _battleManager.HandleWorldSnapshot(message);
-        }
-
-        private void HandleEntitySpawnNotify(Entity_Spawn_Notify notify)
-        {
-            _battleManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand(), notify.Snapshot.ToSnapshot());
-        }
-
-        private void HandleEntityDestroyNotify(Entity_Destroy_Notify notify)
-        {
-            _battleManager.HandleDestroyNotify(notify.ToCommand());
         }
 
         #endregion
