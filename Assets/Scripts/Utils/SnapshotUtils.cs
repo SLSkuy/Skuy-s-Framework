@@ -11,7 +11,7 @@ namespace Utils
         /// <summary>
         /// 获取当前Tick按住的按键集合
         /// </summary>
-        public static EntityCommandFlags GetHeldFlags(in InputState input)
+        public static EntityCommandFlags GetHeldFlags(in InputCommand input)
         {
             EntityCommandFlags flags = EntityCommandFlags.None;
             if (input.IsSprintPressed) flags |= EntityCommandFlags.Sprint;

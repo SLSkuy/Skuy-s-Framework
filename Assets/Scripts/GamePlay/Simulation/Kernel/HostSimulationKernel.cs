@@ -123,22 +123,21 @@ namespace GamePlay.Simulation
 
         #region 服务端消息处理
 
-        public void HandlePlayerInput(Guid playerId, Player_Input input)
+        public void HandlePlayerInput(Guid playerId, Player_Inputs input)
         {
             if (!_remoteInputs.TryGetValue(playerId, out AuthorityInputProvider provider)) return;
 
             if (input.RecentInputs.Count > 0)
             {
-                for (int i = 0; i < input.RecentInputs.Count; i++)
+                foreach (var command in input.RecentInputs)
                 {
-                    Input_Sample sample = input.RecentInputs[i];
-                    provider.Enqueue(sample.InputTick, ProtoUtils.ToInputState(sample));
+                    provider.Enqueue(command.InputTick, command.ToCommand());
                 }
 
                 return;
             }
 
-            provider.Enqueue(input.InputTick, ProtoUtils.ToInputState(input));
+            provider.Enqueue(input.CurrentInputs.InputTick, input.CurrentInputs.ToCommand());
         }
 
         #endregion

@@ -15,13 +15,6 @@ namespace GamePlay.DataProxy
             { EntityType.Player , "Entity_NetPlayer" },
         };
 
-        #region 属性
-        /// <summary>
-        /// 每帧最大执行的实体生成数量，强制分帧执行实体生成逻辑
-        /// </summary>
-        public int MaxExecutePerFrame => 10;
-        #endregion
-
         public string GetEntityLocation(EntityType entityType)
         {
             if (_locations.TryGetValue(entityType, out var location))

@@ -5,7 +5,7 @@ namespace GamePlay.Simulation
     /// <summary>
     /// 权威网络意图来源：窗口入队，收集口只交出下一拍 InputState。
     /// </summary>
-    public sealed class AuthorityInputProvider : IInputStateProvider
+    public sealed class AuthorityInputProvider : IInputProvider
     {
         private readonly EntityInputBuffer _buffer;
 
@@ -18,21 +18,21 @@ namespace GamePlay.Simulation
             _buffer = new EntityInputBuffer(capacity, maxFutureInputTicks);
         }
 
-        public bool Enqueue(uint inputTick, in InputState input)
+        public bool Enqueue(uint inputTick, in InputCommand input)
         {
             return _buffer.Enqueue(inputTick, input);
         }
 
-        public InputState GetInputState()
+        public InputCommand GetInputCommand()
         {
-            if (!TryGetInputState(out InputState input)) return default;
+            if (!TryGetInputState(out InputCommand input)) return default;
             return input;
         }
 
         /// <summary>
         /// 取出下一拍已入队的输入。还没有可消费的输入时返回 false，确认点保持不动。
         /// </summary>
-        public bool TryGetInputState(out InputState input)
+        public bool TryGetInputState(out InputCommand input)
         {
             if (_buffer.LastProcessedTick == 0 && !_buffer.HasQueued)
             {

@@ -14,7 +14,7 @@ namespace GamePlay.Simulation
     {
         private const int MaxMissedInputTicks = 8;
 
-        private readonly SimulationCommandQueue<InputState> _simulationCommands;
+        private readonly SimulationCommandQueue<InputCommand> _simulationCommands;
         private readonly SimulationCommandBuilder _commandBuilder;
         private readonly int _maxFutureInputTicks;
         private int _missedInputTicks;
@@ -33,7 +33,7 @@ namespace GamePlay.Simulation
 
             int resolvedCapacity = Math.Max(2, capacity);
             _commandBuilder = new SimulationCommandBuilder();
-            _simulationCommands = new SimulationCommandQueue<InputState>(resolvedCapacity);
+            _simulationCommands = new SimulationCommandQueue<InputCommand>(resolvedCapacity);
             _maxFutureInputTicks = Math.Min(Math.Max(1, maxFutureInputTicks), resolvedCapacity);
         }
 
@@ -41,7 +41,7 @@ namespace GamePlay.Simulation
         /// 将经过合法性校验的输入按客户端 Tick 加入服务端命令缓冲。
         /// 尚未消费过时，以首包序号对齐消费点，避免握手期间丢掉的快通道包把后续命令全部挤出窗口。
         /// </summary>
-        public bool Enqueue(uint inputTick, in InputState input)
+        public bool Enqueue(uint inputTick, in InputCommand input)
         {
             if (inputTick == 0) return false;
 
@@ -61,7 +61,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 根据已采样输入构建预测命令，服务端进行预测，用于无输入时的逻辑处理
         /// </summary>
-        public EntityCommand BuildPredictedCommand(in InputState input)
+        public EntityCommand BuildPredictedCommand(in InputCommand input)
         {
             return _commandBuilder.Build(input);
         }
@@ -105,7 +105,7 @@ namespace GamePlay.Simulation
         /// 消费 LastProcessedTick 之后的下一序号。
         /// 槽位还空着时不推进确认点；连续缺席超过上限后消费一拍空指令并推进。
         /// </summary>
-        public bool TryConsumeNext(out InputState input)
+        public bool TryConsumeNext(out InputCommand input)
         {
             uint inputTick = LastProcessedTick + 1;
             if (_simulationCommands.TryDequeue(inputTick, out input))

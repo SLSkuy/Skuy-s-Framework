@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Events;
 using Framework;
 using GamePlay.EntitySpawn;
+using GamePlay.EntitySystem;
 using GamePlay.Room;
 using GamePlay.Simulation;
 using NetSync;
@@ -26,7 +27,7 @@ namespace GamePlay.BattleSystem
         {
             Unbind();
             _room = Global.Get<RoomManager>();
-            _room.RegisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room.RegisterPlayerHandler<Player_Inputs>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             _room.RegisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
         }
 
@@ -34,7 +35,7 @@ namespace GamePlay.BattleSystem
         {
             if (_room == null) return;
 
-            _room.UnregisterPlayerHandler<Player_Input>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
+            _room.UnregisterPlayerHandler<Player_Inputs>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
             _room = null;
         }
@@ -45,13 +46,10 @@ namespace GamePlay.BattleSystem
         
         public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedFrame> samples)
         {
-            World_Snapshot message = new World_Snapshot
-            {
-                SnapshotTick = snapshotTick,
-            };
+            World_Snapshot message = new World_Snapshot { SnapshotTick = snapshotTick };
             foreach (var sample in samples)
             {
-                message.PlayerSnapshots.Add(ProtoUtils.ToPlayerSnapshot(sample.entityId, sample.lastProcessedInputTick, sample.snapshot));
+                message.PlayerSnapshots.Add(sample.snapshot.ToProto(sample.entityId, sample.lastProcessedInputTick));
             }
 
             uint[] activeIDs = _room.GetAllPlayerConnectionID();
@@ -61,18 +59,19 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 广播实体生成消息，用于已经在房间中的玩家
         /// </summary>
-        public void BroadcastSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command)
+        public void BroadcastSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command, in EntitySnapshot snapshot)
         {
             uint[] activeIDs = _room.GetAllPlayerConnectionID();
-            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, playerId));
+            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, playerId, snapshot));
         }
 
         /// <summary>
         /// 发送实体生成消息，用于给新加入的玩家
         /// </summary>
-        public void SendSpawnNotify(Guid playerId, uint entityId, Guid ownerPlayerId, in EntitySpawnCommand command)
+        public void SendSpawnNotify(Guid playerId, uint entityId, Guid ownerPlayerId, in EntitySpawnCommand command,
+            in EntitySnapshot snapshot)
         {
-            _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, ownerPlayerId));
+            _room.SendReliable(playerId, NetEvent.GAME_ENTITY_SPAWN_NOTIFY, command.ToProto(entityId, ownerPlayerId, snapshot));
         }
 
         public void BroadcastDestroyNotify(in EntityDestroyCommand command)
@@ -85,7 +84,7 @@ namespace GamePlay.BattleSystem
 
         #region 接收消息
         
-        private void HandlePlayerInput(Guid playerId, Player_Input message)
+        private void HandlePlayerInput(Guid playerId, Player_Inputs message)
         {
             _battleManager.HandlePlayerInput(playerId, message);
         }

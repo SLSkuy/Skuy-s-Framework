@@ -8,7 +8,7 @@ namespace Framework
     /// <summary>
     /// 本地原生输入封装
     /// </summary>
-    public class LocalInputProvider : MonoBehaviour, IInputStateProvider
+    public class LocalInputProvider : MonoBehaviour, IInputProvider
     {
         private PlayerInputActions _inputActions;
         private PlayerInputActions.PlayerActions _playerActions;
@@ -83,9 +83,9 @@ namespace Framework
             actionMap.Enable();
         }
         
-        public InputState GetInputState()
+        public InputCommand GetInputCommand()
         {
-            return new InputState
+            return new InputCommand
             {
                 MoveInput = _playerActions.Move.ReadValue<Vector2>(),
                 AimInput = _playerActions.Aim.ReadValue<Vector2>(),

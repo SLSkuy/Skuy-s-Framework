@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Framework;
 using GamePlay.DataProxy;
 using GamePlay.EntitySpawn;
@@ -14,11 +15,13 @@ namespace GamePlay.BattleSystem
     {
         private readonly PlayerInfoDataProxy _playerData = Global.GetDataProxy<PlayerInfoDataProxy>();
         private readonly GameSaveDataProxy _saveData = Global.GetDataProxy<GameSaveDataProxy>();
+        private readonly Dictionary<Guid, PlayerIdentity> _spawnedPlayers = new();
         
         private BattleClientHandler _clientHandler;
         private BattleServerHandler _serverHandler;
         
         private ISimulationKernel _simulator;
+        private HostSimulationKernel _hostKernel;
         private EntityFactory _entityFactory;
         private RoomManager _room;
         
@@ -49,12 +52,15 @@ namespace GamePlay.BattleSystem
         /// </summary>
         private void InitSimulationKernel()
         {
-            if (_room.IsHost)
+            SessionRole role = _room.Role;
+            if (role == SessionRole.Host)
             {
                 _serverHandler = new BattleServerHandler(this);
-                _simulator = new HostSimulationKernel(_serverHandler);
+                _hostKernel = new HostSimulationKernel(_serverHandler);
+                _simulator = _hostKernel;
                 _serverHandler.Bind();
-            }else if (_room.IsClient)
+            }
+            else if (role == SessionRole.Client)
             {
                 _clientHandler = new BattleClientHandler(this);
                 _simulator = new ClientSimulationKernel(_clientHandler);
@@ -68,6 +74,7 @@ namespace GamePlay.BattleSystem
         {
             _simulator?.Dispose();
             _simulator = null;
+            _hostKernel = null;
 
             if (_clientHandler != null)
             {
@@ -107,95 +114,104 @@ namespace GamePlay.BattleSystem
                 return;
             }
             
-            // BattleManager负责绑定玩家ID和实体角色，实体工厂绑定实体ID和实体类型
-            // 生成本地主控玩家
-            Guid localPlayerUUID = _playerData.UUID;
-            EntityIdentity entityIdentity = _entityFactory.SpawnNetEntity(EntityType.Player);
-            EntityCharacter entityCharacter = entityIdentity.GetComponent<EntityCharacter>();
-            EntitySnapshot playerSnapshot = _saveData.GetPlayerSnapshot(localPlayerUUID);
-            
-            entityCharacter.Init();
-            entityCharacter.RestoreSnapshot(playerSnapshot);
-
-            if (entityIdentity is PlayerIdentity playerIdentity)
-            {
-                playerIdentity.BindPlayerID(_playerData.UUID);
-                playerIdentity.BindEntityRole(EntityRole.Authority);
-                Global.Get<CameraManager>().SetTarget(entityCharacter.Context.View.Orientation);
-                _simulator.Kernel.Register(playerIdentity, entityCharacter);
-                _simulator.Kernel.SetInputSource(playerIdentity.EntityId, Global.Get<LocalInputManager>().Provider);
-            }
-            // 生成本地主控玩家
+            Guid localPlayerId = _playerData.UUID;
+            EntitySnapshot playerSnapshot = _saveData.GetPlayerSnapshot(localPlayerId);
+            SpawnHostPlayer(localPlayerId, playerSnapshot, useLocalInput: true);
 
             _room.PlayerJoined += OnPlayerJoin;
             _room.PlayerLeft += OnPlayerLeave;
         }
 
-        private void OnPlayerJoin(Guid uuid)
+        private void OnPlayerJoin(Guid playerId)
         {
-            // 生成远端加入玩家实体
-            EntitySnapshot playerSnapshot = _saveData.GetPlayerSnapshot(uuid);
-            EntitySpawnCommand command = new EntitySpawnCommand
-            {
-                entityTypeId = EntityType.Player,
-                position = playerSnapshot.movement.rootPosition,
-                rotation = Quaternion.identity, // 通过快照设置模型旋转，根节点不做旋转
-            };
-            
-            EntityIdentity entityIdentity = _entityFactory.SpawnNetEntity(command);
-            EntityCharacter character = entityIdentity.GetComponent<EntityCharacter>();
-            
-            character.Init();
-            character.RestoreSnapshot(playerSnapshot);
-            if (entityIdentity is PlayerIdentity playerIdentity)
-            {
-                playerIdentity.BindPlayerID(uuid);
-                playerIdentity.BindEntityRole(EntityRole.Authority);
-                _simulator.Kernel.Register(playerIdentity, character);
-                ((HostSimulationKernel)_simulator).RegisterRemoteInput(uuid, playerIdentity.EntityId);
-            }
-            
-            _serverHandler.BroadcastSpawnNotify(entityIdentity.EntityId, uuid, command);
+            EntitySnapshot playerSnapshot = _saveData.GetPlayerSnapshot(playerId);
+            EntityIdentity identity = SpawnHostPlayer(playerId, playerSnapshot, useLocalInput: false);
+            _hostKernel.RegisterRemoteInput(playerId, identity.EntityId);
+            _serverHandler.BroadcastSpawnNotify(identity.EntityId, playerId, CreatePlayerSpawnCommand(playerSnapshot), playerSnapshot);
         }
 
-        private void OnPlayerLeave(Guid uuid)
+        private void OnPlayerLeave(Guid playerId)
         {
-            // TODO: 改成字典查询，而不是循环查找
-            // TODO: 销毁玩家实体
-            foreach (var identity in _entityFactory.GetActiveEntities())
+            PlayerIdentity playerIdentity = _spawnedPlayers[playerId];
+            EntityCharacter character = playerIdentity.GetComponent<EntityCharacter>();
+            _saveData.RestorePlayerSnapshot(playerId, character.CaptureSnapshot());
+
+            _simulator.Kernel.Unregister(playerIdentity.EntityId);
+            _hostKernel.UnregisterRemoteInput(playerId);
+            _spawnedPlayers.Remove(playerId);
+
+            EntityDestroyCommand command = new EntityDestroyCommand
             {
-                if (identity is not PlayerIdentity playerIdentity) continue;
-                if (playerIdentity.PlayerID == uuid)
-                {
-                    _simulator.Kernel.Unregister(playerIdentity.EntityId);
-                    ((HostSimulationKernel)_simulator).UnregisterRemoteInput(uuid);
-                    EntityDestroyCommand command = new EntityDestroyCommand
-                    {
-                        entityId = playerIdentity.EntityId,
-                    };
-                    _entityFactory.RequireDestroyEntity(command);
-                    _serverHandler.BroadcastDestroyNotify(command);
-                    
-                    EntityCharacter entityCharacter = playerIdentity.GetComponent<EntityCharacter>();
-                    _saveData.RestorePlayerSnapshot(uuid, entityCharacter.CaptureSnapshot());
-                    break;
-                }
+                entityId = playerIdentity.EntityId,
+            };
+            _entityFactory.DestroyEntity(playerIdentity.EntityId);
+            _serverHandler.BroadcastDestroyNotify(command);
+        }
+
+        private EntityIdentity SpawnHostPlayer(Guid playerId, in EntitySnapshot snapshot, bool useLocalInput)
+        {
+            EntityIdentity identity = _entityFactory.SpawnNetEntity(CreatePlayerSpawnCommand(snapshot));
+            AssemblePlayer(identity, playerId, snapshot, EntityRole.Authority, useLocalInput);
+            return identity;
+        }
+
+        private void AssemblePlayer(EntityIdentity identity, Guid playerId, in EntitySnapshot snapshot,
+            EntityRole role, bool useLocalInput)
+        {
+            EntityCharacter character = identity.GetComponent<EntityCharacter>();
+            character.Init();
+            character.RestoreSnapshot(snapshot);
+
+            PlayerIdentity playerIdentity = (PlayerIdentity)identity;
+            playerIdentity.BindPlayerID(playerId);
+            playerIdentity.BindEntityRole(role);
+            _spawnedPlayers.Add(playerId, playerIdentity);
+            _simulator.Kernel.Register(playerIdentity, character);
+
+            if (!useLocalInput) return;
+
+            Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
+            _simulator.Kernel.SetInputSource(playerIdentity.EntityId, Global.Get<LocalInputManager>().Provider);
+        }
+
+        private static EntitySpawnCommand CreatePlayerSpawnCommand(in EntitySnapshot snapshot)
+        {
+            return new EntitySpawnCommand
+            {
+                entityTypeId = EntityType.Player,
+                position = snapshot.movement.rootPosition,
+                rotation = Quaternion.identity,
+            };
+        }
+
+        private void RemoveSpawnedPlayer(uint entityId)
+        {
+            Guid playerId = default;
+            bool found = false;
+            foreach (var pair in _spawnedPlayers)
+            {
+                if (pair.Value.EntityId != entityId) continue;
+                playerId = pair.Key;
+                found = true;
+                break;
+            }
+
+            if (found)
+            {
+                _spawnedPlayers.Remove(playerId);
             }
         }
 
         private void DestroyEntitySystem()
         {
-            // 存储所有实体信息
-            foreach (var identity in _entityFactory.GetActiveEntities())
+            foreach (var pair in _spawnedPlayers)
             {
-                if (identity is PlayerIdentity playerIdentity)
-                {
-                    EntityCharacter entityCharacter = playerIdentity.GetComponent<EntityCharacter>();
-                    EntitySnapshot snapshot = entityCharacter.CaptureSnapshot();
-                    _saveData.RestorePlayerSnapshot(playerIdentity.PlayerID, snapshot);
-                }
+                EntityCharacter character = pair.Value.GetComponent<EntityCharacter>();
+                _saveData.RestorePlayerSnapshot(pair.Key, character.CaptureSnapshot());
             }
-            
+
+            _spawnedPlayers.Clear();
+            _entityFactory.DestroyAll();
             _entityFactory.Dispose();
             _entityFactory = null;
             
@@ -216,7 +232,6 @@ namespace GamePlay.BattleSystem
         public override void Update(float deltaTime)
         {
             _simulator?.Update(deltaTime);
-            _entityFactory?.Update();
         }
 
         public override void Destroy()
@@ -236,62 +251,46 @@ namespace GamePlay.BattleSystem
             }
         }
 
-        public void HandleSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command)
+        public void HandleSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command,
+            in EntitySnapshot snapshot)
         {
-            EntityIdentity identity = _entityFactory.HandleSpawnEntityCommand(entityId, command);
-            EntityCharacter character = identity.GetComponent<EntityCharacter>();
-            character.Init();
-            
-            if (identity is PlayerIdentity playerIdentity)
+            if (_entityFactory.TryGetEntity(entityId, out EntityIdentity existing))
             {
-                playerIdentity.BindPlayerID(playerId);  // 绑定玩家身份ID
-                _simulator.Kernel.Register(playerIdentity, character);
-                
-                if (_playerData.UUID == playerId)
-                {
-                    // 客户端主控玩家，设置玩家控制器
-                    playerIdentity.BindEntityRole(EntityRole.Predict);
-                    Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
-                    _simulator.Kernel.SetInputSource(entityId, Global.Get<LocalInputManager>().Provider);
-                }
-                else
-                {
-                    playerIdentity.BindEntityRole(EntityRole.Replica);
-                }
+                existing.GetComponent<EntityCharacter>().RestoreSnapshot(snapshot);
+                return;
             }
+
+            EntityIdentity identity = _entityFactory.HandleSpawnEntityCommand(entityId, command);
+            bool isLocal = playerId == _playerData.UUID;
+            EntityRole role = isLocal ? EntityRole.Predict : EntityRole.Replica;
+            AssemblePlayer(identity, playerId, snapshot, role, isLocal);
         }
 
         public void HandleDestroyNotify(in EntityDestroyCommand command)
         {
-            // 注销实体模拟
             _simulator.Kernel.Unregister(command.entityId);
-            _entityFactory.HandleDestroyEntityCommand(command);
+            RemoveSpawnedPlayer(command.entityId);
+            _entityFactory.DestroyEntity(command.entityId);
         }
 
         #endregion
 
         #region 服务端消息处理
 
-        public void HandlePlayerInput(Guid playerId, Player_Input input)
+        public void HandlePlayerInput(Guid playerId, Player_Inputs input)
         {
-            ((HostSimulationKernel)_simulator).HandlePlayerInput(playerId, input);
+            _hostKernel.HandlePlayerInput(playerId, input);
         }
 
         public void HandleSpawnSyncRequest(Guid playerId)
         {
-            foreach (var identity in _entityFactory.GetActiveEntities())
+            foreach (var pair in _spawnedPlayers)
             {
-                _simulator.Kernel.TryGet(identity.EntityId, out _, out var character);
-                if (identity is PlayerIdentity playerIdentity)
-                {
-                    EntitySpawnCommand command = new EntitySpawnCommand
-                    {
-                        entityTypeId = playerIdentity.EntityType,
-                        position =  character.transform.position,
-                        rotation = character.transform.rotation,
-                    };
-                    _serverHandler.SendSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, command);
-                }
+                PlayerIdentity playerIdentity = pair.Value;
+                EntityCharacter character = playerIdentity.GetComponent<EntityCharacter>();
+                EntitySnapshot snapshot = character.CaptureSnapshot();
+                EntitySpawnCommand command = CreatePlayerSpawnCommand(snapshot);
+                _serverHandler.SendSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, command, snapshot);
             }
         }
 

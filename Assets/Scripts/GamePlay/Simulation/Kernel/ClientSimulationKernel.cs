@@ -12,7 +12,7 @@ namespace GamePlay.Simulation
     public class ClientSimulationKernel : ISimulationKernel
     {
         private BattleClientHandler _clientHandler;
-        private IInputStateProvider _localInputProvider;
+        private IInputProvider _localInputProvider;
 
         private VisualInterpolation _visualInterpolation;
         private SnapshotInterpolation _snapshotInterpolation;
@@ -95,7 +95,7 @@ namespace GamePlay.Simulation
         
         private void OnPlayerInputTick(uint inputTick)
         {
-            InputState input = _localInputProvider.GetInputState();
+            InputCommand input = _localInputProvider.GetInputCommand();
             _clientHandler.SendPlayerInput(inputTick, input);
         }
 
@@ -129,7 +129,7 @@ namespace GamePlay.Simulation
                     _snapshotInterpolation.AddFrame(playerState.EntityId, new EntityAuthorityFrame
                     {
                         snapshotTick = snapshot.SnapshotTick,
-                        state = ProtoUtils.ToRollbackState(playerState),
+                        state = playerState.ToSnapshot(),
                     });
                 }
 
@@ -139,7 +139,7 @@ namespace GamePlay.Simulation
                     _clientPrediction.ReceiveAuthorityFrame(playerState.EntityId, playerState.LastProcessedInputTick, new EntityAuthorityFrame
                     {
                         snapshotTick = snapshot.SnapshotTick,
-                        state = ProtoUtils.ToRollbackState(playerState),
+                        state = playerState.ToSnapshot(),
                     });
                 }
             }

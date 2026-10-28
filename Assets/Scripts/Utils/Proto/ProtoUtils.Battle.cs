@@ -1,5 +1,7 @@
 ﻿using System;
+using Framework;
 using GamePlay.EntitySpawn;
+using GamePlay.EntitySystem;
 using NetSync;
 
 namespace Utils
@@ -9,7 +11,52 @@ namespace Utils
     /// </summary>
     public static partial class ProtoUtils
     {
-        public static Entity_Spawn_Notify ToProto(this EntitySpawnCommand command, uint entityId, Guid playerId)
+        // ========== 玩家控制命令 ==========
+        // ========== 玩家控制命令 ==========
+        // ========== 玩家控制命令 ==========
+        
+        public static Input_Command ToProto(this in InputCommand input, uint inputTick)
+        {
+            return new Input_Command
+            {
+                InputTick = inputTick,
+                MoveInput = input.MoveInput.ToProto(),
+                AimInput = input.AimInput.ToProto(),
+                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
+                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
+                IsSpecialActionPressed = input.IsSpecialActionPressed,
+                IsInteractPressed = input.IsInteractPressed,
+                IsSprintPressed = input.IsSprintPressed,
+                IsJumpPressed = input.IsJumpPressed,
+                IsSwitchModePressed = input.IsSwitchModePressed,
+            };
+        }
+
+        public static InputCommand ToCommand(this Input_Command input)
+        {
+            return new InputCommand
+            {
+                MoveInput = input.MoveInput.ToUnity(),
+                AimInput = input.AimInput.ToUnity(),
+                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
+                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
+                IsSpecialActionPressed = input.IsSpecialActionPressed,
+                IsInteractPressed = input.IsInteractPressed,
+                IsSprintPressed = input.IsSprintPressed,
+                IsJumpPressed = input.IsJumpPressed,
+                IsSwitchModePressed = input.IsSwitchModePressed,
+            };
+        }
+        
+        // ========== 玩家控制命令 ==========
+        // ========== 玩家控制命令 ==========
+        // ========== 玩家控制命令 ==========
+        
+        // ========== 战局事件 ==========
+        // ========== 战局事件 ==========
+        // ========== 战局事件 ==========
+        
+        public static Entity_Spawn_Notify ToProto(this EntitySpawnCommand command, uint entityId, Guid playerId, in EntitySnapshot snapshot)
         {
             return new Entity_Spawn_Notify
             {
@@ -18,6 +65,7 @@ namespace Utils
                 PlayerId = playerId.ToString(),
                 Position = command.position.ToProto(),
                 Rotation = command.rotation.ToProto(),
+                Snapshot = snapshot.ToProto(entityId, 0),
             };
         }
 
@@ -46,5 +94,9 @@ namespace Utils
                 entityId = command.EntityId,
             };
         }
+        
+        // ========== 战局事件 ==========
+        // ========== 战局事件 ==========
+        // ========== 战局事件 ==========
     }
 }

@@ -170,7 +170,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 设置模拟实体的控制命令来源
         /// </summary>
-        public bool SetInputSource(uint entityId, IInputStateProvider inputSource)
+        public bool SetInputSource(uint entityId, IInputProvider inputSource)
         {
             if (!TryGet(entityId, out SimulationEntity entity)) return false;
             

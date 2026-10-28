@@ -3,7 +3,7 @@
     /// <summary>
     /// 销毁实体指令
     /// </summary>
-    public struct EntityDestroyCommand : IEntityFactoryCommand
+    public struct EntityDestroyCommand
     {
         public uint entityId;
 

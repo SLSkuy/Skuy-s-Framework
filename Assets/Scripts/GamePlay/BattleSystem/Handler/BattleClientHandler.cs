@@ -15,7 +15,7 @@ namespace GamePlay.BattleSystem
     {
         private const int RECENT_INPUT_COUNT = 4;
         
-        private readonly List<Input_Sample> _recentInputs = new();
+        private readonly List<Input_Command> _recentInputs = new();
         private readonly BattleManager _battleManager;
         private NetClient _client;
 
@@ -55,17 +55,17 @@ namespace GamePlay.BattleSystem
             _client.SendReliable(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
         }
 
-        public void SendPlayerInput(uint inputTick, in InputState input)
+        public void SendPlayerInput(uint inputTick, in InputCommand input)
         {
-            Input_Sample sample = ProtoUtils.ToInputSample(inputTick, input);
-            _recentInputs.Add(sample);
+            Input_Command command = input.ToProto(inputTick);
+            _recentInputs.Add(command);
             if (_recentInputs.Count > RECENT_INPUT_COUNT)
             {
                 _recentInputs.RemoveAt(0);
             }
 
-            Player_Input message = input.ToProto(inputTick);
-            foreach (var inputSample in _recentInputs)
+            Player_Inputs message = new Player_Inputs { CurrentInputs = command };
+            foreach (Input_Command inputSample in _recentInputs)
             {
                 message.RecentInputs.Add(inputSample);
             }
@@ -84,7 +84,7 @@ namespace GamePlay.BattleSystem
 
         private void HandleEntitySpawnNotify(Entity_Spawn_Notify notify)
         {
-            _battleManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand());
+            _battleManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand(), notify.Snapshot.ToSnapshot());
         }
 
         private void HandleEntityDestroyNotify(Entity_Destroy_Notify notify)

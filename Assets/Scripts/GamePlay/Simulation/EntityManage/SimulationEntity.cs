@@ -9,7 +9,7 @@ namespace GamePlay.Simulation
     public sealed class SimulationEntity
     {
         private readonly SimulationCommandBuilder _commandBuilder;
-        private IInputStateProvider _inputSource;
+        private IInputProvider _inputSource;
 
         #region 属性
         public PlayerIdentity Identity { get; }
@@ -40,7 +40,7 @@ namespace GamePlay.Simulation
         /// <summary>
         /// 绑定或解绑本拍意图来源。
         /// </summary>
-        public void SetInputSource(IInputStateProvider inputSource)
+        public void SetInputSource(IInputProvider inputSource)
         {
             _inputSource = inputSource;
         }
@@ -51,7 +51,7 @@ namespace GamePlay.Simulation
         /// </summary>
         public bool TryCollectCommand(out EntityCommand command)
         {
-            InputState input;
+            InputCommand input;
             if (_inputSource is AuthorityInputProvider authority)
             {
                 // 远端输入
@@ -64,7 +64,7 @@ namespace GamePlay.Simulation
             else
             {
                 // 本地输入
-                input = _inputSource?.GetInputState() ?? default;
+                input = _inputSource?.GetInputCommand() ?? default;
             }
 
             command = _commandBuilder.Build(input);

@@ -7,7 +7,7 @@ namespace Framework
     /// 输入状态定义，抽象玩家输入数据，后续网络同步时，只需要同步该数据接口即可
     /// </summary>
     [Serializable]
-    public struct InputState
+    public struct InputCommand
     {
         public Vector2 MoveInput { get; set; }
         public Vector2 AimInput { get; set; }
