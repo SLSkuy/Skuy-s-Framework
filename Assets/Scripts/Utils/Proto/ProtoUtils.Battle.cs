@@ -56,9 +56,9 @@ namespace Utils
         // ========== 战局事件 ==========
         // ========== 战局事件 ==========
         
-        public static Entity_Spawn_Notify ToProto(this EntitySpawnCommand command, uint entityId, Guid playerId, in EntitySnapshot snapshot)
+        public static Player_Spawn_Notify ToProto(this EntitySpawnCommand command, uint entityId, Guid playerId, in EntitySnapshot snapshot)
         {
-            return new Entity_Spawn_Notify
+            return new Player_Spawn_Notify
             {
                 EntityId = entityId,
                 EntityTypeId = (uint)command.entityType,
@@ -69,7 +69,7 @@ namespace Utils
             };
         }
 
-        public static EntitySpawnCommand ToCommand(this Entity_Spawn_Notify notify)
+        public static EntitySpawnCommand ToCommand(this Player_Spawn_Notify notify)
         {
             return new EntitySpawnCommand
             {

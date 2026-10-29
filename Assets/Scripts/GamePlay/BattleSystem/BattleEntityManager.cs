@@ -122,7 +122,7 @@ namespace GamePlay.BattleSystem
             bool isLocal = playerId == _playerData.UUID;
             AssemblePlayer(identity, playerId, snapshot, EntityRole.Authority, isLocal);
             
-            _serverHandler.BroadcastSpawnNotify(identity.EntityId, playerId, command, snapshot);
+            _serverHandler.BroadcastPlayerSpawnNotify(identity.EntityId, playerId, command, snapshot);
         }
 
         /// <summary>
@@ -131,16 +131,15 @@ namespace GamePlay.BattleSystem
         public void OnPlayerLeave(Guid playerId)
         {
             PlayerIdentity playerIdentity = _players[playerId];
-            EntityCharacter character = playerIdentity.GetComponent<EntityCharacter>();
-            _saveData.RestorePlayerSnapshot(playerId, character.CaptureSnapshot());
-
+            RestorePlayer(playerId);
+            
             _simulator.Kernel.Unregister(playerIdentity.EntityId);
             ((HostSimulationKernel)_simulator).UnregisterRemoteInput(playerId);
             _players.Remove(playerId);
 
             EntityDestroyCommand command = new EntityDestroyCommand { entityId = playerIdentity.EntityId };
             DestroyEntity(command);
-            _serverHandler.BroadcastDestroyNotify(command);
+            _serverHandler.BroadcastEntityDestroyNotify(command);
         }
 
         /// <summary>
@@ -224,17 +223,44 @@ namespace GamePlay.BattleSystem
 
         #endregion
 
+        #region 存档管理
+
+        public void RestoreEntity(uint entityId)
+        {
+            EntityIdentity identity = _entities[entityId];
+            EntityCharacter character = identity.GetComponent<EntityCharacter>();
+            // TODO: 存档实体数据
+        }
+
+        /// <summary>
+        /// 存档单个玩家实体数据
+        /// </summary>
+        public void RestorePlayer(Guid playerId)
+        {
+            EntityIdentity identity = _players[playerId];
+            EntityCharacter character = identity.GetComponent<EntityCharacter>();
+            _saveData.RestorePlayerSnapshot(playerId, character.CaptureSnapshot());
+        }
+
+        /// <summary>
+        /// 存储当前所有实体的快照到存档中
+        /// </summary>
+        public void RestoreAllEntity()
+        {
+            // 存储玩家实体
+            foreach (PlayerIdentity identity in _players.Values)
+            {
+                RestorePlayer(identity.PlayerID);
+            }
+        }
+
+        #endregion
+
         #region 生命周期
 
         public void Dispose()
         {
             DestroyAll();
-
-            foreach (PlayerIdentity identity in _players.Values)
-            {
-                EntityCharacter character = identity.GetComponent<EntityCharacter>();
-                _saveData.RestorePlayerSnapshot(identity.PlayerID, character.CaptureSnapshot());
-            }
             
             _clientHandler?.Unbind();
             _serverHandler?.Unbind();
@@ -293,7 +319,7 @@ namespace GamePlay.BattleSystem
                     rotation = Quaternion.identity,
                 };
                     
-                _serverHandler.SendSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, command, snapshot);
+                _serverHandler.SendPlayerSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, command, snapshot);
             }
         }
 

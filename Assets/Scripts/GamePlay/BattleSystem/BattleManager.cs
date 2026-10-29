@@ -113,6 +113,7 @@ namespace GamePlay.BattleSystem
         
         private void DestroyEntitySystem()
         {
+            if(_room.IsHost) _entityManager.RestoreAllEntity();
             _entityManager.Dispose();
 
             _room.PlayerJoined -= _entityManager.OnPlayerJoin;

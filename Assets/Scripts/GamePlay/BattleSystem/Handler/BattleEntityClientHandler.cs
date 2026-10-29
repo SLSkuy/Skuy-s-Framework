@@ -23,7 +23,7 @@ namespace GamePlay.BattleSystem
         {
             Unbind();
             _client = Global.Get<NetClient>();
-            _client.RegisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
+            _client.RegisterHandler<Player_Spawn_Notify>(NetEvent.GAME_PLAYER_SPAWN_NOTIFY, HandlePlayerSpawnNotify);
             _client.RegisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
         }
 
@@ -31,7 +31,7 @@ namespace GamePlay.BattleSystem
         {
             if (_client == null) return;
             
-            _client.UnregisterHandler<Entity_Spawn_Notify>(NetEvent.GAME_ENTITY_SPAWN_NOTIFY, HandleEntitySpawnNotify);
+            _client.UnregisterHandler<Player_Spawn_Notify>(NetEvent.GAME_PLAYER_SPAWN_NOTIFY, HandlePlayerSpawnNotify);
             _client.UnregisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
             _client = null;
         }
@@ -40,7 +40,7 @@ namespace GamePlay.BattleSystem
         
         #region 接收消息
         
-        private void HandleEntitySpawnNotify(Entity_Spawn_Notify notify)
+        private void HandlePlayerSpawnNotify(Player_Spawn_Notify notify)
         {
             _entityManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand(), notify.Snapshot.ToSnapshot());
         }

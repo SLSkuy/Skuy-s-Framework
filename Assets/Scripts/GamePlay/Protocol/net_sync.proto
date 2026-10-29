@@ -162,8 +162,8 @@ message World_Snapshot {
 // ========== 战局事件 ==========
 // ========== 战局事件 ==========
 
-// 主机通知客户端生成实体
-message Entity_Spawn_Notify {
+// 玩家实体生成通知
+message Player_Spawn_Notify {
     uint32 entityId = 1;
     uint32 entityTypeId = 2;
     string playerId = 3;

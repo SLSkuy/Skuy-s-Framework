@@ -29,7 +29,7 @@ namespace Events
         ROOM_HOST_DISSOLVED_NOTIFY,
         
         // 实体生成
-        GAME_ENTITY_SPAWN_NOTIFY,
+        GAME_PLAYER_SPAWN_NOTIFY,
         GAME_ENTITY_DESTROY_NOTIFY,
         GAME_ENTITY_SPAWN_SYNC_REQUEST,
         

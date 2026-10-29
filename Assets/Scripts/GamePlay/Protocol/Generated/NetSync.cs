@@ -63,7 +63,7 @@ namespace NetSync {
             "ChhhcHBsaWVkX2xvY29tb3Rpb25fc3BlZWQYEiABKAISKgoTbGFzdF9tb3Zl",
             "X2RpcmVjdGlvbhgTIAEoCzINLk5ldFN5bmMuVmVjMyJaCg5Xb3JsZF9TbmFw",
             "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SMgoQUGxheWVyX3NuYXBzaG90",
-            "cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1NuYXBzaG90Ir0BChNFbnRpdHlf",
+            "cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1NuYXBzaG90Ir0BChNQbGF5ZXJf",
             "U3Bhd25fTm90aWZ5EhAKCGVudGl0eUlkGAEgASgNEhQKDGVudGl0eVR5cGVJ",
             "ZBgCIAEoDRIQCghwbGF5ZXJJZBgDIAEoCRIfCghwb3NpdGlvbhgEIAEoCzIN",
             "Lk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgFIAEoCzINLk5ldFN5bmMuUXVh",
@@ -88,7 +88,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsDashing", "IsGrounded", "DashDirection", "DashRemainingTime", "DesiredLocomotionSpeed", "AppliedLocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Spawn_Notify), global::NetSync.Entity_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Spawn_Notify), global::NetSync.Player_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Destroy_Notify), global::NetSync.Entity_Destroy_Notify.Parser, new[]{ "EntityId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Spawn_Sync_Request), global::NetSync.Entity_Spawn_Sync_Request.Parser, null, null, null, null, null)
           }));
@@ -4497,18 +4497,18 @@ namespace NetSync {
   }
 
   /// <summary>
-  /// 主机通知客户端生成实体
+  /// 玩家实体生成通知
   /// </summary>
-  public sealed partial class Entity_Spawn_Notify : pb::IMessage<Entity_Spawn_Notify>
+  public sealed partial class Player_Spawn_Notify : pb::IMessage<Player_Spawn_Notify>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Entity_Spawn_Notify> _parser = new pb::MessageParser<Entity_Spawn_Notify>(() => new Entity_Spawn_Notify());
+    private static readonly pb::MessageParser<Player_Spawn_Notify> _parser = new pb::MessageParser<Player_Spawn_Notify>(() => new Player_Spawn_Notify());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Entity_Spawn_Notify> Parser { get { return _parser; } }
+    public static pb::MessageParser<Player_Spawn_Notify> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -4524,7 +4524,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Entity_Spawn_Notify() {
+    public Player_Spawn_Notify() {
       OnConstruction();
     }
 
@@ -4532,7 +4532,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Entity_Spawn_Notify(Entity_Spawn_Notify other) : this() {
+    public Player_Spawn_Notify(Player_Spawn_Notify other) : this() {
       entityId_ = other.entityId_;
       entityTypeId_ = other.entityTypeId_;
       playerId_ = other.playerId_;
@@ -4544,8 +4544,8 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Entity_Spawn_Notify Clone() {
-      return new Entity_Spawn_Notify(this);
+    public Player_Spawn_Notify Clone() {
+      return new Player_Spawn_Notify(this);
     }
 
     /// <summary>Field number for the "entityId" field.</summary>
@@ -4623,12 +4623,12 @@ namespace NetSync {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Entity_Spawn_Notify);
+      return Equals(other as Player_Spawn_Notify);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Entity_Spawn_Notify other) {
+    public bool Equals(Player_Spawn_Notify other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -4766,7 +4766,7 @@ namespace NetSync {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Entity_Spawn_Notify other) {
+    public void MergeFrom(Player_Spawn_Notify other) {
       if (other == null) {
         return;
       }
