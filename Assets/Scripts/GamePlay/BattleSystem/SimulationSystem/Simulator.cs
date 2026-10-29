@@ -81,7 +81,7 @@ namespace GamePlay.BattleSystem
         private void StartSnapshotTick()
         {
             _snapshotTickSystem = new TickSystem(_simulationData.SnapshotSyncRate, _simulationData.MaxTickPerFrame);
-            _simulationTickSystem.Tick += OnSnapshotTick;
+            _snapshotTickSystem.Tick += OnSnapshotTick;
             _snapshotTickSystem.Start();
         }
         
