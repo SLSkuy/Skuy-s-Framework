@@ -15,7 +15,7 @@ namespace GamePlay.BattleSystem
         private readonly SimulationDataProxy _simulationData = Global.GetDataProxy<SimulationDataProxy>();
         private readonly RoomDataProxy _roomData = Global.GetDataProxy<RoomDataProxy>();
         
-        private readonly Dictionary<Guid, AuthorityInputProvider> _remoteInputs = new();
+        private readonly Dictionary<Guid, NetworkInputProvider> _remoteInputs = new();
         private readonly List<PlayerProcessedSnapshot> _snapshotBuffer = new();
         private BattleServerHandler _serverHandler;
 
@@ -62,7 +62,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void RegisterRemoteInput(Guid playerId, uint entityId)
         {
-            AuthorityInputProvider provider = new AuthorityInputProvider(_simulationData.MaxBufferedInputs, _simulationData.MaxFutureInputs);
+            NetworkInputProvider provider = new NetworkInputProvider(_simulationData.MaxBufferedInputs, _simulationData.MaxFutureInputs);
             _remoteInputs[playerId] = provider;
             Kernel.SetInputSource(entityId, provider);
         }
@@ -123,7 +123,7 @@ namespace GamePlay.BattleSystem
 
         public void HandlePlayerInput(Guid playerId, Player_Inputs input)
         {
-            if (!_remoteInputs.TryGetValue(playerId, out AuthorityInputProvider provider)) return;
+            if (!_remoteInputs.TryGetValue(playerId, out NetworkInputProvider provider)) return;
 
             if (input.RecentInputs.Count > 0)
             {

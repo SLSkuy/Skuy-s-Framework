@@ -28,7 +28,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public uint GetLastProcessInputTick()
         {
-            if (_inputSource is AuthorityInputProvider input)
+            if (_inputSource is NetworkInputProvider input)
             {
                 return input.LastProcessedTick;
             }
@@ -51,7 +51,7 @@ namespace GamePlay.BattleSystem
         public bool TryCollectCommand(out EntityControlCommand command)
         {
             InputCommand input;
-            if (_inputSource is AuthorityInputProvider authority)
+            if (_inputSource is NetworkInputProvider authority)
             {
                 // 远端输入
                 if (!authority.TryGetInputCommand(out input))
