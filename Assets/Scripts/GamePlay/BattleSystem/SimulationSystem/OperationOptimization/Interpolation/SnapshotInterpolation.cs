@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using Framework;
 using GamePlay.DataProxy;
@@ -25,21 +26,23 @@ namespace GamePlay.BattleSystem
         private readonly Simulator _simulator;
         
         private readonly float _snapshotTickRate;
-        private readonly int _delayTicks;
-        private readonly int _capacity;
+        private readonly int _targetBufferedTicks;
+        private readonly int _snapshotBufferCapacity;
 
         /// <summary>
         /// 当前播放的服务端Tick，取出包围当前Tick的两个快照，进行插值显示
         /// </summary>
-        private double _playbackTick;
-        private bool _hasPlayback;
+        private double _currentPlaybackTick;
+        private bool _hasStartedPlayback;   // 是否存在播放窗口，用于辨别首次开始插值或等待插值时间过久
+        private bool _isWaitingForSnapshots;    // 快照消耗完毕，是否等待快照
+        private float _smoothedRemainingSnapshotTicks;  // 剩余可消耗的快照数量
 
         public SnapshotInterpolation(Simulator simulator, int bufferCapacity = 32)
         {
             _simulator = simulator;
-            _delayTicks = _simulationData.InterpolateDelayTick;  // 延迟插值帧，避免出现没有下一帧作为插值样本
+            _targetBufferedTicks = _simulationData.InterpolateDelayTick;  // 延迟插值帧，避免出现没有下一帧作为插值样本
             _snapshotTickRate = _simulationData.SnapshotSyncRate;
-            _capacity = bufferCapacity;
+            _snapshotBufferCapacity = bufferCapacity;
         }
 
         /// <summary>
@@ -51,7 +54,7 @@ namespace GamePlay.BattleSystem
             {
                 track = new EntityTrack
                 {
-                    Buffer = new SnapshotBuffer(_capacity)
+                    Buffer = new SnapshotBuffer(_snapshotBufferCapacity)
                 };
 
                 _tracks.Add(entityId, track);
@@ -67,27 +70,29 @@ namespace GamePlay.BattleSystem
         {
             if (_tracks.Count == 0) return;
 
-            if (!TryGetLatestTick(out uint latestTick)) return;
+            if (!TryGetLatestTick(out uint latestReceivedSnapshotTick, out uint oldestBufferedSnapshotTick)) return;
 
-            // 获取最新和最旧的快照，判断当前客户端播放服务端快照的Tick位置
-            double newestPlayableTick = latestTick > _delayTicks ? latestTick - _delayTicks : 0;
-            if (!_hasPlayback)
+            // 延迟是目标缓冲深度，实际收到的最新快照才是播放边界
+            double targetPlaybackTick = Math.Max(oldestBufferedSnapshotTick, (double)latestReceivedSnapshotTick - _targetBufferedTicks);
+            if (!_hasStartedPlayback)
             {
-                // 当前时间头不处于Tick范围内，强制将快照播放时间头防止再最新位置
-                // 通常出现在首次接收服务端快照时，丢失前面的服务端Tick时间
-                // 则直接从收到的最新服务端Tick开始推进模拟时间
+                // 首次接收快照时，等待形成缓冲窗口，再从目标延迟位置播放。
                 if (!CanStartPlayback()) return;
 
-                _playbackTick = newestPlayableTick;
-                _hasPlayback = true;
+                _currentPlaybackTick = targetPlaybackTick;
+                _smoothedRemainingSnapshotTicks = _targetBufferedTicks;
+                _hasStartedPlayback = true;
+            }
+            else if (_currentPlaybackTick < oldestBufferedSnapshotTick)
+            {
+                // 长时间停顿导致播放位置已被缓冲淘汰时，重新建立播放窗口
+                _currentPlaybackTick = targetPlaybackTick;
+                _smoothedRemainingSnapshotTicks = _targetBufferedTicks;
+                _isWaitingForSnapshots = false;
             }
             else
             {
-                _playbackTick += deltaTime * _snapshotTickRate;
-                if (_playbackTick > newestPlayableTick)
-                {
-                    _playbackTick = newestPlayableTick;
-                }
+                AdvancePlayback(deltaTime, latestReceivedSnapshotTick);
             }
 
             _expiredEntityIds.Clear();
@@ -102,12 +107,51 @@ namespace GamePlay.BattleSystem
 
                 if (!character.IsInitialized) continue;
 
-                PresentEntity(pair.Value, character, _playbackTick);
+                PresentEntity(pair.Value, character, _currentPlaybackTick);
             }
 
             for (int i = 0; i < _expiredEntityIds.Count; i++)
             {
                 _tracks.Remove(_expiredEntityIds[i]);
+            }
+
+            if (_tracks.Count == 0)
+            {
+                _hasStartedPlayback = false;
+                _isWaitingForSnapshots = false;
+            }
+        }
+
+        /// <summary>
+        /// 连续推进播放头，用缓冲深度温和调速，耗尽后等待余量恢复。
+        /// </summary>
+        private void AdvancePlayback(float deltaTime, uint latestReceivedSnapshotTick)
+        {
+            float remainingSnapshotTicks = (float)(latestReceivedSnapshotTick - _currentPlaybackTick);
+            if (_isWaitingForSnapshots)
+            {
+                // 保持当前位置，积累余量到达目标缓存后向前恢复，避免反复短暂停顿或倒播
+                if (remainingSnapshotTicks < Mathf.Max(1, _targetBufferedTicks)) return;
+
+                _isWaitingForSnapshots = false;
+                _smoothedRemainingSnapshotTicks = _targetBufferedTicks;
+            }
+
+            // 滤除逐包到达产生的锯齿，容差内保持原速，最大调速幅度为 5%。
+            float bufferSmoothingFactor = 1f - Mathf.Exp(-2f * deltaTime);
+            _smoothedRemainingSnapshotTicks = Mathf.Lerp(_smoothedRemainingSnapshotTicks, remainingSnapshotTicks, bufferSmoothingFactor);
+            float bufferedTickError = _smoothedRemainingSnapshotTicks - _targetBufferedTicks;
+            float playbackSpeedMultiplier = 1f;
+            if (Mathf.Abs(bufferedTickError) > 0.5f)
+            {
+                playbackSpeedMultiplier += Mathf.Clamp((bufferedTickError - Mathf.Sign(bufferedTickError) * 0.5f) * 0.02f, -0.05f, 0.05f);
+            }
+
+            _currentPlaybackTick += deltaTime * _snapshotTickRate * playbackSpeedMultiplier;
+            if (_currentPlaybackTick >= latestReceivedSnapshotTick)
+            {
+                _currentPlaybackTick = latestReceivedSnapshotTick;
+                _isWaitingForSnapshots = true;
             }
         }
 
@@ -121,7 +165,7 @@ namespace GamePlay.BattleSystem
                 SnapshotBuffer buffer = track.Buffer;
                 if (buffer.Count < 2) continue;
 
-                if (buffer.LatestTick - buffer.OldestTick >= _delayTicks)
+                if (buffer.LatestTick - buffer.OldestTick >= _targetBufferedTicks)
                 {
                     return true;
                 }
@@ -130,9 +174,10 @@ namespace GamePlay.BattleSystem
             return false;
         }
 
-        private bool TryGetLatestTick(out uint latestTick)
+        private bool TryGetLatestTick(out uint latestReceivedSnapshotTick, out uint oldestBufferedSnapshotTick)
         {
-            latestTick = 0;
+            latestReceivedSnapshotTick = 0;
+            oldestBufferedSnapshotTick = uint.MaxValue;
             bool hasFrame = false;
 
             foreach (EntityTrack track in _tracks.Values)
@@ -140,9 +185,11 @@ namespace GamePlay.BattleSystem
                 SnapshotBuffer buffer = track.Buffer;
                 if (buffer.Count == 0) continue;
 
-                if (!hasFrame || buffer.LatestTick > latestTick)
+                if (buffer.OldestTick < oldestBufferedSnapshotTick) oldestBufferedSnapshotTick = buffer.OldestTick;
+
+                if (!hasFrame || buffer.LatestTick > latestReceivedSnapshotTick)
                 {
-                    latestTick = buffer.LatestTick;
+                    latestReceivedSnapshotTick = buffer.LatestTick;
                     hasFrame = true;
                 }
             }
@@ -153,45 +200,45 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 根据playbackTick，获取包围playbackTick的两个快照，进行快照插值
         /// </summary>
-        private void PresentEntity(EntityTrack track, EntityCharacter character, double playbackTick)
+        private void PresentEntity(EntityTrack track, EntityCharacter character, double currentPlaybackTick)
         {
             SnapshotBuffer buffer = track.Buffer;
             if (buffer.Count == 0) return;
 
             // 当前播放头Tick位置小于缓存的最旧的快照，直接使用最旧的快照
-            if (playbackTick < buffer.OldestTick)
+            if (currentPlaybackTick < buffer.OldestTick)
             {
-                if (buffer.TryGetOldest(out EntityAuthoritySnapshot oldest))
+                if (buffer.TryGetOldest(out EntityAuthoritySnapshot oldestSnapshot))
                 {
-                    ApplyCrossed(track, character, buffer, oldest.snapshotTick);    // 直接应用离散状态
-                    ApplySnapshot(character, oldest);   // 写入移动连续状态插值位置
+                    ApplyCrossed(track, character, buffer, oldestSnapshot.snapshotTick);    // 直接应用离散状态
+                    ApplySnapshot(character, oldestSnapshot);   // 写入移动连续状态插值位置
                 }
 
                 return;
             }
             
             // 获取包围当前播放头Tick位置的两个快照
-            if (!buffer.TryGetFrame(playbackTick, out EntityAuthoritySnapshot from, out EntityAuthoritySnapshot to))
+            if (!buffer.TryGetFrame(currentPlaybackTick, out EntityAuthoritySnapshot previousSnapshot, out EntityAuthoritySnapshot nextSnapshot))
             {
                 // 当前播放头Tick位置大于缓存的最新的快照，直接使用最新的快照
-                if (buffer.TryGetLatest(out EntityAuthoritySnapshot latest))
+                if (buffer.TryGetLatest(out EntityAuthoritySnapshot latestSnapshot))
                 {
-                    ApplyCrossed(track, character, buffer, latest.snapshotTick);
-                    ApplySnapshot(character, latest);
+                    ApplyCrossed(track, character, buffer, latestSnapshot.snapshotTick);
+                    ApplySnapshot(character, latestSnapshot);
                 }
 
                 return;
             }
             
             // 离散状态使用包围当前播放头Tick位置前一个Tick的状态
-            ApplyCrossed(track, character, buffer, from.snapshotTick);
+            ApplyCrossed(track, character, buffer, previousSnapshot.snapshotTick);
             
             // 播放头Tick处于两个快照之间，执行插值逻辑
-            float span = to.snapshotTick - from.snapshotTick;
-            float alpha = Mathf.Clamp01((float)((playbackTick - from.snapshotTick) / span));
+            float snapshotIntervalTicks = nextSnapshot.snapshotTick - previousSnapshot.snapshotTick;
+            float interpolationFactor = Mathf.Clamp01((float)((currentPlaybackTick - previousSnapshot.snapshotTick) / snapshotIntervalTicks));
 
             // 应用已经插值过的快照状态
-            InterpolateSnapshot(character, from, to, alpha);
+            InterpolateSnapshot(character, previousSnapshot, nextSnapshot, interpolationFactor);
         }
         
         /// <summary>
@@ -221,24 +268,24 @@ namespace GamePlay.BattleSystem
             character.PresentReplicaPose(movement.rootPosition, movement.meshRotation, snapshot.state.view.viewRotation);
         }
 
-        private void InterpolateSnapshot(EntityCharacter character, in EntityAuthoritySnapshot from, in EntityAuthoritySnapshot to, float alpha)
+        private void InterpolateSnapshot(EntityCharacter character, in EntityAuthoritySnapshot previousSnapshot, in EntityAuthoritySnapshot nextSnapshot, float interpolationFactor)
         {
             // 插值实体姿态
-            InterpolatePose(character, from, to, alpha);   
+            InterpolatePose(character, previousSnapshot, nextSnapshot, interpolationFactor);
         }
         
         /// <summary>
         /// 插值实体移动旋转相关表现
         /// </summary>
-        private void InterpolatePose(EntityCharacter character, in EntityAuthoritySnapshot from, in EntityAuthoritySnapshot to, float alpha)
+        private void InterpolatePose(EntityCharacter character, in EntityAuthoritySnapshot previousSnapshot, in EntityAuthoritySnapshot nextSnapshot, float interpolationFactor)
         {
-            MovementSnapshot fromMovement = from.state.movement;
-            MovementSnapshot toMovement = to.state.movement;
+            MovementSnapshot previousMovement = previousSnapshot.state.movement;
+            MovementSnapshot nextMovement = nextSnapshot.state.movement;
 
             // 旋转使用球形插值
-            character.PresentReplicaPose(Vector3.Lerp(fromMovement.rootPosition, toMovement.rootPosition, alpha),
-                Quaternion.Slerp(fromMovement.meshRotation, toMovement.meshRotation, alpha),
-                Quaternion.Slerp(from.state.view.viewRotation, to.state.view.viewRotation, alpha));
+            character.PresentReplicaPose(Vector3.Lerp(previousMovement.rootPosition, nextMovement.rootPosition, interpolationFactor),
+                Quaternion.Slerp(previousMovement.meshRotation, nextMovement.meshRotation, interpolationFactor),
+                Quaternion.Slerp(previousSnapshot.state.view.viewRotation, nextSnapshot.state.view.viewRotation, interpolationFactor));
         }
 
         #endregion
@@ -252,8 +299,10 @@ namespace GamePlay.BattleSystem
             _expiredEntityIds.Clear();
             _crossedFrames.Clear();
 
-            _playbackTick = 0;
-            _hasPlayback = false;
+            _currentPlaybackTick = 0;
+            _hasStartedPlayback = false;
+            _isWaitingForSnapshots = false;
+            _smoothedRemainingSnapshotTicks = 0f;
         }
     }
 }
