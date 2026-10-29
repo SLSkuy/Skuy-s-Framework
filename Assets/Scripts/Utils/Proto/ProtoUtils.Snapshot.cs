@@ -1,4 +1,4 @@
-using GamePlay.EntitySystem;
+using GamePlay.BattleSystem;
 using UnityEngine;
 using NetSync;
 

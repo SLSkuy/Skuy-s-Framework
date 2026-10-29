@@ -1,5 +1,5 @@
 ﻿using Framework;
-using GamePlay.Simulation;
+using GamePlay.BattleSystem;
 using YooAsset;
 
 namespace GamePlay.DataProxy

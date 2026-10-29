@@ -2,7 +2,6 @@
 using Framework;
 using GamePlay.DataProxy;
 using GamePlay.Room;
-using GamePlay.Simulation;
 using NetSync;
 
 namespace GamePlay.BattleSystem

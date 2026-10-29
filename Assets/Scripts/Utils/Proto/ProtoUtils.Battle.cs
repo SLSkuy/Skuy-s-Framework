@@ -1,7 +1,6 @@
 ﻿using System;
 using Framework;
-using GamePlay.EntitySpawn;
-using GamePlay.EntitySystem;
+using GamePlay.BattleSystem;
 using NetSync;
 
 namespace Utils

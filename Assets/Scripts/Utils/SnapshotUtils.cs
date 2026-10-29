@@ -1,5 +1,5 @@
 ﻿using Framework;
-using GamePlay.EntitySystem;
+using GamePlay.BattleSystem;
 
 namespace Utils
 {

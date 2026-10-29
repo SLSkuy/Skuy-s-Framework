@@ -1,4 +1,4 @@
-using GamePlay.EntitySystem;
+using GamePlay.BattleSystem;
 
 namespace GamePlay.GameData
 {

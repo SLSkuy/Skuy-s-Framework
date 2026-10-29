@@ -1,0 +1,40 @@
+using GamePlay.BattleSystem;
+using Utils;
+
+namespace Framework
+{
+    /// <summary>
+    /// 将输入状态转换为每 Tick 完整命令，并在命令边界计算按钮边沿。
+    /// </summary>
+    public class SimulationCommandBuilder
+    {
+        private EntityCommandFlags _previousHeldFlags;
+
+        /// <summary>
+        /// 根据当前输入状态构建命令。
+        /// </summary>
+        public EntityControlCommand Build(in InputCommand input)
+        {
+            EntityCommandFlags heldFlags = SnapshotUtils.GetHeldFlags(input);
+            EntityControlCommand command = new()
+            {
+                move = input.MoveInput,
+                aim = input.AimInput,
+                flagsHeld = heldFlags,
+                flagsPressed = heldFlags & ~_previousHeldFlags,
+                flagsReleased = _previousHeldFlags & ~heldFlags
+            };
+
+            _previousHeldFlags = heldFlags;
+            return command;
+        }
+
+        /// <summary>
+        /// 清空边沿检测基线。
+        /// </summary>
+        public void Reset()
+        {
+            _previousHeldFlags = EntityCommandFlags.None;
+        }
+    }
+}

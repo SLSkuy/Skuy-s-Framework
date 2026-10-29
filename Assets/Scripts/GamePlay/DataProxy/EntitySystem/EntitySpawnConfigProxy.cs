@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Framework;
-using GamePlay.EntitySpawn;
+using GamePlay.BattleSystem;
 
 namespace GamePlay.DataProxy
 {

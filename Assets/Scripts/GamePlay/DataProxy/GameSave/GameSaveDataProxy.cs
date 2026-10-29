@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Core;
 using Framework;
-using GamePlay.EntitySystem;
+using GamePlay.BattleSystem;
 using GamePlay.GameData;
 
 namespace GamePlay.DataProxy

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Events;
 using Framework;
 using GamePlay.Room;
-using GamePlay.Simulation;
 using NetSync;
 using Utils;
 
@@ -40,7 +39,7 @@ namespace GamePlay.BattleSystem
         
         #region 发送消息
         
-        public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedFrame> samples)
+        public void BroadcastWorldSnapshot(uint snapshotTick, List<PlayerProcessedSnapshot> samples)
         {
             World_Snapshot message = new World_Snapshot { SnapshotTick = snapshotTick };
             foreach (var sample in samples)

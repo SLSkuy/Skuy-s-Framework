@@ -1,0 +1,95 @@
+using UnityEngine;
+using Utils;
+
+namespace GamePlay.BattleSystem
+{
+    /// <summary>
+    /// 第三人称视角节点模拟：在实体根上查找 orientation，用瞄准增量驱动偏航与俯仰。
+    /// </summary>
+    public sealed class ViewModule : EntityModuleBase<ViewSnapshot>
+    {
+        private const string ORIENTATION_CHILD_NAME = "orientation";
+
+        private CharacterConfig _config;
+        private float _yaw;
+        private float _pitch;
+
+        #region 属性
+        public override ModuleType ModuleType => ModuleType.View;
+        public Transform Orientation { get; private set; }
+        public Quaternion ViewRotation => Quaternion.Euler(_pitch, _yaw, 0f);
+        public Vector3 AngularVelocity { get; private set; }
+        public float Yaw => _yaw;
+        public float Pitch => _pitch;
+        #endregion
+
+        /// <summary>
+        /// 绑定配置并解析默认视角子节点
+        /// </summary>
+        public void Init(CharacterConfig config)
+        {
+            _config = config;
+            Orientation = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{ORIENTATION_CHILD_NAME}");
+            Vector3 euler = Orientation.rotation.eulerAngles;
+            _yaw = euler.y;
+            _pitch = MathUtils.NormalizePitch(euler.x);
+        }
+
+        /// <summary>
+        /// 按瞄准增量推进视角，并写入 orientation 的世界旋转
+        /// </summary>
+        public void Look(Vector2 aimDelta, float deltaTime)
+        {
+            if (deltaTime <= 0f) return;
+
+            Quaternion previousRotation = ViewRotation;
+            _yaw += aimDelta.x * _config.aimHorizontalSpeed * deltaTime;
+            _pitch -= aimDelta.y * _config.aimVerticalSpeed * deltaTime;
+            _pitch = Mathf.Clamp(_pitch, _config.minAimPitch, _config.maxAimPitch);
+            Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+            AngularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
+        }
+        
+        #region 快照逻辑
+        
+        /// <summary>
+        /// 从网络可见四元数恢复视角，供 Replica 插值与权威应用使用
+        /// </summary>
+        public void Restore(Quaternion viewRotation, Vector3 angularVelocity)
+        {
+            Vector3 euler = viewRotation.eulerAngles;
+            _yaw = euler.y;
+            _pitch = Mathf.Clamp(MathUtils.NormalizePitch(euler.x), _config.minAimPitch, _config.maxAimPitch);
+
+            AngularVelocity = angularVelocity;
+            Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        }
+
+        /// <summary>
+        /// 捕获视角回滚状态
+        /// </summary>
+        public override ViewSnapshot CaptureSnapshot()
+        {
+            return new ViewSnapshot
+            {
+                viewAngularVelocity = AngularVelocity,
+                viewRotation = ViewRotation,
+                yaw = _yaw,
+                pitch = _pitch
+            };
+        }
+
+        /// <summary>
+        /// 恢复视角回滚状态
+        /// </summary>
+        public override void RestoreSnapshot(in ViewSnapshot state)
+        {
+            _yaw = state.yaw;
+            _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);
+            AngularVelocity = state.viewAngularVelocity;
+            Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        }
+
+        #endregion
+    }
+}
