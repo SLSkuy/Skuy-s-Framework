@@ -1,11 +1,6 @@
----
-description: C# coding style and data-flow rules; avoid over-defensive code and silent recovery of broken invariants.
-alwaysApply: true
----
+﻿# C# Coding Style
 
-# C# Coding Style
-
-C# naming, style, member order, and data-flow guards. Folders, namespaces, and patterns: `architecture.md`.
+C# naming, style, member order, and data-flow guards. Project structure and module organization: see the repository-root `AGENTS.md`.
 
 Use C#, 4-space indent, braces on their own line. Types/methods: `PascalCase`. Locals/parameters: `camelCase`. Update existing XML summaries and comments in place; keep banner comments on their field groups.
 

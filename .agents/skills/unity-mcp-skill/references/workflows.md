@@ -1,4 +1,4 @@
-# Unity-MCP Workflow Patterns
+﻿# Unity-MCP Workflow Patterns
 
 Common workflows and patterns for effective Unity-MCP usage.
 
@@ -8,7 +8,6 @@ Common workflows and patterns for effective Unity-MCP usage.
 - [Scene Creation Workflows](#scene-creation-workflows)
 - [Script Development Workflows](#script-development-workflows)
 - [Asset Management Workflows](#asset-management-workflows)
-- [Testing Workflows](#testing-workflows)
 - [Debugging Workflows](#debugging-workflows)
 - [UI Creation Workflows](#ui-creation-workflows)
 - [Camera & Cinemachine Workflows](#camera--cinemachine-workflows)
@@ -492,91 +491,6 @@ batch_execute(commands=[
 ```
 
 > **Note:** `manage_prefabs` is for headless prefab editing (inspect, modify contents, create from GameObject). To *instantiate* a prefab into the scene, always use `manage_gameobject(action="create", prefab_path="...")`.
-
----
-
-
-
-## Testing Workflows
-
-
-
-### Run Specific Tests
-
-```python
-# 1. List available tests
-# Read mcpforunity://tests/EditMode
-
-# 2. Run specific tests
-result = run_tests(
-    mode="EditMode",
-    test_names=["MyTests.TestPlayerMovement", "MyTests.TestEnemySpawn"],
-    include_failed_tests=True
-)
-job_id = result["job_id"]
-
-# 3. Wait for results
-final_result = get_test_job(
-    job_id=job_id,
-    wait_timeout=60,
-    include_failed_tests=True
-)
-
-# 4. Check results
-if final_result["status"] == "complete":
-    for test in final_result.get("failed_tests", []):
-        print(f"FAILED: {test['name']}: {test['message']}")
-```
-
-
-
-### Run Tests by Category
-
-```python
-# Run all unit tests
-result = run_tests(
-    mode="EditMode",
-    category_names=["Unit"],
-    include_failed_tests=True
-)
-
-# Poll until complete
-while True:
-    status = get_test_job(job_id=result["job_id"], wait_timeout=30)
-    if status["status"] in ["complete", "failed"]:
-        break
-```
-
-
-
-### Test-Driven Development Pattern
-
-```python
-# 1. Write test first
-create_script(
-    path="Assets/Tests/Editor/PlayerTests.cs",
-    contents='''using NUnit.Framework;
-using UnityEngine;
-
-public class PlayerTests
-{
-    [Test]
-    public void TestPlayerStartsAtOrigin()
-    {
-        var player = new GameObject("TestPlayer");
-        Assert.AreEqual(Vector3.zero, player.transform.position);
-        Object.DestroyImmediate(player);
-    }
-}'''
-)
-
-# 2. Wait for compilation (create_script auto-triggers import + compile)
-# Read mcpforunity://editor/state → wait until is_compiling == false
-
-# 3. Run test (expect pass for this simple test)
-result = run_tests(mode="EditMode", test_names=["PlayerTests.TestPlayerStartsAtOrigin"])
-get_test_job(job_id=result["job_id"], wait_timeout=30)
-```
 
 ---
 
@@ -2024,7 +1938,7 @@ manage_packages(action="status", job_id="<job_id>")
 
 
 
-### Iterative Development Loop (Edit → Deploy → Test)
+### Iterative Development Loop (Edit → Deploy → Compile)
 
 Use `deploy_package` to copy your local MCPForUnity source into the project's installed package location. This bypasses the UI dialog and triggers recompilation automatically.
 
@@ -2043,8 +1957,6 @@ refresh_unity(mode="force", compile="request", wait_for_ready=True)
 # 4. Check for compilation errors
 read_console(types=["error"], count=10, include_stacktrace=True)
 
-# 5. Test the changes
-run_tests(mode="EditMode")
 ```
 
 

@@ -1,21 +1,23 @@
-## Agent skills
+# Repository Guidelines
 
-### Issue tracker
+## Project Structure & Module Organization
 
-Issues live as markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+This Unity framework uses URP, ECS, HybridCLR, and YooAsset. Runtime C# lives in `Assets/Scripts/`: `Core` and `Framework` provide infrastructure, `GamePlay` implements gameplay, and `Network`, `UI`, `Events`, and `Utils` contain supporting modules. Editor tools belong in `Assets/Scripts/Editor`. `Launch.cs` and `MainEntry.cs` are entry points.
 
-### Triage labels
+Scenes live in `Assets/Scenes`, including `LaunchScene.unity` and development scenes under `Dev`. Prefabs, art, audio, shaders, and configuration have dedicated folders under `Assets`. Keep vendor code in `Assets/ThirdParty` separate from project changes. Dependencies and editor settings live in `Packages` and `ProjectSettings`.
 
-Canonical role labels: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+## Coding Style & Naming Conventions
 
-### Domain docs
+When editing `Assets/Scripts/**/*.cs`, read and follow [.agents/rules/coding-style.md](.agents/rules/coding-style.md). Use IDE formatting with the repository's `.editorconfig` settings.
 
-Single-context: one CONTEXT.md and docs/adr/ at the repo root. See `docs/agents/domain.md`.
+## Development Workflow
 
-### Cursor rules
+For Unity Editor operations through MCP, use the repository skill at [.agents/skills/unity-mcp-skill/SKILL.md](.agents/skills/unity-mcp-skill/SKILL.md); load its references only as needed. Ordinary C# edits follow the coding guide above.
 
-Persistent project rules live in `.cursor/rules/` (apply when editing `Assets/Scripts/**/*.cs`):
+Code changes do not require writing or running tests. Do not add test execution or coverage requirements to the development workflow.
 
-- `architecture.md` — project structure, namespaces, composition/lifetimes, patterns
-- `coding-style.md` — C# naming, member order, regions, network Handler split, and data-flow (no `EnsureXxx` / silent guards)
-- `unity-meta.md` — do not author `.meta` files; Unity generates them
+## Commit & Pull Request Guidelines
+
+Recent commits use concise Chinese descriptions of changes, without a mandatory prefix. Keep commits focused and descriptive. PRs should explain behavior changes, link relevant issues, and include screenshots for visual changes.
+
+For asset changes, read and follow [.agents/rules/unity-meta.md](.agents/rules/unity-meta.md). Commit Unity-generated `.meta` files with their assets. Exclude generated caches, local IDE files, `HybridCLRData`, and `Bundles`, following `.gitignore`.
