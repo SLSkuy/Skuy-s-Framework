@@ -21,7 +21,7 @@ MonoBehaviour:
   aimVerticalSpeed: 20
   minAimPitch: -40
   maxAimPitch: 70
-  rootMotion: 1
+  rootMotion: 0
   animSpeedSmoothTime: 0.1
   meshTurnSpeed: 360
   radius: 0.2
