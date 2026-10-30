@@ -1,7 +1,6 @@
 using Framework;
 using GamePlay.DataProxy;
 using UnityEngine;
-using Utils;
 
 namespace GamePlay.BattleSystem
 {
@@ -14,17 +13,13 @@ namespace GamePlay.BattleSystem
         
         // 能力组件
         private EntityVisualPresentation _visualPresentation;
-        private EntitySimulation _simulation;
-        private AnimationModule _animationModule;
-        private MovementModule _movementModule;
+        private EntitySimulator _simulator;
         private EntityContext _context;
-        private ViewModule _viewModule;
         
         private bool _isInitialized;
 
         #region 属性
         public EntityContext Context => _context;
-        public EntityState CurrentState => _context?.StateMachine.CurrentState ?? EntityState.IDLE;
         public bool IsInitialized => _isInitialized;
         #endregion
 
@@ -36,9 +31,17 @@ namespace GamePlay.BattleSystem
             if (_isInitialized) return;
 
             InitConfig();
-            InitCapacityModule();
-            InitSimulationContext();
-            RegisterStates();
+            
+            // 注册能力组件
+            _context = new EntityContext(this, config);
+            _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
+            _context.AddAbility<MovementModule>();
+            _context.AddAbility<ViewModule>();
+            _context.AddAbility<AnimationModule>();
+            _context.AddAbility<EntityStateMachineModule>();
+            
+            // 注册模拟控制器
+            _simulator = new EntitySimulator(_context);
             
             _isInitialized = true;
         }
@@ -50,49 +53,6 @@ namespace GamePlay.BattleSystem
             config = Global.GetDataProxy<EntityConfigProxy>().Config;
         }
         
-        /// <summary>
-        /// 初始化能力组件
-        /// </summary>
-        protected virtual void InitCapacityModule()
-        {
-            _movementModule = gameObject.GetOrAddComponent<MovementModule>();
-            _movementModule.Init(config);
-            _movementModule.Bind(this);
-
-            _viewModule = gameObject.GetOrAddComponent<ViewModule>();
-            _viewModule.Init(config);
-            _viewModule.Bind(this);
-            
-            _animationModule = gameObject.GetOrAddComponent<AnimationModule>();
-            _animationModule.Init(config);
-            _animationModule.Bind(this);
-            
-            _visualPresentation = gameObject.GetOrAddComponent<EntityVisualPresentation>();
-            _visualPresentation.Init();
-        }
-        
-        /// <summary>
-        /// 初始化模拟上下文
-        /// </summary>
-        protected virtual void InitSimulationContext()
-        {
-            _context = new EntityContext(config, _movementModule, _viewModule);
-            _simulation = new EntitySimulation(_context);
-        }
-        
-        /// <summary>
-        /// 注册角色默认状态。子类可追加或替换角色专属状态。
-        /// </summary>
-        protected virtual void RegisterStates()
-        {
-            _context.StateMachine.RegisterState(new EntityIdleState(_context));
-            _context.StateMachine.RegisterState(new EntityWalkState(_context));
-            _context.StateMachine.RegisterState(new EntityRunState(_context));
-            _context.StateMachine.RegisterState(new EntitySprintState(_context));
-            _context.StateMachine.RegisterState(new EntityAirborneState(_context));
-            _context.StateMachine.ChangeState(EntityState.IDLE);
-        }
-        
         #region 模拟入口
 
         /// <summary>
@@ -100,7 +60,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void Step(uint tick, float deltaTime, in EntityControlCommand command)
         {
-            _simulation.Step(tick, deltaTime, command);
+            _simulator.Step(tick, deltaTime, command);
         }
 
         /// <summary>
@@ -108,7 +68,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public EntitySnapshot CaptureSnapshot()
         {
-            return _simulation.CaptureSnapshot();
+            return _simulator.CaptureSnapshot();
         }
 
         /// <summary>
@@ -116,7 +76,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void RestoreSimulation(in EntitySnapshot state)
         {
-            _simulation.RestoreSnapshot(state);
+            _simulator.RestoreSnapshot(state);
         }
 
         #endregion
@@ -190,10 +150,18 @@ namespace GamePlay.BattleSystem
             _context.IsRunning = false;
             _context.IsFocus = false;
 
-            _movementModule.ResetMotion();
-            _movementModule.Restore(Quaternion.identity, Vector3.zero);
-            _viewModule.Restore(Quaternion.identity, Vector3.zero);
-            _context.StateMachine.ChangeState(EntityState.IDLE);
+            // 清理移动状态
+            MovementModule movement = _context.Get<MovementModule>();
+            movement.ResetMotion();
+            movement.Restore(Quaternion.identity, Vector3.zero);
+            
+            // 清理视角状态
+            _context.Get<ViewModule>().Restore(Quaternion.identity, Vector3.zero);
+            
+            // 清理状态机
+            _context.Get<EntityStateMachineModule>().ChangeState(EntityState.IDLE);
+            
+            // 清理视觉插值
             _visualPresentation.SnapToAuthority();
         }
     }

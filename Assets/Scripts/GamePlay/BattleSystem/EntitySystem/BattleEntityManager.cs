@@ -158,7 +158,7 @@ namespace GamePlay.BattleSystem
             // 本地操控玩家，设置摄像机跟随
             if (isLocal)
             {
-                Global.Get<CameraManager>().SetTarget(character.Context.View.Orientation);
+                Global.Get<CameraManager>().SetTarget(character.Context.Get<ViewModule>().Orientation);
                 _simulator.Kernel.SetInputSource(identity.EntityId, Global.Get<LocalInputManager>().Provider);
             }
             else

@@ -5,5 +5,7 @@ namespace GamePlay.BattleSystem
         Movement,
         View,
         Animation,
+        StateMachine,
+        VisualPresentation,
     }
 }

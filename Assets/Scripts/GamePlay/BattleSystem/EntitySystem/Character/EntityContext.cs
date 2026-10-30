@@ -1,21 +1,25 @@
-using Framework;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Utils;
 
 namespace GamePlay.BattleSystem
 {
     /// <summary>
-    /// 实体状态机上下文，保存移动与视角相关状态。
+    /// 管理实体能力模块，并保存配置、输入与共享模拟状态。
     /// </summary>
     public class EntityContext
     {
-        public readonly StateMachine<EntityState> StateMachine;
-        public readonly CharacterConfig Config;
-        public readonly MovementModule Movement;
-        public readonly ViewModule View;
+        private readonly Dictionary<Type, EntityModuleBase> _modules = new();
+        private readonly EntityCharacter _character;
 
+        public readonly CharacterConfig Config;
+        public uint CurrentTick;
+        
+        #region 控制命令
         public Vector2 LastMoveInput;
         public Vector2 LastAimInput;
-        public uint CurrentTick;
+        #endregion
 
         #region 瞬时状态
         public bool RunToggleRequest;
@@ -25,18 +29,50 @@ namespace GamePlay.BattleSystem
         #region 持续状态
         public float LocomotionSpeed;
 
-        public bool IsGrounded => Movement.IsGrounded;
         public bool IsSprinting;
         public bool IsRunning;
         public bool IsFocus;
         #endregion
 
-        public EntityContext(CharacterConfig config, MovementModule movement, ViewModule view)
+        public EntityContext(EntityCharacter character, CharacterConfig config)
         {
+            _character = character;
             Config = config;
-            StateMachine = new StateMachine<EntityState>();
-            Movement = movement;
-            View = view;
+        }
+
+        /// <summary>
+        /// 按具体类型获取必需模块；未装配时直接暴露注册错误。
+        /// 高频调用方应在初始化时缓存结果。
+        /// </summary>
+        public T Get<T>() where T : EntityModuleBase
+        {
+            return (T)_modules[typeof(T)];
+        }
+
+        /// <summary>
+        /// 查询可能未装配的可选能力，不创建或初始化组件。
+        /// </summary>
+        public bool TryGet<T>(out T module) where T : EntityModuleBase
+        {
+            if (_modules.TryGetValue(typeof(T), out EntityModuleBase value))
+            {
+                module = (T)value;
+                return true;
+            }
+
+            module = null;
+            return false;
+        }
+
+        /// <summary>
+        /// 为实体添加能力组件
+        /// </summary>
+        public T AddAbility<T>() where T : EntityModuleBase
+        {
+            T module = _character.GetOrAddComponent<T>();
+            _modules.Add(typeof(T), module);
+            module.Bind(_character);
+            return module;
         }
 
         /// <summary>

@@ -7,12 +7,11 @@ namespace GamePlay.BattleSystem
     /// 实体根节点 Transform 能力：位置模拟、mesh 身体偏航与 Replica 碰撞切换
     /// 根节点旋转保持为单位四元数；身体朝向写在直接子节点 mesh 上
     /// </summary>
-    public class MovementModule : EntityModuleBase<MovementSnapshot>
+    public class MovementModule : EntitySnapshotModuleBase<MovementSnapshot>
     {
         private const string MESH_CHILD_NAME = "mesh";
 
         private CharacterController _controller;
-        private CharacterConfig _config;
         private Transform _mesh;
 
         private Vector3 _lastMoveDir;
@@ -36,12 +35,11 @@ namespace GamePlay.BattleSystem
         #endregion
 
         /// <summary>
-        /// 初始化移动与转向运行时配置
+        /// 绑定后从上下文读取初始速度并解析移动节点。
         /// </summary>
-        public void Init(CharacterConfig config)
+        protected override void OnBound(EntityCharacter target)
         {
-            _config = config;
-            _locomotionSpeed = _config.walkSpeed;
+            _locomotionSpeed = Config.walkSpeed;
             _mesh = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{MESH_CHILD_NAME}");
             _controller = GetComponent<CharacterController>();
         }
@@ -76,7 +74,7 @@ namespace GamePlay.BattleSystem
             Quaternion previousRotation = _mesh.rotation;
             Quaternion targetRotation = Quaternion.LookRotation(planarDirection.normalized, Vector3.up);
             _mesh.rotation = Quaternion.RotateTowards(previousRotation, targetRotation, 
-                _config.meshTurnSpeed * deltaTime);
+                Config.meshTurnSpeed * deltaTime);
 
             Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
             deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
@@ -148,12 +146,12 @@ namespace GamePlay.BattleSystem
             else
             {
                 if (_jumpCount < 1) _jumpCount = 1;
-                _verticalVelocity -= _config.gravity * dt;
+                _verticalVelocity -= Config.gravity * dt;
             }
 
-            if (_verticalVelocity < -_config.maxFallSpeed)
+            if (_verticalVelocity < -Config.maxFallSpeed)
             {
-                _verticalVelocity = -_config.maxFallSpeed;
+                _verticalVelocity = -Config.maxFallSpeed;
             }
         }
 
@@ -190,18 +188,18 @@ namespace GamePlay.BattleSystem
                 if (_controller) _controller.enabled = false;
 
                 CapsuleCollider collider = gameObject.GetOrAddComponent<CapsuleCollider>();
-                collider.height = _config.height;
-                collider.radius = _config.radius;
-                collider.center = new Vector3(0, _config.height / 2, 0);
+                collider.height = Config.height;
+                collider.radius = Config.radius;
+                collider.center = new Vector3(0, Config.height / 2, 0);
             }
             else
             {
                 _controller = gameObject.GetOrAddComponent<CharacterController>();
-                _controller.height = _config.height;
-                _controller.radius = _config.radius;
+                _controller.height = Config.height;
+                _controller.radius = Config.radius;
                 _controller.skinWidth = 0.0001f;
                 _controller.minMoveDistance = 0f;
-                _controller.center = new Vector3(0, _config.height / 2, 0);
+                _controller.center = new Vector3(0, Config.height / 2, 0);
                 _controller.enabled = true;
             }
         }
@@ -264,7 +262,7 @@ namespace GamePlay.BattleSystem
         {
             _lastMoveDir = Vector3.zero;
             _dashDir = Vector3.zero;
-            _locomotionSpeed = _config.walkSpeed;
+            _locomotionSpeed = Config.walkSpeed;
             _verticalVelocity = 0f;
             _dashAccumulator = 0f;
             _jumpCount = 0;

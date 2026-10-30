@@ -3,16 +3,22 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 单机、预测与权威模式共用的实体模拟实现。
     /// </summary>
-    public sealed class EntitySimulation
+    public sealed class EntitySimulator
     {
         private readonly EntityContext _context;
+        private readonly EntityStateMachineModule _stateMachine;
+        private readonly MovementModule _movement;
+        private readonly ViewModule _view;
 
         /// <summary>
         /// 创建实体模拟并绑定运行上下文。
         /// </summary>
-        public EntitySimulation(EntityContext context)
+        public EntitySimulator(EntityContext context)
         {
             _context = context;
+            _movement = context.Get<MovementModule>();
+            _view = context.Get<ViewModule>();
+            _stateMachine = context.Get<EntityStateMachineModule>();
         }
 
         /// <summary>
@@ -27,9 +33,9 @@ namespace GamePlay.BattleSystem
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
             _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
-            _context.View.Look(command.aim, deltaTime);
-            _context.Movement.Rotate(command.move, _context.View.Yaw, deltaTime);
-            _context.StateMachine.Update(deltaTime);
+            _view.Look(command.aim, deltaTime);
+            _movement.Rotate(command.move, _view.Yaw, deltaTime);
+            _stateMachine.Step(deltaTime);
             _context.ResetTickFlags();
         }
 
@@ -38,17 +44,14 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public EntitySnapshot CaptureSnapshot()
         {
-            StateSnapshot state = new StateSnapshot()
-            {
-                entityState = _context.StateMachine.CurrentState,
-            };
+            StateSnapshot state = _stateMachine.CaptureSnapshot();
             
-            MovementSnapshot movement = _context.Movement.CaptureSnapshot();
+            MovementSnapshot movement = _movement.CaptureSnapshot();
             movement.desiredLocomotionSpeed = _context.LocomotionSpeed;
             movement.isSprinting = _context.IsSprinting;
             movement.isRunning = _context.IsRunning;
 
-            ViewSnapshot view = _context.View.CaptureSnapshot();
+            ViewSnapshot view = _view.CaptureSnapshot();
             view.isFocus = _context.IsFocus;
 
             return new EntitySnapshot
@@ -64,14 +67,14 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void RestoreSnapshot(in EntitySnapshot state)
         {
-            _context.Movement.RestoreSnapshot(state.movement);
-            _context.View.RestoreSnapshot(state.view);
+            _movement.RestoreSnapshot(state.movement);
+            _view.RestoreSnapshot(state.view);
             _context.LocomotionSpeed = state.movement.desiredLocomotionSpeed;
             _context.IsSprinting = state.movement.isSprinting;
             _context.IsRunning = state.movement.isRunning;
             _context.IsFocus = state.view.isFocus;
             _context.ResetTickFlags();
-            _context.StateMachine.ChangeState(state.state.entityState);
+            _stateMachine.RestoreSnapshot(state.state);
         }
     }
 }

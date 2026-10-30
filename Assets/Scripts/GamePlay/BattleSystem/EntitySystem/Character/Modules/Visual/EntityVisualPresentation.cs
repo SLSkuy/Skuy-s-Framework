@@ -5,7 +5,7 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 把两拍权威位姿写成画面节点与 mesh / orientation 的画面位姿。
     /// </summary>
-    public sealed class EntityVisualPresentation : MonoBehaviour
+    public sealed class EntityVisualPresentation : EntityModuleBase
     {
         public const string VISUAL_CHILD_NAME = "visual";
         private const string MESH_CHILD_NAME = "mesh";
@@ -25,10 +25,14 @@ namespace GamePlay.BattleSystem
             public Quaternion OrientationRotation;
         }
 
+        #region 属性
+        public override ModuleType ModuleType => ModuleType.VisualPresentation;
+        #endregion
+
         /// <summary>
-        /// 解析画面节点并与当前权威对齐。
+        /// 绑定后解析画面节点并与当前权威对齐。
         /// </summary>
-        public void Init()
+        protected override void OnBound(EntityCharacter target)
         {
             _root = transform;
             _visual = transform.Find(VISUAL_CHILD_NAME);

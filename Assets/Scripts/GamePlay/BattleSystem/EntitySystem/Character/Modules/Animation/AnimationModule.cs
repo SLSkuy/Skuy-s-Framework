@@ -1,15 +1,14 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
-    public struct AnimationSnapshot
+    /// <summary>
+    /// 实体动画能力组件，控制实体的动画播放
+    /// </summary>
+    public class AnimationModule : EntityModuleBase
     {
-        
-    }
-    
-    public class AnimationModule : EntityModuleBase<AnimationSnapshot>
-    {
-        private CharacterConfig _config;
+        private MovementModule _movement;
+        private ViewModule _view;
         private Animator _animator;
 
         private int _speedHash;
@@ -19,9 +18,13 @@ namespace GamePlay.BattleSystem
         public override ModuleType ModuleType => ModuleType.Animation;
         #endregion
 
-        public void Init(CharacterConfig config)
+        /// <summary>
+        /// 绑定后解析动画组件并缓存参数标识。
+        /// </summary>
+        protected override void OnBound(EntityCharacter target)
         {
-            _config = config;
+            _movement = Context.Get<MovementModule>();
+            _view = Context.Get<ViewModule>();
             _animator = GetComponent<Animator>();
 
             _speedHash = Animator.StringToHash("Speed");
@@ -30,23 +33,15 @@ namespace GamePlay.BattleSystem
 
         private void Update()
         {
-            _animator.SetFloat(_speedHash, Target.Context.LocomotionSpeed);
+            _animator.SetFloat(_speedHash, Context.LocomotionSpeed);
         }
 
         private void OnAnimatorMove()
         {
-            EntityContext context = Target.Context;
-            context.Movement.Move(context.LastMoveInput, _animator.velocity.magnitude, context.View.Yaw, Time.deltaTime);
-        }
-
-        public override AnimationSnapshot CaptureSnapshot()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override void RestoreSnapshot(in AnimationSnapshot state)
-        {
-            throw new System.NotImplementedException();
+            return;
+            
+            EntityContext context = Context;
+            _movement.Move(context.LastMoveInput, _animator.velocity.magnitude, _view.Yaw, Time.deltaTime);
         }
     }
 }

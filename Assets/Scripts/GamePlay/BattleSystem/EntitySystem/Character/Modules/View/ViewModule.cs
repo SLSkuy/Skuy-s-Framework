@@ -6,11 +6,10 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 第三人称视角节点模拟：在实体根上查找 orientation，用瞄准增量驱动偏航与俯仰。
     /// </summary>
-    public sealed class ViewModule : EntityModuleBase<ViewSnapshot>
+    public sealed class ViewModule : EntitySnapshotModuleBase<ViewSnapshot>
     {
         private const string ORIENTATION_CHILD_NAME = "orientation";
 
-        private CharacterConfig _config;
         private float _yaw;
         private float _pitch;
 
@@ -24,11 +23,10 @@ namespace GamePlay.BattleSystem
         #endregion
 
         /// <summary>
-        /// 绑定配置并解析默认视角子节点
+        /// 绑定后解析默认视角子节点并初始化视角。
         /// </summary>
-        public void Init(CharacterConfig config)
+        protected override void OnBound(EntityCharacter target)
         {
-            _config = config;
             Orientation = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{ORIENTATION_CHILD_NAME}");
             Vector3 euler = Orientation.rotation.eulerAngles;
             _yaw = euler.y;
@@ -43,9 +41,9 @@ namespace GamePlay.BattleSystem
             if (deltaTime <= 0f) return;
 
             Quaternion previousRotation = ViewRotation;
-            _yaw += aimDelta.x * _config.aimHorizontalSpeed * deltaTime;
-            _pitch -= aimDelta.y * _config.aimVerticalSpeed * deltaTime;
-            _pitch = Mathf.Clamp(_pitch, _config.minAimPitch, _config.maxAimPitch);
+            _yaw += aimDelta.x * Config.aimHorizontalSpeed * deltaTime;
+            _pitch -= aimDelta.y * Config.aimVerticalSpeed * deltaTime;
+            _pitch = Mathf.Clamp(_pitch, Config.minAimPitch, Config.maxAimPitch);
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
             AngularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
         }
@@ -59,7 +57,7 @@ namespace GamePlay.BattleSystem
         {
             Vector3 euler = viewRotation.eulerAngles;
             _yaw = euler.y;
-            _pitch = Mathf.Clamp(MathUtils.NormalizePitch(euler.x), _config.minAimPitch, _config.maxAimPitch);
+            _pitch = Mathf.Clamp(MathUtils.NormalizePitch(euler.x), Config.minAimPitch, Config.maxAimPitch);
 
             AngularVelocity = angularVelocity;
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
@@ -85,7 +83,7 @@ namespace GamePlay.BattleSystem
         public override void RestoreSnapshot(in ViewSnapshot state)
         {
             _yaw = state.yaw;
-            _pitch = Mathf.Clamp(state.pitch, _config.minAimPitch, _config.maxAimPitch);
+            _pitch = Mathf.Clamp(state.pitch, Config.minAimPitch, Config.maxAimPitch);
             AngularVelocity = state.viewAngularVelocity;
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
