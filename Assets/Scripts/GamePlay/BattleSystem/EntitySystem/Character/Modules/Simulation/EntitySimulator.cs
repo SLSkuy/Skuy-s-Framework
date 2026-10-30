@@ -67,6 +67,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void RestoreSnapshot(in EntitySnapshot state)
         {
+            _stateMachine.RestoreSnapshot(state.state);
             _movement.RestoreSnapshot(state.movement);
             _view.RestoreSnapshot(state.view);
             _context.LocomotionSpeed = state.movement.locomotionSpeed;
@@ -74,7 +75,6 @@ namespace GamePlay.BattleSystem
             _context.IsRunning = state.movement.isRunning;
             _context.IsFocus = state.view.isFocus;
             _context.ResetTickFlags();
-            _stateMachine.RestoreSnapshot(state.state);
         }
     }
 }

@@ -58,6 +58,7 @@ namespace GamePlay.BattleSystem
 
         public override void RestoreSnapshot(in StateSnapshot state)
         {
+            // TODO: 提供单独的回滚入口而不是直接切换状态
             ChangeState(state.entityState);
         }
     }
