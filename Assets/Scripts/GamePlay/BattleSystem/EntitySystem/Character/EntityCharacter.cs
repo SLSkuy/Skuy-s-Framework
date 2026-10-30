@@ -15,6 +15,7 @@ namespace GamePlay.BattleSystem
         // 能力组件
         private EntityVisualPresentation _visualPresentation;
         private EntitySimulation _simulation;
+        private AnimationModule _animationModule;
         private MovementModule _movementModule;
         private EntityContext _context;
         private ViewModule _viewModule;
@@ -61,7 +62,11 @@ namespace GamePlay.BattleSystem
             _viewModule = gameObject.GetOrAddComponent<ViewModule>();
             _viewModule.Init(config);
             _viewModule.Bind(this);
-
+            
+            _animationModule = gameObject.GetOrAddComponent<AnimationModule>();
+            _animationModule.Init(config);
+            _animationModule.Bind(this);
+            
             _visualPresentation = gameObject.GetOrAddComponent<EntityVisualPresentation>();
             _visualPresentation.Init();
         }
