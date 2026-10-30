@@ -48,7 +48,7 @@ namespace NetSync {
             "cmVzc2VkGAUgASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYBiAB",
             "KAgSGwoTaXNfaW50ZXJhY3RfcHJlc3NlZBgHIAEoCBIZChFpc19zcHJpbnRf",
             "cHJlc3NlZBgIIAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCSABKAgSHgoWaXNf",
-            "c3dpdGNoX21vZGVfcHJlc3NlZBgKIAEoCCL0AwoPUGxheWVyX1NuYXBzaG90",
+            "c3dpdGNoX21vZGVfcHJlc3NlZBgKIAEoCCKEBAoPUGxheWVyX1NuYXBzaG90",
             "EhAKCGVudGl0eUlkGAEgASgNEhgKEGxvY29tb3Rpb25fc3RhdGUYAiABKA0S",
             "HwoIcG9zaXRpb24YAyABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
             "BCABKAsyDS5OZXRTeW5jLlF1YXQSJAoNdmlld19yb3RhdGlvbhgFIAEoCzIN",
@@ -57,17 +57,18 @@ namespace NetSync {
             "VmVjMxIeChZsYXN0UHJvY2Vzc2VkSW5wdXRUaWNrGAggASgNEhkKEXZlcnRp",
             "Y2FsX3ZlbG9jaXR5GAkgASgCEhIKCmp1bXBfY291bnQYCiABKAUSEgoKaXNf",
             "cnVubmluZxgLIAEoCBIUCgxpc19zcHJpbnRpbmcYDCABKAgSEwoLaXNfZ3Jv",
-            "dW5kZWQYDSABKAgSIAoYZGVzaXJlZF9sb2NvbW90aW9uX3NwZWVkGA4gASgC",
-            "EiAKGGFwcGxpZWRfbG9jb21vdGlvbl9zcGVlZBgPIAEoAhIqChNsYXN0X21v",
-            "dmVfZGlyZWN0aW9uGBAgASgLMg0uTmV0U3luYy5WZWMzIloKDldvcmxkX1Nu",
-            "YXBzaG90EhQKDHNuYXBzaG90VGljaxgBIAEoDRIyChBQbGF5ZXJfc25hcHNo",
-            "b3RzGAIgAygLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNob3QivQEKE1BsYXll",
-            "cl9TcGF3bl9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0SFAoMZW50aXR5VHlw",
-            "ZUlkGAIgASgNEhAKCHBsYXllcklkGAMgASgJEh8KCHBvc2l0aW9uGAQgASgL",
-            "Mg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAUgASgLMg0uTmV0U3luYy5R",
-            "dWF0EioKCHNuYXBzaG90GAYgASgLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNo",
-            "b3QiKQoVRW50aXR5X0Rlc3Ryb3lfTm90aWZ5EhAKCGVudGl0eUlkGAEgASgN",
-            "IhsKGUVudGl0eV9TcGF3bl9TeW5jX1JlcXVlc3RiBnByb3RvMw=="));
+            "dW5kZWQYDSABKAgSGAoQbG9jb21vdGlvbl9zcGVlZBgOIAEoAhIqChNsYXN0",
+            "X21vdmVfZGlyZWN0aW9uGBAgASgLMg0uTmV0U3luYy5WZWMzSgQIDxAQUhhh",
+            "cHBsaWVkX2xvY29tb3Rpb25fc3BlZWRSGGRlc2lyZWRfbG9jb21vdGlvbl9z",
+            "cGVlZCJaCg5Xb3JsZF9TbmFwc2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0S",
+            "MgoQUGxheWVyX3NuYXBzaG90cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1Nu",
+            "YXBzaG90Ir0BChNQbGF5ZXJfU3Bhd25fTm90aWZ5EhAKCGVudGl0eUlkGAEg",
+            "ASgNEhQKDGVudGl0eVR5cGVJZBgCIAEoDRIQCghwbGF5ZXJJZBgDIAEoCRIf",
+            "Cghwb3NpdGlvbhgEIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgF",
+            "IAEoCzINLk5ldFN5bmMuUXVhdBIqCghzbmFwc2hvdBgGIAEoCzIYLk5ldFN5",
+            "bmMuUGxheWVyX1NuYXBzaG90IikKFUVudGl0eV9EZXN0cm95X05vdGlmeRIQ",
+            "CghlbnRpdHlJZBgBIAEoDSIbChlFbnRpdHlfU3Bhd25fU3luY19SZXF1ZXN0",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -84,7 +85,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Server_Dissolved_Notify), global::NetSync.Room_Server_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Inputs), global::NetSync.Player_Inputs.Parser, new[]{ "CurrentInputs", "RecentInputs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsGrounded", "DesiredLocomotionSpeed", "AppliedLocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsGrounded", "LocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Spawn_Notify), global::NetSync.Player_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Destroy_Notify), global::NetSync.Entity_Destroy_Notify.Parser, new[]{ "EntityId" }, null, null, null, null),
@@ -3408,8 +3409,7 @@ namespace NetSync {
       isRunning_ = other.isRunning_;
       isSprinting_ = other.isSprinting_;
       isGrounded_ = other.isGrounded_;
-      desiredLocomotionSpeed_ = other.desiredLocomotionSpeed_;
-      appliedLocomotionSpeed_ = other.appliedLocomotionSpeed_;
+      locomotionSpeed_ = other.locomotionSpeed_;
       lastMoveDirection_ = other.lastMoveDirection_ != null ? other.lastMoveDirection_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -3576,27 +3576,15 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "desired_locomotion_speed" field.</summary>
-    public const int DesiredLocomotionSpeedFieldNumber = 14;
-    private float desiredLocomotionSpeed_;
+    /// <summary>Field number for the "locomotion_speed" field.</summary>
+    public const int LocomotionSpeedFieldNumber = 14;
+    private float locomotionSpeed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public float DesiredLocomotionSpeed {
-      get { return desiredLocomotionSpeed_; }
+    public float LocomotionSpeed {
+      get { return locomotionSpeed_; }
       set {
-        desiredLocomotionSpeed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "applied_locomotion_speed" field.</summary>
-    public const int AppliedLocomotionSpeedFieldNumber = 15;
-    private float appliedLocomotionSpeed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public float AppliedLocomotionSpeed {
-      get { return appliedLocomotionSpeed_; }
-      set {
-        appliedLocomotionSpeed_ = value;
+        locomotionSpeed_ = value;
       }
     }
 
@@ -3640,8 +3628,7 @@ namespace NetSync {
       if (IsRunning != other.IsRunning) return false;
       if (IsSprinting != other.IsSprinting) return false;
       if (IsGrounded != other.IsGrounded) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DesiredLocomotionSpeed, other.DesiredLocomotionSpeed)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AppliedLocomotionSpeed, other.AppliedLocomotionSpeed)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LocomotionSpeed, other.LocomotionSpeed)) return false;
       if (!object.Equals(LastMoveDirection, other.LastMoveDirection)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -3663,8 +3650,7 @@ namespace NetSync {
       if (IsRunning != false) hash ^= IsRunning.GetHashCode();
       if (IsSprinting != false) hash ^= IsSprinting.GetHashCode();
       if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
-      if (DesiredLocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DesiredLocomotionSpeed);
-      if (AppliedLocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AppliedLocomotionSpeed);
+      if (LocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LocomotionSpeed);
       if (lastMoveDirection_ != null) hash ^= LastMoveDirection.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -3736,13 +3722,9 @@ namespace NetSync {
         output.WriteRawTag(104);
         output.WriteBool(IsGrounded);
       }
-      if (DesiredLocomotionSpeed != 0F) {
+      if (LocomotionSpeed != 0F) {
         output.WriteRawTag(117);
-        output.WriteFloat(DesiredLocomotionSpeed);
-      }
-      if (AppliedLocomotionSpeed != 0F) {
-        output.WriteRawTag(125);
-        output.WriteFloat(AppliedLocomotionSpeed);
+        output.WriteFloat(LocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
         output.WriteRawTag(130, 1);
@@ -3810,13 +3792,9 @@ namespace NetSync {
         output.WriteRawTag(104);
         output.WriteBool(IsGrounded);
       }
-      if (DesiredLocomotionSpeed != 0F) {
+      if (LocomotionSpeed != 0F) {
         output.WriteRawTag(117);
-        output.WriteFloat(DesiredLocomotionSpeed);
-      }
-      if (AppliedLocomotionSpeed != 0F) {
-        output.WriteRawTag(125);
-        output.WriteFloat(AppliedLocomotionSpeed);
+        output.WriteFloat(LocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
         output.WriteRawTag(130, 1);
@@ -3871,10 +3849,7 @@ namespace NetSync {
       if (IsGrounded != false) {
         size += 1 + 1;
       }
-      if (DesiredLocomotionSpeed != 0F) {
-        size += 1 + 4;
-      }
-      if (AppliedLocomotionSpeed != 0F) {
+      if (LocomotionSpeed != 0F) {
         size += 1 + 4;
       }
       if (lastMoveDirection_ != null) {
@@ -3946,11 +3921,8 @@ namespace NetSync {
       if (other.IsGrounded != false) {
         IsGrounded = other.IsGrounded;
       }
-      if (other.DesiredLocomotionSpeed != 0F) {
-        DesiredLocomotionSpeed = other.DesiredLocomotionSpeed;
-      }
-      if (other.AppliedLocomotionSpeed != 0F) {
-        AppliedLocomotionSpeed = other.AppliedLocomotionSpeed;
+      if (other.LocomotionSpeed != 0F) {
+        LocomotionSpeed = other.LocomotionSpeed;
       }
       if (other.lastMoveDirection_ != null) {
         if (lastMoveDirection_ == null) {
@@ -4041,11 +4013,7 @@ namespace NetSync {
             break;
           }
           case 117: {
-            DesiredLocomotionSpeed = input.ReadFloat();
-            break;
-          }
-          case 125: {
-            AppliedLocomotionSpeed = input.ReadFloat();
+            LocomotionSpeed = input.ReadFloat();
             break;
           }
           case 130: {
@@ -4138,11 +4106,7 @@ namespace NetSync {
             break;
           }
           case 117: {
-            DesiredLocomotionSpeed = input.ReadFloat();
-            break;
-          }
-          case 125: {
-            AppliedLocomotionSpeed = input.ReadFloat();
+            LocomotionSpeed = input.ReadFloat();
             break;
           }
           case 130: {

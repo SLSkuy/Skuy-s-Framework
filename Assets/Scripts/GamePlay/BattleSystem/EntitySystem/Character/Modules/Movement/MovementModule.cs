@@ -15,7 +15,6 @@ namespace GamePlay.BattleSystem
         private Transform _mesh;
 
         private Vector3 _lastMoveDir;
-        private float _locomotionSpeed;
         private float _verticalVelocity;
         private int _jumpCount;
         private bool _isGrounded;
@@ -24,18 +23,17 @@ namespace GamePlay.BattleSystem
         public override ModuleType ModuleType => ModuleType.Movement;
         public Vector3 Position => transform.position;
         public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
-        public Vector3 LinearVelocity { get; private set; }
-        public Vector3 AngularVelocity { get; private set; }
+        // public Vector3 LinearVelocity { get; private set; }
+        // public Vector3 AngularVelocity { get; private set; }
         public bool IsGrounded => _isGrounded;
         public int JumpCount => _jumpCount;
         #endregion
 
         /// <summary>
-        /// 绑定后从上下文读取初始速度并解析移动节点。
+        /// 绑定后解析移动节点和角色控制器。
         /// </summary>
         protected override void OnBound(EntityCharacter target)
         {
-            _locomotionSpeed = Config.walkSpeed;
             _mesh = transform.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/{MESH_CHILD_NAME}");
             _controller = GetComponent<CharacterController>();
         }
@@ -63,7 +61,7 @@ namespace GamePlay.BattleSystem
             Vector3 planarDirection = Quaternion.Euler(0f, viewYaw, 0f) * new Vector3(move.x, 0f, move.y);
             if (planarDirection.sqrMagnitude <= Mathf.Epsilon)
             {
-                AngularVelocity = Vector3.zero;
+                // AngularVelocity = Vector3.zero;
                 return;
             }
 
@@ -72,10 +70,10 @@ namespace GamePlay.BattleSystem
             _mesh.rotation = Quaternion.RotateTowards(previousRotation, targetRotation, 
                 Config.meshTurnSpeed * deltaTime);
 
-            Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
-            deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-            if (angle > 180f) angle -= 360f;
-            AngularVelocity = axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
+            // Quaternion deltaRotation = _mesh.rotation * Quaternion.Inverse(previousRotation);
+            // deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+            // if (angle > 180f) angle -= 360f;
+            // AngularVelocity = axis.sqrMagnitude > Mathf.Epsilon ? axis.normalized * (angle / deltaTime) : Vector3.zero;
         }
 
         /// <summary>
@@ -85,11 +83,10 @@ namespace GamePlay.BattleSystem
         {
             if (!_controller) return;
 
-            _locomotionSpeed = speed;
             UpdateLocomotionDir(inputDir, viewYaw);
 
             ApplyGravity(dt);
-            ApplyMovement(dt);
+            ApplyMovement(speed, dt);
             _isGrounded = _controller.isGrounded;
         }
 
@@ -146,11 +143,11 @@ namespace GamePlay.BattleSystem
             }
         }
 
-        private void ApplyMovement(float dt)
+        private void ApplyMovement(float speed, float dt)
         {
-            Vector3 velocity = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.z) * _locomotionSpeed;
+            Vector3 velocity = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.z) * speed;
             velocity.y = _verticalVelocity;
-            LinearVelocity = velocity;
+            // LinearVelocity = velocity;
             _controller.Move(velocity * dt);
         }
 
@@ -184,12 +181,12 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 直接应用 mesh 世界空间旋转与角速度；根节点保持单位旋转
+        /// 直接应用 mesh 世界空间旋转；根节点保持单位旋转
         /// </summary>
-        public void Restore(Quaternion rotation, Vector3 angularVelocity)
+        public void Restore(Quaternion rotation)
         {
             _mesh.rotation = MathUtils.SafeNormalize(rotation);
-            AngularVelocity = angularVelocity;
+            // AngularVelocity = angularVelocity;
         }
 
         /// <summary>
@@ -201,10 +198,9 @@ namespace GamePlay.BattleSystem
             {
                 rootPosition = Position,
                 meshRotation = Rotation,
-                rootLinearVelocity = LinearVelocity,
-                meshAngularVelocity = AngularVelocity,
+                // rootLinearVelocity = LinearVelocity,
+                // meshAngularVelocity = AngularVelocity,
                 lastMoveDirection = _lastMoveDir,
-                appliedLocomotionSpeed = _locomotionSpeed,
                 verticalVelocity = _verticalVelocity,
                 jumpCount = _jumpCount,
                 isGrounded = _isGrounded
@@ -217,10 +213,11 @@ namespace GamePlay.BattleSystem
         public override void RestoreSnapshot(in MovementSnapshot state)
         {
             Teleport(state.rootPosition);
-            Restore(state.meshRotation, state.meshAngularVelocity);
-            LinearVelocity = state.rootLinearVelocity;
+            // Restore(state.meshRotation, state.meshAngularVelocity);
+            Restore(state.meshRotation);
+            // LinearVelocity = state.rootLinearVelocity;
+            // LinearVelocity = Vector3.zero;
             _lastMoveDir = state.lastMoveDirection;
-            _locomotionSpeed = state.appliedLocomotionSpeed;
             _verticalVelocity = state.verticalVelocity;
             _jumpCount = state.jumpCount;
             _isGrounded = state.isGrounded;
@@ -234,12 +231,11 @@ namespace GamePlay.BattleSystem
         public void ResetMotion()
         {
             _lastMoveDir = Vector3.zero;
-            _locomotionSpeed = Config.walkSpeed;
             _verticalVelocity = 0f;
             _jumpCount = 0;
             _isGrounded = false;
-            LinearVelocity = Vector3.zero;
-            AngularVelocity = Vector3.zero;
+            // LinearVelocity = Vector3.zero;
+            // AngularVelocity = Vector3.zero;
         }
     }
 }

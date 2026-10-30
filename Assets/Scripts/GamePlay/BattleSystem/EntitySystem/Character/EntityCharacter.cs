@@ -26,7 +26,7 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 初始化实体入口。
         /// </summary>
-        public void Init()
+        public void Init(bool isReplica = false)
         {
             if (_isInitialized) return;
 
@@ -35,13 +35,14 @@ namespace GamePlay.BattleSystem
             // 统一收集能力组件
             _context = new EntityContext(this, config);
             _context.AddAbility<EntityStateMachineModule>();
-            _context.AddAbility<MovementModule>();
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
+            MovementModule movement = _context.AddAbility<MovementModule>();
             _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
 
             // 全部能力登记后统一绑定并初始化，防止组件间依赖导致空引用
             _context.BindAbilities();
+            movement.SetReplicaMode(isReplica);
             
             // 注册模拟控制器
             _simulator = new EntitySimulator(_context);
@@ -159,10 +160,10 @@ namespace GamePlay.BattleSystem
             // 清理移动状态
             MovementModule movement = _context.Get<MovementModule>();
             movement.ResetMotion();
-            movement.Restore(Quaternion.identity, Vector3.zero);
+            movement.Restore(Quaternion.identity);
             
             // 清理视角状态
-            _context.Get<ViewModule>().Restore(Quaternion.identity, Vector3.zero);
+            _context.Get<ViewModule>().Restore(Quaternion.identity);
             
             // 清理状态机
             _context.Get<EntityStateMachineModule>().ChangeState(EntityState.IDLE);

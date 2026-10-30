@@ -10,7 +10,8 @@ namespace GamePlay.BattleSystem
     public struct ViewSnapshot
     {
         public Quaternion viewRotation;
-        public Vector3 viewAngularVelocity;
+        // 暂不外插，停用快照视角角速度。
+        // public Vector3 viewAngularVelocity;
         
         public float yaw;
         public float pitch;

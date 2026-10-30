@@ -145,7 +145,7 @@ namespace GamePlay.BattleSystem
         private void AssemblePlayer(EntityIdentity identity, Guid playerId, in EntitySnapshot snapshot, EntityRole role, bool isLocal)
         {
             EntityCharacter character = identity.GetComponent<EntityCharacter>();
-            character.Init();
+            character.Init(role == EntityRole.Replica);
             character.RestoreSnapshot(snapshot);
 
             PlayerIdentity playerIdentity = (PlayerIdentity)identity;

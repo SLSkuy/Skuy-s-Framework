@@ -139,8 +139,9 @@ message Player_Snapshot {
     bool is_running = 11;
     bool is_sprinting = 12;
     bool is_grounded = 13;
-    float desired_locomotion_speed = 14;
-    float applied_locomotion_speed = 15;
+    float locomotion_speed = 14;
+    reserved 15;
+    reserved "applied_locomotion_speed", "desired_locomotion_speed";
     Vec3 last_move_direction = 16;
 }
 

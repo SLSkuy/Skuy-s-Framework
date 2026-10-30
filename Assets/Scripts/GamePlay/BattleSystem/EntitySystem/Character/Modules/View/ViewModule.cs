@@ -17,7 +17,7 @@ namespace GamePlay.BattleSystem
         public override ModuleType ModuleType => ModuleType.View;
         public Transform Orientation { get; private set; }
         public Quaternion ViewRotation => Quaternion.Euler(_pitch, _yaw, 0f);
-        public Vector3 AngularVelocity { get; private set; }
+        // public Vector3 AngularVelocity { get; private set; }
         public float Yaw => _yaw;
         public float Pitch => _pitch;
         #endregion
@@ -40,12 +40,12 @@ namespace GamePlay.BattleSystem
         {
             if (deltaTime <= 0f) return;
 
-            Quaternion previousRotation = ViewRotation;
+            // Quaternion previousRotation = ViewRotation;
             _yaw += aimDelta.x * Config.aimHorizontalSpeed * deltaTime;
             _pitch -= aimDelta.y * Config.aimVerticalSpeed * deltaTime;
             _pitch = Mathf.Clamp(_pitch, Config.minAimPitch, Config.maxAimPitch);
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-            AngularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
+            // AngularVelocity = MathUtils.CalAngularVelocity(previousRotation, ViewRotation, deltaTime);
         }
         
         #region 快照逻辑
@@ -53,13 +53,13 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 从网络可见四元数恢复视角，供 Replica 插值与权威应用使用
         /// </summary>
-        public void Restore(Quaternion viewRotation, Vector3 angularVelocity)
+        public void Restore(Quaternion viewRotation)
         {
             Vector3 euler = viewRotation.eulerAngles;
             _yaw = euler.y;
             _pitch = Mathf.Clamp(MathUtils.NormalizePitch(euler.x), Config.minAimPitch, Config.maxAimPitch);
 
-            AngularVelocity = angularVelocity;
+            // AngularVelocity = angularVelocity;
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
@@ -70,7 +70,7 @@ namespace GamePlay.BattleSystem
         {
             return new ViewSnapshot
             {
-                viewAngularVelocity = AngularVelocity,
+                // viewAngularVelocity = AngularVelocity,
                 viewRotation = ViewRotation,
                 yaw = _yaw,
                 pitch = _pitch
@@ -84,7 +84,8 @@ namespace GamePlay.BattleSystem
         {
             _yaw = state.yaw;
             _pitch = Mathf.Clamp(state.pitch, Config.minAimPitch, Config.maxAimPitch);
-            AngularVelocity = state.viewAngularVelocity;
+            // AngularVelocity = state.viewAngularVelocity;
+            // AngularVelocity = Vector3.zero;
             Orientation.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
