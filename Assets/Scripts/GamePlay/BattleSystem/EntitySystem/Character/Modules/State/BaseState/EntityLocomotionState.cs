@@ -12,7 +12,8 @@ namespace GamePlay.BattleSystem
 
         protected override void Tick(float dt)
         {
-            Movement.Move(Context.LastMoveInput, LocomotionSpeed, View.Yaw, dt);
+            base.Tick(dt);
+            Movement.Move(Context.LastMoveInput, ActualPlanarSpeed, View.Yaw, dt);
         }
 
         /// <summary>

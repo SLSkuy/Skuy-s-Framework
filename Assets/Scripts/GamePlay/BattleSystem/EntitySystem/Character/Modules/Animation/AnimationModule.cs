@@ -7,8 +7,6 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class AnimationModule : EntityModuleBase
     {
-        private MovementModule _movement;
-        private ViewModule _view;
         private Animator _animator;
 
         private int _speedHash;
@@ -23,8 +21,6 @@ namespace GamePlay.BattleSystem
         /// </summary>
         protected override void OnBound(EntityCharacter target)
         {
-            _movement = Context.Get<MovementModule>();
-            _view = Context.Get<ViewModule>();
             _animator = GetComponent<Animator>();
 
             _speedHash = Animator.StringToHash("Speed");
@@ -33,15 +29,12 @@ namespace GamePlay.BattleSystem
 
         private void Update()
         {
-            _animator.SetFloat(_speedHash, Context.LocomotionSpeed);
+            _animator.SetFloat(_speedHash, Context.ActualPlanarSpeed);
         }
 
         private void OnAnimatorMove()
         {
-            return;
-            
-            EntityContext context = Context;
-            _movement.Move(context.LastMoveInput, _animator.velocity.magnitude, _view.Yaw, Time.deltaTime);
+
         }
     }
 }

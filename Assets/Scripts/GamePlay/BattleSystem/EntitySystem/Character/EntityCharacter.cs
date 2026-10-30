@@ -151,6 +151,8 @@ namespace GamePlay.BattleSystem
             _context.LastMoveInput = Vector2.zero;
             _context.LastAimInput = Vector2.zero;
             _context.CurrentTick = 0;
+            _context.DesiredSpeed = 0f;
+            _context.ActualPlanarSpeed = 0f;
             _context.RunToggleRequest = false;
             _context.JumpRequest = false;
             _context.IsSprinting = false;

@@ -16,7 +16,7 @@ namespace GamePlay.BattleSystem
 
         public override void Enter()
         {
-            Context.LocomotionSpeed = Config.runSpeed;
+            Context.DesiredSpeed = Config.runSpeed;
         }
 
         protected override void CheckStateChange()

@@ -12,19 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53908586df7242d094dd7df3a2e65933, type: 3}
   m_Name: EntityConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
-  walkSpeed: 3
+  walkSpeed: 1.8
   runSpeed: 5
-  sprintSpeed: 8
+  sprintSpeed: 7
   jumpCount: 2
   jumpSpeed: 6
-  dashSpeed: 12
-  dashDuration: 0.25
   aimHorizontalSpeed: 20
   aimVerticalSpeed: 20
   minAimPitch: -40
   maxAimPitch: 70
-  meshTurnSpeed: 360
   rootMotion: 1
-  animSpeedSmoothTime: 0.15
+  animSpeedSmoothTime: 0.1
+  meshTurnSpeed: 360
+  radius: 0.2
+  height: 1.7
   gravity: 14
   maxFallSpeed: 20

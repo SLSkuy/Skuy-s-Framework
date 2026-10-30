@@ -6,7 +6,7 @@ namespace GamePlay.BattleSystem
     public class CharacterConfig : ScriptableObject
     {
         [Header("基础运动属性")]
-        public float walkSpeed = 3f;
+        public float walkSpeed = 2f;
         public float runSpeed = 5f;
         public float sprintSpeed = 8f;
         public int jumpCount = 2;
@@ -20,7 +20,7 @@ namespace GamePlay.BattleSystem
         
         [Header("表现属性")]
         public bool rootMotion = true;
-        [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 动画 Speed 参数插值平滑时间（秒）
+        [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 水平速度向期望速度过渡的平滑时间（秒），移动与动画共用
         [Min(0f)] public float meshTurnSpeed = 360f;   // mesh 转向由 orientation 映射的目标方向的角速度（度/秒）
 
         [Header("物理属性")] 

@@ -15,7 +15,7 @@ namespace GamePlay.BattleSystem
 
         public override void Enter()
         {
-            Context.LocomotionSpeed = 0;
+            Context.DesiredSpeed = 0;
         }
 
         protected override void CheckStateChange()
