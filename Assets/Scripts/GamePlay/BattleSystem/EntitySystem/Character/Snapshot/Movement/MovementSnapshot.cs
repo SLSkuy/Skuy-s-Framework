@@ -21,7 +21,7 @@ namespace GamePlay.BattleSystem
         public Vector3 lastMoveDirection;
         
         /// <summary>
-        /// 当前移动状态的水平速度，空中沿用起跳前的值
+        /// 模拟期望水平速度，空中沿用起跳前的值
         /// </summary>
         public float locomotionSpeed;
         public float verticalVelocity;

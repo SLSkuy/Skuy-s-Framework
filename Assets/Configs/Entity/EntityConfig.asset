@@ -23,6 +23,7 @@ MonoBehaviour:
   maxAimPitch: 70
   rootMotion: 0
   animSpeedSmoothTime: 0.1
+  animTurnSmoothTime: 0.15
   meshTurnSpeed: 360
   radius: 0.2
   height: 1.7

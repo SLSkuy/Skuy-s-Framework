@@ -47,7 +47,7 @@ namespace GamePlay.BattleSystem
             StateSnapshot state = _stateMachine.CaptureSnapshot();
             
             MovementSnapshot movement = _movement.CaptureSnapshot();
-            movement.locomotionSpeed = _context.ActualPlanarSpeed;
+            movement.locomotionSpeed = _context.DesiredSpeed;
             movement.isSprinting = _context.IsSprinting;
             movement.isRunning = _context.IsRunning;
 
@@ -70,7 +70,7 @@ namespace GamePlay.BattleSystem
             _stateMachine.RestoreSnapshot(state.state);
             _movement.RestoreSnapshot(state.movement);
             _view.RestoreSnapshot(state.view);
-            _context.ActualPlanarSpeed = state.movement.locomotionSpeed;
+            _context.DesiredSpeed = state.movement.locomotionSpeed;
             _context.IsSprinting = state.movement.isSprinting;
             _context.IsRunning = state.movement.isRunning;
             _context.IsFocus = state.view.isFocus;

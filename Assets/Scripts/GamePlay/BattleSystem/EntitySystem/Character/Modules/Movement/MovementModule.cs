@@ -83,6 +83,7 @@ namespace GamePlay.BattleSystem
         {
             if (!_controller) return;
 
+            // 更新朝向
             UpdateLocomotionDir(inputDir, viewYaw);
 
             ApplyGravity(dt);

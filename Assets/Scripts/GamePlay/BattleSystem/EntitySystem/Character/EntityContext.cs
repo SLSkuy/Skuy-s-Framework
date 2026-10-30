@@ -32,11 +32,6 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public float DesiredSpeed;
 
-        /// <summary>
-        /// 当前平滑水平速度（尚未计入碰撞造成的速度损失）
-        /// </summary>
-        public float ActualPlanarSpeed;
-
         public bool IsSprinting;
         public bool IsRunning;
         public bool IsFocus;

@@ -11,6 +11,9 @@ namespace GamePlay.BattleSystem
         private MovementModule _movement;
         private ViewModule _view;
 
+        private float _targetSpeed;
+        private float _targetTurn;
+        
         private int _speedHash;
         private int _turnHash;
         
@@ -29,19 +32,36 @@ namespace GamePlay.BattleSystem
 
             _speedHash = Animator.StringToHash("Speed");
             _turnHash = Animator.StringToHash("Turn");
+            _targetSpeed = 0f;
+            _targetTurn = 0f;
         }
 
-        private void Update()
+        private void UpdateSpeed()
         {
-            SetAnimParam();
+            // 动画速度只在表现层平滑，不参与移动模拟或快照恢复
+            float targetSpeed = Context.DesiredSpeed * Context.LastMoveInput.magnitude; // 神秘手柄输入
+            float smoothTime = Config.animSpeedSmoothTime;
+            float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
+            _targetSpeed = Mathf.Lerp(_targetSpeed, targetSpeed, blend);
+            if (Mathf.Abs(_targetSpeed - targetSpeed) < 0.001f)
+            {
+                _targetSpeed = targetSpeed;
+            }
+            _animator.SetFloat(_speedHash, _targetSpeed);
         }
-
-        private void SetAnimParam()
+        
+        private void UpdateTurn()
         {
-            _animator.SetFloat(_speedHash, Context.ActualPlanarSpeed);
-            
-            // 根运动时才启用倾斜跑动带动身体旋转
-            if(Config.rootMotion) _animator.SetFloat(_turnHash, CalculateTurn());
+            // 计算转向数值
+            float targetTurn = CalculateTurn();
+            float smoothTime = Config.animTurnSmoothTime;
+            float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
+            _targetTurn = Mathf.Lerp(_targetTurn, targetTurn, blend);
+            if (Mathf.Abs(_targetTurn - targetTurn) < 0.001f)
+            {
+                _targetTurn = targetTurn;
+            }
+            _animator.SetFloat(_turnHash, _targetTurn);
         }
 
         /// <summary>
@@ -58,9 +78,21 @@ namespace GamePlay.BattleSystem
             return Mathf.Clamp(angle / 180f, -1f, 1f);
         }
 
-        private void OnAnimatorMove()
-        {
+        #region 生命周期
 
+        private void Update()
+        {
+            UpdateSpeed();
+            UpdateTurn();
         }
+        
+        private void OnDisable()
+        {
+            // 角色还池或停用后清除上一轮的动画插值状态。
+            _targetSpeed = 0f;
+            _targetTurn = 0f;
+        }
+
+        #endregion
     }
 }
