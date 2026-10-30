@@ -18,16 +18,13 @@ namespace GamePlay.BattleSystem
         public Vector3 meshAngularVelocity;
         
         public Vector3 lastMoveDirection;
-        public Vector3 dashDirection;
         
         public float appliedLocomotionSpeed;
         public float desiredLocomotionSpeed;
         public float verticalVelocity;
         
-        public float dashRemainingTime;
         public int jumpCount;
         
-        public bool isDashing;
         public bool isSprinting;
         public bool isRunning;
         public bool isGrounded;

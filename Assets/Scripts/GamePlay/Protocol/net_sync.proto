@@ -138,13 +138,10 @@ message Player_Snapshot {
     int32 jump_count = 10;
     bool is_running = 11;
     bool is_sprinting = 12;
-    bool is_dashing = 13;
-    bool is_grounded = 14;
-    Vec3 dash_direction = 15;
-    float dash_remaining_time = 16;
-    float desired_locomotion_speed = 17;
-    float applied_locomotion_speed = 18;
-    Vec3 last_move_direction = 19;
+    bool is_grounded = 13;
+    float desired_locomotion_speed = 14;
+    float applied_locomotion_speed = 15;
+    Vec3 last_move_direction = 16;
 }
 
 message World_Snapshot {

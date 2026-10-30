@@ -15,12 +15,9 @@ namespace GamePlay.BattleSystem
         private Transform _mesh;
 
         private Vector3 _lastMoveDir;
-        private Vector3 _dashDir;
         private float _locomotionSpeed;
         private float _verticalVelocity;
-        private float _dashAccumulator;
         private int _jumpCount;
-        private bool _isDashing;
         private bool _isGrounded;
 
         #region 属性
@@ -30,7 +27,6 @@ namespace GamePlay.BattleSystem
         public Vector3 LinearVelocity { get; private set; }
         public Vector3 AngularVelocity { get; private set; }
         public bool IsGrounded => _isGrounded;
-        public bool IsDashing => _isDashing;
         public int JumpCount => _jumpCount;
         #endregion
 
@@ -89,16 +85,12 @@ namespace GamePlay.BattleSystem
         {
             if (!_controller) return;
 
-            if (!_isDashing)
-            {
-                _locomotionSpeed = speed;
-                UpdateLocomotionDir(inputDir, viewYaw);
-            }
+            _locomotionSpeed = speed;
+            UpdateLocomotionDir(inputDir, viewYaw);
 
             ApplyGravity(dt);
             ApplyMovement(dt);
             _isGrounded = _controller.isGrounded;
-            TickDash(dt);
         }
 
         /// <summary>
@@ -106,7 +98,6 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool Jump(float jumpSpeed, int maxJumpCount)
         {
-            if (_isDashing) return false;
             if (_jumpCount >= maxJumpCount) return false;
 
             _jumpCount++;
@@ -157,22 +148,10 @@ namespace GamePlay.BattleSystem
 
         private void ApplyMovement(float dt)
         {
-            Vector3 moveDir = _isDashing ? _dashDir : _lastMoveDir;
-            Vector3 velocity = new Vector3(moveDir.x, 0f, moveDir.z) * _locomotionSpeed;
+            Vector3 velocity = new Vector3(_lastMoveDir.x, 0f, _lastMoveDir.z) * _locomotionSpeed;
             velocity.y = _verticalVelocity;
             LinearVelocity = velocity;
             _controller.Move(velocity * dt);
-        }
-
-        private void TickDash(float dt)
-        {
-            if (!_isDashing) return;
-
-            _dashAccumulator -= dt;
-            if (_dashAccumulator <= 0f)
-            {
-                _isDashing = false;
-            }
         }
 
         #region 快照逻辑
@@ -225,12 +204,9 @@ namespace GamePlay.BattleSystem
                 rootLinearVelocity = LinearVelocity,
                 meshAngularVelocity = AngularVelocity,
                 lastMoveDirection = _lastMoveDir,
-                dashDirection = _dashDir,
                 appliedLocomotionSpeed = _locomotionSpeed,
                 verticalVelocity = _verticalVelocity,
-                dashRemainingTime = _dashAccumulator,
                 jumpCount = _jumpCount,
-                isDashing = _isDashing,
                 isGrounded = _isGrounded
             };
         }
@@ -244,29 +220,23 @@ namespace GamePlay.BattleSystem
             Restore(state.meshRotation, state.meshAngularVelocity);
             LinearVelocity = state.rootLinearVelocity;
             _lastMoveDir = state.lastMoveDirection;
-            _dashDir = state.dashDirection;
             _locomotionSpeed = state.appliedLocomotionSpeed;
             _verticalVelocity = state.verticalVelocity;
-            _dashAccumulator = state.dashRemainingTime;
             _jumpCount = state.jumpCount;
-            _isDashing = state.isDashing;
             _isGrounded = state.isGrounded;
         }
 
         #endregion
         
         /// <summary>
-        /// 清掉上一场留下的速度、冲刺和跳跃计数。
+        /// 清掉上一场留下的速度和跳跃计数。
         /// </summary>
         public void ResetMotion()
         {
             _lastMoveDir = Vector3.zero;
-            _dashDir = Vector3.zero;
             _locomotionSpeed = Config.walkSpeed;
             _verticalVelocity = 0f;
-            _dashAccumulator = 0f;
             _jumpCount = 0;
-            _isDashing = false;
             _isGrounded = false;
             LinearVelocity = Vector3.zero;
             AngularVelocity = Vector3.zero;

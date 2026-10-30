@@ -48,7 +48,7 @@ namespace NetSync {
             "cmVzc2VkGAUgASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYBiAB",
             "KAgSGwoTaXNfaW50ZXJhY3RfcHJlc3NlZBgHIAEoCBIZChFpc19zcHJpbnRf",
             "cHJlc3NlZBgIIAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCSABKAgSHgoWaXNf",
-            "c3dpdGNoX21vZGVfcHJlc3NlZBgKIAEoCCLMBAoPUGxheWVyX1NuYXBzaG90",
+            "c3dpdGNoX21vZGVfcHJlc3NlZBgKIAEoCCL0AwoPUGxheWVyX1NuYXBzaG90",
             "EhAKCGVudGl0eUlkGAEgASgNEhgKEGxvY29tb3Rpb25fc3RhdGUYAiABKA0S",
             "HwoIcG9zaXRpb24YAyABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
             "BCABKAsyDS5OZXRTeW5jLlF1YXQSJAoNdmlld19yb3RhdGlvbhgFIAEoCzIN",
@@ -56,20 +56,18 @@ namespace NetSync {
             "eW5jLlZlYzMSJwoQYW5ndWxhcl92ZWxvY2l0eRgHIAEoCzINLk5ldFN5bmMu",
             "VmVjMxIeChZsYXN0UHJvY2Vzc2VkSW5wdXRUaWNrGAggASgNEhkKEXZlcnRp",
             "Y2FsX3ZlbG9jaXR5GAkgASgCEhIKCmp1bXBfY291bnQYCiABKAUSEgoKaXNf",
-            "cnVubmluZxgLIAEoCBIUCgxpc19zcHJpbnRpbmcYDCABKAgSEgoKaXNfZGFz",
-            "aGluZxgNIAEoCBITCgtpc19ncm91bmRlZBgOIAEoCBIlCg5kYXNoX2RpcmVj",
-            "dGlvbhgPIAEoCzINLk5ldFN5bmMuVmVjMxIbChNkYXNoX3JlbWFpbmluZ190",
-            "aW1lGBAgASgCEiAKGGRlc2lyZWRfbG9jb21vdGlvbl9zcGVlZBgRIAEoAhIg",
-            "ChhhcHBsaWVkX2xvY29tb3Rpb25fc3BlZWQYEiABKAISKgoTbGFzdF9tb3Zl",
-            "X2RpcmVjdGlvbhgTIAEoCzINLk5ldFN5bmMuVmVjMyJaCg5Xb3JsZF9TbmFw",
-            "c2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0SMgoQUGxheWVyX3NuYXBzaG90",
-            "cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1NuYXBzaG90Ir0BChNQbGF5ZXJf",
-            "U3Bhd25fTm90aWZ5EhAKCGVudGl0eUlkGAEgASgNEhQKDGVudGl0eVR5cGVJ",
-            "ZBgCIAEoDRIQCghwbGF5ZXJJZBgDIAEoCRIfCghwb3NpdGlvbhgEIAEoCzIN",
-            "Lk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgFIAEoCzINLk5ldFN5bmMuUXVh",
-            "dBIqCghzbmFwc2hvdBgGIAEoCzIYLk5ldFN5bmMuUGxheWVyX1NuYXBzaG90",
-            "IikKFUVudGl0eV9EZXN0cm95X05vdGlmeRIQCghlbnRpdHlJZBgBIAEoDSIb",
-            "ChlFbnRpdHlfU3Bhd25fU3luY19SZXF1ZXN0YgZwcm90bzM="));
+            "cnVubmluZxgLIAEoCBIUCgxpc19zcHJpbnRpbmcYDCABKAgSEwoLaXNfZ3Jv",
+            "dW5kZWQYDSABKAgSIAoYZGVzaXJlZF9sb2NvbW90aW9uX3NwZWVkGA4gASgC",
+            "EiAKGGFwcGxpZWRfbG9jb21vdGlvbl9zcGVlZBgPIAEoAhIqChNsYXN0X21v",
+            "dmVfZGlyZWN0aW9uGBAgASgLMg0uTmV0U3luYy5WZWMzIloKDldvcmxkX1Nu",
+            "YXBzaG90EhQKDHNuYXBzaG90VGljaxgBIAEoDRIyChBQbGF5ZXJfc25hcHNo",
+            "b3RzGAIgAygLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNob3QivQEKE1BsYXll",
+            "cl9TcGF3bl9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0SFAoMZW50aXR5VHlw",
+            "ZUlkGAIgASgNEhAKCHBsYXllcklkGAMgASgJEh8KCHBvc2l0aW9uGAQgASgL",
+            "Mg0uTmV0U3luYy5WZWMzEh8KCHJvdGF0aW9uGAUgASgLMg0uTmV0U3luYy5R",
+            "dWF0EioKCHNuYXBzaG90GAYgASgLMhguTmV0U3luYy5QbGF5ZXJfU25hcHNo",
+            "b3QiKQoVRW50aXR5X0Rlc3Ryb3lfTm90aWZ5EhAKCGVudGl0eUlkGAEgASgN",
+            "IhsKGUVudGl0eV9TcGF3bl9TeW5jX1JlcXVlc3RiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -86,7 +84,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Server_Dissolved_Notify), global::NetSync.Room_Server_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Inputs), global::NetSync.Player_Inputs.Parser, new[]{ "CurrentInputs", "RecentInputs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsDashing", "IsGrounded", "DashDirection", "DashRemainingTime", "DesiredLocomotionSpeed", "AppliedLocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsGrounded", "DesiredLocomotionSpeed", "AppliedLocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Spawn_Notify), global::NetSync.Player_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Destroy_Notify), global::NetSync.Entity_Destroy_Notify.Parser, new[]{ "EntityId" }, null, null, null, null),
@@ -3409,10 +3407,7 @@ namespace NetSync {
       jumpCount_ = other.jumpCount_;
       isRunning_ = other.isRunning_;
       isSprinting_ = other.isSprinting_;
-      isDashing_ = other.isDashing_;
       isGrounded_ = other.isGrounded_;
-      dashDirection_ = other.dashDirection_ != null ? other.dashDirection_.Clone() : null;
-      dashRemainingTime_ = other.dashRemainingTime_;
       desiredLocomotionSpeed_ = other.desiredLocomotionSpeed_;
       appliedLocomotionSpeed_ = other.appliedLocomotionSpeed_;
       lastMoveDirection_ = other.lastMoveDirection_ != null ? other.lastMoveDirection_.Clone() : null;
@@ -3569,20 +3564,8 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "is_dashing" field.</summary>
-    public const int IsDashingFieldNumber = 13;
-    private bool isDashing_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsDashing {
-      get { return isDashing_; }
-      set {
-        isDashing_ = value;
-      }
-    }
-
     /// <summary>Field number for the "is_grounded" field.</summary>
-    public const int IsGroundedFieldNumber = 14;
+    public const int IsGroundedFieldNumber = 13;
     private bool isGrounded_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3593,32 +3576,8 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "dash_direction" field.</summary>
-    public const int DashDirectionFieldNumber = 15;
-    private global::NetSync.Vec3 dashDirection_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.Vec3 DashDirection {
-      get { return dashDirection_; }
-      set {
-        dashDirection_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "dash_remaining_time" field.</summary>
-    public const int DashRemainingTimeFieldNumber = 16;
-    private float dashRemainingTime_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public float DashRemainingTime {
-      get { return dashRemainingTime_; }
-      set {
-        dashRemainingTime_ = value;
-      }
-    }
-
     /// <summary>Field number for the "desired_locomotion_speed" field.</summary>
-    public const int DesiredLocomotionSpeedFieldNumber = 17;
+    public const int DesiredLocomotionSpeedFieldNumber = 14;
     private float desiredLocomotionSpeed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3630,7 +3589,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "applied_locomotion_speed" field.</summary>
-    public const int AppliedLocomotionSpeedFieldNumber = 18;
+    public const int AppliedLocomotionSpeedFieldNumber = 15;
     private float appliedLocomotionSpeed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3642,7 +3601,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "last_move_direction" field.</summary>
-    public const int LastMoveDirectionFieldNumber = 19;
+    public const int LastMoveDirectionFieldNumber = 16;
     private global::NetSync.Vec3 lastMoveDirection_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3680,10 +3639,7 @@ namespace NetSync {
       if (JumpCount != other.JumpCount) return false;
       if (IsRunning != other.IsRunning) return false;
       if (IsSprinting != other.IsSprinting) return false;
-      if (IsDashing != other.IsDashing) return false;
       if (IsGrounded != other.IsGrounded) return false;
-      if (!object.Equals(DashDirection, other.DashDirection)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DashRemainingTime, other.DashRemainingTime)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(DesiredLocomotionSpeed, other.DesiredLocomotionSpeed)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AppliedLocomotionSpeed, other.AppliedLocomotionSpeed)) return false;
       if (!object.Equals(LastMoveDirection, other.LastMoveDirection)) return false;
@@ -3706,10 +3662,7 @@ namespace NetSync {
       if (JumpCount != 0) hash ^= JumpCount.GetHashCode();
       if (IsRunning != false) hash ^= IsRunning.GetHashCode();
       if (IsSprinting != false) hash ^= IsSprinting.GetHashCode();
-      if (IsDashing != false) hash ^= IsDashing.GetHashCode();
       if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
-      if (dashDirection_ != null) hash ^= DashDirection.GetHashCode();
-      if (DashRemainingTime != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DashRemainingTime);
       if (DesiredLocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(DesiredLocomotionSpeed);
       if (AppliedLocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AppliedLocomotionSpeed);
       if (lastMoveDirection_ != null) hash ^= LastMoveDirection.GetHashCode();
@@ -3779,32 +3732,20 @@ namespace NetSync {
         output.WriteRawTag(96);
         output.WriteBool(IsSprinting);
       }
-      if (IsDashing != false) {
-        output.WriteRawTag(104);
-        output.WriteBool(IsDashing);
-      }
       if (IsGrounded != false) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(104);
         output.WriteBool(IsGrounded);
       }
-      if (dashDirection_ != null) {
-        output.WriteRawTag(122);
-        output.WriteMessage(DashDirection);
-      }
-      if (DashRemainingTime != 0F) {
-        output.WriteRawTag(133, 1);
-        output.WriteFloat(DashRemainingTime);
-      }
       if (DesiredLocomotionSpeed != 0F) {
-        output.WriteRawTag(141, 1);
+        output.WriteRawTag(117);
         output.WriteFloat(DesiredLocomotionSpeed);
       }
       if (AppliedLocomotionSpeed != 0F) {
-        output.WriteRawTag(149, 1);
+        output.WriteRawTag(125);
         output.WriteFloat(AppliedLocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
-        output.WriteRawTag(154, 1);
+        output.WriteRawTag(130, 1);
         output.WriteMessage(LastMoveDirection);
       }
       if (_unknownFields != null) {
@@ -3865,32 +3806,20 @@ namespace NetSync {
         output.WriteRawTag(96);
         output.WriteBool(IsSprinting);
       }
-      if (IsDashing != false) {
-        output.WriteRawTag(104);
-        output.WriteBool(IsDashing);
-      }
       if (IsGrounded != false) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(104);
         output.WriteBool(IsGrounded);
       }
-      if (dashDirection_ != null) {
-        output.WriteRawTag(122);
-        output.WriteMessage(DashDirection);
-      }
-      if (DashRemainingTime != 0F) {
-        output.WriteRawTag(133, 1);
-        output.WriteFloat(DashRemainingTime);
-      }
       if (DesiredLocomotionSpeed != 0F) {
-        output.WriteRawTag(141, 1);
+        output.WriteRawTag(117);
         output.WriteFloat(DesiredLocomotionSpeed);
       }
       if (AppliedLocomotionSpeed != 0F) {
-        output.WriteRawTag(149, 1);
+        output.WriteRawTag(125);
         output.WriteFloat(AppliedLocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
-        output.WriteRawTag(154, 1);
+        output.WriteRawTag(130, 1);
         output.WriteMessage(LastMoveDirection);
       }
       if (_unknownFields != null) {
@@ -3939,23 +3868,14 @@ namespace NetSync {
       if (IsSprinting != false) {
         size += 1 + 1;
       }
-      if (IsDashing != false) {
-        size += 1 + 1;
-      }
       if (IsGrounded != false) {
         size += 1 + 1;
       }
-      if (dashDirection_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(DashDirection);
-      }
-      if (DashRemainingTime != 0F) {
-        size += 2 + 4;
-      }
       if (DesiredLocomotionSpeed != 0F) {
-        size += 2 + 4;
+        size += 1 + 4;
       }
       if (AppliedLocomotionSpeed != 0F) {
-        size += 2 + 4;
+        size += 1 + 4;
       }
       if (lastMoveDirection_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(LastMoveDirection);
@@ -4023,20 +3943,8 @@ namespace NetSync {
       if (other.IsSprinting != false) {
         IsSprinting = other.IsSprinting;
       }
-      if (other.IsDashing != false) {
-        IsDashing = other.IsDashing;
-      }
       if (other.IsGrounded != false) {
         IsGrounded = other.IsGrounded;
-      }
-      if (other.dashDirection_ != null) {
-        if (dashDirection_ == null) {
-          DashDirection = new global::NetSync.Vec3();
-        }
-        DashDirection.MergeFrom(other.DashDirection);
-      }
-      if (other.DashRemainingTime != 0F) {
-        DashRemainingTime = other.DashRemainingTime;
       }
       if (other.DesiredLocomotionSpeed != 0F) {
         DesiredLocomotionSpeed = other.DesiredLocomotionSpeed;
@@ -4129,33 +4037,18 @@ namespace NetSync {
             break;
           }
           case 104: {
-            IsDashing = input.ReadBool();
-            break;
-          }
-          case 112: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 122: {
-            if (dashDirection_ == null) {
-              DashDirection = new global::NetSync.Vec3();
-            }
-            input.ReadMessage(DashDirection);
-            break;
-          }
-          case 133: {
-            DashRemainingTime = input.ReadFloat();
-            break;
-          }
-          case 141: {
+          case 117: {
             DesiredLocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 149: {
+          case 125: {
             AppliedLocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 154: {
+          case 130: {
             if (lastMoveDirection_ == null) {
               LastMoveDirection = new global::NetSync.Vec3();
             }
@@ -4241,33 +4134,18 @@ namespace NetSync {
             break;
           }
           case 104: {
-            IsDashing = input.ReadBool();
-            break;
-          }
-          case 112: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 122: {
-            if (dashDirection_ == null) {
-              DashDirection = new global::NetSync.Vec3();
-            }
-            input.ReadMessage(DashDirection);
-            break;
-          }
-          case 133: {
-            DashRemainingTime = input.ReadFloat();
-            break;
-          }
-          case 141: {
+          case 117: {
             DesiredLocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 149: {
+          case 125: {
             AppliedLocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 154: {
+          case 130: {
             if (lastMoveDirection_ == null) {
               LastMoveDirection = new global::NetSync.Vec3();
             }
