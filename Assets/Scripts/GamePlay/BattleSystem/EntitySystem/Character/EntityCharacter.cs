@@ -32,16 +32,22 @@ namespace GamePlay.BattleSystem
 
             InitConfig();
             
-            // 注册能力组件
+            // 统一收集能力组件
             _context = new EntityContext(this, config);
-            _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
+            _context.AddAbility<EntityStateMachineModule>();
             _context.AddAbility<MovementModule>();
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
-            _context.AddAbility<EntityStateMachineModule>();
+            _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
+
+            // 全部能力登记后统一绑定并初始化，防止组件间依赖导致空引用
+            _context.BindAbilities();
             
             // 注册模拟控制器
             _simulator = new EntitySimulator(_context);
+
+            // 实体能力注册完毕之后切换到待机状态
+            _context.Get<EntityStateMachineModule>().ChangeState(EntityState.IDLE);
             
             _isInitialized = true;
         }

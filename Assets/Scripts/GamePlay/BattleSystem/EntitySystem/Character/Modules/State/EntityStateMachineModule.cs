@@ -16,12 +16,11 @@ namespace GamePlay.BattleSystem
         #endregion
 
         /// <summary>
-        /// 模块绑定完成后注册角色状态并进入初始状态
+        /// 绑定时注册角色状态，等待所有能力就绪后进入初始状态。
         /// </summary>
         protected override void OnBound(EntityCharacter target)
         {
             RegisterStates();
-            ChangeState(EntityState.IDLE);
         }
         
         /// <summary>

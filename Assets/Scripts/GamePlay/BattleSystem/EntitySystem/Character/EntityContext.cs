@@ -65,14 +65,24 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 为实体添加能力组件
+        /// 收集并登记实体能力组件，此阶段不绑定或初始化组件。
         /// </summary>
         public T AddAbility<T>() where T : EntityModuleBase
         {
             T module = _character.GetOrAddComponent<T>();
             _modules.Add(typeof(T), module);
-            module.Bind(_character);
             return module;
+        }
+
+        /// <summary>
+        /// 所有能力收集完成后统一绑定并初始化，模块不依赖绑定顺序。
+        /// </summary>
+        internal void BindAbilities()
+        {
+            foreach (EntityModuleBase module in _modules.Values)
+            {
+                module.Bind(_character);
+            }
         }
 
         /// <summary>
