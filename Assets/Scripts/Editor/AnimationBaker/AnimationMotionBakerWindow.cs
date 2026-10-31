@@ -34,8 +34,25 @@ namespace EditorTools
         [MenuItem("Tools/Framework/Root Motion Baker")]
         public static void Open()
         {
-            AnimationMotionBakerWindow window = GetWindow<AnimationMotionBakerWindow>("根运动烘焙");
+            AnimationMotionBakerWindow window = GetWindow<AnimationMotionBakerWindow>(true, "根运动烘焙");
+            // Unity 停靠窗口不使用 minSize，已有停靠实例需要重建为不可停靠的工具窗。
+            if (window.docked)
+            {
+                GameObject previousModel = window.modelPrefab;
+                AnimationClip previousClip = window.clip;
+                int previousSampleRate = window.sampleRate;
+                window.Close();
+                window = CreateInstance<AnimationMotionBakerWindow>();
+                window.titleContent = new GUIContent("根运动烘焙");
+                window.modelPrefab = previousModel;
+                window.clip = previousClip;
+                window.sampleRate = previousSampleRate;
+            }
             window.minSize = new Vector2(460f, 540f);
+            window.ShowUtility();
+            Rect bounds = window.position;
+            bounds.size = Vector2.Max(bounds.size, window.minSize);
+            window.position = bounds;
         }
 
         private void BakePreview()
@@ -319,8 +336,6 @@ namespace EditorTools
                 clip = (AnimationClip)EditorGUILayout.ObjectField("动画片段", clip, typeof(AnimationClip), false);
                 sampleRate = EditorGUILayout.IntSlider("采样频率 / Hz", sampleRate, 15, 240);
                 if (EditorGUI.EndChangeCheck()) ClearPreview();
-                if (clip)
-                    EditorGUILayout.LabelField($"时长 {clip.length:F3} s   ·   原始帧率 {clip.frameRate:F0} fps   ·   预计 {Mathf.CeilToInt(clip.length * sampleRate) + 1} 个采样点", _hintStyle);
                 string issue = GetInputIssue();
                 if (issue != null) EditorGUILayout.HelpBox(issue, MessageType.Info);
                 using (new EditorGUI.DisabledScope(issue != null))
@@ -342,7 +357,14 @@ namespace EditorTools
                     DrawMetric("累计转角", $"{_preview.TotalYaw:F2}°");
                     DrawMetric("平均转向速度", $"{_preview.AverageYawSpeed:F2}°/s");
                 }
-                EditorGUILayout.LabelField($"{_preview.duration:F3} 秒 · {_preview.positionX.length} 个采样点 · {_preview.sampleRate} Hz", _hintStyle);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawMetric("动画时间", $"{_preview.duration} s");
+                    DrawMetric("动画频率", $"{clip.frameRate}");
+                    DrawMetric("采样点数", $"{_preview.positionX.length}");
+                    DrawMetric("采样频率", $"{_preview.sampleRate} Hz");
+                }
                 if (_preview.planarDistance < 0.001f && Mathf.Abs(_preview.TotalYaw) < 0.01f)
                     EditorGUILayout.HelpBox("未检测到明显根运动。请检查动画是否为原地动作、Bake Into Pose 设置及 Avatar。", MessageType.Warning);
                 GUILayout.Space(6f);
