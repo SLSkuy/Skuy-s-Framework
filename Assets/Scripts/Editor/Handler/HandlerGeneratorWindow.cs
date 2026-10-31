@@ -261,12 +261,14 @@ namespace Framework.Editor
             private readonly string _title;
             private readonly string[] _labels;
             private readonly Action<int> _onSelected;
+            private readonly Dictionary<string, int> _indices = new(StringComparer.Ordinal);
 
             public ProtocolDropdown(string title, string[] labels, Action<int> onSelected) : base(new AdvancedDropdownState())
             {
                 _title = title;
                 _labels = labels;
                 _onSelected = onSelected;
+                for (int i = 0; i < labels.Length; i++) _indices.Add(labels[i], i);
                 minimumSize = new Vector2(380f, 320f);
             }
 
@@ -274,33 +276,36 @@ namespace Framework.Editor
             {
                 var root = new AdvancedDropdownItem(_title);
                 for (int i = 0; i < _labels.Length; i++)
-                    root.AddChild(new AdvancedDropdownItem(_labels[i]) { id = i });
+                    root.AddChild(new AdvancedDropdownItem(_labels[i]));
                 return root;
             }
 
             protected override void ItemSelected(AdvancedDropdownItem item)
             {
-                _onSelected(item.id);
+                // Unity 的下拉项 ID 不代表原始数组下标，搜索结果也按唯一名称映射。
+                _onSelected(_indices[item.name]);
             }
         }
 
         private void DrawFooter()
         {
             string error = ValidateConfiguration();
+            bool overwrite = error == null && File.Exists(Path.Combine(outputPath, className + ".cs"));
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 if (!string.IsNullOrEmpty(error)) EditorGUILayout.HelpBox(error, MessageType.Warning);
+                if (overwrite) EditorGUILayout.HelpBox("目标 Handler 已存在。覆盖将替换整个脚本，请先检查代码预览。", MessageType.Warning);
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     if (GUILayout.Button("复制代码", GUILayout.Height(32f))) EditorGUIUtility.systemCopyBuffer = BuildSource();
                     using (new EditorGUI.DisabledScope(error != null || EditorApplication.isCompiling
                         || EditorApplication.isPlayingOrWillChangePlaymode))
                     {
-                        if (GUILayout.Button("生成 Handler", GUILayout.Height(32f))) Generate();
+                        if (GUILayout.Button(overwrite ? "覆盖 Handler" : "生成 Handler", GUILayout.Height(32f))) Generate();
                     }
                 }
                 EditorGUILayout.LabelField(string.IsNullOrEmpty(_lastResult)
-                    ? "生成新文件 · " + outputPath + "/" + className + ".cs" : _lastResult, EditorStyles.wordWrappedMiniLabel);
+                    ? (overwrite ? "覆盖现有文件 · " : "生成新文件 · ") + outputPath + "/" + className + ".cs" : _lastResult, EditorStyles.wordWrappedMiniLabel);
             }
         }
 
@@ -320,7 +325,6 @@ namespace Framework.Editor
                 || part == "." || part.Equals("Editor", StringComparison.OrdinalIgnoreCase))
                 || path.IndexOfAny(new[] { ':', '*', '?', '"', '<', '>', '|' }) >= 0)
                 return "输出目录必须位于 Assets 内，且不能包含 Editor、相对跳转或非法字符。";
-            if (File.Exists(Path.Combine(outputPath, className + ".cs"))) return "目标文件已存在，请更换类名或目录。";
             if (protocols.Count == 0) return "请添加至少一个协议。";
             var events = new HashSet<NetEvent>();
             var members = new HashSet<string> { className, "Bind", "Unbind", "_client", "_server", "_room" };
@@ -427,15 +431,19 @@ namespace Framework.Editor
                 return;
             }
             string path = Path.Combine(outputPath, className + ".cs").Replace('\\', '/');
+            bool overwrite = File.Exists(path);
+            if (overwrite && !EditorUtility.DisplayDialog("覆盖 Handler",
+                "将替换以下脚本的全部内容（包含手动修改），保留原有 .meta：\n" + path, "覆盖", "取消")) return;
             try
             {
+                string source = BuildSource();
                 Directory.CreateDirectory(outputPath);
-                using (var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
-                using (var writer = new StreamWriter(stream, new UTF8Encoding(true))) writer.Write(BuildSource());
+                using (var stream = new FileStream(path, overwrite ? FileMode.Create : FileMode.CreateNew, FileAccess.Write))
+                using (var writer = new StreamWriter(stream, new UTF8Encoding(true))) writer.Write(source);
                 AssetDatabase.Refresh();
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
                 EditorGUIUtility.PingObject(Selection.activeObject);
-                _lastResult = "已生成 · " + path;
+                _lastResult = (overwrite ? "已覆盖 · " : "已生成 · ") + path;
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException || exception is ArgumentException)
             {

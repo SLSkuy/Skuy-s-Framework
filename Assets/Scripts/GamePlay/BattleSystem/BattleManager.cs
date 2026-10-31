@@ -101,7 +101,7 @@ namespace GamePlay.BattleSystem
             if (!_room.IsHost)
             {
                 // 非主机客户端向服务端请求玩家实体，本地不做生成
-                _clientHandler.SendSpawnSyncRequest();
+                _entityManager.RequestAllEntities();
                 return;
             }
             

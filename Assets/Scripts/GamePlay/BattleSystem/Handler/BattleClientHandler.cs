@@ -46,11 +46,6 @@ namespace GamePlay.BattleSystem
         
         #region 发送消息
 
-        public void SendSpawnSyncRequest()
-        {
-            _client.SendReliable(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
-        }
-
         public void SendPlayerInput(uint inputTick, in InputCommand input)
         {
             Input_Command command = input.ToProto(inputTick);

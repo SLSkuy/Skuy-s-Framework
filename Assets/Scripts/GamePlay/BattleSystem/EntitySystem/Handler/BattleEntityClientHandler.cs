@@ -38,6 +38,15 @@ namespace GamePlay.BattleSystem
         }
 
         #endregion
+
+        #region 发送消息
+
+        public void SendSpawnSyncRequest()
+        {
+            _client.SendReliable(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, new Entity_Spawn_Sync_Request());
+        }
+
+        #endregion
         
         #region 接收消息
         

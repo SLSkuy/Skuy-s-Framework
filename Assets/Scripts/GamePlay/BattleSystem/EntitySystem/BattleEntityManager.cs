@@ -44,6 +44,14 @@ namespace GamePlay.BattleSystem
             }
         }
 
+        /// <summary>
+        /// 请求获取所有实体数据
+        /// </summary>
+        public void RequestAllEntities()
+        {
+            _clientHandler.SendSpawnSyncRequest();
+        }
+
         #region 实体生成管理
 
         /// <summary>
