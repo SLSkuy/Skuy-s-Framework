@@ -18,10 +18,15 @@ namespace Framework.Editor
         private string _searchPath = "Assets";
 
         private Vector2 _scrollPosition;
+        private Vector2 _outputScroll;
+        private Vector2 _windowScroll;
+        private string _fileSearch = "";
+        private GUIStyle _metricStyle;
+        private GUIStyle _hintStyle;
+        private string _lastCompileTime = "";
 
         private readonly List<ProtoFileInfo> _protoFiles = new();
 
-        private bool _selectAll = true;
         private bool _showOutput;
 
         private string _lastError = "";
@@ -36,12 +41,13 @@ namespace Framework.Editor
         [MenuItem("Tools/Framework/Proto Compiler")]
         public static void ShowWindow()
         {
-            var window = GetWindow<ProtoCompilerWindow>("Proto Compiler");
-            window.minSize = new Vector2(520, 600);
+            var window = GetWindow<ProtoCompilerWindow>("协议编译");
+            window.minSize = new Vector2(560, 620);
         }
 
         private void OnEnable()
         {
+            minSize = new Vector2(560f, 620f);
             _protocPath = EditorPrefs.GetString("ProtoCompiler.ProtocPath", _protocPath);
             _outputPath = EditorPrefs.GetString("ProtoCompiler.OutputPath", _outputPath);
             _searchPath = EditorPrefs.GetString("ProtoCompiler.SearchPath", _searchPath);
@@ -57,220 +63,202 @@ namespace Framework.Editor
 
         private void OnGUI()
         {
-            EditorGUILayout.BeginVertical();
-
+            _metricStyle ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 20, fixedHeight = 27f };
+            _hintStyle ??= new GUIStyle(EditorStyles.wordWrappedMiniLabel);
             DrawHeader();
+            _windowScroll = EditorGUILayout.BeginScrollView(_windowScroll);
             DrawProtocConfig();
-
-            DrawProtoFiles();
-
-            GUILayout.FlexibleSpace();
-
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                DrawMetric("发现协议", _protoFiles.Count.ToString());
+                DrawMetric("已选文件", SelectedCount().ToString());
+                DrawMetric("最近结果", !string.IsNullOrEmpty(_lastError) ? "存在错误" : string.IsNullOrEmpty(_lastOutput) ? "尚未编译" : "编译成功");
+            }
+            GUILayout.Space(6f);
+            _showOutput = GUILayout.Toolbar(_showOutput ? 1 : 0, new[] { "协议文件", "编译输出" }) == 1;
+            if (_showOutput) DrawOutput();
+            else DrawProtoFiles();
+            EditorGUILayout.EndScrollView();
             DrawCompileButton();
-            DrawOutput();
-
-            EditorGUILayout.EndVertical();
         }
 
         private void DrawHeader()
         {
-            GUILayout.Space(5);
-
-            GUILayout.Label("Protobuf Compiler", EditorStyles.largeLabel);
-            EditorGUILayout.LabelField("Generate C# protocol classes from .proto files", EditorStyles.miniLabel);
-
-            GUILayout.Space(10);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                GUILayout.Space(6f);
+                GUILayout.Label("协议编译", EditorStyles.largeLabel);
+                EditorGUILayout.LabelField("选择 .proto 文件，使用现有 protoc 配置生成 C# 协议代码。", EditorStyles.wordWrappedMiniLabel);
+                GUILayout.Space(6f);
+            }
         }
 
-        private void DrawSection(string title, Action content, params GUILayoutOption[] options)
+        private void DrawMetric(string title, string value)
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox, options);
-
-            GUILayout.Label(title, EditorStyles.boldLabel);
-            GUILayout.Space(5);
-
-            content?.Invoke();
-
-            EditorGUILayout.EndVertical();
-            GUILayout.Space(8);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.ExpandWidth(true)))
+            {
+                EditorGUILayout.LabelField(title, _hintStyle);
+                EditorGUILayout.LabelField(value, _metricStyle);
+            }
         }
 
         private void DrawProtocConfig()
         {
-            DrawSection("⚙ Protoc Configuration", () =>
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                DrawPathField("Protoc Path", ref _protocPath, true);
-
-                GUILayout.Space(5);
-
+                EditorGUILayout.LabelField("编译配置", EditorStyles.boldLabel);
+                DrawPathField("编译器", ref _protocPath, true);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("搜索目录", GUILayout.Width(72f));
+                    _searchPath = EditorGUILayout.TextField(_searchPath);
+                    if (GUILayout.Button("扫描文件", GUILayout.Width(78f))) RefreshProtoFiles();
+                }
+                DrawPathField("输出目录", ref _outputPath, false);
                 if (string.IsNullOrEmpty(_protocPath))
-                {
-                    EditorGUILayout.HelpBox("请设置 protoc 路径，或者加入系统 PATH", MessageType.Info);
-                }
-
-                GUILayout.Space(5);
-
-                EditorGUILayout.BeginHorizontal();
-
-                _searchPath = EditorGUILayout.TextField("Search Path", _searchPath);
-
-                if (GUILayout.Button("Refresh", GUILayout.Width(70)))
-                {
-                    RefreshProtoFiles();
-                }
-
-                EditorGUILayout.EndHorizontal();
-
-                GUILayout.Space(5);
-
-                DrawPathField("Output Path", ref _outputPath, false);
-            });
+                    EditorGUILayout.HelpBox("未指定编译器路径，将沿用原有逻辑查找 protoc。", MessageType.Info);
+                if (!Directory.Exists(_searchPath))
+                    EditorGUILayout.HelpBox("搜索目录不存在，请调整后重新扫描。", MessageType.Warning);
+                EditorGUILayout.LabelField("浏览输出目录时请选择项目内部目录；编译器查找规则和生成参数保持不变。", _hintStyle);
+            }
+            GUILayout.Space(6f);
         }
 
         private void DrawPathField(string label, ref string value, bool file)
         {
-            EditorGUILayout.LabelField(label);
-
-            EditorGUILayout.BeginHorizontal();
-
-            value = EditorGUILayout.TextField(value);
-
-            if (GUILayout.Button("Browse", GUILayout.Width(70)))
+            using (new EditorGUILayout.HorizontalScope())
             {
+                EditorGUILayout.LabelField(label, GUILayout.Width(72f));
+                value = EditorGUILayout.TextField(value);
+                if (!GUILayout.Button("浏览…", GUILayout.Width(78f))) return;
                 if (file)
                 {
-                    string path = EditorUtility.OpenFilePanel("Select protoc", "", "exe");
-
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        value = path;
-                    }
+                    string path = EditorUtility.OpenFilePanel("选择 protoc", "", "exe");
+                    if (!string.IsNullOrEmpty(path)) value = path;
                 }
                 else
                 {
-                    string path = EditorUtility.OpenFolderPanel("Select output directory", "Assets", "");
-
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
-
-                        if (path.StartsWith(projectRoot))
-                        {
-                            value = path.Substring(projectRoot.Length + 1);
-                        }
-                        else
-                        {
-                            EditorUtility.DisplayDialog("Error", "请选择项目内部目录", "OK");
-                        }
-                    }
+                    string path = EditorUtility.OpenFolderPanel("选择输出目录", "Assets", "");
+                    if (string.IsNullOrEmpty(path)) return;
+                    string projectRoot = Directory.GetParent(Application.dataPath).FullName.Replace('\\', '/');
+                    path = path.Replace('\\', '/');
+                    if (path.StartsWith(projectRoot + "/", StringComparison.OrdinalIgnoreCase))
+                        value = path.Substring(projectRoot.Length + 1);
+                    else
+                        EditorUtility.DisplayDialog("输出目录", "请选择项目内部目录。", "确定");
                 }
             }
-
-            EditorGUILayout.EndHorizontal();
         }
-        
+
+        private int SelectedCount()
+        {
+            int count = 0;
+            foreach (ProtoFileInfo file in _protoFiles)
+                if (file.selected) count++;
+            return count;
+        }
+
+        private bool MatchesSearch(ProtoFileInfo file)
+        {
+            return string.IsNullOrWhiteSpace(_fileSearch)
+                || file.relativePath.IndexOf(_fileSearch.Trim(), StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         private void DrawProtoFiles()
         {
-            DrawSection($"📄 Proto Files ({_protoFiles.Count})", () =>
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                if (_protoFiles.Count == 0)
+                EditorGUILayout.LabelField("协议文件", EditorStyles.boldLabel);
+                using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
                 {
-                    EditorGUILayout.HelpBox("未找到 .proto 文件", MessageType.Warning);
-                    return;
+                    _fileSearch = GUILayout.TextField(_fileSearch, EditorStyles.toolbarSearchField);
+                    if (GUILayout.Button("清除", EditorStyles.toolbarButton, GUILayout.Width(42f))) _fileSearch = "";
                 }
-
-                _selectAll = _protoFiles.TrueForAll(x => x.selected);
-
-                EditorGUI.BeginChangeCheck();
-
-                _selectAll = EditorGUILayout.Toggle("Select All", _selectAll);
-
-                if (EditorGUI.EndChangeCheck())
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    foreach (var file in _protoFiles)
-                    {
-                        file.selected = _selectAll;
-                    }
+                    if (GUILayout.Button("全选可见", EditorStyles.miniButtonLeft))
+                        foreach (ProtoFileInfo file in _protoFiles)
+                            if (MatchesSearch(file)) file.selected = true;
+                    if (GUILayout.Button("取消可见", EditorStyles.miniButtonRight))
+                        foreach (ProtoFileInfo file in _protoFiles)
+                            if (MatchesSearch(file)) file.selected = false;
                 }
-
-                GUILayout.Space(5);
-
-                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                int shown = 0;
+                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition,
+                    GUILayout.Height(Mathf.Clamp(position.height - 435f, 130f, 480f)));
+                foreach (ProtoFileInfo file in _protoFiles)
                 {
-                    _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
-
-                    foreach (var file in _protoFiles)
-                    {
-                        file.selected = EditorGUILayout.ToggleLeft(file.relativePath, file.selected);
-                    }
-
-                    EditorGUILayout.EndScrollView();
+                    if (!MatchesSearch(file)) continue;
+                    Rect row = EditorGUILayout.GetControlRect(false, 30f);
+                    if (shown % 2 == 0)
+                        EditorGUI.DrawRect(row, EditorGUIUtility.isProSkin
+                            ? new Color(1f, 1f, 1f, 0.035f) : new Color(0f, 0f, 0f, 0.035f));
+                    file.selected = EditorGUI.Toggle(new Rect(row.x + 5f, row.y + 6f, 20f, 18f), file.selected);
+                    Rect labelRect = new Rect(row.x + 30f, row.y, row.width - 35f, row.height);
+                    EditorGUI.LabelField(labelRect, new GUIContent(file.relativePath, file.relativePath));
+                    shown++;
                 }
-            }, GUILayout.ExpandHeight(true));
+                if (shown == 0)
+                    EditorGUILayout.HelpBox(_protoFiles.Count == 0 ? "未找到 .proto 文件，请检查搜索目录后扫描。" : "没有匹配文件，请调整搜索内容。", MessageType.Info);
+                EditorGUILayout.EndScrollView();
+                EditorGUILayout.LabelField($"显示 {shown} / {_protoFiles.Count} 个文件 · 已选 {SelectedCount()} 个（包含筛选范围外的已选文件）", _hintStyle);
+            }
         }
 
         private void DrawCompileButton()
         {
-            int count = 0;
-
-            foreach (var file in _protoFiles)
+            int count = SelectedCount();
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                if (file.selected)
+                using (new EditorGUI.DisabledScope(count == 0 || EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode))
                 {
-                    count++;
+                    if (GUILayout.Button($"生成 C# 协议代码 · {count} 个文件", GUILayout.Height(34f))) CompileSelectedFiles();
                 }
+                string status = EditorApplication.isPlayingOrWillChangePlaymode ? "请退出播放模式后生成代码。"
+                    : EditorApplication.isCompiling ? "Unity 正在编译脚本，请稍候。"
+                    : count == 0 ? "选择至少一个协议文件后即可生成。"
+                    : string.IsNullOrEmpty(_lastCompileTime) ? "就绪 · 输出至 " + _outputPath : "最近编译 " + _lastCompileTime;
+                EditorGUILayout.LabelField(status, _hintStyle);
             }
-
-            GUI.enabled = count > 0;
-
-            Color oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.35f, 0.8f, 0.35f);
-
-            if (GUILayout.Button($"▶ Compile ({count}) Files", GUILayout.Height(40)))
-            {
-                CompileSelectedFiles();
-            }
-
-            GUI.backgroundColor = oldColor;
-            GUI.enabled = true;
-
-            GUILayout.Space(5);
         }
 
         private void DrawOutput()
         {
-            if (!string.IsNullOrEmpty(_lastOutput) || !string.IsNullOrEmpty(_lastError))
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                _showOutput = EditorGUILayout.Foldout(_showOutput, "📤 Output Log", true);
-            }
-
-            if (!_showOutput)
-            {
-                return;
-            }
-
-            DrawSection("Compilation Result", () =>
-            {
-                if (!string.IsNullOrEmpty(_lastError))
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.HelpBox(_lastError, MessageType.Error);
-                }
-
-                if (!string.IsNullOrEmpty(_lastOutput))
-                {
-                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                    EditorGUILayout.LabelField("编译输出", EditorStyles.boldLabel);
+                    using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(_lastOutput) && string.IsNullOrEmpty(_lastError)))
                     {
-                        EditorGUILayout.LabelField(_lastOutput, EditorStyles.wordWrappedLabel);
+                        if (GUILayout.Button("复制", EditorStyles.miniButtonLeft, GUILayout.Width(50f)))
+                            EditorGUIUtility.systemCopyBuffer = _lastError + "\n" + _lastOutput;
+                        if (GUILayout.Button("清空", EditorStyles.miniButtonRight, GUILayout.Width(50f)))
+                        {
+                            _lastOutput = "";
+                            _lastError = "";
+                            _lastCompileTime = "";
+                        }
                     }
                 }
-
-                if (GUILayout.Button("Clear Output"))
+                _outputScroll = EditorGUILayout.BeginScrollView(_outputScroll,
+                    GUILayout.Height(Mathf.Clamp(position.height - 385f, 170f, 550f)));
+                if (string.IsNullOrEmpty(_lastOutput) && string.IsNullOrEmpty(_lastError))
+                    EditorGUILayout.HelpBox("尚无编译记录，生成完成后将在这里显示结果。", MessageType.Info);
+                if (!string.IsNullOrEmpty(_lastError))
                 {
-                    _lastOutput = "";
-                    _lastError = "";
-                    _showOutput = false;
+                    EditorGUILayout.HelpBox("编译过程中存在错误，详细信息如下。", MessageType.Error);
+                    DrawLogText(_lastError);
                 }
-            });
+                if (!string.IsNullOrEmpty(_lastOutput)) DrawLogText(_lastOutput);
+                EditorGUILayout.EndScrollView();
+            }
+        }
+
+        private static void DrawLogText(string text)
+        {
+            float height = EditorStyles.wordWrappedLabel.CalcHeight(new GUIContent(text), Mathf.Max(200f, EditorGUIUtility.currentViewWidth - 75f));
+            EditorGUILayout.SelectableLabel(text, EditorStyles.wordWrappedLabel, GUILayout.MinHeight(Mathf.Max(35f, height)));
         }
 
         private void RefreshProtoFiles()
@@ -294,7 +282,6 @@ namespace Framework.Editor
                 });
             }
 
-            _selectAll = true;
 
             Repaint();
         }
@@ -413,6 +400,7 @@ namespace Framework.Editor
             }
 
             _showOutput = true;
+            _lastCompileTime = DateTime.Now.ToString("HH:mm:ss");
 
             if (hasError)
             {

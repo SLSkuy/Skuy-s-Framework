@@ -22,18 +22,24 @@ namespace Framework.Editor
         private ToolbarToggle _autoRefreshToggle;
         private VisualElement _body;
         private ScrollView _locationScroll;
-        private TextField _searchField;
+        private ToolbarSearchField _searchField;
+        private ToolbarToggle _onlyBusyToggle;
+        private Label _statusLabel;
+        private Label _modeLabel;
+        private readonly List<ToolbarToggle> _tabs = new();
+        private int _viewIndex;
+        private int _sortIndex;
+        private static readonly Color Accent = new Color(0.25f, 0.75f, 0.95f);
 
         private float _locationScrollOffset;
 
-        private bool _unpooledExpanded;
         private double _nextRefresh;
 
         [MenuItem("Tools/Framework/Instantiate Pool")]
         public static void ShowWindow()
         {
             InstantiateManagerDebugWindow window =
-                GetWindow<InstantiateManagerDebugWindow>("Instantiate Pool");
+                GetWindow<InstantiateManagerDebugWindow>("对象池查看");
 
             window.minSize = new Vector2(760, 500);
         }
@@ -41,11 +47,18 @@ namespace Framework.Editor
         private void OnEnable()
         {
             EditorApplication.update += OnEditorUpdate;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
         private void OnDisable()
         {
             EditorApplication.update -= OnEditorUpdate;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            RefreshView();
         }
 
         private void CreateGUI()
@@ -77,7 +90,43 @@ namespace Framework.Editor
             rootVisualElement.Clear();
             rootVisualElement.style.flexDirection = FlexDirection.Column;
 
+            VisualElement heading = new VisualElement();
+            ApplyHelpBox(heading);
+            heading.style.paddingTop = 12;
+            heading.style.paddingBottom = 12;
+            Label title = new Label("对象池查看");
+            title.style.fontSize = 20;
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            heading.Add(title);
+            Label subtitle = new Label("查看资源池占用、借出实例和加载请求，点击实例可在场景中定位。");
+            subtitle.style.color = MutedColor();
+            subtitle.style.whiteSpace = WhiteSpace.Normal;
+            heading.Add(subtitle);
+            rootVisualElement.Add(heading);
             CreateToolbar();
+            Toolbar navigation = new Toolbar();
+            _tabs.Clear();
+            string[] titles = { "资源明细", "分组统计", "非池化实例" };
+            for (int i = 0; i < titles.Length; i++)
+            {
+                int index = i;
+                ToolbarToggle tab = new ToolbarToggle { text = titles[i], value = _viewIndex == i };
+                tab.style.minWidth = 105;
+                tab.RegisterValueChangedCallback(evt =>
+                {
+                    if (!evt.newValue)
+                    {
+                        tab.SetValueWithoutNotify(_viewIndex == index);
+                        return;
+                    }
+                    _viewIndex = index;
+                    for (int j = 0; j < _tabs.Count; j++) _tabs[j].SetValueWithoutNotify(j == index);
+                    RefreshView();
+                });
+                _tabs.Add(tab);
+                navigation.Add(tab);
+            }
+            rootVisualElement.Add(navigation);
 
             _body = new VisualElement
             {
@@ -93,39 +142,75 @@ namespace Framework.Editor
             _body.style.paddingBottom = 8;
 
             rootVisualElement.Add(_body);
+            VisualElement footer = CreateRow();
+            footer.style.paddingLeft = 10;
+            footer.style.paddingRight = 10;
+            footer.style.minHeight = 30;
+            footer.style.flexShrink = 0;
+            _modeLabel = new Label();
+            _modeLabel.style.color = Accent;
+            _modeLabel.style.marginRight = 12;
+            _statusLabel = new Label();
+            _statusLabel.style.color = MutedColor();
+            _statusLabel.style.flexGrow = 1;
+            _statusLabel.style.unityTextAlign = TextAnchor.MiddleRight;
+            footer.Add(_modeLabel);
+            footer.Add(_statusLabel);
+            rootVisualElement.Add(footer);
         }
 
         private void CreateToolbar()
         {
             Toolbar toolbar = new Toolbar();
 
-            _searchField = new TextField
+            _searchField = new ToolbarSearchField
             {
                 value = string.Empty
             };
 
+            _searchField.tooltip = "按资源位置搜索，仅影响资源明细；概览始终显示全部对象池。";
             _searchField.style.flexGrow = 1;
+            _searchField.style.minWidth = 150;
             _searchField.style.marginRight = 6;
 
             _searchField.RegisterValueChangedCallback(_ => RefreshView());
 
             toolbar.Add(_searchField);
 
+            ToolbarMenu sortMenu = new ToolbarMenu { text = "排序：资源名" };
+            string[] sorts = { "资源名", "借出数量", "空闲数量", "等待请求", "实例内存" };
+            for (int i = 0; i < sorts.Length; i++)
+            {
+                int index = i;
+                sortMenu.menu.AppendAction(sorts[i], _ =>
+                {
+                    _sortIndex = index;
+                    sortMenu.text = "排序：" + sorts[index];
+                    RefreshView();
+                }, _ => _sortIndex == index ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+            }
+            toolbar.Add(sortMenu);
+            _onlyBusyToggle = new ToolbarToggle { text = "仅借出 / 等待" };
+            _onlyBusyToggle.tooltip = "仅显示仍有借出实例或等待加载请求的资源。";
+            _onlyBusyToggle.RegisterValueChangedCallback(_ => RefreshView());
+            toolbar.Add(_onlyBusyToggle);
             _autoRefreshToggle = new ToolbarToggle
             {
-                text = "Auto",
+                text = "自动刷新",
                 value = true
             };
             _autoRefreshToggle.style.marginRight = 4;
+            _autoRefreshToggle.tooltip = "播放模式下每 0.5 秒刷新一次。";
+            _autoRefreshToggle.RegisterValueChangedCallback(_ => RefreshView());
             toolbar.Add(_autoRefreshToggle);
 
 
             Button refreshButton = new Button(ForceRefresh)
             {
-                text = "Refresh"
+                text = "立即刷新"
             };
 
-            refreshButton.style.width = 65;
+            refreshButton.style.width = 75;
 
             toolbar.Add(refreshButton);
 
@@ -152,11 +237,15 @@ namespace Framework.Editor
 
             _body.Clear();
             _locationScroll = null;
+            _modeLabel.text = Application.isPlaying ? (_autoRefreshToggle.value ? "自动刷新 · 0.5 s" : "手动刷新") : "等待播放";
+            _statusLabel.text = Application.isPlaying ? "" : "进入播放模式以读取运行时对象池";
+            _searchField.SetEnabled(_viewIndex == 0);
+            _onlyBusyToggle.SetEnabled(_viewIndex == 0);
 
             if (!Application.isPlaying)
             {
                 _body.Add(new HelpBox(
-                    "Enter Play Mode to inspect InstantiateManager.",
+                    "进入播放模式后，这里将显示资源池统计与实例列表。",
                     HelpBoxMessageType.Info));
 
                 return;
@@ -167,7 +256,7 @@ namespace Framework.Editor
             if (manager == null)
             {
                 _body.Add(new HelpBox(
-                    "InstantiateManager has not been initialized.",
+                    "播放模式已开启，InstantiateManager 尚未初始化。",
                     HelpBoxMessageType.Warning));
 
                 return;
@@ -176,9 +265,10 @@ namespace Framework.Editor
             RefreshData(manager);
 
             CreateOverview(manager);
-            CreateLocations(manager);
-            CreateGroups();
-            CreateUnpooled();
+            if (_viewIndex == 0) CreateLocations(manager);
+            else if (_viewIndex == 1) CreateGroups();
+            else CreateUnpooled();
+            _statusLabel.text = $"{_locations.Count} 个资源 · 最近刷新 {DateTime.Now:HH:mm:ss}";
         }
 
         private void RefreshData(InstantiateManager manager)
@@ -191,8 +281,18 @@ namespace Framework.Editor
             manager.CopyDebugLocationStats(_locations);
             manager.CopyDebugUnpooled(_unpooled);
 
-            _locations.Sort(
-                (x, y) => string.CompareOrdinal(x.Location, y.Location));
+            _locations.Sort((x, y) =>
+            {
+                int comparison = _sortIndex switch
+                {
+                    1 => y.Lent.CompareTo(x.Lent),
+                    2 => y.Idle.CompareTo(x.Idle),
+                    3 => y.Pending.CompareTo(x.Pending),
+                    4 => y.MemoryBytes.CompareTo(x.MemoryBytes),
+                    _ => 0
+                };
+                return comparison != 0 ? comparison : string.CompareOrdinal(x.Location, y.Location);
+            });
         }
 
         #endregion
@@ -210,14 +310,18 @@ namespace Framework.Editor
                 idle += group.Idle;
             }
 
-            VisualElement section = CreateSection("POOL");
+            VisualElement section = CreateSection("全局概览");
             VisualElement row = CreateRow();
 
-            AddStat(row, "Entries", manager.DebugEntryCount);
-            AddStat(row, "Active", active);
-            AddStat(row, "Idle", idle);
-            AddStat(row, "Pending", manager.DebugPendingCount);
-            AddStat(row, "Unpooled", manager.DebugUnpooledCount);
+            row.style.flexWrap = Wrap.Wrap;
+            long memory = 0;
+            foreach (InstantiateManager.DebugLocationStat location in _locations) memory += location.MemoryBytes;
+            AddStat(row, "资源条目", manager.DebugEntryCount.ToString());
+            AddStat(row, "借出实例", active.ToString());
+            AddStat(row, "空闲实例", idle.ToString());
+            AddStat(row, "等待请求", manager.DebugPendingCount.ToString());
+            AddStat(row, "非池化实例", manager.DebugUnpooledCount.ToString());
+            AddStat(row, "实例内存估算", FormatBytes(memory));
 
             section.Add(row);
             _body.Add(section);
@@ -226,14 +330,26 @@ namespace Framework.Editor
         private static void AddStat(
             VisualElement parent,
             string name,
-            int value)
+            string value)
         {
             VisualElement container = new VisualElement();
 
             container.style.flexGrow = 1;
-            container.style.flexBasis = 0;
-            container.style.marginRight = 8;
+            container.style.flexBasis = 100;
+            container.style.marginRight = 6;
+            container.style.marginBottom = 4;
+            container.style.paddingLeft = 10;
+            container.style.paddingTop = 8;
+            container.style.paddingBottom = 8;
+            container.style.backgroundColor = EditorGUIUtility.isProSkin
+                ? new Color(1f, 1f, 1f, 0.035f) : new Color(0f, 0f, 0f, 0.025f);
+            container.style.borderTopLeftRadius = 5;
+            container.style.borderTopRightRadius = 5;
+            container.style.borderBottomLeftRadius = 5;
+            container.style.borderBottomRightRadius = 5;
 
+            if (name == "实例内存估算")
+                container.tooltip = "调试接口估算的池内实例内存，不代表完整依赖资源或进程总内存。";
             Label nameLabel = new Label(name);
 
             nameLabel.style.fontSize = 10;
@@ -243,7 +359,8 @@ namespace Framework.Editor
 
             Label valueLabel = new Label(value.ToString());
 
-            valueLabel.style.fontSize = 16;
+            valueLabel.style.fontSize = 21;
+            valueLabel.style.color = Accent;
             valueLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
 
             container.Add(nameLabel);
@@ -258,20 +375,20 @@ namespace Framework.Editor
 
         private void CreateGroups()
         {
-            VisualElement section = CreateSection("Groups");
+            VisualElement section = CreateSection("分组统计");
 
             if (_groups.Count == 0)
             {
-                section.Add(new HelpBox("No active groups.", HelpBoxMessageType.Info));
+                section.Add(new HelpBox("当前没有对象池分组。", HelpBoxMessageType.Info));
                 _body.Add(section);
                 return;
             }
 
             VisualElement header = CreateRow();
 
-            AddHeader(header, "Group", 2.5f, TextAnchor.MiddleLeft);
-            AddHeader(header, "Active", 1f, TextAnchor.MiddleRight);
-            AddHeader(header, "Idle", 1f, TextAnchor.MiddleRight);
+            AddHeader(header, "资源分组", 2.5f, TextAnchor.MiddleLeft);
+            AddHeader(header, "借出", 1f, TextAnchor.MiddleRight);
+            AddHeader(header, "空闲", 1f, TextAnchor.MiddleRight);
 
             section.Add(header);
 
@@ -296,7 +413,7 @@ namespace Framework.Editor
         private void CreateLocations(InstantiateManager manager)
         {
             string search = _searchField?.value?.Trim() ?? string.Empty;
-            VisualElement section = CreateSection("Resource Locations", true);
+            VisualElement section = CreateSection("资源明细", true);
             VisualElement listBox = CreateInnerBox(out ScrollView list);
             int shown = 0;
 
@@ -310,19 +427,37 @@ namespace Framework.Editor
                     continue;
                 }
 
+                if (_onlyBusyToggle.value && location.Lent == 0 && location.Pending == 0) continue;
                 shown++;
-                list.Add(CreateLocation(manager, location));
+                VisualElement item = CreateLocation(manager, location);
+                if (shown % 2 == 0)
+                    item.style.backgroundColor = EditorGUIUtility.isProSkin
+                        ? new Color(1f, 1f, 1f, 0.025f) : new Color(0f, 0f, 0f, 0.025f);
+                list.Add(item);
             }
 
             Label title = (Label)section[0];
-            title.text = $"Resource Locations ({shown})";
+            title.text = $"资源明细  {shown} / {_locations.Count}";
+            VisualElement columns = CreateRow();
+            Label nameColumn = new Label("资源路径 / 展开查看实例");
+            nameColumn.style.flexGrow = 1;
+            nameColumn.style.flexBasis = 0;
+            nameColumn.style.color = MutedColor();
+            columns.Add(nameColumn);
+            AddRightCell(columns, "分组", 70);
+            AddRightCell(columns, "借出", 55);
+            AddRightCell(columns, "空闲", 55);
+            AddRightCell(columns, "等待", 60);
+            AddRightCell(columns, "空闲时长", 85);
+            AddRightCell(columns, "内存估算", 75);
+            section.Add(columns);
 
             if (shown == 0)
             {
                 section.Add(new HelpBox(
                     string.IsNullOrEmpty(search)
-                        ? "No resource entries."
-                        : "No matching resources.",
+                        ? "当前没有符合筛选条件的资源条目。"
+                        : "未找到匹配的资源，请调整搜索内容或筛选条件。",
                     HelpBoxMessageType.Warning));
             }
             else
@@ -393,7 +528,7 @@ namespace Framework.Editor
                 if (_instances.Count == 0)
                 {
                     instanceContainer.Add(new HelpBox(
-                        "No instances.",
+                        "该资源当前没有可查看的实例。",
                         HelpBoxMessageType.Info));
                 }
 
@@ -410,16 +545,20 @@ namespace Framework.Editor
 
             row.style.flexDirection = FlexDirection.Row;
             row.style.alignItems = Align.Center;
-            row.style.minHeight = 22;
+            row.style.minHeight = 30;
 
             Foldout foldout = new Foldout
             {
-                text = location.Location
+                text = location.Location,
+                tooltip = location.Location
             };
 
             foldout.style.flexGrow = 1;
             foldout.style.flexBasis = 0;
             foldout.style.marginRight = 4;
+            Label locationLabel = foldout.Q<Label>();
+            locationLabel.style.overflow = Overflow.Hidden;
+            locationLabel.style.textOverflow = TextOverflow.Ellipsis;
 
             row.Add(foldout);
 
@@ -430,22 +569,22 @@ namespace Framework.Editor
 
             AddRightCell(
                 row,
-                $"A {location.Lent}",
+                location.Lent.ToString(),
                 55);
 
             AddRightCell(
                 row,
-                $"I {location.Idle}",
+                location.Idle.ToString(),
                 55);
 
             AddRightCell(
                 row,
-                $"P {location.Pending}",
+                location.Pending.ToString(),
                 60);
 
             AddRightCell(
                 row,
-                $"Idle {FormatTime(location.IdleElapsed)}",
+                FormatTime(location.IdleElapsed),
                 85);
 
             AddRightCell(
@@ -479,9 +618,10 @@ namespace Framework.Editor
             row.Add(objectField);
 
             Label state = new Label(
-                info.Active ? "ACTIVE" : "IDLE");
+                info.Active ? "借出" : "空闲");
 
             state.style.width = 55;
+            state.style.color = new Color(0.3f, 0.75f, 0.5f);
             state.style.unityTextAlign = TextAnchor.MiddleRight;
             state.style.fontSize = 10;
             state.style.unityFontStyleAndWeight = FontStyle.Bold;
@@ -539,33 +679,17 @@ namespace Framework.Editor
         private void CreateUnpooled()
         {
             if (_unpooled.Count == 0)
-                return;
-
-            Foldout foldout = new Foldout
             {
-                text = $"Unpooled ({_unpooled.Count})",
-                value = _unpooledExpanded
-            };
-
-            foldout.style.flexShrink = 0;
-            foldout.style.marginBottom = 4;
-
-            foldout.RegisterValueChangedCallback(evt =>
-            {
-                _unpooledExpanded = evt.newValue;
-                RefreshView();
-            });
-
-            _body.Add(foldout);
-
-            if (!_unpooledExpanded)
+                _body.Add(new HelpBox("当前没有非池化实例。", HelpBoxMessageType.Info));
                 return;
+            }
 
-            VisualElement section = CreateSection("Instances");
+            VisualElement section = CreateSection($"非池化实例 ({_unpooled.Count})", true);
             ScrollView instances = new ScrollView(ScrollViewMode.Vertical);
 
-            instances.style.maxHeight = 160;
-            instances.style.flexShrink = 0;
+            instances.style.flexGrow = 1;
+            instances.style.minHeight = 100;
+            instances.style.flexShrink = 1;
 
             foreach (GameObject instance in _unpooled)
             {
@@ -609,7 +733,8 @@ namespace Framework.Editor
             Label titleLabel = new Label(title);
 
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            titleLabel.style.marginBottom = 5;
+            titleLabel.style.marginBottom = 8;
+            titleLabel.style.fontSize = 12;
 
             section.Add(titleLabel);
 
@@ -641,7 +766,7 @@ namespace Framework.Editor
 
             row.style.flexDirection = FlexDirection.Row;
             row.style.alignItems = Align.Center;
-            row.style.minHeight = 24;
+            row.style.minHeight = 28;
 
             return row;
         }
@@ -730,6 +855,11 @@ namespace Framework.Editor
         #endregion
 
         #region Utilities
+
+        private static Color MutedColor()
+        {
+            return EditorGUIUtility.isProSkin ? new Color(0.65f, 0.68f, 0.72f) : new Color(0.38f, 0.4f, 0.43f);
+        }
 
         private static string FormatTime(float seconds)
         {
