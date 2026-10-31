@@ -23,8 +23,8 @@ namespace GamePlay.BattleSystem
         private readonly Dictionary<Guid, PlayerIdentity> _players = new();
         private uint _nextEntityId = 1; // 实体ID从1开始分配
         
-        private readonly BattleEntityServerHandler _serverHandler;
-        private readonly BattleEntityClientHandler _clientHandler;
+        private readonly BattleServerHandler _serverHandler;
+        private readonly BattleClientHandler _clientHandler;
         
         private readonly ISimulationKernel _simulator;
 
@@ -33,12 +33,12 @@ namespace GamePlay.BattleSystem
             _simulator = kernel;
             if (_simulator is HostSimulationKernel)
             {
-                _serverHandler = Global.RegisterHandler<BattleEntityServerHandler>();
+                _serverHandler = Global.GetHandler<BattleServerHandler>();
                 _serverHandler.SpawnSyncRequested += HandleSpawnSyncRequested;
             }
             else
             {
-                _clientHandler = Global.RegisterHandler<BattleEntityClientHandler>();
+                _clientHandler = Global.GetHandler<BattleClientHandler>();
                 _clientHandler.PlayerSpawnReceived += HandlePlayerSpawnReceived;
                 _clientHandler.EntityDestroyReceived += HandleEntityDestroyReceived;
             }
@@ -274,12 +274,10 @@ namespace GamePlay.BattleSystem
             {
                 _clientHandler.PlayerSpawnReceived -= HandlePlayerSpawnReceived;
                 _clientHandler.EntityDestroyReceived -= HandleEntityDestroyReceived;
-                Global.UnregisterHandler<BattleEntityClientHandler>();
             }
             if (_serverHandler != null)
             {
                 _serverHandler.SpawnSyncRequested -= HandleSpawnSyncRequested;
-                Global.UnregisterHandler<BattleEntityServerHandler>();
             }
             
             _entities.Clear();
