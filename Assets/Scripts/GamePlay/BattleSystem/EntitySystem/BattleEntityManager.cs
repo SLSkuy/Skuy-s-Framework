@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Framework;
+using NetSync;
+using Utils;
 using GamePlay.DataProxy;
 using UnityEngine;
 using YooAsset;
@@ -31,13 +33,14 @@ namespace GamePlay.BattleSystem
             _simulator = kernel;
             if (_simulator is HostSimulationKernel)
             {
-                _serverHandler = new BattleEntityServerHandler(this);
-                _serverHandler.Bind();
+                _serverHandler = Global.RegisterHandler<BattleEntityServerHandler>();
+                _serverHandler.SpawnSyncRequested += HandleSpawnSyncRequested;
             }
             else
             {
-                _clientHandler = new BattleEntityClientHandler(this);
-                _clientHandler.Bind();
+                _clientHandler = Global.RegisterHandler<BattleEntityClientHandler>();
+                _clientHandler.PlayerSpawnReceived += HandlePlayerSpawnReceived;
+                _clientHandler.EntityDestroyReceived += HandleEntityDestroyReceived;
             }
         }
 
@@ -259,8 +262,17 @@ namespace GamePlay.BattleSystem
         {
             DestroyAll();
             
-            _clientHandler?.Unbind();
-            _serverHandler?.Unbind();
+            if (_clientHandler != null)
+            {
+                _clientHandler.PlayerSpawnReceived -= HandlePlayerSpawnReceived;
+                _clientHandler.EntityDestroyReceived -= HandleEntityDestroyReceived;
+                Global.UnregisterHandler<BattleEntityClientHandler>();
+            }
+            if (_serverHandler != null)
+            {
+                _serverHandler.SpawnSyncRequested -= HandleSpawnSyncRequested;
+                Global.UnregisterHandler<BattleEntityServerHandler>();
+            }
             
             _entities.Clear();
             _players.Clear();
@@ -272,8 +284,12 @@ namespace GamePlay.BattleSystem
 
         #region 客户端消息处理
 
-        public void HandleSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command, in EntitySnapshot snapshot)
+        private void HandlePlayerSpawnReceived(Player_Spawn_Notify notify)
         {
+            uint entityId = notify.EntityId;
+            Guid playerId = Guid.Parse(notify.PlayerId);
+            EntitySpawnCommand command = notify.ToCommand();
+            EntitySnapshot snapshot = notify.Snapshot.ToSnapshot();
             GameObject instance = InstantiateEntity(command);
             if (!instance.TryGetComponent(out EntityIdentity identity))
             {
@@ -288,8 +304,9 @@ namespace GamePlay.BattleSystem
             AssemblePlayer(identity, playerId, snapshot, role, isLocal);
         }
         
-        public void HandleDestroyNotify(in EntityDestroyCommand command)
+        private void HandleEntityDestroyReceived(Entity_Destroy_Notify notify)
         {
+            EntityDestroyCommand command = notify.ToCommand();
             DestroyEntity(command);
             _simulator.Kernel.Unregister(command.entityId);
         }
@@ -301,7 +318,7 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 处理实体全量同步请求
         /// </summary>
-        public void HandleSpawnSyncRequest(Guid playerId)
+        private void HandleSpawnSyncRequested(Guid playerId)
         {
             // 遍历所有玩家
             foreach (var pair in _players)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Events;
@@ -12,23 +13,25 @@ namespace GamePlay.Room
     /// <summary>
     /// 战局服务端：Join_Response 只回给申请连接；名册增量与世界 Spawn 分开。
     /// </summary>
-    public sealed class RoomServerHandler
+    public sealed class RoomServerHandler : IHandler
     {
-        private readonly RoomManager _room;
+        private RoomManager _room;
         private NetServer _server;
 
-        public RoomServerHandler(RoomManager room)
-        {
-            _room = room;
-        }
+        #region 事件
+        public event Action<uint, Room_Join_Request> JoinRequested;
+        public event Action<uint, Room_Leave_Request> LeaveRequested;
+        public event Action<uint> ClientRemoved;
+        #endregion
 
         #region 消息绑定
 
         public void Bind()
         {
             Unbind();
+            _room = Global.Get<RoomManager>();
             _server = Global.Get<NetServer>();
-            _server.OnClientRemoved += HandleClientRemoved;
+            _server.OnClientRemoved += OnClientRemoved;
             _server.RegisterHandler<Room_Join_Request>(NetEvent.ROOM_JOIN_REQUEST, HandleGameJoinRequest);
             _server.RegisterHandler<Room_Leave_Request>(NetEvent.ROOM_LEAVE_REQUEST, HandleGameLeaveRequest);
         }
@@ -37,10 +40,14 @@ namespace GamePlay.Room
         {
             if (_server == null) return;
 
-            _server.OnClientRemoved -= HandleClientRemoved;
+            _server.OnClientRemoved -= OnClientRemoved;
             _server.UnregisterHandler<Room_Join_Request>(NetEvent.ROOM_JOIN_REQUEST, HandleGameJoinRequest);
             _server.UnregisterHandler<Room_Leave_Request>(NetEvent.ROOM_LEAVE_REQUEST, HandleGameLeaveRequest);
             _server = null;
+
+            JoinRequested = null;
+            LeaveRequested = null;
+            ClientRemoved = null;
         }
 
         #endregion
@@ -91,7 +98,7 @@ namespace GamePlay.Room
         /// </summary>
         private void HandleGameJoinRequest(uint connectionId, Room_Join_Request request)
         {
-            _room.HandlePlayerJoinRequest(connectionId, request);
+            JoinRequested?.Invoke(connectionId, request);
         }
 
         /// <summary>
@@ -99,15 +106,15 @@ namespace GamePlay.Room
         /// </summary>
         private void HandleGameLeaveRequest(uint connectionId, Room_Leave_Request request)
         {
-            _room.HandlePlayerLeaveRequest(connectionId, request);
+            LeaveRequested?.Invoke(connectionId, request);
         }
 
         /// <summary>
         /// 玩家异常断开连接
         /// </summary>
-        private void HandleClientRemoved(uint connectionId)
+        private void OnClientRemoved(uint connectionId)
         {
-            _room.HandlePlayerUnexpectedLeave(connectionId);
+            ClientRemoved?.Invoke(connectionId);
         }
 
         #endregion

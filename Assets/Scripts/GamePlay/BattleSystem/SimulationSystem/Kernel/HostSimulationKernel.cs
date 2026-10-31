@@ -24,9 +24,9 @@ namespace GamePlay.BattleSystem
         public Simulator Kernel { get; private set; }
         #endregion
 
-        public HostSimulationKernel(BattleServerHandler handler)
+        public HostSimulationKernel()
         {
-            _serverHandler = handler;
+            _serverHandler = Global.GetHandler<BattleServerHandler>();
             Kernel = new Simulator();
         }
 

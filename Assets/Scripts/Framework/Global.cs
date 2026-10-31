@@ -13,6 +13,7 @@ namespace Framework
     public static class Global
     {
         private static readonly Dictionary<Type, ISubSystem> SubSystems = new();
+        private static readonly Dictionary<Type, IHandler> Handlers = new();
 
         /// <summary>
         /// 由 SubSystemBase 内部调用，外部不应直接使用
@@ -101,6 +102,45 @@ namespace Framework
         public static void UnregisterDataProxy<T>() where T : class, IDataProxy
         {
             Get<DataProxyManager>()?.UnregisterDataProxy<T>();
+        }
+        
+        /// <summary>
+        /// 注册当前业务周期的 Handler，不自动绑定网络消息
+        /// </summary>
+        public static T RegisterHandler<T>() where T : class, IHandler, new()
+        {
+            T handler = new T();
+            handler.Bind();
+            Handlers.Add(typeof(T), handler);
+            return handler;
+        }
+
+        /// <summary>
+        /// 获取已注册的 Handler，未注册时抛出异常
+        /// </summary>
+        public static T GetHandler<T>() where T : class, IHandler
+        {
+            return (T)Handlers[typeof(T)];
+        }
+
+        /// <summary>
+        /// 查询当前业务周期是否存在指定 Handler
+        /// </summary>
+        public static bool TryGetHandler<T>(out T handler) where T : class, IHandler
+        {
+            bool found = Handlers.TryGetValue(typeof(T), out IHandler value);
+            handler = value as T;
+            return found;
+        }
+
+        /// <summary>
+        /// 解绑并注销 Handler，调用方须先移除业务订阅
+        /// </summary>
+        public static void UnregisterHandler<T>() where T : class, IHandler
+        {
+            IHandler handler = Handlers[typeof(T)];
+            handler.Unbind();
+            Handlers.Remove(typeof(T));
         }
 
         /// <summary>
@@ -220,6 +260,8 @@ namespace Framework
         /// </summary>
         public static void Clear()
         {
+            foreach (IHandler handler in Handlers.Values) handler.Unbind();
+            Handlers.Clear();
             SubSystems.Clear();
         }
 

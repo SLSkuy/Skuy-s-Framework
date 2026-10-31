@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Events;
 using Framework;
@@ -101,8 +101,10 @@ namespace GamePlay.Room
         private void StartListening()
         {
             _netServer = Global.Register<NetServer>();
-            _serverHandler = new RoomServerHandler(this);
-            _serverHandler.Bind();
+            _serverHandler = Global.RegisterHandler<RoomServerHandler>();
+            _serverHandler.JoinRequested += HandlePlayerJoinRequest;
+            _serverHandler.LeaveRequested += HandlePlayerLeaveRequest;
+            _serverHandler.ClientRemoved += HandlePlayerUnexpectedLeave;
             _netServer.StartServer();
         }
 
@@ -111,8 +113,15 @@ namespace GamePlay.Room
             // 防止重复创建，重新连接连接时复用已经创建的配置
             if (!Global.TryGet(out _netClient)) _netClient = Global.Register<NetClient>();
             _netClient.OnReconnectFailed += OnReconnectFailed;
-            _clientHandler ??= new RoomClientHandler(this);
-            _clientHandler.Bind();
+            if (_clientHandler == null)
+            {
+                _clientHandler = Global.RegisterHandler<RoomClientHandler>();
+                _clientHandler.JoinResponseReceived += HandleJoinResponse;
+                _clientHandler.PlayerJoinReceived += HandlePlayerJoinNotify;
+                _clientHandler.PlayerLeaveReceived += HandlePlayerLeaveNotify;
+                _clientHandler.ServerDissolved += HandleServerDissolveNotify;
+                _clientHandler.ReliableConnectReceived += HandleReliableConnectResponse;
+            }
             _netClient.StartReliableConnect();
         }
 
@@ -134,6 +143,13 @@ namespace GamePlay.Room
             StopConnecting();
             Global.Unregister<NetClient>();
             
+            _clientHandler.JoinResponseReceived -= HandleJoinResponse;
+            _clientHandler.PlayerJoinReceived -= HandlePlayerJoinNotify;
+            _clientHandler.PlayerLeaveReceived -= HandlePlayerLeaveNotify;
+            _clientHandler.ServerDissolved -= HandleServerDissolveNotify;
+            _clientHandler.ReliableConnectReceived -= HandleReliableConnectResponse;
+            Global.UnregisterHandler<RoomClientHandler>();
+            
             _clientHandler = null;
             _netClient = null;
         }
@@ -142,7 +158,11 @@ namespace GamePlay.Room
         {
             if (_netServer == null) return;
             
-            _serverHandler.Unbind();
+            _serverHandler.JoinRequested -= HandlePlayerJoinRequest;
+            _serverHandler.LeaveRequested -= HandlePlayerLeaveRequest;
+            _serverHandler.ClientRemoved -= HandlePlayerUnexpectedLeave;
+            Global.UnregisterHandler<RoomServerHandler>();
+            
             _playerHandlers.Clear();
             _netServer.StopServer();
             Global.Unregister<NetServer>();
@@ -210,6 +230,8 @@ namespace GamePlay.Room
         public override void Destroy()
         {
             Dissolve();
+            StopClient();
+            StopServer();
             
             _playerData = null;
             _roomData = null;
@@ -229,13 +251,13 @@ namespace GamePlay.Room
 
         #region 客户端消息处理
 
-        public void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
+        private void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
         {
             // TODO: 由独立模块处理连接，现临时使用
             _clientHandler.SendJoinRequest(_playerData.LocalPlayerInfoData);
         }
 
-        public void HandleJoinResponse(Room_Join_Response response)
+        private void HandleJoinResponse(Room_Join_Response response)
         {
             Debug.Log(response);
             
@@ -251,17 +273,17 @@ namespace GamePlay.Room
             }
         }
 
-        public void HandlePlayerJoinNotify(Room_Player_Joined_Notify notify)
+        private void HandlePlayerJoinNotify(Room_Player_Joined_Notify notify)
         {
             PlayerJoinClient(notify.Player.ToData());
         }
 
-        public void HandlePlayerLeaveNotify(Room_Player_Leave_Notify notify)
+        private void HandlePlayerLeaveNotify(Room_Player_Leave_Notify notify)
         {
             PlayerLeaveClient(Guid.Parse(notify.UUID));
         }
 
-        public void HandleServerDissolveNotify(Room_Server_Dissolved_Notify notify)
+        private void HandleServerDissolveNotify(Room_Server_Dissolved_Notify notify)
         {
             Dissolve();
             SessionDisconnected?.Invoke();
@@ -271,7 +293,7 @@ namespace GamePlay.Room
 
         #region 服务端消息处理
 
-        public void HandlePlayerJoinRequest(uint connectionId, Room_Join_Request request)
+        private void HandlePlayerJoinRequest(uint connectionId, Room_Join_Request request)
         {
             PlayerInfoData playerInfo = request.Player.ToData();
             
@@ -305,7 +327,7 @@ namespace GamePlay.Room
         /// <summary>
         /// 玩家退出游戏房间请求
         /// </summary>
-        public void HandlePlayerLeaveRequest(uint connectionId, Room_Leave_Request request)
+        private void HandlePlayerLeaveRequest(uint connectionId, Room_Leave_Request request)
         {
             Guid uuid = PlayerLeaveServer(connectionId);
             _serverHandler.BroadcastPlayerLeaved(uuid.ToString());
@@ -316,7 +338,7 @@ namespace GamePlay.Room
         /// <summary>
         /// 玩家异常退出游戏房间
         /// </summary>
-        public void HandlePlayerUnexpectedLeave(uint connectionId)
+        private void HandlePlayerUnexpectedLeave(uint connectionId)
         {
             Guid uuid = PlayerLeaveServer(connectionId);
             _serverHandler.BroadcastPlayerLeaved(uuid.ToString());

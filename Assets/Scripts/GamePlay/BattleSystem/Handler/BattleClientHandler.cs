@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Events;
 using Framework;
 using NetSync;
@@ -10,18 +11,16 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 战斗客户端网络消息处理器
     /// </summary>
-    public class BattleClientHandler
+    public class BattleClientHandler : IHandler
     {
         private const int RECENT_INPUT_COUNT = 4;
         
         private readonly List<Input_Command> _recentInputs = new();
-        private readonly BattleManager _battleManager;
         private NetClient _client;
 
-        public BattleClientHandler(BattleManager battleManager)
-        {
-            _battleManager = battleManager;
-        }
+        #region 事件
+        public event Action<World_Snapshot> WorldSnapshotReceived;
+        #endregion
 
         #region 消息绑定
 
@@ -39,6 +38,8 @@ namespace GamePlay.BattleSystem
 
             _client.UnregisterHandler<World_Snapshot>(NetEvent.GAME_WORLD_SNAPSHOT, HandleWorldSnapshot);
             _client = null;
+            
+            WorldSnapshotReceived = null;
         }
 
         #endregion
@@ -74,7 +75,7 @@ namespace GamePlay.BattleSystem
         
         private void HandleWorldSnapshot(World_Snapshot message)
         {
-            _battleManager.HandleWorldSnapshot(message);
+            WorldSnapshotReceived?.Invoke(message);
         }
 
         #endregion

@@ -1,3 +1,4 @@
+using System;
 using Events;
 using Framework;
 using GamePlay.GameData;
@@ -11,15 +12,17 @@ namespace GamePlay.Room
     /// <summary>
     /// 战局客户端模块
     /// </summary>
-    public sealed class RoomClientHandler
+    public sealed class RoomClientHandler : IHandler
     {
-        private readonly RoomManager _room;
         private NetClient _client;
 
-        public RoomClientHandler(RoomManager room)
-        {
-            _room = room;
-        }
+        #region 事件
+        public event Action<Room_Join_Response> JoinResponseReceived;
+        public event Action<Room_Player_Joined_Notify> PlayerJoinReceived;
+        public event Action<Room_Player_Leave_Notify> PlayerLeaveReceived;
+        public event Action<Room_Server_Dissolved_Notify> ServerDissolved;
+        public event Action<Client_Reliable_Connect_Response> ReliableConnectReceived;
+        #endregion
 
         #region 消息绑定
 
@@ -44,6 +47,12 @@ namespace GamePlay.Room
             _client.UnregisterHandler<Room_Server_Dissolved_Notify>(NetEvent.ROOM_HOST_DISSOLVED_NOTIFY, HandleServerDissolveNotify);
             _client.UnregisterHandler<Client_Reliable_Connect_Response>(NetEvent.RELIABLE_CONNECT_RESPONSE, HandleReliableConnectResponse);
             _client = null;
+
+            JoinResponseReceived = null;
+            PlayerJoinReceived = null;
+            PlayerLeaveReceived = null;
+            ServerDissolved = null;
+            ReliableConnectReceived = null;
         }
 
         #endregion
@@ -67,27 +76,27 @@ namespace GamePlay.Room
         private void HandleReliableConnectResponse(Client_Reliable_Connect_Response response)
         {
             // TODO: 由独立模块处理连接，现临时使用
-            _room.HandleReliableConnectResponse(response);
+            ReliableConnectReceived?.Invoke(response);
         }
 
         private void HandleJoinResponse(Room_Join_Response response)
         {
-            _room.HandleJoinResponse(response);
+            JoinResponseReceived?.Invoke(response);
         }
 
         private void HandlePlayerJoinNotify(Room_Player_Joined_Notify message)
         {
-            _room.HandlePlayerJoinNotify(message);
+            PlayerJoinReceived?.Invoke(message);
         }
 
         private void HandlePlayerLeaveNotify(Room_Player_Leave_Notify message)
         {
-            _room.HandlePlayerLeaveNotify(message);
+            PlayerLeaveReceived?.Invoke(message);
         }
 
         private void HandleServerDissolveNotify(Room_Server_Dissolved_Notify message)
         {
-            _room.HandleServerDissolveNotify(message);
+            ServerDissolved?.Invoke(message);
         }
 
         #endregion

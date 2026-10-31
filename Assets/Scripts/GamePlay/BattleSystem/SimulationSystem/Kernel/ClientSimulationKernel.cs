@@ -24,9 +24,9 @@ namespace GamePlay.BattleSystem
         public Simulator Kernel { get; private set; }
         #endregion
 
-        public ClientSimulationKernel(BattleClientHandler handler)
+        public ClientSimulationKernel()
         {
-            _clientHandler = handler;
+            _clientHandler = Global.GetHandler<BattleClientHandler>();
             Kernel = new Simulator();
             
             _visualInterpolation = new VisualInterpolation(Kernel); // 视觉效果插值，逻辑位置保持固定Tick步进

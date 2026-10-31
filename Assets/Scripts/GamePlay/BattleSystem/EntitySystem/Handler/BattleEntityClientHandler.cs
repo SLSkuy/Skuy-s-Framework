@@ -1,21 +1,19 @@
-﻿using System;
+using System;
 using Events;
 using Framework;
 using NetSync;
 using Network;
-using Utils;
 
 namespace GamePlay.BattleSystem
 {
-    public class BattleEntityClientHandler
+    public class BattleEntityClientHandler : IHandler
     {
-        private readonly BattleEntityManager _entityManager;
         private NetClient _client;
 
-        public BattleEntityClientHandler(BattleEntityManager entityManager)
-        {
-            _entityManager = entityManager;
-        }
+        #region 事件
+        public event Action<Player_Spawn_Notify> PlayerSpawnReceived;
+        public event Action<Entity_Destroy_Notify> EntityDestroyReceived;
+        #endregion
 
         #region 消息绑定
 
@@ -34,6 +32,9 @@ namespace GamePlay.BattleSystem
             _client.UnregisterHandler<Player_Spawn_Notify>(NetEvent.GAME_PLAYER_SPAWN_NOTIFY, HandlePlayerSpawnNotify);
             _client.UnregisterHandler<Entity_Destroy_Notify>(NetEvent.GAME_ENTITY_DESTROY_NOTIFY, HandleEntityDestroyNotify);
             _client = null;
+
+            PlayerSpawnReceived = null;
+            EntityDestroyReceived = null;
         }
 
         #endregion
@@ -42,12 +43,12 @@ namespace GamePlay.BattleSystem
         
         private void HandlePlayerSpawnNotify(Player_Spawn_Notify notify)
         {
-            _entityManager.HandleSpawnNotify(notify.EntityId, Guid.Parse(notify.PlayerId), notify.ToCommand(), notify.Snapshot.ToSnapshot());
+            PlayerSpawnReceived?.Invoke(notify);
         }
 
         private void HandleEntityDestroyNotify(Entity_Destroy_Notify notify)
         {
-            _entityManager.HandleDestroyNotify(notify.ToCommand());
+            EntityDestroyReceived?.Invoke(notify);
         }
         
         #endregion

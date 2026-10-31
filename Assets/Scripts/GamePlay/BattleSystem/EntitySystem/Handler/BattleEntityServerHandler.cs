@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Events;
 using Framework;
 using GamePlay.Room;
@@ -7,16 +7,14 @@ using Utils;
 
 namespace GamePlay.BattleSystem
 {
-    public class BattleEntityServerHandler
+    public class BattleEntityServerHandler : IHandler
     {
-        private readonly BattleEntityManager _entityManager;
         private RoomManager _room;
-
-        public BattleEntityServerHandler(BattleEntityManager entityManager)
-        {
-            _entityManager = entityManager;
-        }
         
+        #region 事件
+        public event Action<Guid> SpawnSyncRequested;
+        #endregion
+
         #region 消息绑定
 
         public void Bind()
@@ -32,6 +30,8 @@ namespace GamePlay.BattleSystem
             
             _room.UnregisterPlayerHandler<Entity_Spawn_Sync_Request>(NetEvent.GAME_ENTITY_SPAWN_SYNC_REQUEST, HandleEntitySpawnSyncRequest);
             _room = null;
+            
+            SpawnSyncRequested = null;
         }
         
         #endregion
@@ -71,7 +71,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         private void HandleEntitySpawnSyncRequest(Guid playerId, Entity_Spawn_Sync_Request request)
         {
-            _entityManager.HandleSpawnSyncRequest(playerId);
+            SpawnSyncRequested?.Invoke(playerId);
         }
 
         #endregion

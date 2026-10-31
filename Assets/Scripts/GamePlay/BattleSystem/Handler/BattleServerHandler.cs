@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Events;
 using Framework;
@@ -8,16 +8,15 @@ using Utils;
 
 namespace GamePlay.BattleSystem
 {
-    public class BattleServerHandler
+    public class BattleServerHandler : IHandler
     {
-        private readonly BattleManager _battleManager;
         private RoomManager _room;
 
-        public BattleServerHandler(BattleManager battleManager)
-        {
-            _battleManager = battleManager;
-        }
         
+        #region 事件
+        public event Action<Guid, Player_Inputs> PlayerInputReceived;
+        #endregion
+
         #region 消息绑定
 
         public void Bind()
@@ -33,6 +32,8 @@ namespace GamePlay.BattleSystem
 
             _room.UnregisterPlayerHandler<Player_Inputs>(NetEvent.GAME_PLAYER_INPUT, HandlePlayerInput);
             _room = null;
+
+            PlayerInputReceived = null;
         }
         
         #endregion
@@ -57,7 +58,7 @@ namespace GamePlay.BattleSystem
         
         private void HandlePlayerInput(Guid playerId, Player_Inputs message)
         {
-            _battleManager.HandlePlayerInput(playerId, message);
+            PlayerInputReceived?.Invoke(playerId, message);
         }
 
         #endregion

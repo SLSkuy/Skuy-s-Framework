@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Framework;
 using GamePlay.DataProxy;
 using GamePlay.Room;
@@ -45,15 +45,15 @@ namespace GamePlay.BattleSystem
             SessionRole role = _room.Role;
             if (role == SessionRole.Host)
             {
-                _serverHandler = new BattleServerHandler(this);
-                _simulator = new HostSimulationKernel(_serverHandler);
-                _serverHandler.Bind();
+                _serverHandler = Global.RegisterHandler<BattleServerHandler>();
+                _simulator = new HostSimulationKernel();
+                _serverHandler.PlayerInputReceived += HandlePlayerInput;
             }
             else if (role == SessionRole.Client)
             {
-                _clientHandler = new BattleClientHandler(this);
-                _simulator = new ClientSimulationKernel(_clientHandler);
-                _clientHandler.Bind();
+                _clientHandler = Global.RegisterHandler<BattleClientHandler>();
+                _simulator = new ClientSimulationKernel();
+                _clientHandler.WorldSnapshotReceived += HandleWorldSnapshot;
             }
             
             _simulator.StartSession();
@@ -66,13 +66,15 @@ namespace GamePlay.BattleSystem
 
             if (_clientHandler != null)
             {
-                _clientHandler.Unbind();
+                _clientHandler.WorldSnapshotReceived -= HandleWorldSnapshot;
+                Global.UnregisterHandler<BattleClientHandler>();
                 _clientHandler = null;
             }
 
             if (_serverHandler != null)
             {
-                _serverHandler.Unbind();
+                _serverHandler.PlayerInputReceived -= HandlePlayerInput;
+                Global.UnregisterHandler<BattleServerHandler>();
                 _serverHandler = null;
             }
         }
@@ -142,7 +144,7 @@ namespace GamePlay.BattleSystem
         
         #region 客户端消息处理
 
-        public void HandleWorldSnapshot(World_Snapshot snapshot)
+        private void HandleWorldSnapshot(World_Snapshot snapshot)
         {
             ((ClientSimulationKernel)_simulator).HandleWorldSnapshot(snapshot);
         }
@@ -151,7 +153,7 @@ namespace GamePlay.BattleSystem
 
         #region 服务端消息处理
 
-        public void HandlePlayerInput(Guid playerId, Player_Inputs input)
+        private void HandlePlayerInput(Guid playerId, Player_Inputs input)
         {
             ((HostSimulationKernel)_simulator).HandlePlayerInput(playerId, input);
         }
