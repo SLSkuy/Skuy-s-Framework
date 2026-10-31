@@ -1,5 +1,4 @@
-using GamePlay.BattleSystem;
-using Utils;
+﻿using GamePlay.BattleSystem;
 
 namespace Framework
 {
@@ -15,7 +14,7 @@ namespace Framework
         /// </summary>
         public EntityControlCommand Build(in InputCommand input)
         {
-            EntityCommandFlags heldFlags = SnapshotUtils.GetHeldFlags(input);
+            EntityCommandFlags heldFlags = input.FlagsHeld;
             EntityControlCommand command = new()
             {
                 move = input.MoveInput,

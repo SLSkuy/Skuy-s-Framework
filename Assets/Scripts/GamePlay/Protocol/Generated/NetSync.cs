@@ -41,34 +41,28 @@ namespace NetSync {
             "RBgBIAEoCSIeChxSb29tX1NlcnZlcl9EaXNzb2x2ZWRfTm90aWZ5Im4KDVBs",
             "YXllcl9JbnB1dHMSLgoOY3VycmVudF9pbnB1dHMYASABKAsyFi5OZXRTeW5j",
             "LklucHV0X0NvbW1hbmQSLQoNcmVjZW50X2lucHV0cxgCIAMoCzIWLk5ldFN5",
-            "bmMuSW5wdXRfQ29tbWFuZCLBAgoNSW5wdXRfQ29tbWFuZBIRCglpbnB1dFRp",
-            "Y2sYASABKA0SIQoKbW92ZV9pbnB1dBgCIAEoCzINLk5ldFN5bmMuVmVjMhIg",
-            "CglhaW1faW5wdXQYAyABKAsyDS5OZXRTeW5jLlZlYzISIQoZaXNfcHJpbWFy",
-            "eV9hdHRhY2tfcHJlc3NlZBgEIAEoCBIhChlpc19zcGVjaWFsX2F0dGFja19w",
-            "cmVzc2VkGAUgASgIEiEKGWlzX3NwZWNpYWxfYWN0aW9uX3ByZXNzZWQYBiAB",
-            "KAgSGwoTaXNfaW50ZXJhY3RfcHJlc3NlZBgHIAEoCBIZChFpc19zcHJpbnRf",
-            "cHJlc3NlZBgIIAEoCBIXCg9pc19qdW1wX3ByZXNzZWQYCSABKAgSHgoWaXNf",
-            "c3dpdGNoX21vZGVfcHJlc3NlZBgKIAEoCCKEBAoPUGxheWVyX1NuYXBzaG90",
-            "EhAKCGVudGl0eUlkGAEgASgNEhgKEGxvY29tb3Rpb25fc3RhdGUYAiABKA0S",
-            "HwoIcG9zaXRpb24YAyABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
-            "BCABKAsyDS5OZXRTeW5jLlF1YXQSJAoNdmlld19yb3RhdGlvbhgFIAEoCzIN",
-            "Lk5ldFN5bmMuUXVhdBImCg9saW5lYXJfdmVsb2NpdHkYBiABKAsyDS5OZXRT",
-            "eW5jLlZlYzMSJwoQYW5ndWxhcl92ZWxvY2l0eRgHIAEoCzINLk5ldFN5bmMu",
-            "VmVjMxIeChZsYXN0UHJvY2Vzc2VkSW5wdXRUaWNrGAggASgNEhkKEXZlcnRp",
-            "Y2FsX3ZlbG9jaXR5GAkgASgCEhIKCmp1bXBfY291bnQYCiABKAUSEgoKaXNf",
-            "cnVubmluZxgLIAEoCBIUCgxpc19zcHJpbnRpbmcYDCABKAgSEwoLaXNfZ3Jv",
-            "dW5kZWQYDSABKAgSGAoQbG9jb21vdGlvbl9zcGVlZBgOIAEoAhIqChNsYXN0",
-            "X21vdmVfZGlyZWN0aW9uGBAgASgLMg0uTmV0U3luYy5WZWMzSgQIDxAQUhhh",
-            "cHBsaWVkX2xvY29tb3Rpb25fc3BlZWRSGGRlc2lyZWRfbG9jb21vdGlvbl9z",
-            "cGVlZCJaCg5Xb3JsZF9TbmFwc2hvdBIUCgxzbmFwc2hvdFRpY2sYASABKA0S",
-            "MgoQUGxheWVyX3NuYXBzaG90cxgCIAMoCzIYLk5ldFN5bmMuUGxheWVyX1Nu",
-            "YXBzaG90Ir0BChNQbGF5ZXJfU3Bhd25fTm90aWZ5EhAKCGVudGl0eUlkGAEg",
-            "ASgNEhQKDGVudGl0eVR5cGVJZBgCIAEoDRIQCghwbGF5ZXJJZBgDIAEoCRIf",
-            "Cghwb3NpdGlvbhgEIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3RhdGlvbhgF",
-            "IAEoCzINLk5ldFN5bmMuUXVhdBIqCghzbmFwc2hvdBgGIAEoCzIYLk5ldFN5",
-            "bmMuUGxheWVyX1NuYXBzaG90IikKFUVudGl0eV9EZXN0cm95X05vdGlmeRIQ",
-            "CghlbnRpdHlJZBgBIAEoDSIbChlFbnRpdHlfU3Bhd25fU3luY19SZXF1ZXN0",
-            "YgZwcm90bzM="));
+            "bmMuSW5wdXRfQ29tbWFuZCJ2Cg1JbnB1dF9Db21tYW5kEhEKCWlucHV0VGlj",
+            "axgBIAEoDRIhCgptb3ZlX2lucHV0GAIgASgLMg0uTmV0U3luYy5WZWMyEiAK",
+            "CWFpbV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhINCgVmbGFncxgEIAEo",
+            "DSLKAwoPUGxheWVyX1NuYXBzaG90EhAKCGVudGl0eUlkGAEgASgNEhgKEGxv",
+            "Y29tb3Rpb25fc3RhdGUYAiABKA0SHwoIcG9zaXRpb24YAyABKAsyDS5OZXRT",
+            "eW5jLlZlYzMSHwoIcm90YXRpb24YBCABKAsyDS5OZXRTeW5jLlF1YXQSJAoN",
+            "dmlld19yb3RhdGlvbhgFIAEoCzINLk5ldFN5bmMuUXVhdBImCg9saW5lYXJf",
+            "dmVsb2NpdHkYBiABKAsyDS5OZXRTeW5jLlZlYzMSJwoQYW5ndWxhcl92ZWxv",
+            "Y2l0eRgHIAEoCzINLk5ldFN5bmMuVmVjMxIeChZsYXN0UHJvY2Vzc2VkSW5w",
+            "dXRUaWNrGAggASgNEhkKEXZlcnRpY2FsX3ZlbG9jaXR5GAkgASgCEhIKCmp1",
+            "bXBfY291bnQYCiABKAUSEgoKaXNfcnVubmluZxgLIAEoCBIUCgxpc19zcHJp",
+            "bnRpbmcYDCABKAgSEwoLaXNfZ3JvdW5kZWQYDSABKAgSGAoQbG9jb21vdGlv",
+            "bl9zcGVlZBgOIAEoAhIqChNsYXN0X21vdmVfZGlyZWN0aW9uGA8gASgLMg0u",
+            "TmV0U3luYy5WZWMzIloKDldvcmxkX1NuYXBzaG90EhQKDHNuYXBzaG90VGlj",
+            "axgBIAEoDRIyChBQbGF5ZXJfc25hcHNob3RzGAIgAygLMhguTmV0U3luYy5Q",
+            "bGF5ZXJfU25hcHNob3QivQEKE1BsYXllcl9TcGF3bl9Ob3RpZnkSEAoIZW50",
+            "aXR5SWQYASABKA0SFAoMZW50aXR5VHlwZUlkGAIgASgNEhAKCHBsYXllcklk",
+            "GAMgASgJEh8KCHBvc2l0aW9uGAQgASgLMg0uTmV0U3luYy5WZWMzEh8KCHJv",
+            "dGF0aW9uGAUgASgLMg0uTmV0U3luYy5RdWF0EioKCHNuYXBzaG90GAYgASgL",
+            "MhguTmV0U3luYy5QbGF5ZXJfU25hcHNob3QiKQoVRW50aXR5X0Rlc3Ryb3lf",
+            "Tm90aWZ5EhAKCGVudGl0eUlkGAEgASgNIhsKGUVudGl0eV9TcGF3bl9TeW5j",
+            "X1JlcXVlc3RiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -84,7 +78,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Player_Leave_Notify), global::NetSync.Room_Player_Leave_Notify.Parser, new[]{ "UUID" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Server_Dissolved_Notify), global::NetSync.Room_Server_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Inputs), global::NetSync.Player_Inputs.Parser, new[]{ "CurrentInputs", "RecentInputs" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "IsPrimaryAttackPressed", "IsSpecialAttackPressed", "IsSpecialActionPressed", "IsInteractPressed", "IsSprintPressed", "IsJumpPressed", "IsSwitchModePressed" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "Flags" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LocomotionState", "Position", "Rotation", "ViewRotation", "LinearVelocity", "AngularVelocity", "LastProcessedInputTick", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsGrounded", "LocomotionSpeed", "LastMoveDirection" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Spawn_Notify), global::NetSync.Player_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
@@ -2856,13 +2850,7 @@ namespace NetSync {
       inputTick_ = other.inputTick_;
       moveInput_ = other.moveInput_ != null ? other.moveInput_.Clone() : null;
       aimInput_ = other.aimInput_ != null ? other.aimInput_.Clone() : null;
-      isPrimaryAttackPressed_ = other.isPrimaryAttackPressed_;
-      isSpecialAttackPressed_ = other.isSpecialAttackPressed_;
-      isSpecialActionPressed_ = other.isSpecialActionPressed_;
-      isInteractPressed_ = other.isInteractPressed_;
-      isSprintPressed_ = other.isSprintPressed_;
-      isJumpPressed_ = other.isJumpPressed_;
-      isSwitchModePressed_ = other.isSwitchModePressed_;
+      flags_ = other.flags_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2908,87 +2896,18 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "is_primary_attack_pressed" field.</summary>
-    public const int IsPrimaryAttackPressedFieldNumber = 4;
-    private bool isPrimaryAttackPressed_;
+    /// <summary>Field number for the "flags" field.</summary>
+    public const int FlagsFieldNumber = 4;
+    private uint flags_;
+    /// <summary>
+    /// 按键标志
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsPrimaryAttackPressed {
-      get { return isPrimaryAttackPressed_; }
+    public uint Flags {
+      get { return flags_; }
       set {
-        isPrimaryAttackPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_special_attack_pressed" field.</summary>
-    public const int IsSpecialAttackPressedFieldNumber = 5;
-    private bool isSpecialAttackPressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsSpecialAttackPressed {
-      get { return isSpecialAttackPressed_; }
-      set {
-        isSpecialAttackPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_special_action_pressed" field.</summary>
-    public const int IsSpecialActionPressedFieldNumber = 6;
-    private bool isSpecialActionPressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsSpecialActionPressed {
-      get { return isSpecialActionPressed_; }
-      set {
-        isSpecialActionPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_interact_pressed" field.</summary>
-    public const int IsInteractPressedFieldNumber = 7;
-    private bool isInteractPressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsInteractPressed {
-      get { return isInteractPressed_; }
-      set {
-        isInteractPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_sprint_pressed" field.</summary>
-    public const int IsSprintPressedFieldNumber = 8;
-    private bool isSprintPressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsSprintPressed {
-      get { return isSprintPressed_; }
-      set {
-        isSprintPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_jump_pressed" field.</summary>
-    public const int IsJumpPressedFieldNumber = 9;
-    private bool isJumpPressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsJumpPressed {
-      get { return isJumpPressed_; }
-      set {
-        isJumpPressed_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_switch_mode_pressed" field.</summary>
-    public const int IsSwitchModePressedFieldNumber = 10;
-    private bool isSwitchModePressed_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsSwitchModePressed {
-      get { return isSwitchModePressed_; }
-      set {
-        isSwitchModePressed_ = value;
+        flags_ = value;
       }
     }
 
@@ -3010,13 +2929,7 @@ namespace NetSync {
       if (InputTick != other.InputTick) return false;
       if (!object.Equals(MoveInput, other.MoveInput)) return false;
       if (!object.Equals(AimInput, other.AimInput)) return false;
-      if (IsPrimaryAttackPressed != other.IsPrimaryAttackPressed) return false;
-      if (IsSpecialAttackPressed != other.IsSpecialAttackPressed) return false;
-      if (IsSpecialActionPressed != other.IsSpecialActionPressed) return false;
-      if (IsInteractPressed != other.IsInteractPressed) return false;
-      if (IsSprintPressed != other.IsSprintPressed) return false;
-      if (IsJumpPressed != other.IsJumpPressed) return false;
-      if (IsSwitchModePressed != other.IsSwitchModePressed) return false;
+      if (Flags != other.Flags) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3027,13 +2940,7 @@ namespace NetSync {
       if (InputTick != 0) hash ^= InputTick.GetHashCode();
       if (moveInput_ != null) hash ^= MoveInput.GetHashCode();
       if (aimInput_ != null) hash ^= AimInput.GetHashCode();
-      if (IsPrimaryAttackPressed != false) hash ^= IsPrimaryAttackPressed.GetHashCode();
-      if (IsSpecialAttackPressed != false) hash ^= IsSpecialAttackPressed.GetHashCode();
-      if (IsSpecialActionPressed != false) hash ^= IsSpecialActionPressed.GetHashCode();
-      if (IsInteractPressed != false) hash ^= IsInteractPressed.GetHashCode();
-      if (IsSprintPressed != false) hash ^= IsSprintPressed.GetHashCode();
-      if (IsJumpPressed != false) hash ^= IsJumpPressed.GetHashCode();
-      if (IsSwitchModePressed != false) hash ^= IsSwitchModePressed.GetHashCode();
+      if (Flags != 0) hash ^= Flags.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3064,33 +2971,9 @@ namespace NetSync {
         output.WriteRawTag(26);
         output.WriteMessage(AimInput);
       }
-      if (IsPrimaryAttackPressed != false) {
+      if (Flags != 0) {
         output.WriteRawTag(32);
-        output.WriteBool(IsPrimaryAttackPressed);
-      }
-      if (IsSpecialAttackPressed != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(IsSpecialAttackPressed);
-      }
-      if (IsSpecialActionPressed != false) {
-        output.WriteRawTag(48);
-        output.WriteBool(IsSpecialActionPressed);
-      }
-      if (IsInteractPressed != false) {
-        output.WriteRawTag(56);
-        output.WriteBool(IsInteractPressed);
-      }
-      if (IsSprintPressed != false) {
-        output.WriteRawTag(64);
-        output.WriteBool(IsSprintPressed);
-      }
-      if (IsJumpPressed != false) {
-        output.WriteRawTag(72);
-        output.WriteBool(IsJumpPressed);
-      }
-      if (IsSwitchModePressed != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(IsSwitchModePressed);
+        output.WriteUInt32(Flags);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3114,33 +2997,9 @@ namespace NetSync {
         output.WriteRawTag(26);
         output.WriteMessage(AimInput);
       }
-      if (IsPrimaryAttackPressed != false) {
+      if (Flags != 0) {
         output.WriteRawTag(32);
-        output.WriteBool(IsPrimaryAttackPressed);
-      }
-      if (IsSpecialAttackPressed != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(IsSpecialAttackPressed);
-      }
-      if (IsSpecialActionPressed != false) {
-        output.WriteRawTag(48);
-        output.WriteBool(IsSpecialActionPressed);
-      }
-      if (IsInteractPressed != false) {
-        output.WriteRawTag(56);
-        output.WriteBool(IsInteractPressed);
-      }
-      if (IsSprintPressed != false) {
-        output.WriteRawTag(64);
-        output.WriteBool(IsSprintPressed);
-      }
-      if (IsJumpPressed != false) {
-        output.WriteRawTag(72);
-        output.WriteBool(IsJumpPressed);
-      }
-      if (IsSwitchModePressed != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(IsSwitchModePressed);
+        output.WriteUInt32(Flags);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -3161,26 +3020,8 @@ namespace NetSync {
       if (aimInput_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(AimInput);
       }
-      if (IsPrimaryAttackPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsSpecialAttackPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsSpecialActionPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsInteractPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsSprintPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsJumpPressed != false) {
-        size += 1 + 1;
-      }
-      if (IsSwitchModePressed != false) {
-        size += 1 + 1;
+      if (Flags != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Flags);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3209,26 +3050,8 @@ namespace NetSync {
         }
         AimInput.MergeFrom(other.AimInput);
       }
-      if (other.IsPrimaryAttackPressed != false) {
-        IsPrimaryAttackPressed = other.IsPrimaryAttackPressed;
-      }
-      if (other.IsSpecialAttackPressed != false) {
-        IsSpecialAttackPressed = other.IsSpecialAttackPressed;
-      }
-      if (other.IsSpecialActionPressed != false) {
-        IsSpecialActionPressed = other.IsSpecialActionPressed;
-      }
-      if (other.IsInteractPressed != false) {
-        IsInteractPressed = other.IsInteractPressed;
-      }
-      if (other.IsSprintPressed != false) {
-        IsSprintPressed = other.IsSprintPressed;
-      }
-      if (other.IsJumpPressed != false) {
-        IsJumpPressed = other.IsJumpPressed;
-      }
-      if (other.IsSwitchModePressed != false) {
-        IsSwitchModePressed = other.IsSwitchModePressed;
+      if (other.Flags != 0) {
+        Flags = other.Flags;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3264,31 +3087,7 @@ namespace NetSync {
             break;
           }
           case 32: {
-            IsPrimaryAttackPressed = input.ReadBool();
-            break;
-          }
-          case 40: {
-            IsSpecialAttackPressed = input.ReadBool();
-            break;
-          }
-          case 48: {
-            IsSpecialActionPressed = input.ReadBool();
-            break;
-          }
-          case 56: {
-            IsInteractPressed = input.ReadBool();
-            break;
-          }
-          case 64: {
-            IsSprintPressed = input.ReadBool();
-            break;
-          }
-          case 72: {
-            IsJumpPressed = input.ReadBool();
-            break;
-          }
-          case 80: {
-            IsSwitchModePressed = input.ReadBool();
+            Flags = input.ReadUInt32();
             break;
           }
         }
@@ -3325,31 +3124,7 @@ namespace NetSync {
             break;
           }
           case 32: {
-            IsPrimaryAttackPressed = input.ReadBool();
-            break;
-          }
-          case 40: {
-            IsSpecialAttackPressed = input.ReadBool();
-            break;
-          }
-          case 48: {
-            IsSpecialActionPressed = input.ReadBool();
-            break;
-          }
-          case 56: {
-            IsInteractPressed = input.ReadBool();
-            break;
-          }
-          case 64: {
-            IsSprintPressed = input.ReadBool();
-            break;
-          }
-          case 72: {
-            IsJumpPressed = input.ReadBool();
-            break;
-          }
-          case 80: {
-            IsSwitchModePressed = input.ReadBool();
+            Flags = input.ReadUInt32();
             break;
           }
         }
@@ -3589,7 +3364,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "last_move_direction" field.</summary>
-    public const int LastMoveDirectionFieldNumber = 16;
+    public const int LastMoveDirectionFieldNumber = 15;
     private global::NetSync.Vec3 lastMoveDirection_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3727,7 +3502,7 @@ namespace NetSync {
         output.WriteFloat(LocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
-        output.WriteRawTag(130, 1);
+        output.WriteRawTag(122);
         output.WriteMessage(LastMoveDirection);
       }
       if (_unknownFields != null) {
@@ -3797,7 +3572,7 @@ namespace NetSync {
         output.WriteFloat(LocomotionSpeed);
       }
       if (lastMoveDirection_ != null) {
-        output.WriteRawTag(130, 1);
+        output.WriteRawTag(122);
         output.WriteMessage(LastMoveDirection);
       }
       if (_unknownFields != null) {
@@ -3853,7 +3628,7 @@ namespace NetSync {
         size += 1 + 4;
       }
       if (lastMoveDirection_ != null) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(LastMoveDirection);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LastMoveDirection);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4016,7 +3791,7 @@ namespace NetSync {
             LocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 130: {
+          case 122: {
             if (lastMoveDirection_ == null) {
               LastMoveDirection = new global::NetSync.Vec3();
             }
@@ -4109,7 +3884,7 @@ namespace NetSync {
             LocomotionSpeed = input.ReadFloat();
             break;
           }
-          case 130: {
+          case 122: {
             if (lastMoveDirection_ == null) {
               LastMoveDirection = new global::NetSync.Vec3();
             }

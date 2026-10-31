@@ -21,13 +21,7 @@ namespace Utils
                 InputTick = inputTick,
                 MoveInput = input.MoveInput.ToProto(),
                 AimInput = input.AimInput.ToProto(),
-                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
-                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
-                IsSpecialActionPressed = input.IsSpecialActionPressed,
-                IsInteractPressed = input.IsInteractPressed,
-                IsSprintPressed = input.IsSprintPressed,
-                IsJumpPressed = input.IsJumpPressed,
-                IsSwitchModePressed = input.IsSwitchModePressed,
+                Flags = (uint)input.FlagsHeld
             };
         }
 
@@ -37,13 +31,7 @@ namespace Utils
             {
                 MoveInput = input.MoveInput.ToUnity(),
                 AimInput = input.AimInput.ToUnity(),
-                IsPrimaryAttackPressed = input.IsPrimaryAttackPressed,
-                IsSpecialAttackPressed = input.IsSpecialAttackPressed,
-                IsSpecialActionPressed = input.IsSpecialActionPressed,
-                IsInteractPressed = input.IsInteractPressed,
-                IsSprintPressed = input.IsSprintPressed,
-                IsJumpPressed = input.IsJumpPressed,
-                IsSwitchModePressed = input.IsSwitchModePressed,
+                FlagsHeld = (EntityCommandFlags)input.Flags
             };
         }
         

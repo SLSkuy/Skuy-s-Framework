@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -85,17 +85,21 @@ namespace Framework
         
         public InputCommand GetInputCommand()
         {
+            EntityCommandFlags flags = EntityCommandFlags.None;
+            if (_playerActions.PrimaryAttack.IsPressed()) flags |= EntityCommandFlags.PrimaryAttack;
+            if (_playerActions.SpecialAttack.IsPressed()) flags |= EntityCommandFlags.SpecialAttack;
+            if (_playerActions.SpecialAction.IsPressed()) flags |= EntityCommandFlags.SpecialAction;
+            if (_playerActions.Interact.IsPressed()) flags |= EntityCommandFlags.Interact;
+            if (_playerActions.Sprint.IsPressed()) flags |= EntityCommandFlags.Sprint;
+            if (_playerActions.Jump.IsPressed()) flags |= EntityCommandFlags.Jump;
+            if (_playerActions.SwitchMode.IsPressed()) flags |= EntityCommandFlags.ToggleRun;
+            if(_playerActions.Roll.IsPressed()) flags |= EntityCommandFlags.Roll;
+
             return new InputCommand
             {
                 MoveInput = _playerActions.Move.ReadValue<Vector2>(),
                 AimInput = _playerActions.Aim.ReadValue<Vector2>(),
-                IsPrimaryAttackPressed = _playerActions.PrimaryAttack.IsPressed(),
-                IsSpecialAttackPressed = _playerActions.SpecialAttack.IsPressed(),
-                IsSpecialActionPressed = _playerActions.SpecialAction.IsPressed(),
-                IsInteractPressed = _playerActions.Interact.IsPressed(),
-                IsSprintPressed = _playerActions.Sprint.IsPressed(),
-                IsJumpPressed = _playerActions.Jump.IsPressed(),
-                IsSwitchModePressed = _playerActions.SwitchMode.IsPressed(),
+                FlagsHeld = flags
             };
         }
 
