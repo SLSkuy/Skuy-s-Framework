@@ -87,6 +87,16 @@
                     "priority": 0
                 },
                 {
+                    "name": "Roll",
+                    "type": "Button",
+                    "id": "192f3ba0-bc8e-47ae-b34c-a7ba55430175",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
                     "name": "SwitchMode",
                     "type": "Button",
                     "id": "18c5cf5b-8c1c-4b9f-ac2c-51999571866e",
@@ -414,6 +424,17 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "SwitchMode",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3595a930-dcd0-4713-9247-154fc96cd036",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
