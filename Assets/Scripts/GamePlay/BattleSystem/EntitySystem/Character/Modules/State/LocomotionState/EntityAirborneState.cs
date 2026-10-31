@@ -15,6 +15,15 @@ namespace GamePlay.BattleSystem
 
         #region 状态控制
 
+        public override void Enter()
+        {
+            // 如果从待机进入浮空状态，设置浮空状态速度为行走速度，否则沿用之前的速度
+            if (Context.DesiredSpeed == 0)
+            {
+                Context.DesiredSpeed = Config.walkSpeed;
+            }
+        }
+
         protected override void CheckStateChange()
         {
             // 空中二段跳（不切状态，Motor 内部判定 jumpCount 上限）

@@ -11,15 +11,16 @@ namespace GamePlay.BattleSystem
         private EntityStateMachineModule _stateMachine;
         private MovementModule _movement;
         private ViewModule _view;
-        
+
         private float _targetSpeed;
         private float _targetTurn;
         private bool _wasRolling;
-        
+
         private int _speedHash;
         private int _turnHash;
         private int _rollHash;
-        
+        private int _airHash;
+
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
         #endregion
@@ -33,11 +34,12 @@ namespace GamePlay.BattleSystem
             _stateMachine = Context.Get<EntityStateMachineModule>();
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
-            
+
             _speedHash = Animator.StringToHash("Speed");
             _turnHash = Animator.StringToHash("Turn");
             _rollHash = Animator.StringToHash("Roll");
-            
+            _airHash = Animator.StringToHash("Air");
+
             _animator.ResetTrigger(_rollHash);
             _wasRolling = false;
             _targetSpeed = 0f;
@@ -57,7 +59,7 @@ namespace GamePlay.BattleSystem
             }
             _animator.SetFloat(_speedHash, _targetSpeed);
         }
-        
+
         private void UpdateTurn()
         {
             // 计算转向数值
@@ -91,6 +93,15 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
+        /// 浮空状态减慢动画播放速度
+        /// </summary>
+        private void UpdateAir()
+        {
+            bool isGrounded = _movement.IsGrounded;
+            _animator.SetFloat(_airHash, isGrounded ? 1f : 0.2f);
+        }
+        
+        /// <summary>
         /// 将 mesh 朝向到视角相对输入朝向的水平夹角映射到 [-1, 1]，左负右正。
         /// </summary>
         private float CalculateTurn()
@@ -111,11 +122,12 @@ namespace GamePlay.BattleSystem
             UpdateSpeed();
             UpdateTurn();
             UpdateRoll();
+            UpdateAir();
         }
-        
+
         private void OnDisable()
         {
-            // 角色还池或停用后清除上一轮的动画插值状态和未消费的翻滚触发器。
+            // 角色还池或停用后清除上一轮的动画插值状态和未消费的动作触发器。
             _animator?.ResetTrigger(_rollHash);
             _targetSpeed = 0f;
             _targetTurn = 0f;

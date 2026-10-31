@@ -18,7 +18,7 @@ MonoBehaviour:
   jumpCount: 2
   jumpSpeed: 6
   rollSpeed: 5
-  rollDuration: 1.15
+  rollDuration: 1.1
   aimHorizontalSpeed: 20
   aimVerticalSpeed: 20
   minAimPitch: -40
