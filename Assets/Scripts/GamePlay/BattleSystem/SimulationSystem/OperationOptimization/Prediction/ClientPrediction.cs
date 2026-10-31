@@ -15,7 +15,9 @@ namespace GamePlay.BattleSystem
         private readonly List<PlayerPredictionSnapshot> _frames;
         private readonly PredictionFrameBuffer _buffers;
         private readonly Simulator _simulator;
-        private uint _lastAckTick;
+        
+        private uint _lastAckTick;  // 处理过的输入Tick
+        private uint _lastAuthoritySnapshotTick;    // 处理过的权威快照Tick
 
         public ClientPrediction(Simulator simulator)
         {
@@ -46,16 +48,19 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 用主机已处理的输入 Tick 对齐预测历史。确认点为 0 或没有超过上次确认时直接忽略。
+        /// 按快照序号接收世界状态，按输入确认序号裁剪预测历史；确认点未推进时仍应用新世界状态。
         /// </summary>
         public void ReceiveAuthorityFrame(uint entityId, uint lastProcessedTick, in EntityAuthoritySnapshot snapshot)
         {
-            if (lastProcessedTick == 0 || lastProcessedTick <= _lastAckTick) return;
-
+            if (snapshot.snapshotTick <= _lastAuthoritySnapshotTick || lastProcessedTick < _lastAckTick) return;
+            
+            _lastAuthoritySnapshotTick = snapshot.snapshotTick;
+            bool inputAdvanced = lastProcessedTick > _lastAckTick;  // 输入确认没变，但权威世界可能改变，需要重新更新后面的世界
+            
             _lastAckTick = lastProcessedTick;
             EntitySnapshot authority = snapshot.state;
             // 这一拍不在历史里：写入权威状态，丢掉该确认点及之前的记录，再重放仍留着的后续命令。
-            if (!_buffers.TryGetFrame(lastProcessedTick, out PlayerPredictionSnapshot local))
+            if (!inputAdvanced || !_buffers.TryGetFrame(lastProcessedTick, out PlayerPredictionSnapshot local))
             {
                 Restore(entityId, authority);
                 _buffers.GetFramesAfter(lastProcessedTick, _frames);
@@ -134,6 +139,7 @@ namespace GamePlay.BattleSystem
             _buffers.Clear();
             _frames.Clear();
             _lastAckTick = 0;
+            _lastAuthoritySnapshotTick = 0;
         }
 
     }

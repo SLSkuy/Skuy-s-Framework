@@ -24,7 +24,7 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 获取已经处理了的客户端输入Tick
+        /// 获取已消费或超时丢弃的客户端输入序号；等待输入时保持不变，与世界 Tick 无关
         /// </summary>
         public uint GetLastProcessInputTick()
         {
@@ -45,10 +45,11 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 从意图来源取快照并转为命令。权威输入还没到时返回 false，这一拍不步进。
-        /// 无来源时按空快照构建。
+        /// 从意图来源取快照并转为本世界 Tick 的命令。
+        /// 远端输入未到时使用空命令：停止输入驱动的移动与瞄准，不触发按钮边沿，世界仍步进。
+        /// 等待期间保留真实输入的边沿基线，避免恢复输入后重复触发按下；无来源时按空快照构建。
         /// </summary>
-        public bool TryCollectCommand(out EntityControlCommand command)
+        public EntityControlCommand CollectCommand()
         {
             InputCommand input;
             if (_inputSource is NetworkInputProvider authority)
@@ -56,8 +57,8 @@ namespace GamePlay.BattleSystem
                 // 远端输入
                 if (!authority.TryGetInputCommand(out input))
                 {
-                    command = default;
-                    return false;
+                    CurrentTickInput = default;
+                    return CurrentTickInput;
                 }
             }
             else
@@ -66,9 +67,8 @@ namespace GamePlay.BattleSystem
                 input = _inputSource?.GetInputCommand() ?? default;
             }
 
-            command = _commandBuilder.Build(input);
-            CurrentTickInput = command;
-            return true;
+            CurrentTickInput = _commandBuilder.Build(input);
+            return CurrentTickInput;
         }
     }
 }

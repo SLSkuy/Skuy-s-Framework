@@ -16,6 +16,11 @@ namespace GamePlay.BattleSystem
 
         #region 属性
         public bool IsRunning => _simulationTickSystem is { IsRunning: true };
+
+        /// <summary>
+        /// 世界模拟 Tick；独立于各玩家的客户端输入确认序号和快照发送序号。
+        /// </summary>
+        public uint WorldTick => _simulationTickSystem?.CurrentTick ?? 0;
         
         public float TickDeltaTime => _simulationTickSystem?.TickDeltaTime ?? 0;
         public float InterpolationAlpha => _simulationTickSystem?.InterpolationAlpha ?? 0f;
@@ -116,20 +121,19 @@ namespace GamePlay.BattleSystem
             {
                 NetEntity entity = pair.Value;
                 if(entity.Identity.IsReplica) continue; // 复制实体不进行步长模拟，只消耗权威快照
-                if(!entity.TryCollectCommand(out EntityControlCommand command)) continue;  // 获取输入命令失败，跳过本次步进模拟
-                _playerCommands.Add(pair.Key, command);
+                _playerCommands.Add(pair.Key, entity.CollectCommand());
             }
         }
 
         /// <summary>
-        /// 使用收集到的命令执行一次模拟
+        /// 每个世界 Tick 推进所有非复制实体，输入缺失时使用收集阶段生成的回退命令
         /// </summary>
         private void DoSimulator(uint tick, float deltaTime)
         {
             foreach (KeyValuePair<uint, NetEntity> pair in _entityManager.Entities)
             {
-                if(!_playerCommands.TryGetValue(pair.Key, out EntityControlCommand command)) continue;
-                pair.Value.Character.Step(tick, deltaTime, command);
+                if (pair.Value.Identity.IsReplica) continue;
+                pair.Value.Character.Step(tick, deltaTime, _playerCommands[pair.Key]);
             }
         }
 
