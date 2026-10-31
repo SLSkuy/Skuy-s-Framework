@@ -13,15 +13,16 @@ MonoBehaviour:
   m_Name: EntityConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
   walkSpeed: 1.8
-  runSpeed: 5
-  sprintSpeed: 7
+  runSpeed: 4.25
+  sprintSpeed: 6.3
   jumpCount: 2
   jumpSpeed: 6
+  rollSpeed: 5
+  rollDuration: 1.15
   aimHorizontalSpeed: 20
   aimVerticalSpeed: 20
   minAimPitch: -40
   maxAimPitch: 70
-  rootMotion: 0
   animSpeedSmoothTime: 0.1
   animTurnSmoothTime: 0.15
   meshTurnSpeed: 360

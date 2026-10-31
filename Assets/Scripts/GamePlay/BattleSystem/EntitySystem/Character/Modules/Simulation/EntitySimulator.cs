@@ -33,6 +33,7 @@ namespace GamePlay.BattleSystem
             _context.LastAimInput = command.aim;
             _context.IsSprinting = command.IsHeld(EntityCommandFlags.Sprint);
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
+            _context.RollRequest = command.IsPressed(EntityCommandFlags.Roll);
             _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
             _view.Look(command.aim, deltaTime);
@@ -47,14 +48,8 @@ namespace GamePlay.BattleSystem
         public EntitySnapshot CaptureSnapshot()
         {
             StateSnapshot state = _stateMachine.CaptureSnapshot();
-            
             MovementSnapshot movement = _movement.CaptureSnapshot();
-            movement.locomotionSpeed = _context.DesiredSpeed;
-            movement.isSprinting = _context.IsSprinting;
-            movement.isRunning = _context.IsRunning;
-
             ViewSnapshot view = _view.CaptureSnapshot();
-            view.isFocus = _context.IsFocus;
 
             return new EntitySnapshot
             {
@@ -72,9 +67,6 @@ namespace GamePlay.BattleSystem
             _stateMachine.RestoreSnapshot(state.state);
             _movement.RestoreSnapshot(state.movement);
             _view.RestoreSnapshot(state.view);
-            _context.DesiredSpeed = state.movement.locomotionSpeed;
-            _context.IsSprinting = state.movement.isSprinting;
-            _context.IsRunning = state.movement.isRunning;
             _context.IsFocus = state.view.isFocus;
             _context.ResetTickFlags();
         }

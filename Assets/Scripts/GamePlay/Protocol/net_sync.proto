@@ -1,4 +1,4 @@
-syntax = "proto3";
+﻿syntax = "proto3";
 
 package NetSync;
 
@@ -121,19 +121,20 @@ message Input_Command {
 // 玩家实体在某一Tick的状态
 message Player_Snapshot {
     uint32 entityId = 1;
+    uint32 lastProcessedInputTick = 8;
+    
     uint32 locomotion_state = 2;
+    float roll_remaining_time = 16;    // 翻滚剩余模拟时间（秒）
+    float locomotion_speed = 14;
+    
     Vec3 position = 3;
     Quat rotation = 4;
     Quat view_rotation = 5;
-    Vec3 linear_velocity = 6;
-    Vec3 angular_velocity = 7;
-    uint32 lastProcessedInputTick = 8;
     float vertical_velocity = 9;
     int32 jump_count = 10;
     bool is_running = 11;
     bool is_sprinting = 12;
     bool is_grounded = 13;
-    float locomotion_speed = 14;
     Vec3 last_move_direction = 15;
 }
 

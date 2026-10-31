@@ -23,14 +23,11 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 模拟期望水平速度，空中沿用起跳前的值
         /// </summary>
-        public float locomotionSpeed;
         public float verticalVelocity;
         
         // 这几个状态字段对于客户端的主控玩家来说有用，但是对于快照来说没啥任何作用
         // 考虑后续动画系统是否会使用，暂时继续同步该字段
         public int jumpCount;
-        public bool isSprinting;
-        public bool isRunning;
         public bool isGrounded;
     }
 }

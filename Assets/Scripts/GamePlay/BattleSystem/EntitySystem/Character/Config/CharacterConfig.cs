@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
@@ -12,6 +12,10 @@ namespace GamePlay.BattleSystem
         public int jumpCount = 2;
         public float jumpSpeed = 12f;
 
+        [Header("翻滚属性")]
+        [Min(0f)] public float rollSpeed = 5f;
+        [Min(0.01f)] public float rollDuration = 0.8f;
+
         [Header("视角控制属性")]
         [Min(0f)] public float aimHorizontalSpeed = 180f;
         [Min(0f)] public float aimVerticalSpeed = 120f;
@@ -19,7 +23,6 @@ namespace GamePlay.BattleSystem
         public float maxAimPitch = 70f;
         
         [Header("表现属性")]
-        public bool rootMotion = true;
         [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 仅动画 Speed 参数向期望速度过渡的平滑时间（秒），0 表示立即切换
         [Min(0f)] public float animTurnSmoothTime = 0.1f; // Turn 倾斜参数的指数平滑时间（秒），0 表示立即切换
         [Min(0f)] public float meshTurnSpeed = 360f;   // mesh 转向由 orientation 映射的目标方向的角速度（度/秒）

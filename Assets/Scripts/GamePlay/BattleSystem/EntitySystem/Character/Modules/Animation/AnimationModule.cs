@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
@@ -8,14 +8,17 @@ namespace GamePlay.BattleSystem
     public class AnimationModule : EntityModuleBase
     {
         private Animator _animator;
+        private EntityStateMachineModule _stateMachine;
         private MovementModule _movement;
         private ViewModule _view;
-
+        
         private float _targetSpeed;
         private float _targetTurn;
+        private bool _wasRolling;
         
         private int _speedHash;
         private int _turnHash;
+        private int _rollHash;
         
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
@@ -27,11 +30,16 @@ namespace GamePlay.BattleSystem
         protected override void OnBound(EntityCharacter target)
         {
             _animator = GetComponent<Animator>();
+            _stateMachine = Context.Get<EntityStateMachineModule>();
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
-
+            
             _speedHash = Animator.StringToHash("Speed");
             _turnHash = Animator.StringToHash("Turn");
+            _rollHash = Animator.StringToHash("Roll");
+            
+            _animator.ResetTrigger(_rollHash);
+            _wasRolling = false;
             _targetSpeed = 0f;
             _targetTurn = 0f;
         }
@@ -65,6 +73,24 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
+        /// 根据当前表现帧的逻辑状态触发翻滚，避免固定 Tick 重演重复发送动画事件
+        /// </summary>
+        private void UpdateRoll()
+        {
+            bool isRolling = _stateMachine.CurrentState == EntityState.ROLL;
+            if (isRolling && !_wasRolling)
+            {
+                _animator.SetTrigger(_rollHash);
+            }
+            else if (!isRolling && _wasRolling)
+            {
+                _animator.ResetTrigger(_rollHash);
+            }
+
+            _wasRolling = isRolling;
+        }
+
+        /// <summary>
         /// 将 mesh 朝向到视角相对输入朝向的水平夹角映射到 [-1, 1]，左负右正。
         /// </summary>
         private float CalculateTurn()
@@ -84,13 +110,16 @@ namespace GamePlay.BattleSystem
         {
             UpdateSpeed();
             UpdateTurn();
+            UpdateRoll();
         }
         
         private void OnDisable()
         {
-            // 角色还池或停用后清除上一轮的动画插值状态。
+            // 角色还池或停用后清除上一轮的动画插值状态和未消费的翻滚触发器。
+            _animator?.ResetTrigger(_rollHash);
             _targetSpeed = 0f;
             _targetTurn = 0f;
+            _wasRolling = false;
         }
 
         #endregion

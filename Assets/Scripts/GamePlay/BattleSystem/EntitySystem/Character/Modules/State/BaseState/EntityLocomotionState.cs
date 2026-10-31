@@ -1,4 +1,4 @@
-namespace GamePlay.BattleSystem
+﻿namespace GamePlay.BattleSystem
 {
     /// <summary>
     /// 实体运动状态基类，统一编排每帧的运动调用（旋转 + 位移 + 重力）。
@@ -16,7 +16,7 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 地面状态通用转换检查：离地→空中、跳跃请求。
+        /// 地面状态通用转换检查：离地→空中、翻滚请求、跳跃请求。
         /// 返回 true 表示已切换状态，派生类应停止后续判定。
         /// 跳跃请求不切换状态（由物理驱动下一帧进 AIRBORNE），仅调用 Motor.Jump。
         /// </summary>
@@ -31,6 +31,12 @@ namespace GamePlay.BattleSystem
             if (!IsGrounded)
             {
                 _stateMachine.ChangeState(EntityState.AIRBORNE);
+                return true;
+            }
+
+            if (Context.RollRequest)
+            {
+                _stateMachine.ChangeState(EntityState.ROLL);
                 return true;
             }
 

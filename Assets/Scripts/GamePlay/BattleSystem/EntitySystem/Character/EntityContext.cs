@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Utils;
@@ -24,6 +24,7 @@ namespace GamePlay.BattleSystem
         #region 瞬时状态
         public bool RunToggleRequest;
         public bool JumpRequest;
+        public bool RollRequest;
         #endregion
 
         #region 持续状态
@@ -31,6 +32,11 @@ namespace GamePlay.BattleSystem
         /// 期望速度
         /// </summary>
         public float DesiredSpeed;
+
+        /// <summary>
+        /// 翻滚持续时间
+        /// </summary>
+        public float RollRemainingTime;
 
         public bool IsSprinting;
         public bool IsRunning;
@@ -96,6 +102,7 @@ namespace GamePlay.BattleSystem
         {
             RunToggleRequest = false;
             JumpRequest = false;
+            RollRequest = false;
         }
     }
 }

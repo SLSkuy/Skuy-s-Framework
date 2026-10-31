@@ -1,4 +1,4 @@
-using GamePlay.BattleSystem;
+﻿using GamePlay.BattleSystem;
 using UnityEngine;
 using NetSync;
 
@@ -12,10 +12,12 @@ namespace Utils
         public static Player_Snapshot ToProto(this in EntitySnapshot snapshot, uint entityId, uint lastProcessedInputTick)
         {
             MovementSnapshot movement = snapshot.movement;
+            StateSnapshot state = snapshot.state;
             return new Player_Snapshot
             {
                 EntityId = entityId,
-                LocomotionState = (uint)snapshot.state.entityState,
+                LocomotionState = (uint)state.entityState,
+                RollRemainingTime = state.rollRemainingTime,
                 Position = movement.rootPosition.ToProto(),
                 Rotation = movement.meshRotation.ToProto(),
                 ViewRotation = snapshot.view.viewRotation.ToProto(),
@@ -24,10 +26,10 @@ namespace Utils
                 LastProcessedInputTick = lastProcessedInputTick,
                 VerticalVelocity = movement.verticalVelocity,
                 JumpCount = movement.jumpCount,
-                IsRunning = movement.isRunning,
-                IsSprinting = movement.isSprinting,
+                IsRunning = state.isRunning,
+                IsSprinting = state.isSprinting,
                 IsGrounded = movement.isGrounded,
-                LocomotionSpeed = movement.locomotionSpeed,
+                LocomotionSpeed = state.locomotionSpeed,
                 LastMoveDirection = movement.lastMoveDirection.ToProto(),
             };
         }
@@ -40,7 +42,11 @@ namespace Utils
             {
                 state = new StateSnapshot
                 {
-                    entityState = (EntityState)snapshot.LocomotionState
+                    entityState = (EntityState)snapshot.LocomotionState,
+                    rollRemainingTime = snapshot.RollRemainingTime,
+                    locomotionSpeed = snapshot.LocomotionSpeed,
+                    isRunning = snapshot.IsRunning,
+                    isSprinting = snapshot.IsSprinting,
                 },
                 movement = new MovementSnapshot
                 {
@@ -50,10 +56,7 @@ namespace Utils
                     // meshAngularVelocity = snapshot.AngularVelocity.ToUnity(),
                     verticalVelocity = snapshot.VerticalVelocity,
                     jumpCount = snapshot.JumpCount,
-                    isRunning = snapshot.IsRunning,
-                    isSprinting = snapshot.IsSprinting,
                     isGrounded = snapshot.IsGrounded,
-                    locomotionSpeed = snapshot.LocomotionSpeed,
                     lastMoveDirection = snapshot.LastMoveDirection.ToUnity(),
                 },
                 view = new ViewSnapshot

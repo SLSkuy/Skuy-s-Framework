@@ -1,4 +1,4 @@
-using Framework;
+﻿using Framework;
 
 namespace GamePlay.BattleSystem
 {
@@ -41,6 +41,7 @@ namespace GamePlay.BattleSystem
             _stateMachine.RegisterState(new EntityRunState(Context));
             _stateMachine.RegisterState(new EntitySprintState(Context));
             _stateMachine.RegisterState(new EntityAirborneState(Context));
+            _stateMachine.RegisterState(new EntityRollState(Context));
         }
 
         /// <summary>
@@ -53,13 +54,28 @@ namespace GamePlay.BattleSystem
 
         public override StateSnapshot CaptureSnapshot()
         {
-            return new StateSnapshot { entityState = CurrentState };
+            return new StateSnapshot
+            {
+                entityState = CurrentState,
+                rollRemainingTime = Context.RollRemainingTime,
+                locomotionSpeed = Context.DesiredSpeed,
+                isRunning = Context.IsRunning,
+                isSprinting = Context.IsSprinting,
+                isFocus = Context.IsFocus,
+            };
         }
 
         public override void RestoreSnapshot(in StateSnapshot state)
         {
             // TODO: 提供单独的回滚入口而不是直接切换状态
             ChangeState(state.entityState);
+            
+            // Enter 仅初始化新动作；回滚后覆盖为权威进度，同状态恢复也必须写回
+            Context.RollRemainingTime = state.rollRemainingTime;
+            Context.DesiredSpeed = state.locomotionSpeed;
+            Context.IsRunning = state.isRunning;
+            Context.IsSprinting = state.isSprinting;
+            Context.IsFocus = state.isFocus;
         }
     }
 }

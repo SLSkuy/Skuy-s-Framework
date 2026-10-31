@@ -1,4 +1,4 @@
-using Framework;
+﻿using Framework;
 using GamePlay.DataProxy;
 using UnityEngine;
 
@@ -154,6 +154,8 @@ namespace GamePlay.BattleSystem
             _context.DesiredSpeed = 0f;
             _context.RunToggleRequest = false;
             _context.JumpRequest = false;
+            _context.RollRequest = false;
+            _context.RollRemainingTime = 0f;
             _context.IsSprinting = false;
             _context.IsRunning = false;
             _context.IsFocus = false;
