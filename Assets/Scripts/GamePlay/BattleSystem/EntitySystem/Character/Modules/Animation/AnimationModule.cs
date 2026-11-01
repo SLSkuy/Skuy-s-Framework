@@ -15,25 +15,23 @@ namespace GamePlay.BattleSystem
         private Animator _animator;
         private MovementModule _movement;
         private ViewModule _view;
-
+        
+        private PlayableGraph _graph;
+        
+        /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
+        private AnimationMixerPlayable _topMixer;
+        /// <summary> 基础移动动画混合器（待机，走，跑等持续动画） </summary>
+        private AnimatorControllerPlayable _locomotion;
+        /// <summary> 战斗动画混合器 </summary>
+        private AnimationMixerPlayable _actionMixer;
+        
         /// <summary> 角色移动动画参数 </summary>
         private float _curSpeed;
         /// <summary> 角色转向动画参数 </summary>
         private float _curTurn;
-        /// <summary> Walk、Run、Sprint 共用的累计步态周期，Idle 独立播放 </summary>
-        private double _locomotionPhase;
-        
-        private PlayableGraph _graph;
-        /// <summary> 基础移动动画混合器（待机，走，跑等持续动画） </summary>
-        private AnimationMixerPlayable _locomotionMixer;
-        /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
-        private AnimationMixerPlayable _topMixer;
-        /// <summary> 战斗动画混合器 </summary>
-        private AnimationMixerPlayable _actionMixer;
-        
-        /// <summary> 基础动画集合 </summary>
-        private AnimationClipPlayable[] _locomotionClips;
-        private float[] _locomotionClipLengths;
+
+        private int _speedHash;
+        private int _turnHash;
         
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
@@ -45,39 +43,23 @@ namespace GamePlay.BattleSystem
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
             
+            _speedHash = Animator.StringToHash("Speed");
+            _turnHash = Animator.StringToHash("Turn");
+            
             // 创建动画输出通道
             _graph = PlayableGraph.Create("EntityAnimationGraph");
             _graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);    // Tick驱动
-
-            _topMixer = AnimationMixerPlayable.Create(_graph, 2);   // 两个输入通道（基础移动/战斗动画）
-            _locomotionMixer = AnimationMixerPlayable.Create(_graph, 4);    // 混合移动动画
-            _actionMixer = AnimationMixerPlayable.Create(_graph, 0);    // 战斗动画通道（站位）
-
-            _locomotionClips = new[]
-            {
-                CreateClip(Config.idleAnim, _locomotionMixer, 0),
-                CreateClip(Config.walkAnim, _locomotionMixer, 1),
-                CreateClip(Config.runAnim, _locomotionMixer, 2),
-            };
             
-            _locomotionClipLengths = new float[_locomotionClips.Length];
-            for (int i = 0; i < _locomotionClips.Length; i++)
-            {
-                _locomotionClipLengths[i] = _locomotionClips[i].GetAnimationClip().length;
-                if (i > 0)
-                {
-                    // 移动动画统一按相位采样，避免 Evaluate 再次推进各自时间。
-                    _locomotionClips[i].SetSpeed(0d);
-                }
-            }
-            ResetAnimation();
-
-            _topMixer.ConnectInput(LOCOMOTION_PORT, _locomotionMixer, 0);
+            _locomotion = AnimatorControllerPlayable.Create(_graph, _animator.runtimeAnimatorController);
+            _actionMixer = AnimationMixerPlayable.Create(_graph, 0);    // 战斗动画通道（站位）
+            _topMixer = AnimationMixerPlayable.Create(_graph, 2);   // 两个输入通道（基础移动/战斗动画）
+            
+            _topMixer.ConnectInput(LOCOMOTION_PORT, _locomotion, 0);
             _topMixer.ConnectInput(ACTION_PORT, _actionMixer, 0);
             _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f);
             _topMixer.SetInputWeight(ACTION_PORT, 0);
             
-            AnimationPlayableOutput output = AnimationPlayableOutput.Create(_graph, "Output", _animator);
+            AnimationPlayableOutput output = AnimationPlayableOutput.Create(_graph, "BlendResult", _animator);
             output.SetSourcePlayable(_topMixer); // 连接动画输出
             _graph.Play();
 
@@ -89,15 +71,16 @@ namespace GamePlay.BattleSystem
         
         protected override void OnUnbound(EntityCharacter oldTarget)
         {
+            ResetAnimation();
             DestroyGraph();
         }
 
         /// <summary>
         /// 创建Playable动画片段，并连入混合器
         /// </summary>
-        private AnimationClipPlayable CreateClip(EntityAnimData data, AnimationMixerPlayable mixer, int input)
+        private AnimationClipPlayable CreateClip(AnimationClip clip, AnimationMixerPlayable mixer, int input)
         {
-            AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(_graph, data.clip);
+            AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(_graph, clip);
             _graph.Connect(clipPlayable, 0, mixer, input);
             return clipPlayable;
         }
@@ -113,6 +96,7 @@ namespace GamePlay.BattleSystem
             {
                 _curSpeed = targetSpeed;
             }
+            _animator.SetFloat(_speedHash, _curSpeed);
         }
         
         private void UpdateTurnParam()
@@ -125,6 +109,7 @@ namespace GamePlay.BattleSystem
             {
                 _curTurn = targetTurn;
             }
+            _animator.SetFloat(_turnHash, _curTurn);
         }
         
         /// <summary>
@@ -140,66 +125,11 @@ namespace GamePlay.BattleSystem
             float angle = Vector3.SignedAngle(meshForward, inputDirection, Vector3.up);
             return Mathf.Clamp(angle / 180f, -1f, 1f);
         }
-        
-        private void UpdateBlendWeights()
-        {
-            // 混合移动参数
-            float walkBlend = Mathf.InverseLerp(0f, Config.walkSpeed, _curSpeed);
-            float runBlend = Mathf.InverseLerp(Config.walkSpeed, Config.runSpeed, _curSpeed);
-            _locomotionMixer.SetInputWeight(0, 1f - walkBlend);
-            _locomotionMixer.SetInputWeight(1, walkBlend - runBlend);
-            _locomotionMixer.SetInputWeight(2, runBlend);
-        }
-        
-        /// <summary>
-        /// 按移动动画的归一化权重混合步频，让不同长度的 Clip 保持相同步态相位
-        /// </summary>
-        private void UpdateLocomotionTime(float deltaTime)
-        {
-            float totalWeight = 0f; // 当前移动动画占比权重（可能有部分被Idle分配）
-            double weightedFrequency = 0d;  // 当前加权周期
-            for (int i = 1; i < _locomotionClips.Length; i++)
-            {
-                float weight = _locomotionMixer.GetInputWeight(i);
-                totalWeight += weight;  // clip步频越快，加权周期频率就更高
-                weightedFrequency += weight / (double)_locomotionClipLengths[i];  // 计算当前clip的步频对周期的贡献，获取当前总的周期频率，更新步态周期
-            }
-
-            if (totalWeight > 0f)
-            {
-                // 不将 Idle 计入步频
-                // 除以totalWeight，低速混合时仍维持移动动画自身的周期
-                // 用加权周期频率 * deltaTime 推进公共步态相位
-                _locomotionPhase += weightedFrequency / totalWeight * deltaTime;
-            }
-            else
-            {
-                // totalWeight为0，说明Idle占所有权重，此时不播放移动动画，重置移动相位
-                _locomotionPhase = 0d;
-            }
-
-            for (int i = 1; i < _locomotionClips.Length; i++)
-            {
-                // 保留累计周期，设置播放时间而不是由默认的Speed驱动
-                // 根据当前周期乘以每周期长度，获取对应的动画采样时间
-                // 由 Clip 的 Loop Time 处理循环，避免每圈主动倒拨时间
-                _locomotionClips[i].SetTime(_locomotionPhase * _locomotionClipLengths[i]);
-            }
-        }
 
         private void ResetAnimation()
         {
             _curSpeed = 0f;
             _curTurn = 0f;
-            _locomotionPhase = 0d;
-            
-            // 清空动画进度
-            foreach (AnimationClipPlayable playable in _locomotionClips)
-            {
-                playable.SetTime(0d);
-            }
-            
-            UpdateBlendWeights();
         }
         
         private void DestroyGraph()
@@ -216,10 +146,6 @@ namespace GamePlay.BattleSystem
         {
             UpdateSpeedParam();
             UpdateTurnParam();
-
-            // 设置混合权重
-            UpdateBlendWeights();
-            UpdateLocomotionTime(Time.deltaTime);
             
             _graph.Evaluate(Time.deltaTime);
         }
