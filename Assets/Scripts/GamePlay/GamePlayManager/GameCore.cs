@@ -26,7 +26,7 @@ namespace GamePlay.GamePlayManager
             
             // 局内数据
             Global.RegisterDataProxy<EntitySpawnConfigProxy>();
-            Global.RegisterDataProxy<EntityConfigProxy>();
+            Global.RegisterDataProxy<CharacterConfigProxy>();
             Global.RegisterDataProxy<GameSaveDataProxy>();
         }
 

@@ -4,7 +4,7 @@ using YooAsset;
 
 namespace GamePlay.DataProxy
 {
-    public class EntityConfigProxy : BaseDataProxy
+    public class CharacterConfigProxy : BaseDataProxy
     {
         public override string DataPath => "Config_EntityConfig";
         public override bool IsNeedSaveToLocal => false;

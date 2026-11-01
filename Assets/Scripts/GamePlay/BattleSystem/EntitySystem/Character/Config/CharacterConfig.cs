@@ -32,5 +32,12 @@ namespace GamePlay.BattleSystem
         public float height = 1.7f;
         public float gravity = 12f;
         public float maxFallSpeed = 20f;
+
+        [Header("基础动画配置")] 
+        public EntityAnimData idleAnim;
+        public EntityAnimData walkAnim;
+        public EntityAnimData runAnim;
+        public EntityAnimData sprintAnim;
+        public EntityAnimData turnAnim;
     }
 }

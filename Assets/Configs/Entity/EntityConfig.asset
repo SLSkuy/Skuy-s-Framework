@@ -30,3 +30,13 @@ MonoBehaviour:
   height: 1.7
   gravity: 14
   maxFallSpeed: 20
+  idleAnim:
+    clip: {fileID: 7400000, guid: b9dbd009261f33b499a0bc1e5d4f2b92, type: 2}
+  walkAnim:
+    clip: {fileID: 7400000, guid: 4cbf94b75dd69b04584097f6cfbef39a, type: 2}
+  runAnim:
+    clip: {fileID: 7400000, guid: 4f21a303e2a17a34eade672ed980c0d5, type: 2}
+  sprintAnim:
+    clip: {fileID: 7400000, guid: e2bc31c82cec15441965b3b8188d5caa, type: 2}
+  turnAnim:
+    clip: {fileID: 0}

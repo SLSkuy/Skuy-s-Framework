@@ -16,7 +16,7 @@ namespace EditorTools
         [SerializeField] private AnimationClip clip;
         [SerializeField] private int sampleRate = 60;
 
-        private AnimationMotionData _preview;
+        private BakedAnimMotionData _preview;
         private Vector2 _scroll;
         private float _previewTime;
         private int _previewTab;
@@ -65,7 +65,7 @@ namespace EditorTools
             }
             Scene scene = EditorSceneManager.NewPreviewScene();
             PlayableGraph graph = default;
-            AnimationMotionData data = CreateInstance<AnimationMotionData>();
+            BakedAnimMotionData data = CreateInstance<BakedAnimMotionData>();
             try
             {
                 // 先停用再实例化，移除临时实例上的游戏脚本后才激活。
@@ -291,7 +291,7 @@ namespace EditorTools
             string path = EditorUtility.SaveFilePanelInProject("保存运动数据", clip.name + "_Motion", "asset", "选择新的数据资产路径");
             if (string.IsNullOrEmpty(path)) return;
             path = AssetDatabase.GenerateUniqueAssetPath(path);
-            AnimationMotionData asset = Instantiate(_preview);
+            BakedAnimMotionData asset = Instantiate(_preview);
             asset.hideFlags = HideFlags.None;
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.SaveAssets();

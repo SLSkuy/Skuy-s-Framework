@@ -1,104 +1,122 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 namespace GamePlay.BattleSystem
 {
     /// <summary>
-    /// 实体动画能力组件，控制实体的动画播放
+    /// Playable纯代码控制动画能力组件，提供动画播放入口，对接战斗能力模块
     /// </summary>
     public class AnimationModule : EntityModuleBase
     {
+        private const int LOCOMOTION_PORT = 0;
+        private const int ACTION_PORT = 1;
+        
         private Animator _animator;
-        private EntityStateMachineModule _stateMachine;
         private MovementModule _movement;
         private ViewModule _view;
 
-        private float _targetSpeed;
-        private float _targetTurn;
-        private bool _wasRolling;
-
-        private int _speedHash;
-        private int _turnHash;
-        private int _rollHash;
-        private int _airHash;
-
+        /// <summary> 角色移动动画参数 </summary>
+        private float _curSpeed;
+        /// <summary> 角色转向动画参数 </summary>
+        private float _curTurn;
+        
+        private PlayableGraph _graph;
+        /// <summary> 基础移动动画混合器（待机，走，跑等持续动画） </summary>
+        private AnimationMixerPlayable _locomotionMixer;
+        /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
+        private AnimationMixerPlayable _topMixer;
+        /// <summary> 战斗动画混合器 </summary>
+        private AnimationMixerPlayable _actionMixer;
+        
+        /// <summary> 基础动画集合 </summary>
+        private AnimationClipPlayable[] _baseClips;
+        
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
         #endregion
-
-        /// <summary>
-        /// 绑定后解析动画组件并缓存参数标识。
-        /// </summary>
+        
         protected override void OnBound(EntityCharacter target)
         {
             _animator = GetComponent<Animator>();
-            _stateMachine = Context.Get<EntityStateMachineModule>();
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
+            
+            // 创建动画输出通道
+            _graph = PlayableGraph.Create("EntityAnimationGraph");
+            _graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);    // Tick驱动
 
-            _speedHash = Animator.StringToHash("Speed");
-            _turnHash = Animator.StringToHash("Turn");
-            _rollHash = Animator.StringToHash("Roll");
-            _airHash = Animator.StringToHash("Air");
+            _topMixer = AnimationMixerPlayable.Create(_graph, 2);   // 两个输入通道（基础移动/战斗动画）
+            _locomotionMixer = AnimationMixerPlayable.Create(_graph, 4);    // 混合移动动画
+            _actionMixer = AnimationMixerPlayable.Create(_graph, 0);    // 战斗动画通道（站位）
 
-            _animator.ResetTrigger(_rollHash);
-            _wasRolling = false;
-            _targetSpeed = 0f;
-            _targetTurn = 0f;
+            _baseClips = new[]
+            {
+                CreateClip(Config.idleAnim, _locomotionMixer, 0),
+                CreateClip(Config.walkAnim, _locomotionMixer, 1),
+                CreateClip(Config.runAnim, _locomotionMixer, 2),
+                CreateClip(Config.sprintAnim, _locomotionMixer, 3),
+            };
+            
+            _topMixer.ConnectInput(LOCOMOTION_PORT, _locomotionMixer, 0);
+            _topMixer.ConnectInput(ACTION_PORT, _actionMixer, 0);
+            _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f);
+            _topMixer.SetInputWeight(ACTION_PORT, 0);
+            
+            AnimationPlayableOutput output = AnimationPlayableOutput.Create(_graph, "Output", _animator);
+            output.SetSourcePlayable(_topMixer); // 连接动画输出
+            _graph.Play();
+
+#if UNITY_EDITOR
+            // DEBUG显示动画节点图
+            GraphVisualizerClient.Show(_graph);
+#endif
+        }
+        
+        protected override void OnUnbound(EntityCharacter oldTarget)
+        {
+            DestroyGraph();
         }
 
-        private void UpdateSpeed()
+        /// <summary>
+        /// 创建Playable动画片段，并连入混合器
+        /// </summary>
+        private AnimationClipPlayable CreateClip(EntityAnimData data, AnimationMixerPlayable mixer, int input)
+        {
+            if (!data.clip)
+            {
+                throw new ArgumentException("实体动画配置参数为空");
+            }
+            
+            AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(_graph, data.clip);
+            _graph.Connect(clipPlayable, 0, mixer, input);
+            return clipPlayable;
+        }
+
+        private void UpdateSpeedParam()
         {
             // 动画速度只在表现层平滑，不参与移动模拟或快照恢复
             float targetSpeed = Context.DesiredSpeed * Context.LastMoveInput.magnitude; // 神秘手柄输入
             float smoothTime = Config.animSpeedSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
-            _targetSpeed = Mathf.Lerp(_targetSpeed, targetSpeed, blend);
-            if (Mathf.Abs(_targetSpeed - targetSpeed) < 0.001f)
+            _curSpeed = Mathf.Lerp(_curSpeed, targetSpeed, blend);
+            if (Mathf.Abs(_curSpeed - targetSpeed) < 0.001f)
             {
-                _targetSpeed = targetSpeed;
+                _curSpeed = targetSpeed;
             }
-            _animator.SetFloat(_speedHash, _targetSpeed);
         }
-
-        private void UpdateTurn()
+        
+        private void UpdateTurnParam()
         {
-            // 计算转向数值
             float targetTurn = CalculateTurn();
             float smoothTime = Config.animTurnSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
-            _targetTurn = Mathf.Lerp(_targetTurn, targetTurn, blend);
-            if (Mathf.Abs(_targetTurn - targetTurn) < 0.001f)
+            _curTurn = Mathf.Lerp(_curTurn, targetTurn, blend);
+            if (Mathf.Abs(_curTurn - targetTurn) < 0.001f)
             {
-                _targetTurn = targetTurn;
+                _curTurn = targetTurn;
             }
-            _animator.SetFloat(_turnHash, _targetTurn);
-        }
-
-        /// <summary>
-        /// 根据当前表现帧的逻辑状态触发翻滚，避免固定 Tick 重演重复发送动画事件
-        /// </summary>
-        private void UpdateRoll()
-        {
-            bool isRolling = _stateMachine.CurrentState == EntityState.ROLL;
-            if (isRolling && !_wasRolling)
-            {
-                _animator.SetTrigger(_rollHash);
-            }
-            else if (!isRolling && _wasRolling)
-            {
-                _animator.ResetTrigger(_rollHash);
-            }
-
-            _wasRolling = isRolling;
-        }
-
-        /// <summary>
-        /// 浮空状态减慢动画播放速度
-        /// </summary>
-        private void UpdateAir()
-        {
-            bool isGrounded = _movement.IsGrounded;
-            _animator.SetFloat(_airHash, isGrounded ? 1f : 0.2f);
         }
         
         /// <summary>
@@ -114,24 +132,66 @@ namespace GamePlay.BattleSystem
             float angle = Vector3.SignedAngle(meshForward, inputDirection, Vector3.up);
             return Mathf.Clamp(angle / 180f, -1f, 1f);
         }
-
+        
+        private void UpdateBlendWeights()
+        {
+            // 混合移动参数
+            float walkBlend = Mathf.InverseLerp(0f, Config.walkSpeed, _curSpeed);
+            float runBlend = Mathf.InverseLerp(Config.walkSpeed, Config.runSpeed, _curSpeed);
+            float sprintBlend = Mathf.InverseLerp(Config.runSpeed, Config.sprintSpeed, _curSpeed);
+            _locomotionMixer.SetInputWeight(0, 1f - walkBlend);
+            _locomotionMixer.SetInputWeight(1, walkBlend - runBlend);
+            _locomotionMixer.SetInputWeight(2, runBlend - sprintBlend);
+            _locomotionMixer.SetInputWeight(3, sprintBlend);
+        }
+        
+        private void ResetAnimation()
+        {
+            _curSpeed = 0f;
+            _curTurn = 0f;
+            
+            // 清空动画进度
+            foreach (AnimationClipPlayable playable in _baseClips)
+            {
+                playable.SetTime(0d);
+            }
+            
+            UpdateBlendWeights();
+        }
+        
+        private void DestroyGraph()
+        {
+            if (_graph.IsValid())
+            {
+                _graph.Destroy();
+            }
+        }
+        
         #region 生命周期
 
         private void Update()
         {
-            UpdateSpeed();
-            UpdateTurn();
-            UpdateRoll();
-            UpdateAir();
-        }
+            UpdateSpeedParam();
+            UpdateTurnParam();
 
+            // 设置混合权重
+            UpdateBlendWeights();
+            
+            _graph.Evaluate(Time.deltaTime);
+        }
+        
         private void OnDisable()
         {
-            // 角色还池或停用后清除上一轮的动画插值状态和未消费的动作触发器。
-            _animator?.ResetTrigger(_rollHash);
-            _targetSpeed = 0f;
-            _targetTurn = 0f;
-            _wasRolling = false;
+            if (_graph.IsValid())
+            {
+                // 还池后从待机和初始播放时间重新开始
+                ResetAnimation();
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            DestroyGraph();
         }
 
         #endregion

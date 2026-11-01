@@ -9,8 +9,6 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class EntityCharacter : MonoBehaviour, IPoolable
     {
-        [SerializeField] private CharacterConfig config;
-        
         // 能力组件
         private EntityVisualPresentation _visualPresentation;
         private EntitySimulator _simulator;
@@ -29,11 +27,12 @@ namespace GamePlay.BattleSystem
         public void Init(bool isReplica = false)
         {
             if (_isInitialized) return;
-
-            InitConfig();
+            
+            // 注册上下文
+            CharacterConfig config = Global.GetDataProxy<CharacterConfigProxy>().Config;
+            _context = new EntityContext(this, config);
             
             // 统一收集能力组件
-            _context = new EntityContext(this, config);
             _context.AddAbility<EntityStateMachineModule>();
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
@@ -51,13 +50,6 @@ namespace GamePlay.BattleSystem
             _context.Get<EntityStateMachineModule>().ChangeState(EntityState.IDLE);
             
             _isInitialized = true;
-        }
-
-        protected virtual void InitConfig()
-        {
-            if (config) return;
-            
-            config = Global.GetDataProxy<EntityConfigProxy>().Config;
         }
         
         #region 模拟入口
@@ -147,6 +139,7 @@ namespace GamePlay.BattleSystem
         void IPoolable.Reset()
         {
             if (!_isInitialized) return;
+            _isInitialized = false;
 
             _context.LastMoveInput = Vector2.zero;
             _context.LastAimInput = Vector2.zero;

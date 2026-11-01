@@ -6,7 +6,7 @@ namespace GamePlay.BattleSystem
     /// 相对于动作起点的水平运动轨迹，时间为秒，位置为米，偏航为累计角度
     /// </summary>
     [CreateAssetMenu(fileName = "AnimationMotionData", menuName = "GamePlay/AnimationMotionData")]
-    public class AnimationMotionData : ScriptableObject
+    public class BakedAnimMotionData : ScriptableObject
     {
         public AnimationClip sourceClip;
         public Avatar sourceAvatar;
