@@ -8,5 +8,6 @@ namespace GamePlay.BattleSystem
         StateMachine,
         VisualPresentation,
         Interaction,
+        Ability,
     }
 }

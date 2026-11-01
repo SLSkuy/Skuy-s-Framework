@@ -7,14 +7,25 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class EntityRollState : EntityLocomotionState
     {
+        private AnimationModule _animation;
+        
         public override EntityState StateKey => EntityState.ROLL;
 
-        public EntityRollState(EntityContext context) : base(context) { }
+        public EntityRollState(EntityContext context) : base(context)
+        {
+            _animation = context.Get<AnimationModule>();
+        }
 
         public override void Enter()
         {
             Context.DesiredSpeed = Config.rollSpeed;
             Context.RollRemainingTime = Config.rollDuration;
+            
+            _animation.PlayActionAnimation(new EntityAnimationCommand
+            {
+                clip = Config.roll,
+                duration = Config.rollDuration
+            });
         }
 
         public override void Exit()

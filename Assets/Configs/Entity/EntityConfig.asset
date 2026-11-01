@@ -14,7 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
   walkSpeed: 1.8
   runSpeed: 4.25
-  sprintSpeed: 6.3
   jumpCount: 2
   jumpSpeed: 6
   rollSpeed: 5
@@ -30,13 +29,5 @@ MonoBehaviour:
   height: 1.7
   gravity: 14
   maxFallSpeed: 20
-  idleAnim:
-    clip: {fileID: 7400000, guid: b9dbd009261f33b499a0bc1e5d4f2b92, type: 2}
-  walkAnim:
-    clip: {fileID: 7400000, guid: 4cbf94b75dd69b04584097f6cfbef39a, type: 2}
-  runAnim:
-    clip: {fileID: 7400000, guid: 4f21a303e2a17a34eade672ed980c0d5, type: 2}
-  sprintAnim:
-    clip: {fileID: 7400000, guid: a09c5f63db8f4644bbfca27d3f7f65f8, type: 2}
-  turnAnim:
-    clip: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: a484d3131f968f4408b10ed4b3d075a9, type: 2}
+  roll: {fileID: 7400000, guid: b1edb12813a329e43babae80ee3cbc23, type: 2}

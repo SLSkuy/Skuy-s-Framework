@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -9,6 +10,8 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class AnimationModule : EntityModuleBase
     {
+        private const float TRANSITION_TIME = 0.15f;
+        
         private const int LOCOMOTION_PORT = 0;
         private const int ACTION_PORT = 1;
         
@@ -17,13 +20,14 @@ namespace GamePlay.BattleSystem
         private ViewModule _view;
         
         private PlayableGraph _graph;
-        
         /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
         private AnimationMixerPlayable _topMixer;
         /// <summary> 基础移动动画混合器（待机，走，跑等持续动画） </summary>
         private AnimatorControllerPlayable _locomotion;
         /// <summary> 战斗动画混合器 </summary>
-        private AnimationMixerPlayable _actionMixer;
+        private AnimationClipPlayable _action;
+        
+        private Coroutine _actionTransition;
         
         /// <summary> 角色移动动画参数 </summary>
         private float _curSpeed;
@@ -35,6 +39,66 @@ namespace GamePlay.BattleSystem
         
         #region 属性
         public override ModuleType ModuleType => ModuleType.Animation;
+        #endregion
+
+        #region 动画播放入口
+
+        /// <summary>
+        /// 播放一次性动画
+        /// </summary>
+        public void PlayActionAnimation(in EntityAnimationCommand command)
+        {
+            // 防止重复播放
+            if (_action.IsValid() && _action.GetAnimationClip() == command.clip) return;
+            
+            // 打断正在播放的行为动画
+            InterruptActionAnimation();
+            
+            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration));
+        }
+
+        private IEnumerator TransitionAnimation(AnimationClip clip, float duration)
+        {
+            _action = AnimationClipPlayable.Create(_graph, clip);
+            _topMixer.ConnectInput(ACTION_PORT, _action, 0);
+
+            // duration 包含淡入和淡出；短动作将两段过渡等比例缩短
+            float blendTime = Mathf.Min(TRANSITION_TIME, duration * 0.5f);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                float blendIn = Mathf.Clamp01(elapsed / blendTime);
+                float blendOut = Mathf.Clamp01((duration - elapsed) / blendTime);
+                float actionWeight = Mathf.Min(blendIn, blendOut);
+                _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f - actionWeight);
+                _topMixer.SetInputWeight(ACTION_PORT, actionWeight);
+
+                yield return null;
+                elapsed += Time.deltaTime;
+            }
+
+            _actionTransition = null;
+            InterruptActionAnimation();
+        }
+
+        private void InterruptActionAnimation()
+        {
+            if (_actionTransition != null)
+            {
+                StopCoroutine(_actionTransition);
+                _actionTransition = null;
+            }
+
+            _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f);
+            _topMixer.SetInputWeight(ACTION_PORT, 0);
+
+            if (_action.IsValid())
+            {
+                _topMixer.DisconnectInput(ACTION_PORT);
+                _graph.DestroyPlayable(_action);
+            }
+        }
+
         #endregion
         
         protected override void OnBound(EntityCharacter target)
@@ -50,14 +114,11 @@ namespace GamePlay.BattleSystem
             _graph = PlayableGraph.Create("EntityAnimationGraph");
             _graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);    // Tick驱动
             
-            _locomotion = AnimatorControllerPlayable.Create(_graph, _animator.runtimeAnimatorController);
-            _actionMixer = AnimationMixerPlayable.Create(_graph, 0);    // 战斗动画通道（站位）
+            _locomotion = AnimatorControllerPlayable.Create(_graph, Config.animatorController);
             _topMixer = AnimationMixerPlayable.Create(_graph, 2);   // 两个输入通道（基础移动/战斗动画）
             
             _topMixer.ConnectInput(LOCOMOTION_PORT, _locomotion, 0);
-            _topMixer.ConnectInput(ACTION_PORT, _actionMixer, 0);
             _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f);
-            _topMixer.SetInputWeight(ACTION_PORT, 0);
             
             AnimationPlayableOutput output = AnimationPlayableOutput.Create(_graph, "BlendResult", _animator);
             output.SetSourcePlayable(_topMixer); // 连接动画输出
@@ -74,16 +135,18 @@ namespace GamePlay.BattleSystem
             ResetAnimation();
             DestroyGraph();
         }
-
-        /// <summary>
-        /// 创建Playable动画片段，并连入混合器
-        /// </summary>
-        private AnimationClipPlayable CreateClip(AnimationClip clip, AnimationMixerPlayable mixer, int input)
+        
+        private void DestroyGraph()
         {
-            AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(_graph, clip);
-            _graph.Connect(clipPlayable, 0, mixer, input);
-            return clipPlayable;
+            StopAllCoroutines();
+            
+            if (_graph.IsValid())
+            {
+                _graph.Destroy();
+            }
         }
+
+        #region 动画参数管理
 
         private void UpdateSpeedParam()
         {
@@ -125,21 +188,17 @@ namespace GamePlay.BattleSystem
             float angle = Vector3.SignedAngle(meshForward, inputDirection, Vector3.up);
             return Mathf.Clamp(angle / 180f, -1f, 1f);
         }
-
+        
         private void ResetAnimation()
         {
+            InterruptActionAnimation();
+            
             _curSpeed = 0f;
             _curTurn = 0f;
         }
-        
-        private void DestroyGraph()
-        {
-            if (_graph.IsValid())
-            {
-                _graph.Destroy();
-            }
-        }
-        
+
+        #endregion
+
         #region 生命周期
 
         private void Update()

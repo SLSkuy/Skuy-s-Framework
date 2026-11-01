@@ -31,5 +31,9 @@ namespace GamePlay.BattleSystem
         public float height = 1.7f;
         public float gravity = 12f;
         public float maxFallSpeed = 20f;
+
+        [Header("基础动画控制器")]
+        public RuntimeAnimatorController animatorController;
+        [Header("DEBUG")] public AnimationClip roll;
     }
 }
