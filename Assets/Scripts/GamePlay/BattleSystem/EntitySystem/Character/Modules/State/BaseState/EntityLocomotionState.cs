@@ -22,12 +22,6 @@
         /// </summary>
         protected bool CheckGroundTransitions()
         {
-            // 奔跑模式切换（toggle）
-            if (RunToggleRequest)
-            {
-                Context.IsRunning = !Context.IsRunning;
-            }
-            
             if (!IsGrounded)
             {
                 _stateMachine.ChangeState(EntityState.AIRBORNE);

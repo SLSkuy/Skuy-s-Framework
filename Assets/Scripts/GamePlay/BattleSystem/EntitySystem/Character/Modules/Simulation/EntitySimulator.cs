@@ -31,10 +31,9 @@ namespace GamePlay.BattleSystem
             _context.CurrentTick = tick;
             _context.LastMoveInput = command.move;
             _context.LastAimInput = command.aim;
-            _context.IsSprinting = command.IsHeld(EntityCommandFlags.Sprint);
+            _context.IsRunning = command.IsHeld(EntityCommandFlags.Run);
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
             _context.RollRequest = command.IsPressed(EntityCommandFlags.Roll);
-            _context.RunToggleRequest = command.IsPressed(EntityCommandFlags.ToggleRun);
 
             _view.Look(command.aim, deltaTime);
             _movement.Rotate(command.move, _view.Yaw, deltaTime);

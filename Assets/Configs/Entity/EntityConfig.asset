@@ -37,6 +37,6 @@ MonoBehaviour:
   runAnim:
     clip: {fileID: 7400000, guid: 4f21a303e2a17a34eade672ed980c0d5, type: 2}
   sprintAnim:
-    clip: {fileID: 7400000, guid: e2bc31c82cec15441965b3b8188d5caa, type: 2}
+    clip: {fileID: 7400000, guid: a09c5f63db8f4644bbfca27d3f7f65f8, type: 2}
   turnAnim:
     clip: {fileID: 0}

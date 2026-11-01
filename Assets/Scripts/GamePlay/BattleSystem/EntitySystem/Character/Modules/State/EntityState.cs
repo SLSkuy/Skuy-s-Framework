@@ -8,8 +8,7 @@ namespace GamePlay.BattleSystem
         IDLE = 0,
         WALK = 1,
         RUN = 2,
-        SPRINT = 3,
-        AIRBORNE = 4,
-        ROLL = 5,
+        AIRBORNE = 3,
+        ROLL = 4,
     }
 }

@@ -27,7 +27,6 @@ namespace Utils
                 VerticalVelocity = movement.verticalVelocity,
                 JumpCount = movement.jumpCount,
                 IsRunning = state.isRunning,
-                IsSprinting = state.isSprinting,
                 IsGrounded = movement.isGrounded,
                 LocomotionSpeed = state.locomotionSpeed,
                 LastMoveDirection = movement.lastMoveDirection.ToProto(),
@@ -46,7 +45,6 @@ namespace Utils
                     rollRemainingTime = snapshot.RollRemainingTime,
                     locomotionSpeed = snapshot.LocomotionSpeed,
                     isRunning = snapshot.IsRunning,
-                    isSprinting = snapshot.IsSprinting,
                 },
                 movement = new MovementSnapshot
                 {

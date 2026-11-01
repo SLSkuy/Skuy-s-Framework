@@ -22,7 +22,6 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 瞬时状态
-        public bool RunToggleRequest;
         public bool JumpRequest;
         public bool RollRequest;
         #endregion
@@ -37,8 +36,7 @@ namespace GamePlay.BattleSystem
         /// 翻滚持续时间
         /// </summary>
         public float RollRemainingTime;
-
-        public bool IsSprinting;
+        
         public bool IsRunning;
         public bool IsFocus;
         #endregion
@@ -100,7 +98,6 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public void ResetTickFlags()
         {
-            RunToggleRequest = false;
             JumpRequest = false;
             RollRequest = false;
         }

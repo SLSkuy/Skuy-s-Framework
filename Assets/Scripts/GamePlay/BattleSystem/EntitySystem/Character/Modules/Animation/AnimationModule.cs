@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -59,7 +58,6 @@ namespace GamePlay.BattleSystem
                 CreateClip(Config.idleAnim, _locomotionMixer, 0),
                 CreateClip(Config.walkAnim, _locomotionMixer, 1),
                 CreateClip(Config.runAnim, _locomotionMixer, 2),
-                CreateClip(Config.sprintAnim, _locomotionMixer, 3),
             };
             
             _locomotionClipLengths = new float[_locomotionClips.Length];
@@ -99,11 +97,6 @@ namespace GamePlay.BattleSystem
         /// </summary>
         private AnimationClipPlayable CreateClip(EntityAnimData data, AnimationMixerPlayable mixer, int input)
         {
-            if (!data.clip || data.clip.length <= 0f)
-            {
-                throw new ArgumentException("实体动画必须配置时长大于零的 Clip");
-            }
-            
             AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(_graph, data.clip);
             _graph.Connect(clipPlayable, 0, mixer, input);
             return clipPlayable;
@@ -153,11 +146,9 @@ namespace GamePlay.BattleSystem
             // 混合移动参数
             float walkBlend = Mathf.InverseLerp(0f, Config.walkSpeed, _curSpeed);
             float runBlend = Mathf.InverseLerp(Config.walkSpeed, Config.runSpeed, _curSpeed);
-            float sprintBlend = Mathf.InverseLerp(Config.runSpeed, Config.sprintSpeed, _curSpeed);
             _locomotionMixer.SetInputWeight(0, 1f - walkBlend);
             _locomotionMixer.SetInputWeight(1, walkBlend - runBlend);
-            _locomotionMixer.SetInputWeight(2, runBlend - sprintBlend);
-            _locomotionMixer.SetInputWeight(3, sprintBlend);
+            _locomotionMixer.SetInputWeight(2, runBlend);
         }
         
         /// <summary>

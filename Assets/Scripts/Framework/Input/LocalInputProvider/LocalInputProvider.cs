@@ -90,10 +90,9 @@ namespace Framework
             if (_playerActions.SpecialAttack.IsPressed()) flags |= EntityCommandFlags.SpecialAttack;
             if (_playerActions.SpecialAction.IsPressed()) flags |= EntityCommandFlags.SpecialAction;
             if (_playerActions.Interact.IsPressed()) flags |= EntityCommandFlags.Interact;
-            if (_playerActions.Sprint.IsPressed()) flags |= EntityCommandFlags.Sprint;
+            if (_playerActions.Run.IsPressed()) flags |= EntityCommandFlags.Run;
             if (_playerActions.Jump.IsPressed()) flags |= EntityCommandFlags.Jump;
-            if (_playerActions.SwitchMode.IsPressed()) flags |= EntityCommandFlags.ToggleRun;
-            if(_playerActions.Roll.IsPressed()) flags |= EntityCommandFlags.Roll;
+            if (_playerActions.Roll.IsPressed()) flags |= EntityCommandFlags.Roll;
 
             return new InputCommand
             {

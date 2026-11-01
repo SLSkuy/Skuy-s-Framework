@@ -8,7 +8,6 @@ namespace GamePlay.BattleSystem
         [Header("基础运动属性")]
         public float walkSpeed = 2f;
         public float runSpeed = 5f;
-        public float sprintSpeed = 8f;
         public int jumpCount = 2;
         public float jumpSpeed = 12f;
 
@@ -37,7 +36,5 @@ namespace GamePlay.BattleSystem
         public EntityAnimData idleAnim;
         public EntityAnimData walkAnim;
         public EntityAnimData runAnim;
-        public EntityAnimData sprintAnim;
-        public EntityAnimData turnAnim;
     }
 }

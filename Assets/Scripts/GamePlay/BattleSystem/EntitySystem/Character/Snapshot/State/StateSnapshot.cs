@@ -13,9 +13,7 @@ namespace GamePlay.BattleSystem
         public float locomotionSpeed;      // 目标期望移动速度
         public float rollRemainingTime;    // 翻滚剩余模拟时间（秒）
         
-        public bool isRunning;
-        public bool isSprinting;
-
-        public bool isFocus;
+        public bool isRunning;  // 奔跑状态
+        public bool isFocus;    // 专注状态
     }
 }

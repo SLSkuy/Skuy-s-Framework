@@ -9,13 +9,12 @@ namespace Framework
     public enum EntityCommandFlags : ushort
     {
         None = 0,
-        Sprint = 1 << 0,
+        Run = 1 << 0,
         Jump = 1 << 1,
-        ToggleRun = 1 << 2,
-        Roll = 1 << 3,
-        PrimaryAttack = 1 << 4,
-        SpecialAttack = 1 << 5,
-        SpecialAction = 1 << 6,
-        Interact = 1 << 7
+        Roll = 1 << 2,
+        PrimaryAttack = 1 << 3,
+        SpecialAttack = 1 << 4,
+        SpecialAction = 1 << 5,
+        Interact = 1 << 6,
     }
 }

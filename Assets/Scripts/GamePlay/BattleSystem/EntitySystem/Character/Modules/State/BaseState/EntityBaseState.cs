@@ -21,9 +21,7 @@ namespace GamePlay.BattleSystem
         protected float DesiredSpeed => Context.DesiredSpeed;
         
         protected bool IsGrounded => Movement.IsGrounded;
-        protected bool IsSprinting => Context.IsSprinting;   // Sprint 键按住（持续型）
         protected bool IsRunning => Context.IsRunning;         // 奔跑模式（walk/run toggle 持续型）
-        protected bool RunToggleRequest => Context.RunToggleRequest;  // 奔跑 toggle 瞬时请求
         protected bool JumpRequest => Context.JumpRequest;
         #endregion
 

@@ -31,13 +31,12 @@ namespace GamePlay.BattleSystem
 
         protected override void CheckStateChange()
         {
-            if (RunToggleRequest) Context.IsRunning = !Context.IsRunning;
             if (Context.RollRemainingTime > 0f) return;
 
             if (!IsGrounded) _stateMachine.ChangeState(EntityState.AIRBORNE);
             else if (LastMoveInput == Vector2.zero) _stateMachine.ChangeState(EntityState.IDLE);
-            else if (IsSprinting) _stateMachine.ChangeState(EntityState.SPRINT);
-            else _stateMachine.ChangeState(IsRunning ? EntityState.RUN : EntityState.WALK);
+            else if (IsRunning) _stateMachine.ChangeState(EntityState.RUN);
+            else _stateMachine.ChangeState(EntityState.WALK);
         }
     }
 }

@@ -39,7 +39,6 @@ namespace GamePlay.BattleSystem
             _stateMachine.RegisterState(new EntityIdleState(Context));
             _stateMachine.RegisterState(new EntityWalkState(Context));
             _stateMachine.RegisterState(new EntityRunState(Context));
-            _stateMachine.RegisterState(new EntitySprintState(Context));
             _stateMachine.RegisterState(new EntityAirborneState(Context));
             _stateMachine.RegisterState(new EntityRollState(Context));
         }
@@ -60,7 +59,6 @@ namespace GamePlay.BattleSystem
                 rollRemainingTime = Context.RollRemainingTime,
                 locomotionSpeed = Context.DesiredSpeed,
                 isRunning = Context.IsRunning,
-                isSprinting = Context.IsSprinting,
                 isFocus = Context.IsFocus,
             };
         }
@@ -74,7 +72,6 @@ namespace GamePlay.BattleSystem
             Context.RollRemainingTime = state.rollRemainingTime;
             Context.DesiredSpeed = state.locomotionSpeed;
             Context.IsRunning = state.isRunning;
-            Context.IsSprinting = state.isSprinting;
             Context.IsFocus = state.isFocus;
         }
     }
