@@ -142,22 +142,21 @@ namespace GamePlay.BattleSystem
             if (!_isInitialized) return;
             _isInitialized = false;
 
+            // 先退出状态，避免退出逻辑修改已清理的模块数据。
+            EntityStateMachineModule stateMachine = _context.Get<EntityStateMachineModule>();
+            stateMachine.Reset();
+            
             // 重置上下文
             _context.Reset();
-            
-            // 清理移动状态
-            MovementModule movement = _context.Get<MovementModule>();
-            movement.ResetMotion();
-            movement.Restore(Quaternion.identity);
-            
-            // 清理视角状态
-            _context.Get<ViewModule>().Restore(Quaternion.identity);
-            
-            // 清理状态机
-            _context.Get<EntityStateMachineModule>().ChangeState(EntityState.IDLE);
-            
-            // 清理视觉插值
-            _visualPresentation.SnapToAuthority();
+
+            foreach (EntityModuleBase module in _context.Abilities)
+            {
+                if (module == stateMachine || module == _visualPresentation) continue;
+                module.Reset();
+            }
+
+            // 移动和视角重置后，再采样最终视觉位姿。
+            _visualPresentation.Reset();
         }
     }
 }

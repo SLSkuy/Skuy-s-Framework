@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
@@ -8,6 +9,9 @@ namespace GamePlay.BattleSystem
     [Serializable]
     public struct StateSnapshot
     {
+        public Vector2 lastMoveInput;
+        public Vector2 lastAimInput;
+
         public EntityState entityState;    // 实体当前状态（待机、死亡等）
         
         public float locomotionSpeed;      // 目标期望移动速度

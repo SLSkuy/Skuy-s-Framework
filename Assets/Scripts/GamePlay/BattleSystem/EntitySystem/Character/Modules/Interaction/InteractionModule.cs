@@ -9,7 +9,7 @@ namespace GamePlay.BattleSystem
         #region 属性
         public override ModuleType ModuleType => ModuleType.Interaction;
         #endregion
-
+        
         protected override void OnBound(EntityCharacter target)
         {
             // 获取当前视角
@@ -22,6 +22,14 @@ namespace GamePlay.BattleSystem
         public void Interact()
         {
             
+        }
+        
+        /// <summary>
+        /// 清理模块的还池运行状态。
+        /// </summary>
+        public override void Reset()
+        {
+            // 交互模块没有跨次借出的运行状态，保留绑定的视角引用。
         }
     }
 }

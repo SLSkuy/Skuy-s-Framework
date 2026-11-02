@@ -1,3 +1,4 @@
+using Framework;
 using UnityEngine;
 
 namespace GamePlay.BattleSystem
@@ -5,7 +6,7 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 实体能力模块基础类，统一处理实体绑定与启用状态。
     /// </summary>
-    public abstract class EntityModuleBase : MonoBehaviour
+    public abstract class EntityModuleBase : MonoBehaviour, IPoolable
     {
         #region 属性
         public EntityCharacter Target { get; private set; }
@@ -31,6 +32,14 @@ namespace GamePlay.BattleSystem
         {
             Target = target;
             OnBound(target);
+        }
+
+        /// <summary>
+        /// 清理还池运行状态，保留绑定与配置
+        /// </summary>
+        public virtual void Reset()
+        {
+            // TODO: 还原组件字段状态
         }
 
         public virtual void SetEnabled(bool isEnabled)

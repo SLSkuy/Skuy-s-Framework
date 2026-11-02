@@ -238,5 +238,11 @@ namespace GamePlay.BattleSystem
             // LinearVelocity = Vector3.zero;
             // AngularVelocity = Vector3.zero;
         }
+        
+        public override void Reset()
+        {
+            ResetMotion();
+            Restore(Quaternion.identity);
+        }
     }
 }

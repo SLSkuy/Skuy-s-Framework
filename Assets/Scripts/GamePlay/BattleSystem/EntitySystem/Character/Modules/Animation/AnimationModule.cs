@@ -104,9 +104,11 @@ namespace GamePlay.BattleSystem
         }
 
         #endregion
-        
+
         protected override void OnBound(EntityCharacter target)
         {
+            DestroyGraph();
+            
             _animator = GetComponent<Animator>();
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
@@ -225,6 +227,15 @@ namespace GamePlay.BattleSystem
         private void OnDestroy()
         {
             DestroyGraph();
+        }
+
+        public override void Reset()
+        {
+            ResetAnimation();
+            
+            _locomotion.Play(0, 0, 0f);
+            _locomotion.SetFloat(_speedHash, 0f);
+            _locomotion.SetFloat(_turnHash, 0f);
         }
 
         #endregion

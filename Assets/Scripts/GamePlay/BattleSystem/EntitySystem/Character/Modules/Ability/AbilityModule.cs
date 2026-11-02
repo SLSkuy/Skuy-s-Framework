@@ -52,18 +52,19 @@ namespace GamePlay.BattleSystem
 
         public void Tick(float deltaTime)
         {
-            if (SkillRemainingTime < _castingSkill.duration)
+            if (IsCasting && SkillRemainingTime < _castingSkill.duration)
             {
                 SkillRemainingTime += deltaTime;
             }
             else
             {
                 SkillRemainingTime = 0f;
+                _castingSkill = null;
             }
         }
 
         #endregion
-        
+
         protected override void OnBound(EntityCharacter target)
         {
             _animation = Context.Get<AnimationModule>();
@@ -97,6 +98,12 @@ namespace GamePlay.BattleSystem
                     duration = _castingSkill.duration,
                 }, SkillRemainingTime);
             }
+        }
+        
+        public override void Reset()
+        {
+            _castingSkill = null;
+            SkillRemainingTime = 0f;
         }
     }
 }

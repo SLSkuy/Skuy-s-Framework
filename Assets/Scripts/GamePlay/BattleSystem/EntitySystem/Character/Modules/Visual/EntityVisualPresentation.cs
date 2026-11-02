@@ -119,5 +119,13 @@ namespace GamePlay.BattleSystem
             _mesh.rotation = _current.MeshRotation;
             _orientation.rotation = _current.OrientationRotation;
         }
+        
+        /// <summary>
+        /// 清理模块的还池运行状态。
+        /// </summary>
+        public override void Reset()
+        {
+            SnapToAuthority();
+        }
     }
 }

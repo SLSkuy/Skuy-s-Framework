@@ -90,5 +90,10 @@ namespace GamePlay.BattleSystem
         }
 
         #endregion
+        
+        public override void Reset()
+        {
+            Restore(Quaternion.identity);
+        }
     }
 }

@@ -22,6 +22,8 @@ namespace Utils
                 EntityState = (uint)state.entityState,
                 LocomotionSpeed = state.locomotionSpeed,
                 IsRunning = state.isRunning,
+                LastMoveInput = state.lastMoveInput.ToProto(),
+                LastAimInput = state.lastAimInput.ToProto(),
                 
                 //  MovementSnapshot
                 Position = movement.rootPosition.ToProto(),
@@ -54,6 +56,8 @@ namespace Utils
                     entityState = (EntityState)snapshot.EntityState,
                     locomotionSpeed = snapshot.LocomotionSpeed,
                     isRunning = snapshot.IsRunning,
+                    lastMoveInput = snapshot.LastMoveInput.ToUnity(),
+                    lastAimInput = snapshot.LastAimInput.ToUnity(),
                 },
                 movement = new MovementSnapshot
                 {

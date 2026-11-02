@@ -127,6 +127,8 @@ message Player_Snapshot {
     uint32 entity_state = 3;
     float locomotion_speed = 4;
     bool is_running = 5;
+    Vec2 last_move_input = 15;
+    Vec2 last_aim_input = 16;
     
     // MovementSnapshot
     Vec3 position = 6;

@@ -56,6 +56,8 @@ namespace GamePlay.BattleSystem
             return new StateSnapshot
             {
                 entityState = CurrentState,
+                lastMoveInput = Context.LastMoveInput,
+                lastAimInput = Context.LastAimInput,
                 locomotionSpeed = Context.DesiredSpeed,
                 isRunning = Context.IsRunning,
                 isFocus = Context.IsFocus,
@@ -68,9 +70,16 @@ namespace GamePlay.BattleSystem
             ChangeState(state.entityState);
             
             // Enter 仅初始化新动作；回滚后覆盖为权威进度，同状态恢复也必须写回
+            Context.LastMoveInput = state.lastMoveInput;
+            Context.LastAimInput = state.lastAimInput;
             Context.DesiredSpeed = state.locomotionSpeed;
             Context.IsRunning = state.isRunning;
             Context.IsFocus = state.isFocus;
+        }
+        
+        public override void Reset()
+        {
+            _stateMachine.Stop();
         }
     }
 }

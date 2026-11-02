@@ -39,6 +39,11 @@ namespace GamePlay.BattleSystem
         public bool IsFocus;
         #endregion
 
+        #region 属性
+        /// <summary> 已登记的实体模块，仅提供遍历入口。 </summary>
+        internal IEnumerable<EntityModuleBase> Abilities => _modules.Values;
+        #endregion
+
         public EntityContext(EntityCharacter character, CharacterConfig config)
         {
             _character = character;
