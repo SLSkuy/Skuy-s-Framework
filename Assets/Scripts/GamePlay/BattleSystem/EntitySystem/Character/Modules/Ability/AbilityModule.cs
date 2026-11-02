@@ -70,12 +70,32 @@ namespace GamePlay.BattleSystem
 
         public override AbilitySnapshot CaptureSnapshot()
         {
-            throw new System.NotImplementedException();
+            // 没有释放的技能信息，传递空数据
+            if (!IsCasting)
+            {
+                return default;
+            }
+            
+            return new AbilitySnapshot
+            {
+                skillId = CastingSkill.skillId,
+                remainTime = SkillRemainingTime,
+            };
         }
 
         public override void RestoreSnapshot(in AbilitySnapshot state)
         {
-            throw new System.NotImplementedException();
+            if (_config.TryGetSkillConfig(state.skillId, out BaseSkill skillConfig))
+            {
+                CastingSkill = skillConfig;
+                SkillRemainingTime = state.remainTime;
+                
+                _animation.PlayActionAnimation(new EntityAnimationCommand
+                {
+                    clip = CastingSkill.clip,
+                    duration = CastingSkill.duration,
+                }, SkillRemainingTime);
+            }
         }
     }
 }

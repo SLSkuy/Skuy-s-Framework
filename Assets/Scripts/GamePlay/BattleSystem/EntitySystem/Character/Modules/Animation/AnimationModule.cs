@@ -44,27 +44,31 @@ namespace GamePlay.BattleSystem
         #region 动画播放入口
 
         /// <summary>
-        /// 播放一次性动画
+        /// 播放一次性动画，传入开始事件后立刻从某一进度开始播放动画
         /// </summary>
-        public void PlayActionAnimation(in EntityAnimationCommand command)
+        public void PlayActionAnimation(in EntityAnimationCommand command, float startTime = 0)
         {
-            // 防止重复播放
-            if (_action.IsValid() && _action.GetAnimationClip() == command.clip) return;
+            if (_action.IsValid() && _action.GetAnimationClip() == command.clip)
+            {
+                // 当前与目标相同，设置播放进度
+                _action.SetTime(startTime);
+                return;
+            }
             
-            // 打断正在播放的行为动画
             InterruptActionAnimation();
             
-            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration));
+            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration, startTime));
         }
 
-        private IEnumerator TransitionAnimation(AnimationClip clip, float duration)
+        private IEnumerator TransitionAnimation(AnimationClip clip, float duration, float startTime = 0f)
         {
             _action = AnimationClipPlayable.Create(_graph, clip);
+            _action.SetTime(startTime);
             _topMixer.ConnectInput(ACTION_PORT, _action, 0);
 
             // duration 包含淡入和淡出；短动作将两段过渡等比例缩短
             float blendTime = Mathf.Min(TRANSITION_TIME, duration * 0.5f);
-            float elapsed = 0f;
+            float elapsed = startTime;
             while (elapsed < duration)
             {
                 float blendIn = Mathf.Clamp01(elapsed / blendTime);
@@ -151,7 +155,7 @@ namespace GamePlay.BattleSystem
         private void UpdateSpeedParam()
         {
             // 动画速度只在表现层平滑，不参与移动模拟或快照恢复
-            float targetSpeed = Context.DesiredSpeed * Context.LastMoveInput.magnitude; // 神秘手柄输入
+            float targetSpeed = Context.DesiredSpeed * _movement.LastMoveDir.magnitude; // 神秘手柄输入
             float smoothTime = Config.animSpeedSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
             _curSpeed = Mathf.Lerp(_curSpeed, targetSpeed, blend);

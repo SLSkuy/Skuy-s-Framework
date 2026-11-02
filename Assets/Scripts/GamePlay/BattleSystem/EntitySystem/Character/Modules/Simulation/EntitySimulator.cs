@@ -54,12 +54,14 @@ namespace GamePlay.BattleSystem
             StateSnapshot state = _stateMachine.CaptureSnapshot();
             MovementSnapshot movement = _movement.CaptureSnapshot();
             ViewSnapshot view = _view.CaptureSnapshot();
+            AbilitySnapshot ability = _ability.CaptureSnapshot();
 
             return new EntitySnapshot
             {
                 state = state,
                 movement = movement,
-                view = view
+                view = view,
+                ability = ability,
             };
         }
 
@@ -71,6 +73,7 @@ namespace GamePlay.BattleSystem
             _stateMachine.RestoreSnapshot(state.state);
             _movement.RestoreSnapshot(state.movement);
             _view.RestoreSnapshot(state.view);
+            _ability.RestoreSnapshot(state.ability);
             _context.ResetTickFlags();
         }
     }

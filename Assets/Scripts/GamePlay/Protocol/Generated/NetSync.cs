@@ -44,24 +44,23 @@ namespace NetSync {
             "bmMuSW5wdXRfQ29tbWFuZCJ2Cg1JbnB1dF9Db21tYW5kEhEKCWlucHV0VGlj",
             "axgBIAEoDRIhCgptb3ZlX2lucHV0GAIgASgLMg0uTmV0U3luYy5WZWMyEiAK",
             "CWFpbV9pbnB1dBgDIAEoCzINLk5ldFN5bmMuVmVjMhINCgVmbGFncxgEIAEo",
-            "DSKWAwoPUGxheWVyX1NuYXBzaG90EhAKCGVudGl0eUlkGAEgASgNEh4KFmxh",
-            "c3RQcm9jZXNzZWRJbnB1dFRpY2sYCCABKA0SGAoQbG9jb21vdGlvbl9zdGF0",
-            "ZRgCIAEoDRIbChNyb2xsX3JlbWFpbmluZ190aW1lGBAgASgCEhgKEGxvY29t",
-            "b3Rpb25fc3BlZWQYDiABKAISHwoIcG9zaXRpb24YAyABKAsyDS5OZXRTeW5j",
-            "LlZlYzMSHwoIcm90YXRpb24YBCABKAsyDS5OZXRTeW5jLlF1YXQSJAoNdmll",
-            "d19yb3RhdGlvbhgFIAEoCzINLk5ldFN5bmMuUXVhdBIZChF2ZXJ0aWNhbF92",
-            "ZWxvY2l0eRgJIAEoAhISCgpqdW1wX2NvdW50GAogASgFEhIKCmlzX3J1bm5p",
-            "bmcYCyABKAgSFAoMaXNfc3ByaW50aW5nGAwgASgIEhMKC2lzX2dyb3VuZGVk",
-            "GA0gASgIEioKE2xhc3RfbW92ZV9kaXJlY3Rpb24YDyABKAsyDS5OZXRTeW5j",
-            "LlZlYzMiWgoOV29ybGRfU25hcHNob3QSFAoMc25hcHNob3RUaWNrGAEgASgN",
-            "EjIKEFBsYXllcl9zbmFwc2hvdHMYAiADKAsyGC5OZXRTeW5jLlBsYXllcl9T",
-            "bmFwc2hvdCK9AQoTUGxheWVyX1NwYXduX05vdGlmeRIQCghlbnRpdHlJZBgB",
-            "IAEoDRIUCgxlbnRpdHlUeXBlSWQYAiABKA0SEAoIcGxheWVySWQYAyABKAkS",
-            "HwoIcG9zaXRpb24YBCABKAsyDS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24Y",
-            "BSABKAsyDS5OZXRTeW5jLlF1YXQSKgoIc25hcHNob3QYBiABKAsyGC5OZXRT",
-            "eW5jLlBsYXllcl9TbmFwc2hvdCIpChVFbnRpdHlfRGVzdHJveV9Ob3RpZnkS",
-            "EAoIZW50aXR5SWQYASABKA0iGwoZRW50aXR5X1NwYXduX1N5bmNfUmVxdWVz",
-            "dGIGcHJvdG8z"));
+            "DSKEAwoPUGxheWVyX1NuYXBzaG90EhAKCGVudGl0eUlkGAEgASgNEh4KFmxh",
+            "c3RQcm9jZXNzZWRJbnB1dFRpY2sYAiABKA0SFAoMZW50aXR5X3N0YXRlGAMg",
+            "ASgNEhgKEGxvY29tb3Rpb25fc3BlZWQYBCABKAISEgoKaXNfcnVubmluZxgF",
+            "IAEoCBIfCghwb3NpdGlvbhgGIAEoCzINLk5ldFN5bmMuVmVjMxIfCghyb3Rh",
+            "dGlvbhgHIAEoCzINLk5ldFN5bmMuUXVhdBIqChNsYXN0X21vdmVfZGlyZWN0",
+            "aW9uGAggASgLMg0uTmV0U3luYy5WZWMzEhkKEXZlcnRpY2FsX3ZlbG9jaXR5",
+            "GAkgASgCEhIKCmp1bXBfY291bnQYCiABKAUSEwoLaXNfZ3JvdW5kZWQYCyAB",
+            "KAgSJAoNdmlld19yb3RhdGlvbhgMIAEoCzINLk5ldFN5bmMuUXVhdBIPCgdz",
+            "a2lsbElkGA0gASgNEhIKCnJlbWFpblRpbWUYDiABKAIiWgoOV29ybGRfU25h",
+            "cHNob3QSFAoMc25hcHNob3RUaWNrGAEgASgNEjIKEFBsYXllcl9zbmFwc2hv",
+            "dHMYAiADKAsyGC5OZXRTeW5jLlBsYXllcl9TbmFwc2hvdCK9AQoTUGxheWVy",
+            "X1NwYXduX05vdGlmeRIQCghlbnRpdHlJZBgBIAEoDRIUCgxlbnRpdHlUeXBl",
+            "SWQYAiABKA0SEAoIcGxheWVySWQYAyABKAkSHwoIcG9zaXRpb24YBCABKAsy",
+            "DS5OZXRTeW5jLlZlYzMSHwoIcm90YXRpb24YBSABKAsyDS5OZXRTeW5jLlF1",
+            "YXQSKgoIc25hcHNob3QYBiABKAsyGC5OZXRTeW5jLlBsYXllcl9TbmFwc2hv",
+            "dCIpChVFbnRpdHlfRGVzdHJveV9Ob3RpZnkSEAoIZW50aXR5SWQYASABKA0i",
+            "GwoZRW50aXR5X1NwYXduX1N5bmNfUmVxdWVzdGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -78,7 +77,7 @@ namespace NetSync {
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Room_Server_Dissolved_Notify), global::NetSync.Room_Server_Dissolved_Notify.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Inputs), global::NetSync.Player_Inputs.Parser, new[]{ "CurrentInputs", "RecentInputs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Input_Command), global::NetSync.Input_Command.Parser, new[]{ "InputTick", "MoveInput", "AimInput", "Flags" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LastProcessedInputTick", "LocomotionState", "RollRemainingTime", "LocomotionSpeed", "Position", "Rotation", "ViewRotation", "VerticalVelocity", "JumpCount", "IsRunning", "IsSprinting", "IsGrounded", "LastMoveDirection" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Snapshot), global::NetSync.Player_Snapshot.Parser, new[]{ "EntityId", "LastProcessedInputTick", "EntityState", "LocomotionSpeed", "IsRunning", "Position", "Rotation", "LastMoveDirection", "VerticalVelocity", "JumpCount", "IsGrounded", "ViewRotation", "SkillId", "RemainTime" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.World_Snapshot), global::NetSync.World_Snapshot.Parser, new[]{ "SnapshotTick", "PlayerSnapshots" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Player_Spawn_Notify), global::NetSync.Player_Spawn_Notify.Parser, new[]{ "EntityId", "EntityTypeId", "PlayerId", "Position", "Rotation", "Snapshot" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NetSync.Entity_Destroy_Notify), global::NetSync.Entity_Destroy_Notify.Parser, new[]{ "EntityId" }, null, null, null, null),
@@ -3172,18 +3171,18 @@ namespace NetSync {
     public Player_Snapshot(Player_Snapshot other) : this() {
       entityId_ = other.entityId_;
       lastProcessedInputTick_ = other.lastProcessedInputTick_;
-      locomotionState_ = other.locomotionState_;
-      rollRemainingTime_ = other.rollRemainingTime_;
+      entityState_ = other.entityState_;
       locomotionSpeed_ = other.locomotionSpeed_;
+      isRunning_ = other.isRunning_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       rotation_ = other.rotation_ != null ? other.rotation_.Clone() : null;
-      viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
+      lastMoveDirection_ = other.lastMoveDirection_ != null ? other.lastMoveDirection_.Clone() : null;
       verticalVelocity_ = other.verticalVelocity_;
       jumpCount_ = other.jumpCount_;
-      isRunning_ = other.isRunning_;
-      isSprinting_ = other.isSprinting_;
       isGrounded_ = other.isGrounded_;
-      lastMoveDirection_ = other.lastMoveDirection_ != null ? other.lastMoveDirection_.Clone() : null;
+      viewRotation_ = other.viewRotation_ != null ? other.viewRotation_.Clone() : null;
+      skillId_ = other.skillId_;
+      remainTime_ = other.remainTime_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3206,7 +3205,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "lastProcessedInputTick" field.</summary>
-    public const int LastProcessedInputTickFieldNumber = 8;
+    public const int LastProcessedInputTickFieldNumber = 2;
     private uint lastProcessedInputTick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3217,35 +3216,23 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "locomotion_state" field.</summary>
-    public const int LocomotionStateFieldNumber = 2;
-    private uint locomotionState_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint LocomotionState {
-      get { return locomotionState_; }
-      set {
-        locomotionState_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "roll_remaining_time" field.</summary>
-    public const int RollRemainingTimeFieldNumber = 16;
-    private float rollRemainingTime_;
+    /// <summary>Field number for the "entity_state" field.</summary>
+    public const int EntityStateFieldNumber = 3;
+    private uint entityState_;
     /// <summary>
-    /// 翻滚剩余模拟时间（秒）
+    /// StateSnapshot
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public float RollRemainingTime {
-      get { return rollRemainingTime_; }
+    public uint EntityState {
+      get { return entityState_; }
       set {
-        rollRemainingTime_ = value;
+        entityState_ = value;
       }
     }
 
     /// <summary>Field number for the "locomotion_speed" field.</summary>
-    public const int LocomotionSpeedFieldNumber = 14;
+    public const int LocomotionSpeedFieldNumber = 4;
     private float locomotionSpeed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3256,9 +3243,24 @@ namespace NetSync {
       }
     }
 
+    /// <summary>Field number for the "is_running" field.</summary>
+    public const int IsRunningFieldNumber = 5;
+    private bool isRunning_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsRunning {
+      get { return isRunning_; }
+      set {
+        isRunning_ = value;
+      }
+    }
+
     /// <summary>Field number for the "position" field.</summary>
-    public const int PositionFieldNumber = 3;
+    public const int PositionFieldNumber = 6;
     private global::NetSync.Vec3 position_;
+    /// <summary>
+    /// MovementSnapshot
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::NetSync.Vec3 Position {
@@ -3269,7 +3271,7 @@ namespace NetSync {
     }
 
     /// <summary>Field number for the "rotation" field.</summary>
-    public const int RotationFieldNumber = 4;
+    public const int RotationFieldNumber = 7;
     private global::NetSync.Quat rotation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3280,15 +3282,15 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "view_rotation" field.</summary>
-    public const int ViewRotationFieldNumber = 5;
-    private global::NetSync.Quat viewRotation_;
+    /// <summary>Field number for the "last_move_direction" field.</summary>
+    public const int LastMoveDirectionFieldNumber = 8;
+    private global::NetSync.Vec3 lastMoveDirection_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.Quat ViewRotation {
-      get { return viewRotation_; }
+    public global::NetSync.Vec3 LastMoveDirection {
+      get { return lastMoveDirection_; }
       set {
-        viewRotation_ = value;
+        lastMoveDirection_ = value;
       }
     }
 
@@ -3316,32 +3318,8 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "is_running" field.</summary>
-    public const int IsRunningFieldNumber = 11;
-    private bool isRunning_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsRunning {
-      get { return isRunning_; }
-      set {
-        isRunning_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "is_sprinting" field.</summary>
-    public const int IsSprintingFieldNumber = 12;
-    private bool isSprinting_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool IsSprinting {
-      get { return isSprinting_; }
-      set {
-        isSprinting_ = value;
-      }
-    }
-
     /// <summary>Field number for the "is_grounded" field.</summary>
-    public const int IsGroundedFieldNumber = 13;
+    public const int IsGroundedFieldNumber = 11;
     private bool isGrounded_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3352,15 +3330,45 @@ namespace NetSync {
       }
     }
 
-    /// <summary>Field number for the "last_move_direction" field.</summary>
-    public const int LastMoveDirectionFieldNumber = 15;
-    private global::NetSync.Vec3 lastMoveDirection_;
+    /// <summary>Field number for the "view_rotation" field.</summary>
+    public const int ViewRotationFieldNumber = 12;
+    private global::NetSync.Quat viewRotation_;
+    /// <summary>
+    /// ViewSnapshot
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NetSync.Vec3 LastMoveDirection {
-      get { return lastMoveDirection_; }
+    public global::NetSync.Quat ViewRotation {
+      get { return viewRotation_; }
       set {
-        lastMoveDirection_ = value;
+        viewRotation_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "skillId" field.</summary>
+    public const int SkillIdFieldNumber = 13;
+    private uint skillId_;
+    /// <summary>
+    /// AbilitySnapshot
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint SkillId {
+      get { return skillId_; }
+      set {
+        skillId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "remainTime" field.</summary>
+    public const int RemainTimeFieldNumber = 14;
+    private float remainTime_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float RemainTime {
+      get { return remainTime_; }
+      set {
+        remainTime_ = value;
       }
     }
 
@@ -3381,18 +3389,18 @@ namespace NetSync {
       }
       if (EntityId != other.EntityId) return false;
       if (LastProcessedInputTick != other.LastProcessedInputTick) return false;
-      if (LocomotionState != other.LocomotionState) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(RollRemainingTime, other.RollRemainingTime)) return false;
+      if (EntityState != other.EntityState) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(LocomotionSpeed, other.LocomotionSpeed)) return false;
+      if (IsRunning != other.IsRunning) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Rotation, other.Rotation)) return false;
-      if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
+      if (!object.Equals(LastMoveDirection, other.LastMoveDirection)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(VerticalVelocity, other.VerticalVelocity)) return false;
       if (JumpCount != other.JumpCount) return false;
-      if (IsRunning != other.IsRunning) return false;
-      if (IsSprinting != other.IsSprinting) return false;
       if (IsGrounded != other.IsGrounded) return false;
-      if (!object.Equals(LastMoveDirection, other.LastMoveDirection)) return false;
+      if (!object.Equals(ViewRotation, other.ViewRotation)) return false;
+      if (SkillId != other.SkillId) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(RemainTime, other.RemainTime)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3402,18 +3410,18 @@ namespace NetSync {
       int hash = 1;
       if (EntityId != 0) hash ^= EntityId.GetHashCode();
       if (LastProcessedInputTick != 0) hash ^= LastProcessedInputTick.GetHashCode();
-      if (LocomotionState != 0) hash ^= LocomotionState.GetHashCode();
-      if (RollRemainingTime != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(RollRemainingTime);
+      if (EntityState != 0) hash ^= EntityState.GetHashCode();
       if (LocomotionSpeed != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(LocomotionSpeed);
+      if (IsRunning != false) hash ^= IsRunning.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (rotation_ != null) hash ^= Rotation.GetHashCode();
-      if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
+      if (lastMoveDirection_ != null) hash ^= LastMoveDirection.GetHashCode();
       if (VerticalVelocity != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(VerticalVelocity);
       if (JumpCount != 0) hash ^= JumpCount.GetHashCode();
-      if (IsRunning != false) hash ^= IsRunning.GetHashCode();
-      if (IsSprinting != false) hash ^= IsSprinting.GetHashCode();
       if (IsGrounded != false) hash ^= IsGrounded.GetHashCode();
-      if (lastMoveDirection_ != null) hash ^= LastMoveDirection.GetHashCode();
+      if (viewRotation_ != null) hash ^= ViewRotation.GetHashCode();
+      if (SkillId != 0) hash ^= SkillId.GetHashCode();
+      if (RemainTime != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(RemainTime);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3436,25 +3444,33 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (LocomotionState != 0) {
+      if (LastProcessedInputTick != 0) {
         output.WriteRawTag(16);
-        output.WriteUInt32(LocomotionState);
+        output.WriteUInt32(LastProcessedInputTick);
+      }
+      if (EntityState != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(EntityState);
+      }
+      if (LocomotionSpeed != 0F) {
+        output.WriteRawTag(37);
+        output.WriteFloat(LocomotionSpeed);
+      }
+      if (IsRunning != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(IsRunning);
       }
       if (position_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(50);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(58);
         output.WriteMessage(Rotation);
       }
-      if (viewRotation_ != null) {
-        output.WriteRawTag(42);
-        output.WriteMessage(ViewRotation);
-      }
-      if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(64);
-        output.WriteUInt32(LastProcessedInputTick);
+      if (lastMoveDirection_ != null) {
+        output.WriteRawTag(66);
+        output.WriteMessage(LastMoveDirection);
       }
       if (VerticalVelocity != 0F) {
         output.WriteRawTag(77);
@@ -3464,29 +3480,21 @@ namespace NetSync {
         output.WriteRawTag(80);
         output.WriteInt32(JumpCount);
       }
-      if (IsRunning != false) {
-        output.WriteRawTag(88);
-        output.WriteBool(IsRunning);
-      }
-      if (IsSprinting != false) {
-        output.WriteRawTag(96);
-        output.WriteBool(IsSprinting);
-      }
       if (IsGrounded != false) {
-        output.WriteRawTag(104);
+        output.WriteRawTag(88);
         output.WriteBool(IsGrounded);
       }
-      if (LocomotionSpeed != 0F) {
+      if (viewRotation_ != null) {
+        output.WriteRawTag(98);
+        output.WriteMessage(ViewRotation);
+      }
+      if (SkillId != 0) {
+        output.WriteRawTag(104);
+        output.WriteUInt32(SkillId);
+      }
+      if (RemainTime != 0F) {
         output.WriteRawTag(117);
-        output.WriteFloat(LocomotionSpeed);
-      }
-      if (lastMoveDirection_ != null) {
-        output.WriteRawTag(122);
-        output.WriteMessage(LastMoveDirection);
-      }
-      if (RollRemainingTime != 0F) {
-        output.WriteRawTag(133, 1);
-        output.WriteFloat(RollRemainingTime);
+        output.WriteFloat(RemainTime);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3502,25 +3510,33 @@ namespace NetSync {
         output.WriteRawTag(8);
         output.WriteUInt32(EntityId);
       }
-      if (LocomotionState != 0) {
+      if (LastProcessedInputTick != 0) {
         output.WriteRawTag(16);
-        output.WriteUInt32(LocomotionState);
+        output.WriteUInt32(LastProcessedInputTick);
+      }
+      if (EntityState != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(EntityState);
+      }
+      if (LocomotionSpeed != 0F) {
+        output.WriteRawTag(37);
+        output.WriteFloat(LocomotionSpeed);
+      }
+      if (IsRunning != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(IsRunning);
       }
       if (position_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(50);
         output.WriteMessage(Position);
       }
       if (rotation_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(58);
         output.WriteMessage(Rotation);
       }
-      if (viewRotation_ != null) {
-        output.WriteRawTag(42);
-        output.WriteMessage(ViewRotation);
-      }
-      if (LastProcessedInputTick != 0) {
-        output.WriteRawTag(64);
-        output.WriteUInt32(LastProcessedInputTick);
+      if (lastMoveDirection_ != null) {
+        output.WriteRawTag(66);
+        output.WriteMessage(LastMoveDirection);
       }
       if (VerticalVelocity != 0F) {
         output.WriteRawTag(77);
@@ -3530,29 +3546,21 @@ namespace NetSync {
         output.WriteRawTag(80);
         output.WriteInt32(JumpCount);
       }
-      if (IsRunning != false) {
-        output.WriteRawTag(88);
-        output.WriteBool(IsRunning);
-      }
-      if (IsSprinting != false) {
-        output.WriteRawTag(96);
-        output.WriteBool(IsSprinting);
-      }
       if (IsGrounded != false) {
-        output.WriteRawTag(104);
+        output.WriteRawTag(88);
         output.WriteBool(IsGrounded);
       }
-      if (LocomotionSpeed != 0F) {
+      if (viewRotation_ != null) {
+        output.WriteRawTag(98);
+        output.WriteMessage(ViewRotation);
+      }
+      if (SkillId != 0) {
+        output.WriteRawTag(104);
+        output.WriteUInt32(SkillId);
+      }
+      if (RemainTime != 0F) {
         output.WriteRawTag(117);
-        output.WriteFloat(LocomotionSpeed);
-      }
-      if (lastMoveDirection_ != null) {
-        output.WriteRawTag(122);
-        output.WriteMessage(LastMoveDirection);
-      }
-      if (RollRemainingTime != 0F) {
-        output.WriteRawTag(133, 1);
-        output.WriteFloat(RollRemainingTime);
+        output.WriteFloat(RemainTime);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -3570,14 +3578,14 @@ namespace NetSync {
       if (LastProcessedInputTick != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LastProcessedInputTick);
       }
-      if (LocomotionState != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LocomotionState);
-      }
-      if (RollRemainingTime != 0F) {
-        size += 2 + 4;
+      if (EntityState != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(EntityState);
       }
       if (LocomotionSpeed != 0F) {
         size += 1 + 4;
+      }
+      if (IsRunning != false) {
+        size += 1 + 1;
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
@@ -3585,8 +3593,8 @@ namespace NetSync {
       if (rotation_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Rotation);
       }
-      if (viewRotation_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ViewRotation);
+      if (lastMoveDirection_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LastMoveDirection);
       }
       if (VerticalVelocity != 0F) {
         size += 1 + 4;
@@ -3594,17 +3602,17 @@ namespace NetSync {
       if (JumpCount != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(JumpCount);
       }
-      if (IsRunning != false) {
-        size += 1 + 1;
-      }
-      if (IsSprinting != false) {
-        size += 1 + 1;
-      }
       if (IsGrounded != false) {
         size += 1 + 1;
       }
-      if (lastMoveDirection_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LastMoveDirection);
+      if (viewRotation_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ViewRotation);
+      }
+      if (SkillId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SkillId);
+      }
+      if (RemainTime != 0F) {
+        size += 1 + 4;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3624,14 +3632,14 @@ namespace NetSync {
       if (other.LastProcessedInputTick != 0) {
         LastProcessedInputTick = other.LastProcessedInputTick;
       }
-      if (other.LocomotionState != 0) {
-        LocomotionState = other.LocomotionState;
-      }
-      if (other.RollRemainingTime != 0F) {
-        RollRemainingTime = other.RollRemainingTime;
+      if (other.EntityState != 0) {
+        EntityState = other.EntityState;
       }
       if (other.LocomotionSpeed != 0F) {
         LocomotionSpeed = other.LocomotionSpeed;
+      }
+      if (other.IsRunning != false) {
+        IsRunning = other.IsRunning;
       }
       if (other.position_ != null) {
         if (position_ == null) {
@@ -3645,11 +3653,11 @@ namespace NetSync {
         }
         Rotation.MergeFrom(other.Rotation);
       }
-      if (other.viewRotation_ != null) {
-        if (viewRotation_ == null) {
-          ViewRotation = new global::NetSync.Quat();
+      if (other.lastMoveDirection_ != null) {
+        if (lastMoveDirection_ == null) {
+          LastMoveDirection = new global::NetSync.Vec3();
         }
-        ViewRotation.MergeFrom(other.ViewRotation);
+        LastMoveDirection.MergeFrom(other.LastMoveDirection);
       }
       if (other.VerticalVelocity != 0F) {
         VerticalVelocity = other.VerticalVelocity;
@@ -3657,20 +3665,20 @@ namespace NetSync {
       if (other.JumpCount != 0) {
         JumpCount = other.JumpCount;
       }
-      if (other.IsRunning != false) {
-        IsRunning = other.IsRunning;
-      }
-      if (other.IsSprinting != false) {
-        IsSprinting = other.IsSprinting;
-      }
       if (other.IsGrounded != false) {
         IsGrounded = other.IsGrounded;
       }
-      if (other.lastMoveDirection_ != null) {
-        if (lastMoveDirection_ == null) {
-          LastMoveDirection = new global::NetSync.Vec3();
+      if (other.viewRotation_ != null) {
+        if (viewRotation_ == null) {
+          ViewRotation = new global::NetSync.Quat();
         }
-        LastMoveDirection.MergeFrom(other.LastMoveDirection);
+        ViewRotation.MergeFrom(other.ViewRotation);
+      }
+      if (other.SkillId != 0) {
+        SkillId = other.SkillId;
+      }
+      if (other.RemainTime != 0F) {
+        RemainTime = other.RemainTime;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3692,32 +3700,40 @@ namespace NetSync {
             break;
           }
           case 16: {
-            LocomotionState = input.ReadUInt32();
+            LastProcessedInputTick = input.ReadUInt32();
             break;
           }
-          case 26: {
+          case 24: {
+            EntityState = input.ReadUInt32();
+            break;
+          }
+          case 37: {
+            LocomotionSpeed = input.ReadFloat();
+            break;
+          }
+          case 40: {
+            IsRunning = input.ReadBool();
+            break;
+          }
+          case 50: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 34: {
+          case 58: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 42: {
-            if (viewRotation_ == null) {
-              ViewRotation = new global::NetSync.Quat();
+          case 66: {
+            if (lastMoveDirection_ == null) {
+              LastMoveDirection = new global::NetSync.Vec3();
             }
-            input.ReadMessage(ViewRotation);
-            break;
-          }
-          case 64: {
-            LastProcessedInputTick = input.ReadUInt32();
+            input.ReadMessage(LastMoveDirection);
             break;
           }
           case 77: {
@@ -3729,30 +3745,22 @@ namespace NetSync {
             break;
           }
           case 88: {
-            IsRunning = input.ReadBool();
-            break;
-          }
-          case 96: {
-            IsSprinting = input.ReadBool();
-            break;
-          }
-          case 104: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 117: {
-            LocomotionSpeed = input.ReadFloat();
-            break;
-          }
-          case 122: {
-            if (lastMoveDirection_ == null) {
-              LastMoveDirection = new global::NetSync.Vec3();
+          case 98: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
             }
-            input.ReadMessage(LastMoveDirection);
+            input.ReadMessage(ViewRotation);
             break;
           }
-          case 133: {
-            RollRemainingTime = input.ReadFloat();
+          case 104: {
+            SkillId = input.ReadUInt32();
+            break;
+          }
+          case 117: {
+            RemainTime = input.ReadFloat();
             break;
           }
         }
@@ -3775,32 +3783,40 @@ namespace NetSync {
             break;
           }
           case 16: {
-            LocomotionState = input.ReadUInt32();
+            LastProcessedInputTick = input.ReadUInt32();
             break;
           }
-          case 26: {
+          case 24: {
+            EntityState = input.ReadUInt32();
+            break;
+          }
+          case 37: {
+            LocomotionSpeed = input.ReadFloat();
+            break;
+          }
+          case 40: {
+            IsRunning = input.ReadBool();
+            break;
+          }
+          case 50: {
             if (position_ == null) {
               Position = new global::NetSync.Vec3();
             }
             input.ReadMessage(Position);
             break;
           }
-          case 34: {
+          case 58: {
             if (rotation_ == null) {
               Rotation = new global::NetSync.Quat();
             }
             input.ReadMessage(Rotation);
             break;
           }
-          case 42: {
-            if (viewRotation_ == null) {
-              ViewRotation = new global::NetSync.Quat();
+          case 66: {
+            if (lastMoveDirection_ == null) {
+              LastMoveDirection = new global::NetSync.Vec3();
             }
-            input.ReadMessage(ViewRotation);
-            break;
-          }
-          case 64: {
-            LastProcessedInputTick = input.ReadUInt32();
+            input.ReadMessage(LastMoveDirection);
             break;
           }
           case 77: {
@@ -3812,30 +3828,22 @@ namespace NetSync {
             break;
           }
           case 88: {
-            IsRunning = input.ReadBool();
-            break;
-          }
-          case 96: {
-            IsSprinting = input.ReadBool();
-            break;
-          }
-          case 104: {
             IsGrounded = input.ReadBool();
             break;
           }
-          case 117: {
-            LocomotionSpeed = input.ReadFloat();
-            break;
-          }
-          case 122: {
-            if (lastMoveDirection_ == null) {
-              LastMoveDirection = new global::NetSync.Vec3();
+          case 98: {
+            if (viewRotation_ == null) {
+              ViewRotation = new global::NetSync.Quat();
             }
-            input.ReadMessage(LastMoveDirection);
+            input.ReadMessage(ViewRotation);
             break;
           }
-          case 133: {
-            RollRemainingTime = input.ReadFloat();
+          case 104: {
+            SkillId = input.ReadUInt32();
+            break;
+          }
+          case 117: {
+            RemainTime = input.ReadFloat();
             break;
           }
         }

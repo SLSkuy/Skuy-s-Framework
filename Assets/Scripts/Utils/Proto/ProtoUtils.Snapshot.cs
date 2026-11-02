@@ -16,19 +16,30 @@ namespace Utils
             return new Player_Snapshot
             {
                 EntityId = entityId,
-                LocomotionState = (uint)state.entityState,
+                LastProcessedInputTick = lastProcessedInputTick,
+                
+                // StateSnapshot
+                EntityState = (uint)state.entityState,
+                LocomotionSpeed = state.locomotionSpeed,
+                IsRunning = state.isRunning,
+                
+                //  MovementSnapshot
                 Position = movement.rootPosition.ToProto(),
                 Rotation = movement.meshRotation.ToProto(),
-                ViewRotation = snapshot.view.viewRotation.ToProto(),
-                // LinearVelocity = movement.rootLinearVelocity.ToProto(),
-                // AngularVelocity = movement.meshAngularVelocity.ToProto(),
-                LastProcessedInputTick = lastProcessedInputTick,
+                LastMoveDirection = movement.lastMoveDirection.ToProto(),
                 VerticalVelocity = movement.verticalVelocity,
                 JumpCount = movement.jumpCount,
-                IsRunning = state.isRunning,
                 IsGrounded = movement.isGrounded,
-                LocomotionSpeed = state.locomotionSpeed,
-                LastMoveDirection = movement.lastMoveDirection.ToProto(),
+                
+                // ViewSnapshot
+                ViewRotation = snapshot.view.viewRotation.ToProto(),
+                
+                // AbilitySnapshot
+                SkillId = snapshot.ability.skillId,
+                RemainTime = snapshot.ability.remainTime,
+                
+                // LinearVelocity = movement.rootLinearVelocity.ToProto(),
+                // AngularVelocity = movement.meshAngularVelocity.ToProto(),
             };
         }
 
@@ -40,7 +51,7 @@ namespace Utils
             {
                 state = new StateSnapshot
                 {
-                    entityState = (EntityState)snapshot.LocomotionState,
+                    entityState = (EntityState)snapshot.EntityState,
                     locomotionSpeed = snapshot.LocomotionSpeed,
                     isRunning = snapshot.IsRunning,
                 },
@@ -60,6 +71,11 @@ namespace Utils
                     viewRotation = viewRotation,
                     yaw = euler.y,
                     pitch = MathUtils.NormalizePitch(euler.x)
+                },
+                ability = new AbilitySnapshot
+                {
+                    skillId = snapshot.SkillId,
+                    remainTime = snapshot.RemainTime,
                 }
             };
         }

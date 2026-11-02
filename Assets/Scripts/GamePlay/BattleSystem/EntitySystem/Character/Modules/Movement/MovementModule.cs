@@ -23,6 +23,7 @@ namespace GamePlay.BattleSystem
         public override ModuleType ModuleType => ModuleType.Movement;
         public Vector3 Position => transform.position;
         public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
+        public Vector3 LastMoveDir => _lastMoveDir;
         // public Vector3 LinearVelocity { get; private set; }
         // public Vector3 AngularVelocity { get; private set; }
         public bool IsGrounded => _isGrounded;

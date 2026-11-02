@@ -11,5 +11,6 @@ namespace GamePlay.BattleSystem
         public StateSnapshot state;
         public MovementSnapshot movement;
         public ViewSnapshot view;
+        public AbilitySnapshot ability;
     }
 }
