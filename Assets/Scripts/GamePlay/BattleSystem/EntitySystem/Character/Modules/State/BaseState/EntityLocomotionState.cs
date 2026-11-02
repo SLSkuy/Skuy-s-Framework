@@ -19,7 +19,7 @@
             Movement.Rotate(LastMoveInput, View.Yaw, dt);
             
             // 角色移动
-            Movement.Move(LastMoveInput, DesiredSpeed, View.Yaw, dt);
+            Movement.Move(LastMoveInput, DesiredSpeed, dt);
         }
 
         /// <summary>
@@ -38,6 +38,24 @@
             if (JumpRequest)
             {
                 Movement.Jump(Config.jumpSpeed, Config.jumpCount);
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// 检测是否转换为技能状态
+        /// </summary>
+        protected bool CheckActionTransition()
+        {
+            if (Context.SkillRequest)
+            {
+                // TODO: 技能ID站位，后续使用技能槽读取获取技能信息
+                if (Ability.TryCastSkill(1))
+                {
+                    _stateMachine.ChangeState(EntityState.ACTION);
+                    return true;
+                }
             }
 
             return false;

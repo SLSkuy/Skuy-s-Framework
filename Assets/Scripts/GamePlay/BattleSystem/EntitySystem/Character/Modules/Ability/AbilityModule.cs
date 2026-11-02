@@ -13,13 +13,16 @@ namespace GamePlay.BattleSystem
 
         private AnimationModule _animation;
         
+        /// <summary>
+        /// 当前释放的技能信息
+        /// </summary>
+        private BaseSkill _castingSkill;
+        
         #region 属性
         public override ModuleType ModuleType => ModuleType.Ability;
-
-        /// <summary> 当前是否正在释放技能 </summary>
-        public bool IsCasting { get; private set; }
-        public BaseSkill CastingSkill { get; private set; }
         
+        /// <summary> 当前是否正在释放技能 </summary>
+        public bool IsCasting => _castingSkill != null;
         /// <summary> 技能当前持续时间 </summary>
         public float SkillRemainingTime { get; private set; }
         #endregion
@@ -32,14 +35,13 @@ namespace GamePlay.BattleSystem
             {
                 if (IsCasting) return false;
                 
-                IsCasting = true;
-                CastingSkill = skillConfig;
+                _castingSkill = skillConfig;
                 
                 // TODO: 优化动画调用逻辑
                 _animation.PlayActionAnimation(new EntityAnimationCommand
                 {
-                    clip = CastingSkill.clip,
-                    duration = CastingSkill.duration,
+                    clip = _castingSkill.clip,
+                    duration = _castingSkill.duration,
                 });
                 
                 return true;
@@ -50,14 +52,13 @@ namespace GamePlay.BattleSystem
 
         public void Tick(float deltaTime)
         {
-            if (SkillRemainingTime < CastingSkill.duration)
+            if (SkillRemainingTime < _castingSkill.duration)
             {
                 SkillRemainingTime += deltaTime;
             }
             else
             {
                 SkillRemainingTime = 0f;
-                IsCasting = false;
             }
         }
 
@@ -78,7 +79,7 @@ namespace GamePlay.BattleSystem
             
             return new AbilitySnapshot
             {
-                skillId = CastingSkill.skillId,
+                skillId = _castingSkill.skillId,
                 remainTime = SkillRemainingTime,
             };
         }
@@ -87,13 +88,13 @@ namespace GamePlay.BattleSystem
         {
             if (_config.TryGetSkillConfig(state.skillId, out BaseSkill skillConfig))
             {
-                CastingSkill = skillConfig;
+                _castingSkill = skillConfig;
                 SkillRemainingTime = state.remainTime;
                 
                 _animation.PlayActionAnimation(new EntityAnimationCommand
                 {
-                    clip = CastingSkill.clip,
-                    duration = CastingSkill.duration,
+                    clip = _castingSkill.clip,
+                    duration = _castingSkill.duration,
                 }, SkillRemainingTime);
             }
         }

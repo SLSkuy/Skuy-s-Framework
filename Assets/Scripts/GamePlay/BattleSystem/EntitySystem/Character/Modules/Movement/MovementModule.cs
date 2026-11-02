@@ -23,7 +23,6 @@ namespace GamePlay.BattleSystem
         public override ModuleType ModuleType => ModuleType.Movement;
         public Vector3 Position => transform.position;
         public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
-        public Vector3 LastMoveDir => _lastMoveDir;
         // public Vector3 LinearVelocity { get; private set; }
         // public Vector3 AngularVelocity { get; private set; }
         public bool IsGrounded => _isGrounded;
@@ -80,12 +79,12 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 位移：平面速度沿 mesh 当前朝向，输入只提供相对 orientation 的目标转向与速度大小
         /// </summary>
-        public void Move(Vector2 inputDir, float speed, float viewYaw, float dt)
+        public void Move(Vector2 inputDir, float speed, float dt)
         {
             if (!_controller) return;
 
             // 更新朝向
-            UpdateLocomotionDir(inputDir, viewYaw);
+            UpdateLocomotionDir(inputDir);
 
             ApplyGravity(dt);
             ApplyMovement(speed, dt);
@@ -104,7 +103,7 @@ namespace GamePlay.BattleSystem
             return true;
         }
 
-        private void UpdateLocomotionDir(Vector2 inputDir, float viewYaw)
+        private void UpdateLocomotionDir(Vector2 inputDir)
         {
             float magnitude = Mathf.Clamp01(inputDir.magnitude);
             if (magnitude <= Mathf.Epsilon)

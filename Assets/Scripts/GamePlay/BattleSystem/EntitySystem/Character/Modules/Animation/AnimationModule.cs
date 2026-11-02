@@ -155,7 +155,7 @@ namespace GamePlay.BattleSystem
         private void UpdateSpeedParam()
         {
             // 动画速度只在表现层平滑，不参与移动模拟或快照恢复
-            float targetSpeed = Context.DesiredSpeed * _movement.LastMoveDir.magnitude; // 神秘手柄输入
+            float targetSpeed = Context.DesiredSpeed * Context.LastMoveInput.magnitude; // 神秘手柄输入
             float smoothTime = Config.animSpeedSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
             _curSpeed = Mathf.Lerp(_curSpeed, targetSpeed, blend);

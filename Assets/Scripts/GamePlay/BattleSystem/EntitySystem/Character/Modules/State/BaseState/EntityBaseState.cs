@@ -34,23 +34,5 @@ namespace GamePlay.BattleSystem
             View = context.Get<ViewModule>();
             Ability = context.Get<AbilityModule>();
         }
-
-        /// <summary>
-        /// 检测是否转换为技能状态
-        /// </summary>
-        protected bool CheckActionTransition()
-        {
-            if (Context.SkillRequest)
-            {
-                // TODO: 技能ID站位，后续使用技能槽读取获取技能信息
-                if (Ability.TryCastSkill(1))
-                {
-                    _stateMachine.ChangeState(EntityState.ACTION);
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }
