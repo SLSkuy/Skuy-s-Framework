@@ -36,6 +36,7 @@ namespace GamePlay.BattleSystem
             _context.AddAbility<EntityStateMachineModule>();
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
+            _context.AddAbility<AbilityModule>();
             MovementModule movement = _context.AddAbility<MovementModule>();
             _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
 
@@ -136,21 +137,14 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 还池时清掉上一场的运动、视角和状态。
         /// </summary>
-        void IPoolable.Reset()
+        public void Reset()
         {
             if (!_isInitialized) return;
             _isInitialized = false;
 
-            _context.LastMoveInput = Vector2.zero;
-            _context.LastAimInput = Vector2.zero;
-            _context.CurrentTick = 0;
-            _context.DesiredSpeed = 0f;
-            _context.JumpRequest = false;
-            _context.RollRequest = false;
-            _context.RollRemainingTime = 0f;
-            _context.IsRunning = false;
-            _context.IsFocus = false;
-
+            // 重置上下文
+            _context.Reset();
+            
             // 清理移动状态
             MovementModule movement = _context.Get<MovementModule>();
             movement.ResetMotion();

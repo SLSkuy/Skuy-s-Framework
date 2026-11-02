@@ -17,7 +17,6 @@ namespace Utils
             {
                 EntityId = entityId,
                 LocomotionState = (uint)state.entityState,
-                RollRemainingTime = state.rollRemainingTime,
                 Position = movement.rootPosition.ToProto(),
                 Rotation = movement.meshRotation.ToProto(),
                 ViewRotation = snapshot.view.viewRotation.ToProto(),
@@ -42,7 +41,6 @@ namespace Utils
                 state = new StateSnapshot
                 {
                     entityState = (EntityState)snapshot.LocomotionState,
-                    rollRemainingTime = snapshot.RollRemainingTime,
                     locomotionSpeed = snapshot.LocomotionSpeed,
                     isRunning = snapshot.IsRunning,
                 },

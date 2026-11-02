@@ -7,12 +7,19 @@
     public abstract class EntityLocomotionState : EntityBaseState
     {
         protected EntityLocomotionState(EntityContext context) : base(context) { }
-
+        
         #region 状态控制
 
         protected override void Tick(float dt)
         {
-            Movement.Move(Context.LastMoveInput, DesiredSpeed, View.Yaw, dt);
+            // 视角旋转
+            View.Look(LastAimInput, dt);
+            
+            // 模型旋转
+            Movement.Rotate(LastMoveInput, View.Yaw, dt);
+            
+            // 角色移动
+            Movement.Move(LastMoveInput, DesiredSpeed, View.Yaw, dt);
         }
 
         /// <summary>
@@ -25,12 +32,6 @@
             if (!IsGrounded)
             {
                 _stateMachine.ChangeState(EntityState.AIRBORNE);
-                return true;
-            }
-
-            if (Context.RollRequest)
-            {
-                _stateMachine.ChangeState(EntityState.ROLL);
                 return true;
             }
 

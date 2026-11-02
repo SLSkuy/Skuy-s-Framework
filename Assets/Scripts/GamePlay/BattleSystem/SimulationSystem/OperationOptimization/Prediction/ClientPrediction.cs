@@ -117,9 +117,8 @@ namespace GamePlay.BattleSystem
         /// </summary>
         private bool CheckThreshold(in EntitySnapshot local, in EntitySnapshot authority)
         {
-            // 翻滚状态比较
+            // 状态比较
             if (local.state.entityState != authority.state.entityState) return false;
-            if (!Mathf.Approximately(local.state.rollRemainingTime, authority.state.rollRemainingTime)) return false;
 
             float positionThreshold = _simulationData.PositionReconcileThreshold;
             Vector3 delta = local.movement.rootPosition - authority.movement.rootPosition;

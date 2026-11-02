@@ -18,6 +18,8 @@ namespace GamePlay.BattleSystem
         protected override void CheckStateChange()
         {
             if (CheckGroundTransitions()) return;
+            
+            if (CheckActionTransition()) return;
 
             // 停止移动 → IDLE；按住 Sprint → SPRINT；toggle 关闭 → WALK；否则留 RUN
             if (LastMoveInput == Vector2.zero) _stateMachine.ChangeState(EntityState.IDLE);

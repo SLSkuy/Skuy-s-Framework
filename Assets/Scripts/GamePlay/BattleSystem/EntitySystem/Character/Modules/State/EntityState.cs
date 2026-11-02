@@ -9,6 +9,6 @@ namespace GamePlay.BattleSystem
         WALK = 1,
         RUN = 2,
         AIRBORNE = 3,
-        ROLL = 4,
+        ACTION = 4,
     }
 }

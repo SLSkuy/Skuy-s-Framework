@@ -40,7 +40,7 @@ namespace GamePlay.BattleSystem
             _stateMachine.RegisterState(new EntityWalkState(Context));
             _stateMachine.RegisterState(new EntityRunState(Context));
             _stateMachine.RegisterState(new EntityAirborneState(Context));
-            _stateMachine.RegisterState(new EntityRollState(Context));
+            _stateMachine.RegisterState(new EntityActionState(Context));
         }
 
         /// <summary>
@@ -56,7 +56,6 @@ namespace GamePlay.BattleSystem
             return new StateSnapshot
             {
                 entityState = CurrentState,
-                rollRemainingTime = Context.RollRemainingTime,
                 locomotionSpeed = Context.DesiredSpeed,
                 isRunning = Context.IsRunning,
                 isFocus = Context.IsFocus,
@@ -69,7 +68,6 @@ namespace GamePlay.BattleSystem
             ChangeState(state.entityState);
             
             // Enter 仅初始化新动作；回滚后覆盖为权威进度，同状态恢复也必须写回
-            Context.RollRemainingTime = state.rollRemainingTime;
             Context.DesiredSpeed = state.locomotionSpeed;
             Context.IsRunning = state.isRunning;
             Context.IsFocus = state.isFocus;

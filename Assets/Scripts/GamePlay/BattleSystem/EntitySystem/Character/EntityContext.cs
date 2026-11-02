@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Framework;
 using UnityEngine;
 using Utils;
 
@@ -8,7 +9,7 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 管理实体能力模块，并保存配置、输入与共享模拟状态。
     /// </summary>
-    public class EntityContext
+    public class EntityContext : IPoolable
     {
         private readonly Dictionary<Type, EntityModuleBase> _modules = new();
         private readonly EntityCharacter _character;
@@ -23,7 +24,9 @@ namespace GamePlay.BattleSystem
 
         #region 瞬时状态
         public bool JumpRequest;
-        public bool RollRequest;
+        
+        /// <summary> 技能释放请求 </summary>
+        public bool SkillRequest;
         #endregion
 
         #region 持续状态
@@ -31,11 +34,6 @@ namespace GamePlay.BattleSystem
         /// 期望速度
         /// </summary>
         public float DesiredSpeed;
-
-        /// <summary>
-        /// 翻滚持续时间
-        /// </summary>
-        public float RollRemainingTime;
         
         public bool IsRunning;
         public bool IsFocus;
@@ -99,7 +97,22 @@ namespace GamePlay.BattleSystem
         public void ResetTickFlags()
         {
             JumpRequest = false;
-            RollRequest = false;
+            SkillRequest = false;
+        }
+
+        public void Reset()
+        {
+            CurrentTick = 0;
+            
+            LastMoveInput = Vector2.zero;
+            LastAimInput = Vector2.zero;
+            
+            DesiredSpeed = 0f;
+            
+            IsRunning = false;
+            IsFocus = false;
+            
+            ResetTickFlags();
         }
     }
 }

@@ -15,7 +15,5 @@ namespace GamePlay.BattleSystem
         
         public float yaw;
         public float pitch;
-        
-        public bool isFocus;
     }
 }

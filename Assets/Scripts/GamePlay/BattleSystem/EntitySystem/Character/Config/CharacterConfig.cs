@@ -34,6 +34,5 @@ namespace GamePlay.BattleSystem
 
         [Header("基础动画控制器")]
         public RuntimeAnimatorController animatorController;
-        [Header("DEBUG")] public AnimationClip roll;
     }
 }

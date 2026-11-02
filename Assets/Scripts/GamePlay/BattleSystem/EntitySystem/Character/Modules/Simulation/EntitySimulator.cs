@@ -11,6 +11,7 @@ namespace GamePlay.BattleSystem
         private readonly EntityStateMachineModule _stateMachine;
         private readonly MovementModule _movement;
         private readonly ViewModule _view;
+        private readonly AbilityModule _ability;
 
         /// <summary>
         /// 创建实体模拟并绑定运行上下文。
@@ -20,6 +21,7 @@ namespace GamePlay.BattleSystem
             _context = context;
             _movement = context.Get<MovementModule>();
             _view = context.Get<ViewModule>();
+            _ability = context.Get<AbilityModule>();
             _stateMachine = context.Get<EntityStateMachineModule>();
         }
 
@@ -33,10 +35,13 @@ namespace GamePlay.BattleSystem
             _context.LastAimInput = command.aim;
             _context.IsRunning = command.IsHeld(EntityCommandFlags.Run);
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
-            _context.RollRequest = command.IsPressed(EntityCommandFlags.Roll);
-
-            _view.Look(command.aim, deltaTime);
-            _movement.Rotate(command.move, _view.Yaw, deltaTime);
+            
+            if (command.IsPressed(EntityCommandFlags.Roll))
+            {
+                _context.SkillRequest = true;
+            }
+            
+            // 能力组件写入状态切换请求，状态机进行状态切换
             _stateMachine.Step(deltaTime);
             _context.ResetTickFlags();
         }
@@ -66,7 +71,6 @@ namespace GamePlay.BattleSystem
             _stateMachine.RestoreSnapshot(state.state);
             _movement.RestoreSnapshot(state.movement);
             _view.RestoreSnapshot(state.view);
-            _context.IsFocus = state.view.isFocus;
             _context.ResetTickFlags();
         }
     }
