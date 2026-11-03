@@ -2,12 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using Framework;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Framework.Editor
+namespace Editor
 {
     public sealed class InstantiateManagerDebugWindow : EditorWindow
     {

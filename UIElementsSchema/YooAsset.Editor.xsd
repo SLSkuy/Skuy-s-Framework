@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="YooAsset.Editor" elementFormDefault="qualified" targetNamespace="YooAsset.Editor" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="UnityEngine.UIElements.xsd" namespace="UnityEngine.UIElements" />
+  <xs:complexType name="ToggleDisplayType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q1="UnityEngine.UIElements" base="q1:ToggleType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ToggleDisplay" xmlns:q2="UnityEngine.UIElements" substitutionGroup="q2:Toggle" type="tns:ToggleDisplayType" />
+  <xs:complexType name="TreeViewerType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q3="UnityEngine.UIElements" base="q3:VisualElementType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="TreeViewer" xmlns:q4="UnityEngine.UIElements" substitutionGroup="q4:VisualElement" type="tns:TreeViewerType" />
+  <xs:complexType name="ReorderableListViewType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q5="UnityEngine.UIElements" base="q5:VisualElementType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ReorderableListView" xmlns:q6="UnityEngine.UIElements" substitutionGroup="q6:VisualElement" type="tns:ReorderableListViewType" />
+  <xs:complexType name="TableViewerType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q7="UnityEngine.UIElements" base="q7:VisualElementType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="TableViewer" xmlns:q8="UnityEngine.UIElements" substitutionGroup="q8:VisualElement" type="tns:TableViewerType" />
+  <xs:complexType name="ToggleRecordType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q9="UnityEngine.UIElements" base="q9:ToggleType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ToggleRecord" xmlns:q10="UnityEngine.UIElements" substitutionGroup="q10:Toggle" type="tns:ToggleRecordType" />
+  <xs:complexType name="ToggleFoldoutType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q11="UnityEngine.UIElements" base="q11:ToggleType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ToggleFoldout" xmlns:q12="UnityEngine.UIElements" substitutionGroup="q12:Toggle" type="tns:ToggleFoldoutType" />
+  <xs:complexType name="ResizeHandleType">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q13="UnityEngine.UIElements" base="q13:VisualElementType">
+        <xs:choice />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ResizeHandle" xmlns:q14="UnityEngine.UIElements" substitutionGroup="q14:VisualElement" type="tns:ResizeHandleType" />
+</xs:schema>

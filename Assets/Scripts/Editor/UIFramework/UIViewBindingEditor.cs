@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Framework;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Build;
@@ -16,7 +17,7 @@ using Image = UnityEngine.UI.Image;
 using Slider = UnityEngine.UI.Slider;
 using Toggle = UnityEngine.UI.Toggle;
 
-namespace Framework.Editor
+namespace Editor
 {
     /// <summary>
     /// 在常用UI组件的Inspector底部画绑定按钮，并把绑定结果生成为界面脚本

@@ -1,0 +1,17 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Assets/Scripts/Editor/AbilityModule/AbilityEditorWindow.uss?fileID=7433441132597879392&amp;guid=f84d6d800c15d284098b86d5be31b125&amp;type=3#AbilityEditorWindow"/>
+    <ui:VisualElement name="Content" style="flex-grow: 1; flex-direction: row;">
+        <ui:VisualElement name="AbilityList" style="flex-grow: 1; align-items: stretch; align-content: flex-start; align-self: auto; flex-direction: row; height: auto; max-width: 300px; min-width: 250px;">
+            <ui:VisualElement name="DataSource" style="flex-grow: 1; flex-direction: row; height: 20px; align-self: stretch; align-items: center; justify-content: flex-start;">
+                <uie:ObjectField label="技能列表" name="SkillTable" style="flex-grow: 1; flex-shrink: 1;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="EditView" style="flex-grow: 4; flex-direction: column; align-content: center; align-self: auto;">
+            <ui:VisualElement name="Edit" style="flex-grow: 1; flex-direction: row; min-height: 400px;">
+                <ui:VisualElement name="Preview" style="flex-grow: 2; min-height: auto; min-width: 500px;"/>
+                <ui:VisualElement name="Properties" style="flex-grow: 1; min-width: 250px;"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="Track" style="flex-grow: 1; align-content: auto; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; flex-direction: row; align-self: auto; min-height: 200px;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

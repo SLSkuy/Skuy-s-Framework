@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Framework.Editor
+namespace Editor
 {
     /// <summary>
     /// Protobuf .proto 文件编译器工具窗口

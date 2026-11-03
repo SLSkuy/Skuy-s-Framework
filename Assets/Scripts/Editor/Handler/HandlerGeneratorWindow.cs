@@ -10,7 +10,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Framework.Editor
+namespace Editor
 {
     /// <summary>
     /// 按项目 Handler 结构生成网络消息收发与事件适配代码。

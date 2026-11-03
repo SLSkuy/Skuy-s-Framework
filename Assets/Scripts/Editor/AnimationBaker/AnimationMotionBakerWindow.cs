@@ -7,7 +7,7 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 
-namespace EditorTools
+namespace Editor
 {
     /// <summary>在独立预览场景中烘焙单个动画的根运动，不依赖角色模拟或网络模块。</summary>
     public class AnimationMotionBakerWindow : EditorWindow
