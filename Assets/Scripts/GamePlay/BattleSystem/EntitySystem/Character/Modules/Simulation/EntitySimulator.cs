@@ -36,12 +36,13 @@ namespace GamePlay.BattleSystem
             _context.IsRunning = command.IsHeld(EntityCommandFlags.Run);
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
             
+            // TODO: 切换成完整的技能释放判断逻辑
             if (command.IsPressed(EntityCommandFlags.Roll))
             {
                 _context.SkillRequest = true;
             }
             
-            // 能力组件写入状态切换请求，状态机进行状态切换
+            // 先推进上一拍已存在的技能，再由状态机处理本拍新施法请求。
             _stateMachine.Step(deltaTime);
             _context.ResetTickFlags();
         }

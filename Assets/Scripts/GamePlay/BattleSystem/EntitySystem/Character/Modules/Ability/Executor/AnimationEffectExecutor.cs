@@ -1,10 +1,18 @@
 ﻿namespace GamePlay.BattleSystem
 {
-    public class AnimationEffectExecutor : ISkillEffectExecutor
+    /// <summary>
+    /// 技能动画效果处理器，处理技能释放期间的所有角色动画播放
+    /// </summary>
+    public class AnimationEffectExecutor : BaseSkillEffectExecutor
     {
-        public void ExecuteSkill(EntitySkill skill)
+        public AnimationEffectExecutor(AbilityModule module) : base(module) { }
+
+        public override void ExecuteSkillEffect(SkillEffect effect)
         {
-            throw new System.NotImplementedException();
+            if (effect is AnimationSkillEffect animationEffect)
+            {
+                
+            }
         }
     }
 }

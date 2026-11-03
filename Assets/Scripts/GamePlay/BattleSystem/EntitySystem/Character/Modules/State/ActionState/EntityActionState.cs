@@ -12,7 +12,7 @@ namespace GamePlay.BattleSystem
 
         protected override void Tick(float deltaTime)
         {
-            // 战斗系统全权交给能力模块处理，不由状态机驱动
+            // Action状态由能力组件内部处理，不再由状态机处理能力
             Ability.Tick(deltaTime);
         }
 

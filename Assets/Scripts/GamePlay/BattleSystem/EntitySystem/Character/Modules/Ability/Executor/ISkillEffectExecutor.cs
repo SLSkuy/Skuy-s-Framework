@@ -2,6 +2,6 @@
 {
     public interface ISkillEffectExecutor
     {
-        void ExecuteSkill(EntitySkill skill);
+        void ExecuteSkillEffect(SkillEffect effect);
     }
 }

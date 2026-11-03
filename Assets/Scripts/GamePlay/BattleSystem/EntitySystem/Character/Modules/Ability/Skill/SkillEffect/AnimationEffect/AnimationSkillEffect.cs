@@ -9,8 +9,8 @@ namespace GamePlay.BattleSystem
     [Serializable]
     public class AnimationSkillEffect : SkillEffect
     {
-        /// <summary> 动画播放层级 </summary>
-        public int layer;
+        //// <summary> 动画播放层级 </summary>
+        // public int layer;    // TODO: 暂不考虑动画播放层级
         
         /// <summary> 采样偏移 </summary>
         public float sampleOffset;
