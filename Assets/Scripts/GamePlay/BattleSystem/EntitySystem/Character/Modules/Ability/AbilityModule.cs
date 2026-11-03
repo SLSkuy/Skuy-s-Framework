@@ -16,7 +16,7 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 当前释放的技能信息
         /// </summary>
-        private BaseSkill _castingSkill;
+        private EntitySkill _castingSkill;
         
         #region 属性
         public override ModuleType ModuleType => ModuleType.Ability;
@@ -31,7 +31,7 @@ namespace GamePlay.BattleSystem
 
         public bool TryCastSkill(uint skillId)
         {
-            if (_config.TryGetSkillConfig(skillId, out BaseSkill skillConfig))
+            if (_config.TryGetSkillConfig(skillId, out EntitySkill skillConfig))
             {
                 if (IsCasting) return false;
                 
@@ -87,7 +87,7 @@ namespace GamePlay.BattleSystem
 
         public override void RestoreSnapshot(in AbilitySnapshot state)
         {
-            if (_config.TryGetSkillConfig(state.skillId, out BaseSkill skillConfig))
+            if (_config.TryGetSkillConfig(state.skillId, out EntitySkill skillConfig))
             {
                 _castingSkill = skillConfig;
                 SkillRemainingTime = state.remainTime;

@@ -13,10 +13,10 @@ namespace GamePlay.DataProxy
         public override string DataPath => "Config_SkillTable";
         public override bool IsNeedSaveToLocal => false;
         
-        private readonly Dictionary<uint, BaseSkill> _skills = new();
+        private readonly Dictionary<uint, EntitySkill> _skills = new();
         private AssetHandle _handle;
         
-        public bool TryGetSkillConfig(uint skillId, out BaseSkill skillConfig)
+        public bool TryGetSkillConfig(uint skillId, out EntitySkill skillConfig)
         {
             return _skills.TryGetValue(skillId, out skillConfig);
         }
@@ -25,7 +25,7 @@ namespace GamePlay.DataProxy
         {
             _handle = Global.Load<SkillTable>(DataPath);
             SkillTable table = _handle.AssetObject as SkillTable;
-            foreach (BaseSkill skill in table.skills)
+            foreach (EntitySkill skill in table.skills)
             {
                 _skills.Add(skill.skillId, skill);
             }
