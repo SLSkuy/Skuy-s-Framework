@@ -12,10 +12,10 @@ namespace GamePlay.BattleSystem
         public uint effectId;
         
         /// <summary> 技能效果释放Tick </summary>
-        public int startTick;
+        public uint startTick;
         
         /// <summary> 技能效果持续Tick </summary>
-        public int durationTicks;
+        public uint durationTicks;
         
         /// <summary> 技能效果排序 </summary>
         public int order;

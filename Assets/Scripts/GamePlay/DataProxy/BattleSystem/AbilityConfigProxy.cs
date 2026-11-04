@@ -27,7 +27,7 @@ namespace GamePlay.DataProxy
             SkillTable table = _handle.AssetObject as SkillTable;
             foreach (EntitySkill skill in table.skills)
             {
-                // ========== DEBUG ==========
+                // TODO: ========== DEBUG ==========
                 if (skill.skillId == 1)
                 {
                     skill.effects = new SkillEffect[]
@@ -40,7 +40,7 @@ namespace GamePlay.DataProxy
                         }
                     };
                 }
-                // ========== DEBUG ==========
+                // TODO: ========== DEBUG ==========
                 
                 _skills.Add(skill.skillId, skill);
             }

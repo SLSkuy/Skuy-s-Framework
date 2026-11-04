@@ -22,7 +22,7 @@ namespace GamePlay.BattleSystem
         public float cost;
         
         /// <summary> 持续时间 </summary>
-        public int durationTicks;
+        public uint durationTicks;
         
         /// <summary> 技能中断规则 </summary>
         public SkillInterruptRule[] interruptRules = Array.Empty<SkillInterruptRule>();

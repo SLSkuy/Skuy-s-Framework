@@ -19,17 +19,14 @@ namespace GamePlay.BattleSystem
         
         /// <summary>所有技能效果执行器，按配置实际类型注册。</summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
+        
+        // TODO: 技能数组
         private SkillInstance _castingSkill;
 
         #region 属性
         public override ModuleType ModuleType => ModuleType.Ability;
-        public SkillInstance CastingSkill => _castingSkill;
-        public bool IsCasting => _castingSkill is { IsRunning: true };
-
-        /// <summary>技能已用时间，由整数 Tick 推导 </summary>
-        public float SkillElapsedTime => _castingSkill?.ElapsedTime ?? 0f;
-        /// <summary>技能剩余时间，由总 Tick 减去已用 Tick 推导 </summary>
-        public float SkillRemainingTime => _castingSkill?.RemainingTime ?? 0f;
+        
+        public bool IsCasting => _castingSkill.IsCasting;
         #endregion
 
         /// <summary>
@@ -37,12 +34,19 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool TryCastSkill(uint skillId)
         {
-            if (IsCasting || !_abilityConfig.TryGetSkillConfig(skillId, out EntitySkill skillConfig)) return false;
+            // TODO: 以技能数组的形式存储冷却系技能
+            if (_castingSkill == null)
+            {
+                if (_abilityConfig.TryGetSkillConfig(skillId, out var skill))
+                {
+                    _castingSkill = new SkillInstance(skill, _simulation.TickRate);
+                    _castingSkill.OnSkillEffectStart += ExecuteSkillEffect;
+                    _castingSkill.OnSkillEffectEnd += StopExecuteSkillEffect;
+                }
+            }
+            // TODO: 技能数组
             
-            SkillInstance instance = CreateInstance(skillConfig);
-            _castingSkill = instance;
-            instance.Cast();
-            return true;
+            return _castingSkill?.TryCastSkill() ?? false;
         }
         
         /// <summary>
@@ -50,18 +54,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool TryInterruptSkill(SkillInterruptReason reason)
         {
-            if (!IsCasting) return false;
-            
-            foreach (SkillInterruptRule rule in _castingSkill.SkillConfig.interruptRules)
-            {
-                // 判断中断原因是否处于中断窗口中
-                if (rule.reason == reason && _castingSkill.ElapsedTicks >= rule.startTick && _castingSkill.ElapsedTicks < rule.endTick)
-                {
-                    Reset();
-                    return true;
-                }
-            }
-            return false;
+            return _castingSkill?.TryInterrupt(reason) ?? false;
         }
 
         public void Tick(float deltaTime)
@@ -73,19 +66,17 @@ namespace GamePlay.BattleSystem
             _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
             
             // 技能效果
-            _castingSkill?.Tick();
+            _castingSkill?.Tick(deltaTime);
         }
 
-        private SkillInstance CreateInstance(EntitySkill skill)
-        {
-            // TODO: 优化技能上下文逻辑，不再每次都创建一个新的动画实例对象
-            SkillInstance instance = new SkillInstance(skill, _simulation.TickRate, DispatchSkillEffect);
-            return instance;
-        }
-
-        private void DispatchSkillEffect(SkillEffect effect)
+        private void ExecuteSkillEffect(SkillEffect effect)
         {
             _executors[effect.GetType()].ExecuteSkillEffect(effect);
+        }
+
+        private void StopExecuteSkillEffect(SkillEffect effect)
+        {
+            _executors[effect.GetType()].StopExecution();
         }
 
         /// <summary>
@@ -100,41 +91,17 @@ namespace GamePlay.BattleSystem
             };
         }
 
-        #region 快照处理
+        #region 快照逻辑
 
         public override AbilitySnapshot CaptureSnapshot()
         {
-            // 没有释放的技能信息，传递空数据
-            if (!IsCasting) return default;
-            
-            return new AbilitySnapshot
-            {
-                skillId = _castingSkill.SkillConfig.skillId,
-                elapsedTime = SkillElapsedTime
-            };
+            // TODO: 完善网络回滚逻辑
+            return default;
         }
 
         public override void RestoreSnapshot(in AbilitySnapshot state)
         {
-            if (state.skillId == 0)
-            {
-                Reset();
-                return;
-            }
-
-            if (!_abilityConfig.TryGetSkillConfig(state.skillId, out var skillConfig))
-            {
-                throw new InvalidOperationException($"技能快照引用未知技能：{state.skillId}");
-            }
-            
-            // 恢复技能状态
-            SkillInstance instance = CreateInstance(skillConfig);
-            int elapsedTicks = AbilityUtils.SecondsToTicks(state.elapsedTime, _simulation.TickRate);
-            instance.RestoreProgress(elapsedTicks);
-            
-            // 中断当前技能
-            Reset();
-            _castingSkill = instance;
+            // TODO: 完善网络回滚逻辑
         }
 
         #endregion
@@ -148,22 +115,8 @@ namespace GamePlay.BattleSystem
             _viewModule = Context.Get<ViewModule>();
         }
 
-        protected override void OnUnbound(EntityCharacter oldTarget)
-        {
-            Reset();
-            _executors.Clear();
-        }
-
-        protected override void OnEnabledChanged(bool isEnabled)
-        {
-            if (!isEnabled) Reset();
-        }
-        
         public override void Reset()
         {
-            _castingSkill?.Interrupt();
-            _castingSkill = null;
-
             if (_executors != null)
             {
                 foreach (ISkillEffectExecutor executor in _executors.Values) executor.StopExecution();
