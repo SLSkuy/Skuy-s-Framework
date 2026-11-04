@@ -17,9 +17,10 @@ MonoBehaviour:
     skillName: Roll
     cooldown: 0
     cost: 0
-    durationTicks: 0
+    durationTicks: 65
     interruptRules: []
     effects: []
+    clip: {fileID: 7400000, guid: b1edb12813a329e43babae80ee3cbc23, type: 2}
   references:
     version: 2
     RefIds: []

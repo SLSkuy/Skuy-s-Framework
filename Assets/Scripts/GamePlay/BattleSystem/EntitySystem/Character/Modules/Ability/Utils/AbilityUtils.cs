@@ -17,6 +17,13 @@ namespace GamePlay.BattleSystem
             return checked((int)Math.Round(seconds * tickRate, MidpointRounding.AwayFromZero));
         }
 
+        public static float TicksToSeconds(double ticks, int tickRate)
+        {
+            if (double.IsNaN(ticks) || double.IsInfinity(ticks) || ticks < 0 || tickRate <= 0)
+                throw new ArgumentOutOfRangeException(nameof(ticks), "Tick时间需有限且非负，需为正");
+            return (float)ticks / tickRate;
+        }
+
         /// <summary>
         /// 分别量化起终点，正时长不足一个 Tick 时拒绝
         /// </summary>

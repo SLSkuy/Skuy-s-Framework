@@ -6,6 +6,6 @@ namespace GamePlay.BattleSystem
     public struct AbilitySnapshot
     {
         public uint skillId;
-        public float remainTime;
+        public float elapsedTime;
     }
 }

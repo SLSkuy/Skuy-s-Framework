@@ -10,6 +10,12 @@ namespace GamePlay.BattleSystem
         public override EntityState StateKey => EntityState.ACTION;
         #endregion
 
+        public override void Exit()
+        {
+            // 确保技能结束
+            Ability.Reset();
+        }
+
         protected override void Tick(float deltaTime)
         {
             // Action状态由能力组件内部处理，不再由状态机处理能力

@@ -3,5 +3,6 @@
     public interface ISkillEffectExecutor
     {
         void ExecuteSkillEffect(SkillEffect effect);
+        void StopExecution();
     }
 }

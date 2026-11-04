@@ -38,7 +38,7 @@ namespace Utils
                 
                 // AbilitySnapshot
                 SkillId = snapshot.ability.skillId,
-                RemainTime = snapshot.ability.remainTime,
+                RemainTime = snapshot.ability.elapsedTime,
                 
                 // LinearVelocity = movement.rootLinearVelocity.ToProto(),
                 // AngularVelocity = movement.meshAngularVelocity.ToProto(),
@@ -79,7 +79,7 @@ namespace Utils
                 ability = new AbilitySnapshot
                 {
                     skillId = snapshot.SkillId,
-                    remainTime = snapshot.RemainTime,
+                    elapsedTime = snapshot.RemainTime,
                 }
             };
         }

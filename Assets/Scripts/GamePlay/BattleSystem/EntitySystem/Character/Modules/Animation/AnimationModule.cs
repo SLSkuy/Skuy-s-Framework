@@ -46,29 +46,29 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 播放一次性动画，传入开始事件后立刻从某一进度开始播放动画
         /// </summary>
-        public void PlayActionAnimation(in EntityAnimationCommand command, float startTime = 0)
+        public void PlayActionAnimation(in EntityAnimationCommand command)
         {
             if (_action.IsValid() && _action.GetAnimationClip() == command.clip)
             {
                 // 当前与目标相同，设置播放进度
-                _action.SetTime(startTime);
+                _action.SetTime(command.sampleOffset);
                 return;
             }
             
             InterruptActionAnimation();
             
-            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration, startTime));
+            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration, command.sampleOffset));
         }
 
-        private IEnumerator TransitionAnimation(AnimationClip clip, float duration, float startTime = 0f)
+        private IEnumerator TransitionAnimation(AnimationClip clip, float duration, float sampleOffset = 0f)
         {
             _action = AnimationClipPlayable.Create(_graph, clip);
-            _action.SetTime(startTime);
+            _action.SetTime(sampleOffset);
             _topMixer.ConnectInput(ACTION_PORT, _action, 0);
 
             // duration 包含淡入和淡出；短动作将两段过渡等比例缩短
             float blendTime = Mathf.Min(TRANSITION_TIME, duration * 0.5f);
-            float elapsed = startTime;
+            float elapsed = sampleOffset;
             while (elapsed < duration)
             {
                 float blendIn = Mathf.Clamp01(elapsed / blendTime);
@@ -85,7 +85,10 @@ namespace GamePlay.BattleSystem
             InterruptActionAnimation();
         }
 
-        private void InterruptActionAnimation()
+        /// <summary>
+        /// 中断当前播放的一次性动画
+        /// </summary>
+        public void InterruptActionAnimation()
         {
             if (_actionTransition != null)
             {

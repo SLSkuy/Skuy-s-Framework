@@ -15,8 +15,8 @@ namespace GamePlay.BattleSystem
         /// <summary> 采样偏移 </summary>
         public float sampleOffset;
         
-        /// <summary> 动画过渡时间 </summary>
-        public float transitionTime = 0.15f;
+        //// <summary> 动画过渡时间 </summary>
+        // public float transitionTime = 0.15f;
         
         /// <summary> 动画片段源文件 </summary>
         public AnimationClip clip;

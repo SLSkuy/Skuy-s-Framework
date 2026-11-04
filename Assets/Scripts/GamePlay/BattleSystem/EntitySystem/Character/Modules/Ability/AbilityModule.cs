@@ -11,9 +11,12 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class AbilityModule : EntitySnapshotModuleBase<AbilitySnapshot>
     {
-        private readonly AbilityConfigProxy _config = Global.GetDataProxy<AbilityConfigProxy>();
+        private readonly AbilityConfigProxy _abilityConfig = Global.GetDataProxy<AbilityConfigProxy>();
         private readonly SimulationDataProxy _simulation = Global.GetDataProxy<SimulationDataProxy>();
 
+        private MovementModule _movementModule;
+        private ViewModule _viewModule;
+        
         /// <summary>所有技能效果执行器，按配置实际类型注册。</summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
         private SkillInstance _castingSkill;
@@ -23,26 +26,28 @@ namespace GamePlay.BattleSystem
         public SkillInstance CastingSkill => _castingSkill;
         public bool IsCasting => _castingSkill is { IsRunning: true };
 
-        /// <summary>技能已用时间，由整数 Tick 推导。</summary>
+        /// <summary>技能已用时间，由整数 Tick 推导 </summary>
         public float SkillElapsedTime => _castingSkill?.ElapsedTime ?? 0f;
-        /// <summary>技能剩余时间，由总 Tick 减去已用 Tick 推导。</summary>
+        /// <summary>技能剩余时间，由总 Tick 减去已用 Tick 推导 </summary>
         public float SkillRemainingTime => _castingSkill?.RemainingTime ?? 0f;
         #endregion
 
-        /// <summary>单主动技能释放；校验全部效果后创建实例并派发零时刻效果。</summary>
+        /// <summary>
+        /// 单主动技能释放；校验全部效果后创建实例并派发零时刻效果
+        /// </summary>
         public bool TryCastSkill(uint skillId)
         {
-            if (IsCasting && _config.TryGetSkillConfig(skillId, out EntitySkill skillConfig))
-            {
-                SkillInstance instance = CreateInstance(skillConfig);
-                _castingSkill = instance;
-                instance.Cast();
-            }
+            if (IsCasting || !_abilityConfig.TryGetSkillConfig(skillId, out EntitySkill skillConfig)) return false;
             
-            return false;
+            SkillInstance instance = CreateInstance(skillConfig);
+            _castingSkill = instance;
+            instance.Cast();
+            return true;
         }
         
-        /// <summary>普通中断只在配置的半开窗口内允许。</summary>
+        /// <summary>
+        /// 尝试中断技能，只有在中断窗口中才能进行中断
+        /// </summary>
         public bool TryInterruptSkill(SkillInterruptReason reason)
         {
             if (!IsCasting) return false;
@@ -59,14 +64,21 @@ namespace GamePlay.BattleSystem
             return false;
         }
 
-        /// <summary>由 EntitySimulator 每个固定模拟步调用一次</summary>
         public void Tick(float deltaTime)
         {
+            // 视角旋转
+            _viewModule.Look(Context.LastAimInput, deltaTime);
+            
+            // 模型旋转
+            _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
+            
+            // 技能效果
             _castingSkill?.Tick();
         }
 
         private SkillInstance CreateInstance(EntitySkill skill)
         {
+            // TODO: 优化技能上下文逻辑，不再每次都创建一个新的动画实例对象
             SkillInstance instance = new SkillInstance(skill, _simulation.TickRate, DispatchSkillEffect);
             return instance;
         }
@@ -76,13 +88,15 @@ namespace GamePlay.BattleSystem
             _executors[effect.GetType()].ExecuteSkillEffect(effect);
         }
 
-        /// <summary>初始化所有技能效果执行器；根运动尚未实现，不注册。</summary>
+        /// <summary>
+        /// 初始化所有技能效果执行器
+        /// </summary>
         private void InitExecutors()
         {
             _executors = new Dictionary<Type, ISkillEffectExecutor>
             {
-                { typeof(AnimationSkillEffect), new AnimationEffectExecutor(this) },
-                { typeof(MoveSkillEffect), new LocomotionEffectExecutor(this) }
+                { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
+                { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) }
             };
         }
 
@@ -96,7 +110,7 @@ namespace GamePlay.BattleSystem
             return new AbilitySnapshot
             {
                 skillId = _castingSkill.SkillConfig.skillId,
-                remainTime = SkillElapsedTime
+                elapsedTime = SkillElapsedTime
             };
         }
 
@@ -108,14 +122,14 @@ namespace GamePlay.BattleSystem
                 return;
             }
 
-            if (!_config.TryGetSkillConfig(state.skillId, out var skillConfig))
+            if (!_abilityConfig.TryGetSkillConfig(state.skillId, out var skillConfig))
             {
                 throw new InvalidOperationException($"技能快照引用未知技能：{state.skillId}");
             }
             
             // 恢复技能状态
             SkillInstance instance = CreateInstance(skillConfig);
-            int elapsedTicks = AbilityUtils.SecondsToTicks(state.remainTime, _simulation.TickRate);
+            int elapsedTicks = AbilityUtils.SecondsToTicks(state.elapsedTime, _simulation.TickRate);
             instance.RestoreProgress(elapsedTicks);
             
             // 中断当前技能
@@ -129,6 +143,9 @@ namespace GamePlay.BattleSystem
         {
             Reset();
             InitExecutors();
+            
+            _movementModule = Context.Get<MovementModule>();
+            _viewModule = Context.Get<ViewModule>();
         }
 
         protected override void OnUnbound(EntityCharacter oldTarget)
@@ -146,6 +163,11 @@ namespace GamePlay.BattleSystem
         {
             _castingSkill?.Interrupt();
             _castingSkill = null;
+
+            if (_executors != null)
+            {
+                foreach (ISkillEffectExecutor executor in _executors.Values) executor.StopExecution();
+            }
         }
     }
 }

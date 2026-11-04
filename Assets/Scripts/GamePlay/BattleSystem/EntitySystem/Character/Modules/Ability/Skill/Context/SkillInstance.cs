@@ -7,7 +7,12 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class SkillInstance
     {
-        private Action<SkillEffect> _skillExecutor;
+        private readonly Action<SkillEffect> _skillExecutor;
+
+        /// <summary>
+        /// 下一个技能效果
+        /// </summary>
+        private int _nextEffectIndex;
         
         #region 属性
         /// <summary> 当前释放中的技能配置信息 </summary>
@@ -40,6 +45,9 @@ namespace GamePlay.BattleSystem
             if(State != SkillState.Created) throw new InvalidOperationException("施法实例只能启动一次");
             
             State = SkillState.Running;
+            
+            // 触发0Tick时的效果，不然由Tick驱动会慢一Tick
+            DispatchEffect();
         }
         
         /// <summary>
@@ -56,14 +64,30 @@ namespace GamePlay.BattleSystem
             if(!IsRunning) return;
             
             ElapsedTicks++;
+            DispatchEffect();
+            
+            // 执行窗口[startTick, startTick + durationTick]
+            // durationTick == 0/1 效果一致，至少会经过一个Tick
+            if (ElapsedTicks >= SkillConfig.durationTicks) State = SkillState.Completed;
         }
 
         /// <summary>
-        /// 派发技能效果
+        /// 派发技能效果，检测是否有技能效果达到了播放窗口
         /// </summary>
-        private void DispatchEffect(SkillEffect effect)
+        private void DispatchEffect()
         {
-            _skillExecutor(effect);
+            SkillEffect[] effects = SkillConfig.effects;
+            
+            while (IsRunning && _nextEffectIndex < effects.Length)
+            {
+                // TODO: SkillEffect需要按照 startTick -> order 排序
+                SkillEffect effect = effects[_nextEffectIndex];
+                if (effect.startTick > ElapsedTicks) break;
+
+                // 先推进游标，避免效果回调导致重复派发
+                _nextEffectIndex++;
+                _skillExecutor(effect);
+            }
         }
 
         /// <summary>

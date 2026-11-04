@@ -5,7 +5,7 @@
     /// </summary>
     public class LocomotionEffectExecutor : BaseSkillEffectExecutor
     {
-        public LocomotionEffectExecutor(AbilityModule module) : base(module) { }
+        public LocomotionEffectExecutor(EntityContext context) : base(context) { }
 
         public override void ExecuteSkillEffect(SkillEffect effect)
         {
@@ -18,6 +18,11 @@
             {
                 
             }
+        }
+
+        public override void StopExecution()
+        {
+            
         }
     }
 }
