@@ -43,7 +43,6 @@ namespace GamePlay.DataProxy
                             speed = 4,
                             startTick = 0,
                             durationTicks = skill.durationTicks,
-                            directionPolicy = SkillLocomotionDirectionPolicy.MeshForward,
                         }
                     };
                 }

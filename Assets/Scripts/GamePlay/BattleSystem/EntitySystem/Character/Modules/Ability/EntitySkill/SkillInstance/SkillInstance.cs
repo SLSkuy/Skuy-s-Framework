@@ -96,11 +96,14 @@ namespace GamePlay.BattleSystem
         {
             if (State == SkillState.Casting)
             {
-                // 更新轨道
-                _track.Tick();    
-                
-                // 调度当前Skill所需要的执行器
-                foreach(var executor in _requireExecutors) executor.Tick(deltaTime);
+                // 执行当前区间 [ElapsedTicks, ElapsedTicks + 1) 的技能效果
+                foreach (ISkillEffectExecutor executor in _requireExecutors)
+                {
+                    executor.Tick(deltaTime);
+                }
+
+                // 区间执行完成后推进轨道，处理下一边界的开始与结束事件
+                _track.Tick();
             }
         }
 

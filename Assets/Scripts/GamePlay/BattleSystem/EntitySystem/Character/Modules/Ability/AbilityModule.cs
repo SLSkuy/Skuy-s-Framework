@@ -95,7 +95,7 @@ namespace GamePlay.BattleSystem
             {
                 if (_abilityConfig.TryGetSkillConfig(id, out SkillConfig config))
                 {
-                    executors.AddRange(config.effects.Select(effect => _executors[effect.GetType()]));
+                    executors.AddRange(config.effects.Select(effect => _executors[effect.GetType()]).Distinct());
 
                     SkillInstance instance = new SkillInstance(config, executors.ToArray(), tickRate);
                     instance.OnSkillEffectStart += ExecuteSkillEffect;

@@ -77,14 +77,14 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 位移：平面速度沿 mesh 当前朝向，输入只提供相对 orientation 的目标转向与速度大小
+        /// 位移：平面速度沿 mesh 当前朝向，输入仅提供移动幅度，转向由 Rotate 处理
         /// </summary>
         public void Move(Vector2 inputDir, float speed, float dt)
         {
             if (!_controller) return;
 
-            // 更新朝向
-            UpdateLocomotionDir(inputDir);
+            // 按输入幅度计算沿模型朝向的移动向量
+            UpdateMoveDirVector(inputDir);
 
             ApplyGravity(dt);
             ApplyMovement(speed, dt);
@@ -103,9 +103,12 @@ namespace GamePlay.BattleSystem
             return true;
         }
 
-        private void UpdateLocomotionDir(Vector2 inputDir)
+        /// <summary>
+        /// 沿模型水平朝向计算移动向量，输入仅提供幅度，决定应用的速度程度，不决定方向
+        /// </summary>
+        private void UpdateMoveDirVector(Vector2 input)
         {
-            float magnitude = Mathf.Clamp01(inputDir.magnitude);
+            float magnitude = Mathf.Clamp01(input.magnitude);
             if (magnitude <= Mathf.Epsilon)
             {
                 _lastMoveDir = Vector3.zero;

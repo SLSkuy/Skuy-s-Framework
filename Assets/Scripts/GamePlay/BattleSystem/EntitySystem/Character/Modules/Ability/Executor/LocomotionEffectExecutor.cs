@@ -8,18 +8,14 @@ namespace GamePlay.BattleSystem
     public class LocomotionEffectExecutor : BaseSkillEffectExecutor
     {
         private readonly MovementModule _movement;
-        private readonly ViewModule _view;
 
-        #region 程序控制移动
+        /// <summary> 程序控制移动状态 </summary>
         private float _speed;
         private bool _isMoving;
-        private SkillLocomotionDirectionPolicy _directionPolicy;
-        #endregion
 
         public LocomotionEffectExecutor(EntityContext context) : base(context)
         {
             _movement = context.Get<MovementModule>();
-            _view = context.Get<ViewModule>();
         }
 
         public override void ExecuteSkillEffect(SkillEffect effect)
@@ -49,16 +45,7 @@ namespace GamePlay.BattleSystem
         {
             if (_isMoving)
             {
-                switch (_directionPolicy)
-                {
-                    case SkillLocomotionDirectionPolicy.None:
-                        _movement.Move(_context.LastMoveInput, _speed, deltaTime);
-                        break;
-                    case SkillLocomotionDirectionPolicy.MeshForward:
-                        break;
-                    case SkillLocomotionDirectionPolicy.CameraForward:
-                        break;
-                }
+                _movement.Move(Vector2.up, _speed, deltaTime);
             }
         }
     }
