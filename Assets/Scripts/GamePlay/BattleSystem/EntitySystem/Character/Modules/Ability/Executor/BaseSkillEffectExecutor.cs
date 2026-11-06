@@ -15,5 +15,7 @@
         /// 结束/中断技能效果的执行
         /// </summary>
         public abstract void StopExecution();
+        
+        public virtual void Tick(float deltaTime) { }
     }
 }

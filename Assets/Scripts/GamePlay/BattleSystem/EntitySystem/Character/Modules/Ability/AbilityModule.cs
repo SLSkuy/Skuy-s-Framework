@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Framework;
 using GamePlay.DataProxy;
 
@@ -89,14 +90,19 @@ namespace GamePlay.BattleSystem
             _skillInstances = new Dictionary<uint, SkillInstance>();
             int tickRate = _simulation.TickRate;
             
+            List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
             foreach (uint id in Config.skillIds)
             {
                 if (_abilityConfig.TryGetSkillConfig(id, out SkillConfig config))
                 {
-                    SkillInstance instance = new SkillInstance(config, tickRate);
+                    executors.AddRange(config.effects.Select(effect => _executors[effect.GetType()]));
+
+                    SkillInstance instance = new SkillInstance(config, executors.ToArray(), tickRate);
                     instance.OnSkillEffectStart += ExecuteSkillEffect;
                     instance.OnSkillEffectEnd += StopExecuteSkillEffect;
                     _skillInstances.Add(id, instance);
+                    
+                    executors.Clear();
                 }
             }
         }

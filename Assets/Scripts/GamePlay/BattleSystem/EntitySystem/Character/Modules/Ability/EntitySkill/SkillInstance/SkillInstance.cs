@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Framework;
 
 namespace GamePlay.BattleSystem
@@ -9,6 +10,9 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class SkillInstance : IDisposable, IPoolable
     {
+        /// <summary> 当前技能执行所需要的执行器，只Tick调度这些执行器 </summary>
+        private readonly IReadOnlyCollection<ISkillEffectExecutor> _requireExecutors;
+        
         /// <summary> 技能释放轨道，存储Tick级的技能事件信息 </summary>
         private readonly SkillTrack _track;
         /// <summary> 只读技能配置信息 </summary>
@@ -51,9 +55,10 @@ namespace GamePlay.BattleSystem
         public event Action<SkillEffect> OnSkillEffectEnd;
         #endregion
 
-        public SkillInstance(SkillConfig skillConfig, int tickRate)
+        public SkillInstance(SkillConfig skillConfig, IReadOnlyCollection<ISkillEffectExecutor> executors, int tickRate)
         {
             _config = skillConfig;
+            _requireExecutors = executors;
             
             _track = new SkillTrack(skillConfig, tickRate);
             _track.OnInterrupt += SkillFinished;
@@ -89,8 +94,14 @@ namespace GamePlay.BattleSystem
 
         public void Tick(float deltaTime)
         {
-            // 更新轨道
-            _track.Tick();
+            if (State == SkillState.Casting)
+            {
+                // 更新轨道
+                _track.Tick();    
+                
+                // 调度当前Skill所需要的执行器
+                foreach(var executor in _requireExecutors) executor.Tick(deltaTime);
+            }
         }
 
         /// <summary>

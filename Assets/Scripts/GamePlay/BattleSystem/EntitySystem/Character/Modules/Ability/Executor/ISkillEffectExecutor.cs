@@ -4,5 +4,7 @@
     {
         void ExecuteSkillEffect(SkillEffect effect);
         void StopExecution();
+        
+        void Tick(float deltaTime);
     }
 }

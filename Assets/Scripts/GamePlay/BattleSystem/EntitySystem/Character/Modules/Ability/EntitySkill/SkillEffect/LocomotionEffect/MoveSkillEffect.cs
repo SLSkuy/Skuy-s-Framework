@@ -11,6 +11,9 @@ namespace GamePlay.BattleSystem
         /// <summary> 位移速度 </summary>
         public float speed;
         
+        /// <summary> 技能移动方向策略 </summary>
+        public SkillLocomotionDirectionPolicy directionPolicy;
+        
         /// <summary> 技能碰撞策略 </summary>
         public SkillLocomotionCollisionPolicy collisionPolicy;
     }

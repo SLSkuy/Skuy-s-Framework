@@ -17,8 +17,8 @@ namespace GamePlay.BattleSystem
         /// <summary> 技能效果持续Tick </summary>
         public uint durationTicks;
         
-        /// <summary> 技能效果排序 </summary>
-        public int order;
+        //// <summary> 技能效果排序 </summary>
+        // public int order;
         
         /// <summary> 技能效果结束策略 </summary>
         public SkillEffectEndPolicy endPolicy;

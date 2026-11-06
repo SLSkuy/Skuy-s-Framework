@@ -37,6 +37,13 @@ namespace GamePlay.DataProxy
                             clip = skill.clip,
                             startTick = 0,
                             durationTicks = skill.durationTicks,
+                        },
+                        new MoveSkillEffect
+                        {
+                            speed = 4,
+                            startTick = 0,
+                            durationTicks = skill.durationTicks,
+                            directionPolicy = SkillLocomotionDirectionPolicy.MeshForward,
                         }
                     };
                 }
