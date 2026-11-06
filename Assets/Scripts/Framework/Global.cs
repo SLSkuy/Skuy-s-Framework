@@ -15,6 +15,11 @@ namespace Framework
         private static readonly Dictionary<Type, ISubSystem> SubSystems = new();
         private static readonly Dictionary<Type, IHandler> Handlers = new();
 
+        #region 属性
+        /// <summary> 当前程序已经运行了的时间 </summary>
+        public static double CurrentTime => GetCurrentTime();
+        #endregion
+
         /// <summary>
         /// 由 SubSystemBase 内部调用，外部不应直接使用
         /// </summary>
@@ -224,6 +229,20 @@ namespace Framework
             Get<SceneLoader>().LoadScene(sceneName);
         }
 
+        #region 时间管理
+
+        /// <summary>
+        /// 获取当前程序已经运行过的时间
+        /// </summary>
+        public static double GetCurrentTime()
+        {
+            return Get<TimeManager>().AppTime;
+        }
+
+        #endregion
+
+        #region UI管理
+        
         /// <summary>
         /// 显示UI
         /// </summary>
@@ -255,16 +274,9 @@ namespace Framework
             Get<UIManager>().HideAllUI();
         }
 
-        /// <summary>
-        /// 程序退出时清理所有注册
-        /// </summary>
-        public static void Clear()
-        {
-            foreach (IHandler handler in Handlers.Values) handler.Unbind();
-            Handlers.Clear();
-            SubSystems.Clear();
-        }
-
+        
+        #endregion
+        
         #region 本地存储
 
         public static bool LoadJson<T>(string fileName, out T data)
@@ -278,5 +290,15 @@ namespace Framework
         }
 
         #endregion
+        
+        /// <summary>
+        /// 程序退出时清理所有注册
+        /// </summary>
+        public static void Clear()
+        {
+            foreach (IHandler handler in Handlers.Values) handler.Unbind();
+            Handlers.Clear();
+            SubSystems.Clear();
+        }
     }
 }

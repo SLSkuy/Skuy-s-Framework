@@ -17,16 +17,18 @@ namespace GamePlay.BattleSystem
         private MovementModule _movementModule;
         private ViewModule _viewModule;
         
-        /// <summary>所有技能效果执行器，按配置实际类型注册。</summary>
+        /// <summary> 所有技能效果执行器，按配置实际类型注册 </summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
         
-        // TODO: 技能数组
-        private SkillInstance _castingSkill;
+        /// <summary> 实体技能示例，创建时进行注册 </summary>
+        private Dictionary<uint, SkillInstance> _skillInstances;
+        private SkillInstance _currentSkill;
 
         #region 属性
         public override ModuleType ModuleType => ModuleType.Ability;
-        
-        public bool IsCasting => _castingSkill.IsCasting;
+
+        /// <summary> 是否正在释放技能 </summary>
+        public bool IsCasting => _currentSkill is { IsCasting : true };
         #endregion
 
         /// <summary>
@@ -34,19 +36,17 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool TryCastSkill(uint skillId)
         {
-            // TODO: 以技能数组的形式存储冷却系技能
-            if (_castingSkill == null)
+            // 不存在技能配置
+            if (!_skillInstances.TryGetValue(skillId, out SkillInstance instance))
             {
-                if (_abilityConfig.TryGetSkillConfig(skillId, out var skill))
-                {
-                    _castingSkill = new SkillInstance(skill, _simulation.TickRate);
-                    _castingSkill.OnSkillEffectStart += ExecuteSkillEffect;
-                    _castingSkill.OnSkillEffectEnd += StopExecuteSkillEffect;
-                }
+                // TODO: 添加日志处理类，自定义DEBUG信息
+                return false;
             }
-            // TODO: 技能数组
+
+            if (!instance.TryCastSkill()) return false;
             
-            return _castingSkill?.TryCastSkill() ?? false;
+            _currentSkill = instance;
+            return true;
         }
         
         /// <summary>
@@ -54,7 +54,7 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool TryInterruptSkill(SkillInterruptReason reason)
         {
-            return _castingSkill?.TryInterrupt(reason) ?? false;
+            return _currentSkill?.TryInterrupt(reason) ?? false;
         }
 
         public void Tick(float deltaTime)
@@ -66,19 +66,9 @@ namespace GamePlay.BattleSystem
             _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
             
             // 技能效果
-            _castingSkill?.Tick(deltaTime);
+            _currentSkill?.Tick(deltaTime);
         }
-
-        private void ExecuteSkillEffect(SkillEffect effect)
-        {
-            _executors[effect.GetType()].ExecuteSkillEffect(effect);
-        }
-
-        private void StopExecuteSkillEffect(SkillEffect effect)
-        {
-            _executors[effect.GetType()].StopExecution();
-        }
-
+        
         /// <summary>
         /// 初始化所有技能效果执行器
         /// </summary>
@@ -89,6 +79,36 @@ namespace GamePlay.BattleSystem
                 { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
                 { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) }
             };
+        }
+
+        /// <summary>
+        /// 初始化当前实体能够执行的所有技能
+        /// </summary>
+        private void InitSkills()
+        {
+            _skillInstances = new Dictionary<uint, SkillInstance>();
+            int tickRate = _simulation.TickRate;
+            
+            foreach (uint id in Config.skillIds)
+            {
+                if (_abilityConfig.TryGetSkillConfig(id, out SkillConfig config))
+                {
+                    SkillInstance instance = new SkillInstance(config, tickRate);
+                    instance.OnSkillEffectStart += ExecuteSkillEffect;
+                    instance.OnSkillEffectEnd += StopExecuteSkillEffect;
+                    _skillInstances.Add(id, instance);
+                }
+            }
+        }
+        
+        private void ExecuteSkillEffect(SkillEffect effect)
+        {
+            _executors[effect.GetType()].ExecuteSkillEffect(effect);
+        }
+
+        private void StopExecuteSkillEffect(SkillEffect effect)
+        {
+            _executors[effect.GetType()].StopExecution();
         }
 
         #region 快照逻辑
@@ -110,6 +130,7 @@ namespace GamePlay.BattleSystem
         {
             Reset();
             InitExecutors();
+            InitSkills();
             
             _movementModule = Context.Get<MovementModule>();
             _viewModule = Context.Get<ViewModule>();
@@ -120,6 +141,11 @@ namespace GamePlay.BattleSystem
             if (_executors != null)
             {
                 foreach (ISkillEffectExecutor executor in _executors.Values) executor.StopExecution();
+            }
+
+            if (_skillInstances != null)
+            {
+                foreach (SkillInstance instance in _skillInstances.Values) instance.Reset();
             }
         }
     }

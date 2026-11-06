@@ -4,10 +4,10 @@ using UnityEngine;
 namespace GamePlay.BattleSystem
 {
     /// <summary>
-    /// 单个技能的静态配置；加载后只读，施法状态由实例持有
+    /// 通用技能配置，静态存在，加载后只读
     /// </summary>
     [Serializable]
-    public class EntitySkill
+    public class SkillConfig
     {
         /// <summary> 技能ID </summary>
         public uint skillId;
@@ -15,11 +15,11 @@ namespace GamePlay.BattleSystem
         /// <summary> 技能名称 </summary>
         public string skillName;
         
-        /// <summary> 技能冷却 </summary>
+        /// <summary> 技能冷却时间 </summary>
         public float cooldown;
         
-        /// <summary> 技能花费 </summary>
-        public float cost;
+        //// <summary> 技能花费 </summary>
+        // public float cost;
         
         /// <summary> 持续时间 </summary>
         public uint durationTicks;
@@ -29,7 +29,7 @@ namespace GamePlay.BattleSystem
         
         /// <summary> 技能效果 </summary>
         [SerializeReference] public SkillEffect[] effects = Array.Empty<SkillEffect>();
-
+        
         // ========== DEBUG ==========
         public AnimationClip clip;
     }

@@ -16,11 +16,6 @@
         Casting,
         
         /// <summary>
-        /// 冷却中
-        /// </summary>
-        CoolingDown,
-        
-        /// <summary>
         /// 锁定中
         /// </summary>
         Locked,

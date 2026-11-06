@@ -11,6 +11,7 @@ namespace Core
     {
         #region 子系统
         public SystemManager SystemMgr { get; private set; }
+        public TimeManager TimeMgr { get; private set; }
         public TimerManager TimerMgr { get; private set; }
         public DataProxyManager DataProxyMgr { get; private set; }
         public ResourceManager ResourceMgr { get; private set; }
@@ -84,6 +85,7 @@ namespace Core
         /// </summary>
         private void InitSubSystems()
         {
+            TimeMgr = SystemMgr.RegisterSystem<TimeManager>();
             StorageMgr = SystemMgr.RegisterSystem<StorageManager>();
             InstantiateMgr = SystemMgr.RegisterSystem<InstantiateManager>();
             PoolMgr = SystemMgr.RegisterSystem<PoolManager>();

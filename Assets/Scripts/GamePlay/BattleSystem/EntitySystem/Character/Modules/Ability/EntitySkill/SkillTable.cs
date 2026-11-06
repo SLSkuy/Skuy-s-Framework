@@ -5,6 +5,6 @@ namespace GamePlay.BattleSystem
     [CreateAssetMenu(menuName = "GamePlay/SkillTable")]
     public class SkillTable : ScriptableObject
     {
-        public EntitySkill[] skills;
+        public SkillConfig[] skills;
     }
 }

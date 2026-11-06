@@ -11,10 +11,6 @@ namespace GamePlay.BattleSystem
         public int jumpCount = 2;
         public float jumpSpeed = 12f;
 
-        [Header("翻滚属性")]
-        [Min(0f)] public float rollSpeed = 5f;
-        [Min(0.01f)] public float rollDuration = 0.8f;
-
         [Header("视角控制属性")]
         [Min(0f)] public float aimHorizontalSpeed = 180f;
         [Min(0f)] public float aimVerticalSpeed = 120f;
@@ -34,5 +30,8 @@ namespace GamePlay.BattleSystem
 
         [Header("基础动画控制器")]
         public RuntimeAnimatorController animatorController;
+
+        [Header("技能ID表")] 
+        public uint[] skillIds = {};
     }
 }

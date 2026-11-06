@@ -16,8 +16,6 @@ MonoBehaviour:
   runSpeed: 4.25
   jumpCount: 2
   jumpSpeed: 6
-  rollSpeed: 5
-  rollDuration: 1.1
   aimHorizontalSpeed: 20
   aimVerticalSpeed: 20
   minAimPitch: -40
@@ -30,3 +28,4 @@ MonoBehaviour:
   gravity: 14
   maxFallSpeed: 20
   animatorController: {fileID: 9100000, guid: a484d3131f968f4408b10ed4b3d075a9, type: 2}
+  skillIds: 01000000u

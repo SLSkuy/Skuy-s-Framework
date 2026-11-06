@@ -10,24 +10,24 @@ namespace GamePlay.BattleSystem
     public class SkillTrack : IDisposable
     {
         private readonly Dictionary<uint, SkillEffectEvent[]> _events = new();
-        private readonly EntitySkill _skillConfig;
+        private readonly SkillConfig _config;
 
         /// <summary> 技能轨道长度 </summary>
         private readonly uint _trackLength;
+        /// <summary> Tick频率 </summary>
+        private readonly int _tickRate;
 
         #region 属性
         public SkillTrackState State { get; private set; }
         public bool IsRunning => State == SkillTrackState.Running;
         
-        /// <summary> Tick频率 </summary>
-        public int TickRate { get; }
         /// <summary> Tick执行进度 </summary>
         public uint ElapsedTicks { get; private set; }
 
         /// <summary>技能已用时间，由整数 Tick 推导 </summary>
-        public float SkillElapsedTime => (float)ElapsedTicks / TickRate;
+        public float SkillElapsedTime => (float)ElapsedTicks / _tickRate;
         /// <summary>技能剩余时间，由总 Tick 减去已用 Tick 推导 </summary>
-        public float SkillRemainingTime => (float)(_trackLength - ElapsedTicks) / TickRate;
+        public float SkillRemainingTime => (float)(_trackLength - ElapsedTicks) / _tickRate;
         #endregion
 
         #region 事件
@@ -36,21 +36,20 @@ namespace GamePlay.BattleSystem
         public event Action<SkillEffectEvent> OnSkillEffect;
         #endregion
 
-        public SkillTrack(EntitySkill skillConfig, int tickRate)
+        public SkillTrack(SkillConfig config, int tickRate)
         {
-            TickRate = tickRate;
-            
             State = SkillTrackState.Init;
             
-            _skillConfig = skillConfig;
-            _trackLength = skillConfig.durationTicks;
+            _tickRate = tickRate;
+            _config = config;
+            _trackLength = config.durationTicks;
 
             // 在轨道上添加技能效果事件
-            for (int i = 0; i < skillConfig.effects.Length; i++)
+            for (int i = 0; i < config.effects.Length; i++)
             {
-                SkillEffect effect = skillConfig.effects[i];
+                SkillEffect effect = config.effects[i];
                 AddEvent(effect.startTick, i, SkillEffectEventType.Start);
-                AddEvent(effect.startTick + effect.durationTicks, i, SkillEffectEventType.Start);
+                AddEvent(effect.startTick + effect.durationTicks, i, SkillEffectEventType.Stop);
             }
         }
 
@@ -81,6 +80,7 @@ namespace GamePlay.BattleSystem
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// 判断当前Tick是否有技能事件并进行派发
         /// </summary>
@@ -107,6 +107,9 @@ namespace GamePlay.BattleSystem
             DispatchSkillEvent();
         }
 
+        /// <summary>
+        /// 暂停技能释放
+        /// </summary>
         public void Pause()
         {
             if (!IsRunning) return;
@@ -121,7 +124,7 @@ namespace GamePlay.BattleSystem
         {
             if (State == SkillTrackState.Init || IsRunning )
             {
-                foreach (SkillInterruptRule rule in _skillConfig.interruptRules)
+                foreach (SkillInterruptRule rule in _config.interruptRules)
                 {
                     // 判断中断原因是否处于中断窗口中
                     if (rule.reason == reason && ElapsedTicks >= rule.startTick && ElapsedTicks < rule.endTick)
@@ -135,8 +138,7 @@ namespace GamePlay.BattleSystem
 
             return false;
         }
-
-        // ReSharper disable Unity.PerformanceAnalysis
+        
         public void Tick()
         {
             if(!IsRunning) return;
@@ -150,6 +152,15 @@ namespace GamePlay.BattleSystem
                 State = SkillTrackState.Complete;
                 OnCompleted?.Invoke();
             }
+        }
+
+        #endregion
+
+        #region 快照管理
+
+        public void RestoreSkillTrackState()
+        {
+            
         }
 
         #endregion
