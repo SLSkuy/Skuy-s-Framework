@@ -21,8 +21,6 @@ namespace GamePlay.BattleSystem
         protected override void CheckStateChange()
         {
             if (CheckGroundTransitions()) return;
-
-            if (CheckActionTransition()) return;
             
             if (LastMoveInput == Vector2.zero) return;
             

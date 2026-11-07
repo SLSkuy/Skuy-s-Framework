@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Framework;
 using UnityEngine;
@@ -24,9 +24,6 @@ namespace GamePlay.BattleSystem
 
         #region 瞬时状态
         public bool JumpRequest;
-        
-        /// <summary> 技能释放请求 </summary>
-        public bool SkillRequest;
         #endregion
 
         #region 持续状态
@@ -102,7 +99,6 @@ namespace GamePlay.BattleSystem
         public void ResetTickFlags()
         {
             JumpRequest = false;
-            SkillRequest = false;
         }
 
         public void Reset()

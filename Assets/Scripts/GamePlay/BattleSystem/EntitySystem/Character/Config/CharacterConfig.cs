@@ -31,7 +31,11 @@ namespace GamePlay.BattleSystem
         [Header("基础动画控制器")]
         public RuntimeAnimatorController animatorController;
 
+        // TODO: 优化，释放时才创建对应的技能实例，并定时销毁，纳入对象池进行复用
         [Header("技能ID表")] 
         public uint[] skillIds = {};
+
+        [Header("战斗输入映射")]
+        public CombatConfig combatConfig = new CombatConfig();
     }
 }

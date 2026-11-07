@@ -37,6 +37,7 @@ namespace GamePlay.BattleSystem
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
             _context.AddAbility<AbilityModule>();
+            _context.AddAbility<CombatModule>();
             MovementModule movement = _context.AddAbility<MovementModule>();
             _visualPresentation = _context.AddAbility<EntityVisualPresentation>();
 

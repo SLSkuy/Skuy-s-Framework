@@ -22,8 +22,6 @@ namespace GamePlay.BattleSystem
         {
             if (CheckGroundTransitions()) return;
             
-            if (CheckActionTransition()) return;
-
             // 停止移动 → IDLE；按住 Sprint → SPRINT；toggle 开启 → RUN；否则留 WALK
             if (LastMoveInput == Vector2.zero) _stateMachine.ChangeState(EntityState.IDLE);
             else if (IsRunning) _stateMachine.ChangeState(EntityState.RUN);

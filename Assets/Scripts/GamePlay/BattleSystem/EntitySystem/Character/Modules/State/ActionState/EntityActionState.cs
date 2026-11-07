@@ -12,7 +12,7 @@ namespace GamePlay.BattleSystem
         
         protected override void Tick(float deltaTime)
         {
-            // Action状态由能力组件内部处理，不再由状态机处理能力
+            // 动作状态统一推进能力，结束后根据当前输入和接地状态返回移动状态。
             Ability.Tick(deltaTime);
         }
 
@@ -23,6 +23,7 @@ namespace GamePlay.BattleSystem
             if (!IsGrounded)
             {
                 _stateMachine.ChangeState(EntityState.AIRBORNE);
+                return;
             }
             
             if (LastMoveInput == Vector2.zero) _stateMachine.ChangeState(EntityState.IDLE);

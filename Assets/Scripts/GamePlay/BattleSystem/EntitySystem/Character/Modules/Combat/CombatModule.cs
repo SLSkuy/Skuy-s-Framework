@@ -10,6 +10,7 @@ namespace GamePlay.BattleSystem
     {
         private EntityStateMachineModule _stateMachine;
         private AbilityModule _ability;
+        private CombatConfig _config;
         
         #region 属性
         public override ModuleType Type => ModuleType.Combat;
@@ -17,11 +18,28 @@ namespace GamePlay.BattleSystem
 
         public void CheckAction(in EntityControlCommand command)
         {
-            // 提取战斗输入命令
-            EntityCommandFlags flagsHeld = GetCombatCommand(command.flagsHeld);
+            // 提取战斗输入命令，先只管单次点击的技能，不处理长按式技能
+            // EntityCommandFlags flagsHeld = GetCombatCommand(command.flagsHeld);
             EntityCommandFlags flagsPressed = GetCombatCommand(command.flagsPressed);
-            EntityCommandFlags flagsReleased = GetCombatCommand(command.flagsReleased);
+            // EntityCommandFlags flagsReleased = GetCombatCommand(command.flagsReleased);
             
+            uint skill2Action = ResolveCombatCommand(flagsPressed);
+
+            if (_ability.TryCastSkill(skill2Action))
+            {
+                _stateMachine.ChangeState(EntityState.ACTION);
+            }
+        }
+
+        /// <summary>
+        /// 解析当前输入命令，并按照优先级，返回当前输入控制对应的技能ID
+        /// </summary>
+        private uint ResolveCombatCommand(in EntityCommandFlags flags)
+        {
+            uint skillId = 0;
+            if ((flags & EntityCommandFlags.Roll) != 0) skillId = _config.rollSkillId;
+
+            return skillId;
         }
 
         /// <summary>
@@ -39,6 +57,8 @@ namespace GamePlay.BattleSystem
         {
             _stateMachine = Context.Get<EntityStateMachineModule>();
             _ability = Context.Get<AbilityModule>();
+
+            _config = Config.combatConfig;
         }
 
         #endregion

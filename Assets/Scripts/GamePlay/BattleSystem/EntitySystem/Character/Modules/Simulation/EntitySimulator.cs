@@ -41,7 +41,7 @@ namespace GamePlay.BattleSystem
             // 处理战斗控制输入，内部处理是否需要进入Action状态
             _combat.CheckAction(command);
             
-            // 先推进上一拍已存在的技能，再由状态机处理本拍新施法请求。
+            // 战斗模块先切换状态，新释放的技能在本Tick由ACTION推进一次。
             _stateMachine.Step(deltaTime);
             _context.ResetTickFlags();
         }
