@@ -14,7 +14,7 @@ namespace GamePlay.BattleSystem
         protected readonly AbilityModule Ability;
 
         #region 基础状态属性
-        protected CharacterConfig Config => Context.Config;
+        protected MovementConfig Config => Context.Config.movementConfig;
         
         protected Vector2 LastMoveInput => Context.LastMoveInput;
         protected Vector2 LastAimInput => Context.LastAimInput;

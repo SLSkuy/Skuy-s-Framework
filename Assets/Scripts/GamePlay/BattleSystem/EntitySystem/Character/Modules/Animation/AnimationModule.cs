@@ -18,6 +18,7 @@ namespace GamePlay.BattleSystem
         private Animator _animator;
         private MovementModule _movement;
         private ViewModule _view;
+        private AnimationConfig _config;
         
         private PlayableGraph _graph;
         /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
@@ -115,6 +116,8 @@ namespace GamePlay.BattleSystem
             _animator = GetComponent<Animator>();
             _movement = Context.Get<MovementModule>();
             _view = Context.Get<ViewModule>();
+
+            _config = Config.animationConfig;
             
             _speedHash = Animator.StringToHash("Speed");
             _turnHash = Animator.StringToHash("Turn");
@@ -123,7 +126,7 @@ namespace GamePlay.BattleSystem
             _graph = PlayableGraph.Create("EntityAnimationGraph");
             _graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);    // Tick驱动
             
-            _locomotion = AnimatorControllerPlayable.Create(_graph, Config.animatorController);
+            _locomotion = AnimatorControllerPlayable.Create(_graph, _config.animatorController);
             _topMixer = AnimationMixerPlayable.Create(_graph, 2);   // 两个输入通道（基础移动/战斗动画）
             
             _topMixer.ConnectInput(LOCOMOTION_PORT, _locomotion, 0);
@@ -161,7 +164,7 @@ namespace GamePlay.BattleSystem
         {
             // 动画速度只在表现层平滑，不参与移动模拟或快照恢复
             float targetSpeed = Context.DesiredSpeed * Context.LastMoveInput.magnitude; // 神秘手柄输入
-            float smoothTime = Config.animSpeedSmoothTime;
+            float smoothTime = _config.animSpeedSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
             _curSpeed = Mathf.Lerp(_curSpeed, targetSpeed, blend);
             if (Mathf.Abs(_curSpeed - targetSpeed) < 0.001f)
@@ -174,7 +177,7 @@ namespace GamePlay.BattleSystem
         private void UpdateTurnParam()
         {
             float targetTurn = CalculateTurn();
-            float smoothTime = Config.animTurnSmoothTime;
+            float smoothTime = _config.animTurnSmoothTime;
             float blend = smoothTime > 0f ? 1f - Mathf.Exp(-Time.deltaTime / smoothTime) : 1f;
             _curTurn = Mathf.Lerp(_curTurn, targetTurn, blend);
             if (Mathf.Abs(_curTurn - targetTurn) < 0.001f)

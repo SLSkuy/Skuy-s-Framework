@@ -5,35 +5,14 @@ namespace GamePlay.BattleSystem
     [CreateAssetMenu(fileName = "CharacterConfig", menuName = "GamePlay/CharacterConfig")]
     public class CharacterConfig : ScriptableObject
     {
-        [Header("基础运动属性")]
-        public float walkSpeed = 2f;
-        public float runSpeed = 5f;
-        public int jumpCount = 2;
-        public float jumpSpeed = 12f;
+        [Header("基础移动属性")]
+        public MovementConfig movementConfig = new MovementConfig();
 
         [Header("视角控制属性")]
-        [Min(0f)] public float aimHorizontalSpeed = 180f;
-        [Min(0f)] public float aimVerticalSpeed = 120f;
-        public float minAimPitch = -40f;
-        public float maxAimPitch = 70f;
+        public ViewConfig viewConfig = new ViewConfig();
         
-        [Header("表现属性")]
-        [Min(0f)] public float animSpeedSmoothTime = 0.1f;  // 仅动画 Speed 参数向期望速度过渡的平滑时间（秒），0 表示立即切换
-        [Min(0f)] public float animTurnSmoothTime = 0.1f; // Turn 倾斜参数的指数平滑时间（秒），0 表示立即切换
-        [Min(0f)] public float meshTurnSpeed = 360f;   // mesh 转向由 orientation 映射的目标方向的角速度（度/秒）
-
-        [Header("物理属性")] 
-        public float radius = 0.2f;
-        public float height = 1.7f;
-        public float gravity = 12f;
-        public float maxFallSpeed = 20f;
-
-        [Header("基础动画控制器")]
-        public RuntimeAnimatorController animatorController;
-
-        // TODO: 优化，释放时才创建对应的技能实例，并定时销毁，纳入对象池进行复用
-        [Header("技能ID表")] 
-        public uint[] skillIds = {};
+        [Header("动画属性")]
+        public AnimationConfig animationConfig = new AnimationConfig();
 
         [Header("战斗输入映射")]
         public CombatConfig combatConfig = new CombatConfig();

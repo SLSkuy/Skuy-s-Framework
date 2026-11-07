@@ -17,6 +17,7 @@ namespace GamePlay.BattleSystem
 
         private MovementModule _movementModule;
         private ViewModule _viewModule;
+        private CombatConfig _config;
         
         /// <summary> 所有技能效果执行器，按配置实际类型注册 </summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
@@ -94,7 +95,7 @@ namespace GamePlay.BattleSystem
             int tickRate = _simulation.TickRate;
             
             List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
-            foreach (uint id in Config.skillIds)
+            foreach (uint id in _config.skillIds)
             {
                 if (_abilityConfig.TryGetSkillConfig(id, out SkillConfig config))
                 {
@@ -137,12 +138,14 @@ namespace GamePlay.BattleSystem
         
         protected override void OnBound(EntityCharacter target)
         {
+            _movementModule = Context.Get<MovementModule>();
+            _viewModule = Context.Get<ViewModule>();
+            
+            _config = Config.combatConfig;
+            
             Reset();
             InitExecutors();
             InitSkills();
-            
-            _movementModule = Context.Get<MovementModule>();
-            _viewModule = Context.Get<ViewModule>();
         }
 
         public override void Reset()
