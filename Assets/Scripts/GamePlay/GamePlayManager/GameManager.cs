@@ -24,7 +24,7 @@ namespace GamePlay.GamePlayManager
         public void DestroyGamePlay()
         {
             _battleManager.StopBattle();
-            Global.Register<BattleManager>();
+            Global.Unregister<BattleManager>();
         }
         
         #endregion

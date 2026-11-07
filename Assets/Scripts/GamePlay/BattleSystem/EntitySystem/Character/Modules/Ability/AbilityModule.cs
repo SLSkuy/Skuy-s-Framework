@@ -37,6 +37,9 @@ namespace GamePlay.BattleSystem
         /// </summary>
         public bool TryCastSkill(uint skillId)
         {
+            // TODO: 后续实现技能中断，当前保持必须释放完一个能力时候才能释放下一个能力
+            if (IsCasting) return false;
+            
             // 不存在技能配置
             if (!_skillInstances.TryGetValue(skillId, out SkillInstance instance))
             {
