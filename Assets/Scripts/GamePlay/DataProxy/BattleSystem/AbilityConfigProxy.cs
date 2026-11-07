@@ -27,27 +27,6 @@ namespace GamePlay.DataProxy
             SkillTable table = _handle.AssetObject as SkillTable;
             foreach (SkillConfig skill in table.skills)
             {
-                // TODO: ========== DEBUG ==========
-                if (skill.skillId == 1)
-                {
-                    skill.effects = new SkillEffect[]
-                    {
-                        new AnimationSkillEffect
-                        {
-                            clip = skill.clip,
-                            startTick = 0,
-                            durationTicks = skill.durationTicks,
-                        },
-                        new MoveSkillEffect
-                        {
-                            speed = 4,
-                            startTick = 0,
-                            durationTicks = skill.durationTicks,
-                        }
-                    };
-                }
-                // TODO: ========== DEBUG ==========
-                
                 _skills.Add(skill.skillId, skill);
             }
         }

@@ -29,8 +29,5 @@ namespace GamePlay.BattleSystem
         
         /// <summary> 技能效果 </summary>
         [SerializeReference] public SkillEffect[] effects = Array.Empty<SkillEffect>();
-        
-        // ========== DEBUG ==========
-        public AnimationClip clip;
     }
 }

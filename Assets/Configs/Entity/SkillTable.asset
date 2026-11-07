@@ -16,11 +16,29 @@ MonoBehaviour:
   - skillId: 1
     skillName: Roll
     cooldown: 0
-    cost: 0
     durationTicks: 65
     interruptRules: []
-    effects: []
-    clip: {fileID: 7400000, guid: b1edb12813a329e43babae80ee3cbc23, type: 2}
+    effects:
+    - rid: 4293588675574366438
+    - rid: 4293588675574366439
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 4293588675574366438
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 65
+        endPolicy: 0
+        sampleOffset: 0
+        clip: {fileID: 7400000, guid: b1edb12813a329e43babae80ee3cbc23, type: 2}
+    - rid: 4293588675574366439
+      type: {class: MoveSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 0
+        durationTicks: 65
+        endPolicy: 0
+        speed: 4
+        collisionPolicy: 0
