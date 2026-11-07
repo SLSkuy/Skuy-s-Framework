@@ -91,19 +91,6 @@ namespace Editor
             rootVisualElement.Clear();
             rootVisualElement.style.flexDirection = FlexDirection.Column;
 
-            VisualElement heading = new VisualElement();
-            ApplyHelpBox(heading);
-            heading.style.paddingTop = 12;
-            heading.style.paddingBottom = 12;
-            Label title = new Label("对象池查看");
-            title.style.fontSize = 20;
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            heading.Add(title);
-            Label subtitle = new Label("查看资源池占用、借出实例和加载请求，点击实例可在场景中定位。");
-            subtitle.style.color = MutedColor();
-            subtitle.style.whiteSpace = WhiteSpace.Normal;
-            heading.Add(subtitle);
-            rootVisualElement.Add(heading);
             CreateToolbar();
             Toolbar navigation = new Toolbar();
             _tabs.Clear();
@@ -137,10 +124,10 @@ namespace Editor
             _body.style.flexGrow = 1;
             _body.style.flexDirection = FlexDirection.Column;
             _body.style.overflow = Overflow.Hidden;
-            _body.style.paddingLeft = 8;
-            _body.style.paddingRight = 8;
-            _body.style.paddingTop = 8;
-            _body.style.paddingBottom = 8;
+            _body.style.paddingLeft = 4;
+            _body.style.paddingRight = 4;
+            _body.style.paddingTop = 4;
+            _body.style.paddingBottom = 4;
 
             rootVisualElement.Add(_body);
             VisualElement footer = CreateRow();
@@ -721,7 +708,7 @@ namespace Editor
             VisualElement section = new VisualElement();
 
             ApplyHelpBox(section);
-            section.style.marginBottom = 8;
+            section.style.marginBottom = 4;
             section.style.flexShrink = expand ? 1 : 0;
 
             if (expand)
@@ -734,7 +721,7 @@ namespace Editor
             Label titleLabel = new Label(title);
 
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            titleLabel.style.marginBottom = 8;
+            titleLabel.style.marginBottom = 4;
             titleLabel.style.fontSize = 12;
 
             section.Add(titleLabel);
@@ -767,7 +754,7 @@ namespace Editor
 
             row.style.flexDirection = FlexDirection.Row;
             row.style.alignItems = Align.Center;
-            row.style.minHeight = 28;
+            row.style.minHeight = 22;
 
             return row;
         }

@@ -31,7 +31,7 @@ namespace Editor
         private static readonly Color StartColor = new Color(0.35f, 0.85f, 0.55f);
         private static readonly Color EndColor = new Color(1f, 0.65f, 0.3f);
 
-        [MenuItem("Tools/Framework/Root Motion Baker")]
+        [MenuItem("Tools/BattleSystem/根运动烘培编辑器")]
         public static void Open()
         {
             AnimationMotionBakerWindow window = GetWindow<AnimationMotionBakerWindow>(true, "根运动烘焙");
@@ -320,13 +320,6 @@ namespace Editor
             _subtitleStyle ??= new GUIStyle(EditorStyles.wordWrappedMiniLabel) { fontSize = 11 };
             _metricStyle ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 17, fixedHeight = 26f };
             _hintStyle ??= new GUIStyle(EditorStyles.miniLabel) { wordWrap = true };
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
-            {
-                GUILayout.Space(6f);
-                EditorGUILayout.LabelField("根运动曲线烘焙", EditorStyles.largeLabel);
-                EditorGUILayout.LabelField("提取动画的水平轨迹与转向数据，预览后导出为独立资产。", _subtitleStyle);
-                GUILayout.Space(6f);
-            }
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {

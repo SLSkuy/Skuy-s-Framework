@@ -41,7 +41,6 @@ namespace Editor
         private Dictionary<string, Type> _messageLookup;
         private Vector2 _windowScroll;
         private Vector2 _previewScroll;
-        private GUIStyle _metricStyle;
         private GUIStyle _codeStyle;
         private bool _showPreview;
         private string _lastResult = "";
@@ -125,25 +124,11 @@ namespace Editor
 
         private void OnGUI()
         {
-            _metricStyle ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 20, fixedHeight = 27f };
             _codeStyle ??= new GUIStyle(EditorStyles.textArea) { wordWrap = false };
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
-            {
-                GUILayout.Space(6f);
-                GUILayout.Label("Handler 生成器", EditorStyles.largeLabel);
-                EditorGUILayout.LabelField("组合协议类型与名称，生成事件、消息绑定和收发方法。", EditorStyles.wordWrappedMiniLabel);
-                GUILayout.Space(6f);
-            }
             _windowScroll = EditorGUILayout.BeginScrollView(_windowScroll);
             DrawConfiguration();
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                DrawMetric("可用消息", _messageTypes.Length);
-                DrawMetric("接收协议", protocols.Count(Receives));
-                DrawMetric("发送协议", protocols.Count(Sends));
-            }
             GUILayout.Space(6f);
-            _showPreview = GUILayout.Toolbar(_showPreview ? 1 : 0, new[] { "协议配置", "代码预览" }) == 1;
+            _showPreview = GUILayout.Toolbar(_showPreview ? 1 : 0, new[] { "协议配置", "代码预览" }, EditorStyles.toolbarButton) == 1;
             if (_showPreview)
             {
                 _previewScroll = EditorGUILayout.BeginScrollView(_previewScroll, GUILayout.MinHeight(240f));
@@ -153,15 +138,6 @@ namespace Editor
             else DrawProtocols();
             EditorGUILayout.EndScrollView();
             DrawFooter();
-        }
-
-        private void DrawMetric(string label, int count)
-        {
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.ExpandWidth(true)))
-            {
-                EditorGUILayout.LabelField(label, EditorStyles.wordWrappedMiniLabel);
-                EditorGUILayout.LabelField(count.ToString(), _metricStyle);
-            }
         }
 
         private void DrawConfiguration()
@@ -187,8 +163,6 @@ namespace Editor
                         }
                     }
                 }
-                EditorGUILayout.HelpBox("模板：依赖字段 → 事件 → 消息绑定 → 发送消息 → 接收消息。\n" +
-                    "Unbind 会清空事件订阅，请先 Bind，再由业务模块订阅事件；重新绑定后需重新订阅。", MessageType.Info);
             }
         }
 
@@ -240,7 +214,7 @@ namespace Editor
                 }
             }
             if (protocols.Count == 0)
-                EditorGUILayout.HelpBox("添加协议后，在同一个字段中选择 NetEvent 和对应的 Protobuf 消息类。", MessageType.Info);
+                EditorGUILayout.HelpBox("暂无协议。", MessageType.Info);
         }
 
         private void DrawSearchableDropdown(string title, string selectedLabel, string[] labels, Action<int> onSelected)
@@ -297,11 +271,11 @@ namespace Editor
                 if (overwrite) EditorGUILayout.HelpBox("目标 Handler 已存在。覆盖将替换整个脚本，请先检查代码预览。", MessageType.Warning);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button("复制代码", GUILayout.Height(32f))) EditorGUIUtility.systemCopyBuffer = BuildSource();
+                    if (GUILayout.Button("复制代码")) EditorGUIUtility.systemCopyBuffer = BuildSource();
                     using (new EditorGUI.DisabledScope(error != null || EditorApplication.isCompiling
                         || EditorApplication.isPlayingOrWillChangePlaymode))
                     {
-                        if (GUILayout.Button(overwrite ? "覆盖 Handler" : "生成 Handler", GUILayout.Height(32f))) Generate();
+                        if (GUILayout.Button(overwrite ? "覆盖 Handler" : "生成 Handler")) Generate();
                     }
                 }
                 EditorGUILayout.LabelField(string.IsNullOrEmpty(_lastResult)
