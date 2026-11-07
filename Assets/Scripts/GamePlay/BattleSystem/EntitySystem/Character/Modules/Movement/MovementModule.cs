@@ -20,7 +20,7 @@ namespace GamePlay.BattleSystem
         private bool _isGrounded;
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.Movement;
+        public override ModuleType Type => ModuleType.Movement;
         public Vector3 Position => transform.position;
         public Quaternion Rotation => _mesh ? _mesh.rotation : Quaternion.identity;
         // public Vector3 LinearVelocity { get; private set; }

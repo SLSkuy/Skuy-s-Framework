@@ -3,11 +3,11 @@
     /// <summary>
     /// 销毁实体指令
     /// </summary>
-    public struct EntityDestroyCommand
+    public struct EntityDestroyRequest
     {
         public uint entityId;
 
-        public EntityDestroyCommand(uint id)
+        public EntityDestroyRequest(uint id)
         {
             entityId = id;
         }

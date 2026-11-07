@@ -26,7 +26,7 @@ namespace GamePlay.BattleSystem
         }
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.VisualPresentation;
+        public override ModuleType Type => ModuleType.VisualPresentation;
         #endregion
 
         /// <summary>

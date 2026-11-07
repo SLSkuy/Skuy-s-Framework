@@ -59,25 +59,25 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 广播实体生成消息，用于已经在房间中的玩家
         /// </summary>
-        public void BroadcastPlayerSpawnNotify(uint entityId, Guid playerId, in EntitySpawnCommand command, in EntitySnapshot snapshot)
+        public void BroadcastPlayerSpawnNotify(uint entityId, Guid playerId, in EntitySpawnRequest request, in EntitySnapshot snapshot)
         {
             uint[] activeIDs = _room.GetAllPlayerConnectionID();
-            _room.SendGroupReliable(activeIDs, NetEvent.GAME_PLAYER_SPAWN_NOTIFY, command.ToProto(entityId, playerId, snapshot));
+            _room.SendGroupReliable(activeIDs, NetEvent.GAME_PLAYER_SPAWN_NOTIFY, request.ToProto(entityId, playerId, snapshot));
         }
 
         /// <summary>
         /// 发送实体生成消息，用于给新加入的玩家
         /// </summary>
-        public void SendPlayerSpawnNotify(Guid playerId, uint entityId, Guid ownerPlayerId, in EntitySpawnCommand command,
+        public void SendPlayerSpawnNotify(Guid playerId, uint entityId, Guid ownerPlayerId, in EntitySpawnRequest request,
             in EntitySnapshot snapshot)
         {
-            _room.SendReliable(playerId, NetEvent.GAME_PLAYER_SPAWN_NOTIFY, command.ToProto(entityId, ownerPlayerId, snapshot));
+            _room.SendReliable(playerId, NetEvent.GAME_PLAYER_SPAWN_NOTIFY, request.ToProto(entityId, ownerPlayerId, snapshot));
         }
 
-        public void BroadcastEntityDestroyNotify(in EntityDestroyCommand command)
+        public void BroadcastEntityDestroyNotify(in EntityDestroyRequest request)
         {
             uint[] activeIDs = _room.GetAllPlayerConnectionID();
-            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_DESTROY_NOTIFY, command.ToProto());
+            _room.SendGroupReliable(activeIDs, NetEvent.GAME_ENTITY_DESTROY_NOTIFY, request.ToProto());
         }
 
 

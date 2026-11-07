@@ -43,22 +43,22 @@ namespace Utils
         // ========== 战局事件 ==========
         // ========== 战局事件 ==========
         
-        public static Player_Spawn_Notify ToProto(this EntitySpawnCommand command, uint entityId, Guid playerId, in EntitySnapshot snapshot)
+        public static Player_Spawn_Notify ToProto(this EntitySpawnRequest request, uint entityId, Guid playerId, in EntitySnapshot snapshot)
         {
             return new Player_Spawn_Notify
             {
                 EntityId = entityId,
-                EntityTypeId = (uint)command.entityType,
+                EntityTypeId = (uint)request.entityType,
                 PlayerId = playerId.ToString(),
-                Position = command.position.ToProto(),
-                Rotation = command.rotation.ToProto(),
+                Position = request.position.ToProto(),
+                Rotation = request.rotation.ToProto(),
                 Snapshot = snapshot.ToProto(entityId, 0),
             };
         }
 
-        public static EntitySpawnCommand ToCommand(this Player_Spawn_Notify notify)
+        public static EntitySpawnRequest ToCommand(this Player_Spawn_Notify notify)
         {
-            return new EntitySpawnCommand
+            return new EntitySpawnRequest
             {
                 entityType = (EntityType)notify.EntityTypeId,
                 position = notify.Position.ToUnity(),
@@ -66,17 +66,17 @@ namespace Utils
             };
         }
 
-        public static Entity_Destroy_Notify ToProto(this EntityDestroyCommand command)
+        public static Entity_Destroy_Notify ToProto(this EntityDestroyRequest request)
         {
             return new Entity_Destroy_Notify
             {
-                EntityId = command.entityId,
+                EntityId = request.entityId,
             };
         }
 
-        public static EntityDestroyCommand ToCommand(this Entity_Destroy_Notify command)
+        public static EntityDestroyRequest ToCommand(this Entity_Destroy_Notify command)
         {
-            return new EntityDestroyCommand()
+            return new EntityDestroyRequest()
             {
                 entityId = command.EntityId,
             };

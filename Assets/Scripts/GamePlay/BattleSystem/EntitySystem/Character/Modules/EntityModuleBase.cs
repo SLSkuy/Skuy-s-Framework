@@ -10,7 +10,7 @@ namespace GamePlay.BattleSystem
     {
         #region 属性
         public EntityCharacter Target { get; private set; }
-        public abstract ModuleType ModuleType { get; }
+        public abstract ModuleType Type { get; }
         public bool HasTarget => Target;
         public bool IsEnabled { get; private set; } = true;
 

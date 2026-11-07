@@ -2,7 +2,10 @@
 
 namespace GamePlay.BattleSystem
 {
-    public struct EntityAnimationCommand
+    /// <summary>
+    /// 实体播放动画请求
+    /// </summary>
+    public struct EntityAnimationRequest
     { 
         public AnimationClip clip;
         public float sampleOffset;

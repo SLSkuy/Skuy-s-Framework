@@ -10,7 +10,7 @@ namespace GamePlay.BattleSystem
         private readonly StateMachine<EntityState> _stateMachine = new();
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.StateMachine;
+        public override ModuleType Type => ModuleType.StateMachine;
         public EntityState CurrentState => _stateMachine.CurrentState;
         public StateMachine<EntityState> StateMachine => _stateMachine;
         #endregion

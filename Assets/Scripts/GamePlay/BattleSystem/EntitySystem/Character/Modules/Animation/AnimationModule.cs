@@ -38,7 +38,7 @@ namespace GamePlay.BattleSystem
         private int _turnHash;
         
         #region 属性
-        public override ModuleType ModuleType => ModuleType.Animation;
+        public override ModuleType Type => ModuleType.Animation;
         #endregion
 
         #region 动画播放入口
@@ -46,18 +46,18 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 播放一次性动画，传入开始事件后立刻从某一进度开始播放动画
         /// </summary>
-        public void PlayActionAnimation(in EntityAnimationCommand command)
+        public void PlayActionAnimation(in EntityAnimationRequest request)
         {
-            if (_action.IsValid() && _action.GetAnimationClip() == command.clip)
+            if (_action.IsValid() && _action.GetAnimationClip() == request.clip)
             {
                 // 当前与目标相同，设置播放进度
-                _action.SetTime(command.sampleOffset);
+                _action.SetTime(request.sampleOffset);
                 return;
             }
             
             InterruptActionAnimation();
             
-            _actionTransition = StartCoroutine(TransitionAnimation(command.clip, command.duration, command.sampleOffset));
+            _actionTransition = StartCoroutine(TransitionAnimation(request.clip, request.duration, request.sampleOffset));
         }
 
         private IEnumerator TransitionAnimation(AnimationClip clip, float duration, float sampleOffset = 0f)

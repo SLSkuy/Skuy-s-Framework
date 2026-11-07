@@ -57,9 +57,9 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 同步生成本地实体对象
         /// </summary>
-        public GameObject SpawnLocalEntity(in EntitySpawnCommand command)
+        public GameObject SpawnLocalEntity(in EntitySpawnRequest request)
         {
-            GameObject instance = InstantiateEntity(command);
+            GameObject instance = InstantiateEntity(request);
             if (instance.TryGetComponent<EntityIdentity>(out _))
             {
                 throw new InvalidOperationException($"实例 {instance.name} 存在 {nameof(EntityIdentity)}，需使用SpawnNetEntity函数进行网络实体生成");
@@ -70,23 +70,23 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 生成远端实体对象
         /// </summary>
-        public EntityIdentity SpawnNetEntity(in EntitySpawnCommand command)
+        public EntityIdentity SpawnNetEntity(in EntitySpawnRequest request)
         {
-            GameObject instance = InstantiateEntity(command);
+            GameObject instance = InstantiateEntity(request);
             if (!instance.TryGetComponent(out EntityIdentity entityIdentity))
             {
                 throw new InvalidOperationException($"实例 {instance.name} 缺少 {nameof(EntityIdentity)}，不能分配实体号");
             }
             
             AllocateId(entityIdentity);
-            entityIdentity.BindEntityType(command.entityType);
+            entityIdentity.BindEntityType(request.entityType);
             return entityIdentity;
         }
 
-        private GameObject InstantiateEntity(in EntitySpawnCommand command)
+        private GameObject InstantiateEntity(in EntitySpawnRequest request)
         {
-            string location = _spawnConfigData.GetEntityLocation(command.entityType);
-            InstantiateOptions options = new (true, command.position, command.rotation);
+            string location = _spawnConfigData.GetEntityLocation(request.entityType);
+            InstantiateOptions options = new (true, request.position, request.rotation);
             GameObject instance = Global.Instantiate(location, options);
             return instance;
         }
@@ -94,9 +94,9 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 销毁实体
         /// </summary>
-        public void DestroyEntity(in EntityDestroyCommand command)
+        public void DestroyEntity(in EntityDestroyRequest request)
         {
-            if (RemoveEntity(command.entityId, out EntityIdentity identity))
+            if (RemoveEntity(request.entityId, out EntityIdentity identity))
             {
                 if (identity is PlayerIdentity playerIdentity) _players.Remove(playerIdentity.PlayerID);
                 Global.Release(identity.gameObject);   
@@ -118,7 +118,7 @@ namespace GamePlay.BattleSystem
         public void OnPlayerJoin(Guid playerId)
         {
             EntitySnapshot snapshot = _saveData.GetPlayerSnapshot(playerId);
-            EntitySpawnCommand command = new EntitySpawnCommand
+            EntitySpawnRequest request = new EntitySpawnRequest
             {
                 entityType = EntityType.Player,
                 position = snapshot.movement.rootPosition,
@@ -126,11 +126,11 @@ namespace GamePlay.BattleSystem
             };
             
             // 主机装配远端玩家
-            EntityIdentity identity = SpawnNetEntity(command);
+            EntityIdentity identity = SpawnNetEntity(request);
             bool isLocal = playerId == _playerData.UUID;
             AssemblePlayer(identity, playerId, snapshot, EntityRole.Authority, isLocal);
             
-            _serverHandler.BroadcastPlayerSpawnNotify(identity.EntityId, playerId, command, snapshot);
+            _serverHandler.BroadcastPlayerSpawnNotify(identity.EntityId, playerId, request, snapshot);
         }
 
         /// <summary>
@@ -145,9 +145,9 @@ namespace GamePlay.BattleSystem
             ((HostSimulationKernel)_simulator).UnregisterRemoteInput(playerId);
             _players.Remove(playerId);
 
-            EntityDestroyCommand command = new EntityDestroyCommand { entityId = playerIdentity.EntityId };
-            DestroyEntity(command);
-            _serverHandler.BroadcastEntityDestroyNotify(command);
+            EntityDestroyRequest request = new EntityDestroyRequest { entityId = playerIdentity.EntityId };
+            DestroyEntity(request);
+            _serverHandler.BroadcastEntityDestroyNotify(request);
         }
 
         /// <summary>
@@ -294,16 +294,16 @@ namespace GamePlay.BattleSystem
         {
             uint entityId = notify.EntityId;
             Guid playerId = Guid.Parse(notify.PlayerId);
-            EntitySpawnCommand command = notify.ToCommand();
+            EntitySpawnRequest request = notify.ToCommand();
             EntitySnapshot snapshot = notify.Snapshot.ToSnapshot();
-            GameObject instance = InstantiateEntity(command);
+            GameObject instance = InstantiateEntity(request);
             if (!instance.TryGetComponent(out EntityIdentity identity))
             {
                 throw new InvalidOperationException($"实例 {instance.name} 缺少 {nameof(EntityIdentity)}，不能分配实体号");
             }
             
             AddEntity(entityId, identity);
-            identity.BindEntityType(command.entityType);
+            identity.BindEntityType(request.entityType);
             
             bool isLocal = playerId == _playerData.UUID;    // 判断是否为本地玩家
             EntityRole role = isLocal ? EntityRole.Predict : EntityRole.Replica;
@@ -312,9 +312,9 @@ namespace GamePlay.BattleSystem
         
         private void HandleEntityDestroyReceived(Entity_Destroy_Notify notify)
         {
-            EntityDestroyCommand command = notify.ToCommand();
-            DestroyEntity(command);
-            _simulator.Kernel.Unregister(command.entityId);
+            EntityDestroyRequest request = notify.ToCommand();
+            DestroyEntity(request);
+            _simulator.Kernel.Unregister(request.entityId);
         }
 
         #endregion
@@ -332,14 +332,14 @@ namespace GamePlay.BattleSystem
                 PlayerIdentity playerIdentity = pair.Value;
                 EntityCharacter character = playerIdentity.GetComponent<EntityCharacter>();
                 EntitySnapshot snapshot = character.CaptureSnapshot();
-                EntitySpawnCommand command = new EntitySpawnCommand
+                EntitySpawnRequest request = new EntitySpawnRequest
                 {
                     entityType = EntityType.Player,
                     position = snapshot.movement.rootPosition,
                     rotation = Quaternion.identity,
                 };
                     
-                _serverHandler.SendPlayerSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, command, snapshot);
+                _serverHandler.SendPlayerSpawnNotify(playerId, playerIdentity.EntityId, playerIdentity.PlayerID, request, snapshot);
             }
         }
 

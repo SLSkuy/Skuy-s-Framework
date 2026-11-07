@@ -14,7 +14,7 @@ namespace GamePlay.BattleSystem
         private float _pitch;
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.View;
+        public override ModuleType Type => ModuleType.View;
         public Transform Orientation { get; private set; }
         public Quaternion ViewRotation => Quaternion.Euler(_pitch, _yaw, 0f);
         // public Vector3 AngularVelocity { get; private set; }

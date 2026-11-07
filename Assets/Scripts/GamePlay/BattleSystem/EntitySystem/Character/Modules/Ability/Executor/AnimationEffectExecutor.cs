@@ -21,7 +21,7 @@
                 // 动画时间转换，动画的播放不采用Tick
                 float duration = AbilityUtils.TicksToSeconds(effect.durationTicks, _tickRate);
                 
-                _animation.PlayActionAnimation(new EntityAnimationCommand
+                _animation.PlayActionAnimation(new EntityAnimationRequest
                 {
                     clip = animationEffect.clip,
                     sampleOffset = animationEffect.sampleOffset,

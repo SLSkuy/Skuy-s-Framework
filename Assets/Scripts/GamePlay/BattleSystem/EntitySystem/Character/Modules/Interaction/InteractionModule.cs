@@ -7,7 +7,7 @@ namespace GamePlay.BattleSystem
         private Transform _orientation;
         
         #region 属性
-        public override ModuleType ModuleType => ModuleType.Interaction;
+        public override ModuleType Type => ModuleType.Interaction;
         #endregion
         
         protected override void OnBound(EntityCharacter target)

@@ -9,5 +9,6 @@ namespace GamePlay.BattleSystem
         VisualPresentation,
         Interaction,
         Ability,
+        Heath,
     }
 }

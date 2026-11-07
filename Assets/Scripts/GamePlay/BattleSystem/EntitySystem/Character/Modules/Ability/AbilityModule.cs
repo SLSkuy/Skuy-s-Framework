@@ -7,8 +7,8 @@ using GamePlay.DataProxy;
 namespace GamePlay.BattleSystem
 {
     /// <summary>
-    /// 角色能力组件，管理施法实例和效果派发。
-    /// 外部通过技能 ID 查询配置并发起释放。
+    /// 角色能力组件，管理施法实例和效果派发
+    /// 外部通过传入技能ID进行能力释放
     /// </summary>
     public class AbilityModule : EntitySnapshotModuleBase<AbilitySnapshot>
     {
@@ -26,7 +26,7 @@ namespace GamePlay.BattleSystem
         private SkillInstance _currentSkill;
 
         #region 属性
-        public override ModuleType ModuleType => ModuleType.Ability;
+        public override ModuleType Type => ModuleType.Ability;
 
         /// <summary> 是否正在释放技能 </summary>
         public bool IsCasting => _currentSkill is { IsCasting : true };
