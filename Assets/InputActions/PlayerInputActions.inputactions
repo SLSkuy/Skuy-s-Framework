@@ -27,6 +27,46 @@
                     "priority": 0
                 },
                 {
+                    "name": "Run",
+                    "type": "Button",
+                    "id": "641cd816-40e6-41b4-8c3d-04687c349290",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Jump",
+                    "type": "Button",
+                    "id": "a690c738-ceae-4721-ac61-6f509b9f633d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "852140f2-7766-474d-8707-702459ba45f3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Roll",
+                    "type": "Button",
+                    "id": "192f3ba0-bc8e-47ae-b34c-a7ba55430175",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
                     "name": "PrimaryAttack",
                     "type": "Button",
                     "id": "6c2ab1b8-8984-453a-af3d-a3c78ae1679a",
@@ -57,9 +97,9 @@
                     "priority": 0
                 },
                 {
-                    "name": "Interact",
+                    "name": "SkillQ",
                     "type": "Button",
-                    "id": "852140f2-7766-474d-8707-702459ba45f3",
+                    "id": "6daba9bf-04a9-4a32-8d0a-1f8f95e62727",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -67,9 +107,9 @@
                     "priority": 0
                 },
                 {
-                    "name": "Run",
+                    "name": "SkillE",
                     "type": "Button",
-                    "id": "641cd816-40e6-41b4-8c3d-04687c349290",
+                    "id": "f414a62f-e02c-4b6b-a904-dae4df0373f3",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -77,19 +117,9 @@
                     "priority": 0
                 },
                 {
-                    "name": "Jump",
+                    "name": "SkillX",
                     "type": "Button",
-                    "id": "a690c738-ceae-4721-ac61-6f509b9f633d",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
-                    "name": "Roll",
-                    "type": "Button",
-                    "id": "192f3ba0-bc8e-47ae-b34c-a7ba55430175",
+                    "id": "d0a676ed-6f7d-4686-afed-67ac3757e01e",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -414,6 +444,39 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "95d06579-b694-4df8-b602-77183bf089ea",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SkillQ",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8086a6f1-1f68-4ef3-b558-63f966ce094a",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SkillE",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0b858e2c-9390-4736-b29b-a06ffeb6124d",
+                    "path": "<Keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SkillX",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

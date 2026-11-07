@@ -12,6 +12,7 @@ namespace GamePlay.BattleSystem
         private readonly MovementModule _movement;
         private readonly ViewModule _view;
         private readonly AbilityModule _ability;
+        private readonly CombatModule _combat;
 
         /// <summary>
         /// 创建实体模拟并绑定运行上下文。
@@ -23,6 +24,7 @@ namespace GamePlay.BattleSystem
             _view = context.Get<ViewModule>();
             _ability = context.Get<AbilityModule>();
             _stateMachine = context.Get<EntityStateMachineModule>();
+            _combat = context.Get<CombatModule>();
         }
 
         /// <summary>
@@ -36,11 +38,8 @@ namespace GamePlay.BattleSystem
             _context.IsRunning = command.IsHeld(EntityCommandFlags.Run);
             _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
             
-            // TODO: 切换成完整的技能释放判断逻辑
-            if (command.IsPressed(EntityCommandFlags.Roll))
-            {
-                _context.SkillRequest = true;
-            }
+            // 处理战斗控制输入，内部处理是否需要进入Action状态
+            _combat.CheckAction(command);
             
             // 先推进上一拍已存在的技能，再由状态机处理本拍新施法请求。
             _stateMachine.Step(deltaTime);

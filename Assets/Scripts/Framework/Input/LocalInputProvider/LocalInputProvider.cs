@@ -86,13 +86,22 @@ namespace Framework
         public InputCommand GetInputCommand()
         {
             EntityCommandFlags flags = EntityCommandFlags.None;
+            
+            // 基础操作
+            if (_playerActions.Run.IsPressed()) flags |= EntityCommandFlags.Run;
+            if (_playerActions.Jump.IsPressed()) flags |= EntityCommandFlags.Jump;
+            
+            // 交互操作
+            if (_playerActions.Interact.IsPressed()) flags |= EntityCommandFlags.Interact;
+            
+            // 战斗操作
             if (_playerActions.PrimaryAttack.IsPressed()) flags |= EntityCommandFlags.PrimaryAttack;
             if (_playerActions.SpecialAttack.IsPressed()) flags |= EntityCommandFlags.SpecialAttack;
             if (_playerActions.SpecialAction.IsPressed()) flags |= EntityCommandFlags.SpecialAction;
-            if (_playerActions.Interact.IsPressed()) flags |= EntityCommandFlags.Interact;
-            if (_playerActions.Run.IsPressed()) flags |= EntityCommandFlags.Run;
-            if (_playerActions.Jump.IsPressed()) flags |= EntityCommandFlags.Jump;
             if (_playerActions.Roll.IsPressed()) flags |= EntityCommandFlags.Roll;
+            if (_playerActions.SkillQ.IsPressed()) flags |= EntityCommandFlags.SkillQ;
+            if (_playerActions.SkillE.IsPressed()) flags |= EntityCommandFlags.SkillE;
+            if (_playerActions.SkillX.IsPressed()) flags |= EntityCommandFlags.SkillX;
 
             return new InputCommand
             {

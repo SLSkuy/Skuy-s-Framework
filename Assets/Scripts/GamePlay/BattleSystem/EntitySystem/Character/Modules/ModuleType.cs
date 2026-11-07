@@ -10,5 +10,6 @@ namespace GamePlay.BattleSystem
         Interaction,
         Ability,
         Heath,
+        Combat,
     }
 }
