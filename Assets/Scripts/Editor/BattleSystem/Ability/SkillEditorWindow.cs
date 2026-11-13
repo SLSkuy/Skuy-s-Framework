@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using GamePlay.BattleSystem;
 using UnityEditor;
@@ -222,6 +222,14 @@ namespace Editor
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("skillName"), new GUIContent("名称"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("cooldown"), new GUIContent("冷却"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("durationTicks"), new GUIContent("持续 Tick"));
+            SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
+            EditorGUILayout.PropertyField(conditions, new GUIContent("释放条件（全部满足）"), true);
+            if (GUILayout.Button("添加角色状态条件"))
+            {
+                int index = conditions.arraySize++;
+                conditions.GetArrayElementAtIndex(index).managedReferenceValue = new EntityStateCondition();
+                conditions.isExpanded = true;
+            }
             SerializedProperty effects = skill.FindPropertyRelative("effects");
             for (int i = 0; i < effects.arraySize; i++)
             {

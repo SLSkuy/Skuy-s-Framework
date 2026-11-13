@@ -25,7 +25,9 @@ namespace GamePlay.BattleSystem
             
             uint skill2Action = ResolveCombatCommand(flagsPressed);
 
-            if (_ability.TryCastSkill(skill2Action))
+            // TODO: 解析失败条件
+            SkillExecutionResult result = _ability.TryCastSkill(skill2Action);
+            if (result.IsSuccess)
             {
                 _stateMachine.ChangeState(EntityState.ACTION);
             }

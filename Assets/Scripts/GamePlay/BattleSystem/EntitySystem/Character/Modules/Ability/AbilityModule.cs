@@ -19,6 +19,9 @@ namespace GamePlay.BattleSystem
         private ViewModule _viewModule;
         private CombatConfig _config;
         
+        /// <summary> 条件解释器，按条件配置的实际类型注册 </summary>
+        private Dictionary<Type, IConditionInterpreter> _conditionInterpreters;
+        
         /// <summary> 所有技能效果执行器，按配置实际类型注册 </summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
         
@@ -34,24 +37,25 @@ namespace GamePlay.BattleSystem
         #endregion
 
         /// <summary>
-        /// 单主动技能释放；校验全部效果后创建实例并派发零时刻效果
+        /// 单主动技能释放；返回状态、冷却和条件检查的结果
         /// </summary>
-        public bool TryCastSkill(uint skillId)
+        public SkillExecutionResult TryCastSkill(uint skillId)
         {
             // TODO: 后续实现技能中断，当前保持必须释放完一个能力时候才能释放下一个能力
-            if (IsCasting) return false;
+            if (IsCasting) return new SkillExecutionResult(skillId, SkillExecutionCode.Casting);
             
             // 不存在技能配置
             if (!_skillInstances.TryGetValue(skillId, out SkillInstance instance))
             {
                 // TODO: 添加日志处理类，自定义DEBUG信息
-                return false;
+                return new SkillExecutionResult(skillId, SkillExecutionCode.SkillNotFound);
             }
-
-            if (!instance.TryCastSkill()) return false;
+            
+            SkillExecutionResult result = instance.TryCastSkill();
+            if (!result.IsSuccess) return result;
             
             _currentSkill = instance;
-            return true;
+            return result;
         }
         
         /// <summary>
@@ -77,12 +81,20 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 初始化所有技能效果执行器
         /// </summary>
-        private void InitExecutors()
+        private void InitEffectExecutors()
         {
             _executors = new Dictionary<Type, ISkillEffectExecutor>
             {
                 { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
                 { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) }
+            };
+        }
+        
+        private void InitConditionInterpreters()
+        {
+            _conditionInterpreters = new Dictionary<Type, IConditionInterpreter>
+            {
+                { typeof(EntityStateCondition), new EntityStateConditionInterpreter(Context) }
             };
         }
 
@@ -94,6 +106,7 @@ namespace GamePlay.BattleSystem
             _skillInstances = new Dictionary<uint, SkillInstance>();
             int tickRate = _simulation.TickRate;
             
+            // 每个技能示例只Tick它所需的技能效果
             List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
             foreach (uint id in _config.skillIds)
             {
@@ -102,13 +115,22 @@ namespace GamePlay.BattleSystem
                     executors.AddRange(config.effects.Select(effect => _executors[effect.GetType()]).Distinct());
 
                     SkillInstance instance = new SkillInstance(config, executors.ToArray(), tickRate);
+                    instance.OnCastCheck += OnCastCheck;
                     instance.OnSkillEffectStart += ExecuteSkillEffect;
-                    instance.OnSkillEffectEnd += StopExecuteSkillEffect;
+                    instance.OnSkillEffectEnd += StopSkillEffect;
                     _skillInstances.Add(id, instance);
                     
                     executors.Clear();
                 }
             }
+        }
+
+        /// <summary>
+        /// 检测执行条件
+        /// </summary>
+        private bool OnCastCheck(ICondition condition)
+        {
+            return _conditionInterpreters[condition.GetType()].Evaluate(condition);
         }
         
         private void ExecuteSkillEffect(SkillEffect effect)
@@ -116,7 +138,7 @@ namespace GamePlay.BattleSystem
             _executors[effect.GetType()].ExecuteSkillEffect(effect);
         }
 
-        private void StopExecuteSkillEffect(SkillEffect effect)
+        private void StopSkillEffect(SkillEffect effect)
         {
             _executors[effect.GetType()].StopExecution();
         }
@@ -144,7 +166,8 @@ namespace GamePlay.BattleSystem
             _config = Config.combatConfig;
             
             Reset();
-            InitExecutors();
+            InitEffectExecutors();
+            InitConditionInterpreters();
             InitSkills();
         }
 

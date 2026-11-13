@@ -51,6 +51,11 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 事件
+        /// <summary>
+        /// 由所属 AbilityModule 解释条件；多个订阅者必须全部通过
+        /// </summary>
+        public event Func<ICondition, bool> OnCastCheck;
+
         public event Action<SkillEffect> OnSkillEffectStart;
         public event Action<SkillEffect> OnSkillEffectEnd;
         #endregion
@@ -69,17 +74,30 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 尝试释放技能
         /// </summary>
-        public bool TryCastSkill()
+        public SkillExecutionResult TryCastSkill()
         {
-            if(State != SkillState.Idle) return false;
+            if (State == SkillState.Casting) return new SkillExecutionResult(_config.skillId, SkillExecutionCode.Casting);
+            if (State == SkillState.Locked) return new SkillExecutionResult(_config.skillId, SkillExecutionCode.SkillLocked);
             
             // 技能冷却中
-            if(Global.CurrentTime < _nextExecutableTime) return false;
+            if (Global.CurrentTime < _nextExecutableTime) return new SkillExecutionResult(_config.skillId, SkillExecutionCode.Cooldown);
+
+            // 执行条件判断
+            foreach (ICondition condition in _config.castConditions)
+            {
+                if (OnCastCheck == null) throw new InvalidOperationException("技能条件检测必须绑定 AbilityModule");
+
+                foreach (var @delegate in OnCastCheck.GetInvocationList())
+                {
+                    var check = (Func<ICondition, bool>)@delegate;
+                    if (!check(condition)) return new SkillExecutionResult(_config.skillId, SkillExecutionCode.ConditionFailed);
+                }
+            }
             
             _track.Start();
             State = SkillState.Casting;
             
-            return true;
+            return new SkillExecutionResult(_config.skillId, SkillExecutionCode.Success);
         }
         
         /// <summary>
@@ -154,6 +172,7 @@ namespace GamePlay.BattleSystem
             _track.OnSkillEffect -= DispatchEffect;
             _track?.Dispose();
 
+            OnCastCheck = null;
             OnSkillEffectStart = null;
             OnSkillEffectEnd = null;
         }
