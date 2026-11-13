@@ -3,7 +3,7 @@
     /// <summary>
     /// 技能释放结果，记录技能、结果码以及未通过的条件
     /// </summary>
-    public readonly struct SkillExecutionResult
+    public readonly struct SkillExecutionCheckResult
     {
         #region 属性
         /// <summary>
@@ -14,18 +14,18 @@
         /// <summary>
         /// 释放结果码
         /// </summary>
-        public SkillExecutionCode Code { get; }
+        public SkillExecutionCheckCode Code { get; }
         
         /// <summary>
         /// 失败的条件
         /// </summary>
         // public ICondition FailedCondition { get; }
         
-        public bool IsSuccess => Code == SkillExecutionCode.Success;
+        public bool IsSuccess => Code == SkillExecutionCheckCode.Success;
         #endregion
 
         // public SkillExecutionResult(uint skillId, SkillExecutionCode code, ICondition failedCondition = null)
-        public SkillExecutionResult(uint skillId, SkillExecutionCode code)
+        public SkillExecutionCheckResult(uint skillId, SkillExecutionCheckCode code)
         {
             SkillId = skillId;
             Code = code;

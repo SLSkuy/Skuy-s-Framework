@@ -3,12 +3,15 @@
     /// <summary>
     /// 技能释放请求的结果码，成功仅表示已开始释放
     /// </summary>
-    public enum SkillExecutionCode
+    public enum SkillExecutionCheckCode
     {
+        /// <summary>
+        /// 未知原因
+        /// </summary>
         None,
         
         /// <summary>
-        /// 技能释放成功
+        /// 技能检测释放通过，可以进行释放
         /// </summary>
         Success,
         
@@ -35,6 +38,11 @@
         /// <summary>
         /// 条件检测失败
         /// </summary>
-        ConditionFailed
+        ConditionFailed,
+
+        /// <summary>
+        /// 当前技能不处于允许替换的窗口
+        /// </summary>
+        ReplaceNotAllowed
     }
 }

@@ -31,8 +31,7 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 事件
-        public event Action OnInterrupt;
-        public event Action OnCompleted;
+        public event Action<SkillEndResult> OnTrackEnded;
         public event Action<SkillEffectEvent> OnSkillEffect;
         #endregion
 
@@ -116,27 +115,53 @@ namespace GamePlay.BattleSystem
             
             State = SkillTrackState.Paused;
         }
+        
+        /// <summary>
+        /// 查询当前轨道拍是否处于指定中断窗口，不改变轨道状态
+        /// </summary>
+        public bool CheckInterrupt(SkillInterruptReason reason)
+        {
+            if (!IsRunning) return false;
+            
+            foreach (SkillInterruptRule rule in _config.interruptRules)
+            {
+                if (rule.reason == reason && ElapsedTicks >= rule.startTick && ElapsedTicks < rule.endTick) return true;
+            }
+            
+            return false;
+        }
 
         /// <summary>
         /// 尝试打断当前技能的释放
         /// </summary>
-        public bool Interrupt(SkillInterruptReason reason)
+        public bool TryInterrupt(SkillInterruptReason reason)
         {
-            if (State == SkillTrackState.Init || IsRunning )
-            {
-                foreach (SkillInterruptRule rule in _config.interruptRules)
-                {
-                    // 判断中断原因是否处于中断窗口中
-                    if (rule.reason == reason && ElapsedTicks >= rule.startTick && ElapsedTicks < rule.endTick)
-                    {
-                        State = SkillTrackState.Interrupt;
-                        OnInterrupt?.Invoke();
-                        return true;
-                    }
-                }
-            }
+            if (!CheckInterrupt(reason)) return false;
+            
+            Interrupt(reason);
+            
+            return true;
+        }
 
-            return false;
+        /// <summary>
+        /// 强制打断当前技能的释放
+        /// </summary>
+        public void Interrupt(SkillInterruptReason reason)
+        {
+            State = SkillTrackState.Interrupt;
+
+            SkillEndCode code = reason == SkillInterruptReason.Replace
+                ? SkillEndCode.Replaced
+                : SkillEndCode.Interrupted;
+            
+            OnTrackEnded?.Invoke(new SkillEndResult(_config.skillId, code));
+        }
+        
+        /// <summary>清除运行进度，不派发技能结束结算。</summary>
+        public void Reset()
+        {
+            State = SkillTrackState.Init;
+            ElapsedTicks = 0;
         }
         
         public void Tick()
@@ -150,7 +175,7 @@ namespace GamePlay.BattleSystem
             if(ElapsedTicks >= _trackLength)
             {
                 State = SkillTrackState.Complete;
-                OnCompleted?.Invoke();
+                OnTrackEnded?.Invoke(new SkillEndResult(_config.skillId, SkillEndCode.Completed));
             }
         }
 
@@ -168,9 +193,8 @@ namespace GamePlay.BattleSystem
         public void Dispose()
         {
             _events.Clear();
-
-            OnInterrupt = null;
-            OnCompleted = null;
+            
+            OnTrackEnded = null;
             OnSkillEffect = null;
         }
     }

@@ -23,6 +23,15 @@ MonoBehaviour:
     effects:
     - rid: 4293588675574366438
     - rid: 4293588675574366439
+  - skillId: 2
+    skillName: NoramlAttack
+    cooldown: 0
+    durationTicks: 84
+    interruptRules: []
+    castConditions:
+    - rid: 4293588810657169602
+    effects:
+    - rid: 4293588810657169601
   references:
     version: 2
     RefIds:
@@ -45,6 +54,19 @@ MonoBehaviour:
         speed: 4
         collisionPolicy: 0
     - rid: 4293588810657169548
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293588810657169601
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 84
+        endPolicy: 0
+        sampleOffset: 0
+        clip: {fileID: 4281710398320194202, guid: 6efba5285b728de4ea0d7fa1562fce5d, type: 3}
+    - rid: 4293588810657169602
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         exclusiveStates: 03000000u

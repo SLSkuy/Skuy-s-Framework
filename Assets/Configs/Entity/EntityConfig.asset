@@ -32,7 +32,20 @@ MonoBehaviour:
     animSpeedSmoothTime: 0.1
     animTurnSmoothTime: 0.15
   combatConfig:
-    rollSkillId: 1
-    primaryAttackSkillId: 0
-    specialAttackSkillId: 0
-    skillIds: 01000000u
+    combatGraph:
+      rootNodeId: 0
+      nodes:
+      - nodeId: 0
+        skillId: 0
+      - nodeId: 1
+        skillId: 1
+      - nodeId: 2
+        skillId: 2
+      edges:
+      - sourceNodeId: 0
+        targetNodeId: 1
+        command: 64
+      - sourceNodeId: 0
+        targetNodeId: 2
+        command: 8
+    commandPriorities: 4000800000010002200010000800t
