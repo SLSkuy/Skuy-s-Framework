@@ -24,6 +24,7 @@ namespace Editor
         private float _resizeHeight;
         private SerializedObject _serializedTable;
         private Type[] _effectTypes;
+        private Type[] _conditionTypes;
         private PreviewRenderUtility _preview;
         private GameObject _model;
         private Transform[] _bones;
@@ -68,6 +69,9 @@ namespace Editor
             minSize = new Vector2(1000, 600);
             _effectTypes = TypeCache.GetTypesDerivedFrom<SkillEffect>()
                 .Where(type => !type.IsAbstract && !type.ContainsGenericParameters && type.IsSerializable &&
+                    type.GetConstructor(Type.EmptyTypes) != null).OrderBy(type => type.FullName).ToArray();
+            _conditionTypes = TypeCache.GetTypesDerivedFrom<ICondition>()
+                .Where(type => type.IsClass && !type.IsAbstract && !type.ContainsGenericParameters && type.IsSerializable &&
                     type.GetConstructor(Type.EmptyTypes) != null).OrderBy(type => type.FullName).ToArray();
             if (!table)
             {
@@ -223,13 +227,48 @@ namespace Editor
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("cooldown"), new GUIContent("冷却"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("durationTicks"), new GUIContent("持续 Tick"));
             SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
-            EditorGUILayout.PropertyField(conditions, new GUIContent("释放条件（全部满足）"), true);
-            if (GUILayout.Button("添加角色状态条件"))
+            EditorGUILayout.LabelField("释放条件（全部满足）", EditorStyles.boldLabel);
+            for (int i = 0; i < conditions.arraySize; i++)
             {
-                int index = conditions.arraySize++;
-                conditions.GetArrayElementAtIndex(index).managedReferenceValue = new EntityStateCondition();
-                conditions.isExpanded = true;
+                SerializedProperty condition = conditions.GetArrayElementAtIndex(i);
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        string name = condition.managedReferenceValue?.GetType().Name ?? "缺失条件";
+                        condition.isExpanded = EditorGUILayout.Foldout(condition.isExpanded, name, true);
+                        if (GUILayout.Button("↑", GUILayout.Width(24)) && i > 0)
+                        { conditions.MoveArrayElement(i, i - 1); break; }
+                        if (GUILayout.Button("↓", GUILayout.Width(24)) && i < conditions.arraySize - 1)
+                        { conditions.MoveArrayElement(i, i + 1); break; }
+                        if (GUILayout.Button("×", GUILayout.Width(24)))
+                        { conditions.DeleteArrayElementAtIndex(i); break; }
+                    }
+                    if (condition.isExpanded)
+                    {
+                        SerializedProperty child = condition.Copy();
+                        SerializedProperty end = child.GetEndProperty();
+                        bool enter = true;
+                        while (child.NextVisible(enter) && !SerializedProperty.EqualContents(child, end))
+                        { EditorGUILayout.PropertyField(child, true); enter = false; }
+                    }
+                }
             }
+            EditorGUILayout.Space();
+            if (EditorGUILayout.DropdownButton(new GUIContent("添加条件"), FocusType.Keyboard))
+            {
+                var menu = new GenericMenu();
+                SkillTable target = table;
+                int skillIndex = selectedSkill;
+                foreach (Type type in _conditionTypes)
+                    menu.AddItem(new GUIContent(type.Name), false, () => AddCondition(target, skillIndex, type));
+                menu.ShowAsContext();
+            }
+            EditorGUILayout.Space();
+            Rect separator = EditorGUILayout.GetControlRect(false, 1);
+            EditorGUI.DrawRect(separator, new Color(0.5f, 0.5f, 0.5f, 0.6f));
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("技能效果", EditorStyles.boldLabel);
             SerializedProperty effects = skill.FindPropertyRelative("effects");
             for (int i = 0; i < effects.arraySize; i++)
             {
@@ -569,6 +608,22 @@ namespace Editor
                 clip.start = (double)effect.FindPropertyRelative("startTick").longValue / tickRate;
                 clip.duration = Math.Max(0.000001, (double)effect.FindPropertyRelative("durationTicks").longValue / tickRate);
             }
+        }
+
+        private void AddCondition(SkillTable target, int skillIndex, Type type)
+        {
+            if (!target || skillIndex >= target.skills.Length) return;
+            using (var serialized = new SerializedObject(target))
+            {
+                SerializedProperty skill = serialized.FindProperty("skills").GetArrayElementAtIndex(skillIndex);
+                SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
+                int index = conditions.arraySize++;
+                conditions.GetArrayElementAtIndex(index).managedReferenceValue = Activator.CreateInstance(type);
+                conditions.GetArrayElementAtIndex(index).isExpanded = true;
+                conditions.isExpanded = true;
+                serialized.ApplyModifiedProperties();
+            }
+            Repaint();
         }
 
         private void AddEffect(SkillTable target, int skillIndex, Type type)

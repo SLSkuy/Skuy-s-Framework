@@ -18,6 +18,8 @@ MonoBehaviour:
     cooldown: 0
     durationTicks: 65
     interruptRules: []
+    castConditions:
+    - rid: 4293588810657169548
     effects:
     - rid: 4293588675574366438
     - rid: 4293588675574366439
@@ -42,3 +44,7 @@ MonoBehaviour:
         endPolicy: 0
         speed: 4
         collisionPolicy: 0
+    - rid: 4293588810657169548
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
