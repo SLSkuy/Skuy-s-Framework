@@ -227,7 +227,7 @@ namespace Editor
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("cooldown"), new GUIContent("冷却"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("durationTicks"), new GUIContent("持续 Tick"));
             SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
-            EditorGUILayout.LabelField("释放条件（全部满足）", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("释放条件", EditorStyles.boldLabel);
             for (int i = 0; i < conditions.arraySize; i++)
             {
                 SerializedProperty condition = conditions.GetArrayElementAtIndex(i);
@@ -266,6 +266,11 @@ namespace Editor
             }
             EditorGUILayout.Space();
             Rect separator = EditorGUILayout.GetControlRect(false, 1);
+            EditorGUI.DrawRect(separator, new Color(0.5f, 0.5f, 0.5f, 0.6f));
+            EditorGUILayout.Space();
+            DrawInterruptRules(skill);
+            EditorGUILayout.Space();
+            separator = EditorGUILayout.GetControlRect(false, 1);
             EditorGUI.DrawRect(separator, new Color(0.5f, 0.5f, 0.5f, 0.6f));
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("技能效果", EditorStyles.boldLabel);
@@ -309,6 +314,66 @@ namespace Editor
             EditorGUILayout.EndScrollView();
         }
 
+        private void DrawInterruptRules(SerializedProperty skill)
+        {
+            EditorGUILayout.LabelField("中断窗口", EditorStyles.boldLabel);
+            SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+            for (int i = 0; i < rules.arraySize; i++)
+            {
+                SerializedProperty rule = rules.GetArrayElementAtIndex(i);
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        rule.isExpanded = EditorGUILayout.Foldout(rule.isExpanded, $"中断窗口 {i + 1}", true);
+                        if (GUILayout.Button("×", GUILayout.Width(24)))
+                        {
+                            rules.DeleteArrayElementAtIndex(i);
+                            break;
+                        }
+                    }
+                    if (rule.isExpanded)
+                    {
+                        EditorGUILayout.PropertyField(rule.FindPropertyRelative("reason"), new GUIContent("中断原因"));
+                        SerializedProperty start = rule.FindPropertyRelative("startTick");
+                        SerializedProperty end = rule.FindPropertyRelative("endTick");
+                        EditorGUI.BeginChangeCheck();
+                        EditorGUILayout.PropertyField(start, new GUIContent("开始 Tick"));
+                        EditorGUILayout.PropertyField(end, new GUIContent("结束 Tick"));
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            start.intValue = Math.Max(0, start.intValue);
+                            end.intValue = Math.Max(start.intValue, end.intValue);
+                        }
+                    }
+                }
+            }
+            if (GUILayout.Button("添加中断窗口"))
+            {
+                _serializedTable.ApplyModifiedProperties();
+                AddInterruptRule(table, selectedSkill);
+                _serializedTable.Update();
+            }
+        }
+
+        private void AddInterruptRule(SkillTable target, int skillIndex)
+        {
+            using (var serialized = new SerializedObject(target))
+            {
+                SerializedProperty skill = serialized.FindProperty("skills").GetArrayElementAtIndex(skillIndex);
+                SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+                int index = rules.arraySize++;
+                SerializedProperty rule = rules.GetArrayElementAtIndex(index);
+                rule.FindPropertyRelative("startTick").intValue = 0;
+                rule.FindPropertyRelative("endTick").intValue = (int)Math.Min(int.MaxValue,
+                    skill.FindPropertyRelative("durationTicks").longValue);
+                rule.FindPropertyRelative("reason").enumValueIndex = 0;
+                rule.isExpanded = true;
+                serialized.ApplyModifiedProperties();
+            }
+            Repaint();
+        }
+
         private void DrawTracks(SerializedProperty skill)
         {
             DrawTrackSplitter();
@@ -328,12 +393,17 @@ namespace Editor
                         SkillTable target = table;
                         int index = selectedSkill;
                         foreach (Type type in _effectTypes)
-                            menu.AddItem(new GUIContent(type.Name), false, () => AddEffect(target, index, type));
+                            menu.AddItem(new GUIContent("技能效果/" + type.Name), false, () => AddEffect(target, index, type));
+                        menu.AddItem(new GUIContent("中断窗口"), false, () => AddInterruptRule(target, index));
                         menu.ShowAsContext();
                     }
                 }
                 SerializedProperty effects = skill.FindPropertyRelative("effects");
+                SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+                int trackCount = effects.arraySize + rules.arraySize;
                 long length = Math.Max(1, skill.FindPropertyRelative("durationTicks").longValue);
+                for (int i = 0; i < rules.arraySize; i++)
+                    length = Math.Max(length, rules.GetArrayElementAtIndex(i).FindPropertyRelative("endTick").longValue);
                 for (int i = 0; i < effects.arraySize; i++)
                 {
                     SerializedProperty effect = effects.GetArrayElementAtIndex(i);
@@ -353,7 +423,7 @@ namespace Editor
                     Repaint();
                 }
                 Rect canvas = new Rect(0, 0, Mathf.Max(viewport.width - 16, 180 + length * _pixelsPerTick + 20),
-                    Mathf.Max(viewport.height - 16, 28 + effects.arraySize * 38));
+                    Mathf.Max(viewport.height - 16, 28 + trackCount * 38));
                 _trackScroll = GUI.BeginScrollView(viewport, _trackScroll, canvas);
                 EditorGUI.DrawRect(canvas, new Color(0.13f, 0.13f, 0.13f));
                 EditorGUI.DrawRect(new Rect(canvas.x, canvas.y, canvas.width, 24), new Color(0.19f, 0.19f, 0.19f));
@@ -405,22 +475,27 @@ namespace Editor
                     EditorGUI.DrawRect(new Rect(x, canvas.y + 22, 1, canvas.height - 22), new Color(1, 1, 1, 0.08f));
                     GUI.Label(new Rect(x + 2, canvas.y, 55, 20), tick.ToString(), EditorStyles.miniLabel);
                 }
-                for (int i = 0; i < effects.arraySize; i++)
+                for (int i = 0; i < trackCount; i++)
                 {
-                    SerializedProperty effect = effects.GetArrayElementAtIndex(i);
-                    if (effect.managedReferenceValue == null) continue;
-                    TimelineClip clip = _timelineClips[i];
-                    long start = (long)Math.Round(clip.start * tickRate);
-                    long duration = (long)Math.Round(clip.duration * tickRate);
+                    bool isInterrupt = i >= effects.arraySize;
+                    SerializedProperty entry = isInterrupt
+                        ? rules.GetArrayElementAtIndex(i - effects.arraySize) : effects.GetArrayElementAtIndex(i);
+                    if (!isInterrupt && entry.managedReferenceValue == null) continue;
+                    long start = entry.FindPropertyRelative("startTick").longValue;
+                    long duration = isInterrupt ? entry.FindPropertyRelative("endTick").longValue - start
+                        : entry.FindPropertyRelative("durationTicks").longValue;
+                    string label = isInterrupt
+                        ? $"中断窗口 {i - effects.arraySize + 1} · {(SkillInterruptReason)entry.FindPropertyRelative("reason").enumValueIndex}"
+                        : _timelineClips[i].displayName;
                     float y = canvas.y + 28 + i * 38;
                     EditorGUI.DrawRect(new Rect(canvas.x, y - 2, canvas.width, 36), new Color(1, 1, 1, i % 2 == 0 ? 0.025f : 0.055f));
                     EditorGUI.DrawRect(new Rect(canvas.x, y - 2, 178, 36), new Color(0.20f, 0.20f, 0.20f));
-                    EditorGUI.DrawRect(new Rect(canvas.x, y - 2, 3, 36), new Color(0.28f, 0.55f, 0.72f));
-                    GUI.Label(new Rect(canvas.x + 10, y + 2, 165, 24), clip.displayName, EditorStyles.miniBoldLabel);
+                    EditorGUI.DrawRect(new Rect(canvas.x, y - 2, 3, 36), isInterrupt ? new Color(0.85f, 0.55f, 0.25f) : new Color(0.28f, 0.55f, 0.72f));
+                    GUI.Label(new Rect(canvas.x + 10, y + 2, 165, 24), label, EditorStyles.miniBoldLabel);
                     Rect bar = new Rect(origin + start * _pixelsPerTick, y, Mathf.Max(12, duration * _pixelsPerTick), 24);
                     EditorGUI.DrawRect(bar, _selectedTrack == i ? new Color(0.28f, 0.52f, 0.68f) : new Color(0.23f, 0.33f, 0.40f));
                     EditorGUI.DrawRect(new Rect(bar.x, bar.y, bar.width, 3), new Color(0.4f, 0.7f, 0.88f));
-                    GUI.Label(new Rect(bar.x + 8, bar.y + 2, Mathf.Max(0, bar.width - 16), 20), new GUIContent($"{start} – {start + duration}", clip.displayName), EditorStyles.whiteMiniLabel);
+                    GUI.Label(new Rect(bar.x + 8, bar.y + 2, Mathf.Max(0, bar.width - 16), 20), new GUIContent($"{start} – {start + duration}", label), EditorStyles.whiteMiniLabel);
                     float edgeWidth = Mathf.Min(8, bar.width * 0.5f);
                     Rect left = new Rect(bar.x, bar.y, edgeWidth, bar.height);
                     Rect right = new Rect(bar.xMax - edgeWidth, bar.y, edgeWidth, bar.height);
@@ -468,12 +543,18 @@ namespace Editor
                             start = Math.Clamp(_dragStart + delta, 0, Math.Max(0, limit - _dragDuration));
                             end = start + _dragDuration;
                         }
-                        SerializedProperty effect = effects.GetArrayElementAtIndex(_dragTrack);
-                        TimelineClip clip = _timelineClips[_dragTrack];
-                        clip.start = (double)start / tickRate;
-                        clip.duration = Math.Max(0.000001, (double)(end - start) / tickRate);
-                        effect.FindPropertyRelative("startTick").longValue = (long)Math.Round(clip.start * tickRate);
-                        effect.FindPropertyRelative("durationTicks").longValue = end == start ? 0 : (long)Math.Round(clip.duration * tickRate);
+                        bool isInterrupt = _dragTrack >= effects.arraySize;
+                        SerializedProperty entry = isInterrupt
+                            ? rules.GetArrayElementAtIndex(_dragTrack - effects.arraySize)
+                            : effects.GetArrayElementAtIndex(_dragTrack);
+                        if (isInterrupt)
+                        {
+                            start = Math.Min(start, int.MaxValue);
+                            end = Math.Min(end, int.MaxValue);
+                        }
+                        entry.FindPropertyRelative("startTick").longValue = start;
+                        entry.FindPropertyRelative(isInterrupt ? "endTick" : "durationTicks").longValue =
+                            isInterrupt ? end : end - start;
                         current.Use();
                         Repaint();
                     }
@@ -491,7 +572,7 @@ namespace Editor
                     GUIUtility.keyboardControl = control;
                     EditorGUIUtility.editingTextField = false;
                     int row = Mathf.FloorToInt((current.mousePosition.y - canvas.y - 28) / 38);
-                    _selectedTrack = row >= 0 && row < effects.arraySize ? row : -1;
+                    _selectedTrack = row >= 0 && row < trackCount ? row : -1;
                     current.Use();
                     Repaint();
                 }

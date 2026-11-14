@@ -41,11 +41,21 @@ MonoBehaviour:
         skillId: 1
       - nodeId: 2
         skillId: 2
+      - nodeId: 3
+        skillId: 3
+      - nodeId: 4
+        skillId: 4
       edges:
       - sourceNodeId: 0
         targetNodeId: 1
         command: 64
       - sourceNodeId: 0
         targetNodeId: 2
+        command: 8
+      - sourceNodeId: 2
+        targetNodeId: 3
+        command: 8
+      - sourceNodeId: 3
+        targetNodeId: 4
         command: 8
     commandPriorities: 4000800000010002200010000800t

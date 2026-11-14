@@ -24,14 +24,41 @@ MonoBehaviour:
     - rid: 4293588675574366438
     - rid: 4293588675574366439
   - skillId: 2
-    skillName: NoramlAttack
+    skillName: NoramlAttack1
     cooldown: 0
     durationTicks: 84
-    interruptRules: []
+    interruptRules:
+    - startTick: 32
+      endTick: 84
+      reason: 4
     castConditions:
     - rid: 4293588810657169602
     effects:
     - rid: 4293588810657169601
+  - skillId: 3
+    skillName: NoramlAttack2
+    cooldown: 0
+    durationTicks: 72
+    interruptRules:
+    - startTick: 22
+      endTick: 72
+      reason: 4
+    castConditions:
+    - rid: 4293588810657169607
+    effects:
+    - rid: 4293588810657169606
+  - skillId: 4
+    skillName: NoramlAttack3
+    cooldown: 0
+    durationTicks: 120
+    interruptRules:
+    - startTick: 63
+      endTick: 120
+      reason: 4
+    castConditions:
+    - rid: 4293588810657169609
+    effects:
+    - rid: 4293588810657169608
   references:
     version: 2
     RefIds:
@@ -67,6 +94,32 @@ MonoBehaviour:
         sampleOffset: 0
         clip: {fileID: 4281710398320194202, guid: 6efba5285b728de4ea0d7fa1562fce5d, type: 3}
     - rid: 4293588810657169602
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293588810657169606
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 72
+        endPolicy: 0
+        sampleOffset: 0
+        clip: {fileID: 8358961154681530694, guid: e37fd5d62a2ba5646bdacf506a35cc16, type: 3}
+    - rid: 4293588810657169607
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293588810657169608
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 120
+        endPolicy: 0
+        sampleOffset: 0
+        clip: {fileID: -1625625506961811243, guid: 65d700cc6ee8e68449b1afa20ef808b0, type: 3}
+    - rid: 4293588810657169609
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         exclusiveStates: 03000000u
