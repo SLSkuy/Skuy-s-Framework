@@ -15,11 +15,11 @@ namespace GamePlay.BattleSystem
         private const int LOCOMOTION_PORT = 0;
         private const int ACTION_PORT = 1;
         
-        private Animator _animator;
         private MovementModule _movement;
         private ViewModule _view;
         private AnimationConfig _config;
         
+        private Animator _animator;
         private PlayableGraph _graph;
         /// <summary> 顶层动画混合器，用于混合移动动画和战斗动画 </summary>
         private AnimationMixerPlayable _topMixer;
@@ -55,6 +55,10 @@ namespace GamePlay.BattleSystem
                 _action.SetTime(request.sampleOffset);
                 return;
             }
+            
+            // TODO: 判断状态是否为ACTION
+            // TODO: 根据是否为技能间转换进行过渡，削弱技能间变换时的生硬感
+            // TODO: 添加新的ACTION动画混合器
             
             InterruptActionAnimation();
             

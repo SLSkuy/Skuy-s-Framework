@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Framework;
+﻿using Framework;
 
 namespace GamePlay.BattleSystem
 {
@@ -13,12 +12,13 @@ namespace GamePlay.BattleSystem
         private CombatConfig _config;
 
         #region 连招图管理
-        /// <summary>连招节点</summary>
-        private readonly Dictionary<uint, CombatGraphNode> _nodes = new();
-        /// <summary>连招节点转换路径</summary>
-        private readonly Dictionary<(uint, EntityCommandFlags), uint> _transitions = new();
-        /// <summary>当前节点</summary>
-        private uint _currentNodeId;
+        /// <summary>连招图实例</summary>
+        public CombatGraph Graph { get; private set; }
+        /// <summary>当前连招节点</summary>
+        public ICombatGraphNode CurrentNode { get; private set; }
+        
+        /// <summary>当前是否处于根节点，即没有进行任何连招</summary>
+        public bool IsRootNode => CurrentNode == Graph.rootNode;
         #endregion
 
         #region 属性
@@ -27,7 +27,6 @@ namespace GamePlay.BattleSystem
 
         /// <summary>
         /// 仅尝试本 Tick 按下的最高优先级命令，不保留或重试输入
-        /// TODO: 添加按下/按住/松开的逻辑处理
         /// </summary>
         public void CheckAction(in EntityControlCommand command)
         {
@@ -35,40 +34,24 @@ namespace GamePlay.BattleSystem
             // TODO: 按照动作优先级处理输入命令
             foreach (EntityCommandFlags input in _config.commandPriorities)
             {
+                // TODO: 添加按下/按住/松开的逻辑处理
                 if (!command.IsPressed(input)) continue;
-                if (!_transitions.TryGetValue((_currentNodeId, input), out uint targetNodeId)) return;
-
-                // 获取下一个节点信息
-                uint skillId = _nodes[targetNodeId].skillId;
+                
+                // 不存在对应派生操作，退出检测
+                if (!CurrentNode.CheckTransition(input, out CombatGraphNode targetNode)) return;
+                
+                // 判断是否为派生释放
                 bool replacing = _ability.IsCasting;
                 
                 // 释放技能
+                uint skillId = targetNode.SkillId;
                 SkillExecutionCheckResult checkResult = _ability.TryCastSkill(skillId);
                 if (!checkResult.IsSuccess) return;
 
-                _currentNodeId = targetNodeId;  // 若非替换，则需要进入Action状态
+                CurrentNode = targetNode;  // 若非替换，则需要进入Action状态
                 if (!replacing) _stateMachine.ChangeState(EntityState.ACTION);
                 return;
             }
-        }
-
-        private void BuildGraph()
-        {
-            _nodes.Clear();
-            _transitions.Clear();
-            
-            CombatGraph graph = _config.combatGraph;
-            foreach (CombatGraphNode node in graph.nodes)
-            {
-                _nodes.Add(node.nodeId, node);
-            }
-
-            foreach (CombatGraphEdge edge in graph.edges)
-            {
-                _transitions.Add(new(edge.sourceNodeId, edge.command), edge.targetNodeId);
-            }
-            
-            Reset();
         }
         
         #region 事件回调
@@ -89,8 +72,7 @@ namespace GamePlay.BattleSystem
             
             _config = Config.combatConfig;
             _ability.OnSkillEnded += OnSkillEnded;
-            
-            BuildGraph();
+
             Reset();
         }
 
@@ -103,7 +85,7 @@ namespace GamePlay.BattleSystem
         
         public override void Reset()
         {
-            _currentNodeId = _config.combatGraph.rootNodeId;
+            CurrentNode = _config.combatGraph.rootNode;
         }
         
         #endregion

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GamePlay.BattleSystem
 {
@@ -10,26 +8,14 @@ namespace GamePlay.BattleSystem
     [Serializable]
     public class CombatGraph
     {
-        // TODO: 去除（或特殊化）根节点的设计，实现根据初次按键决定对应的派生树
-        public uint rootNodeId;
-        public CombatGraphNode[] nodes = Array.Empty<CombatGraphNode>();
-        public CombatGraphEdge[] edges = Array.Empty<CombatGraphEdge>();
-
         /// <summary>
-        /// 获取技能图中的所有技能ID，便于初始化
+        /// 初始节点，不存储技能信息，提供初步的转换入口
         /// </summary>
-        public uint[] GetAllSkillId()
-        {
-            HashSet<uint> set = new HashSet<uint>();
-            foreach (CombatGraphNode config in nodes)
-            {
-                // TODO: 去除（或特殊化）根节点的设计，实现根据初次按键决定对应的派生树
-                if(config.nodeId == rootNodeId) continue;
-                
-                set.Add(config.skillId);
-            }
-
-            return set.ToArray();
-        }
+        public CombatGraphRootNode rootNode;
+        
+        /// <summary>
+        /// 连招节点
+        /// </summary>
+        public CombatGraphNode[] nodes = Array.Empty<CombatGraphNode>();
     }
 }

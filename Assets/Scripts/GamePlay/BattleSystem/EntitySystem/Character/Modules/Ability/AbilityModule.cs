@@ -119,20 +119,28 @@ namespace GamePlay.BattleSystem
             
             // 每个技能示例只Tick它所需的技能效果
             List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
-            foreach (uint id in _config.combatGraph.GetAllSkillId())
+            foreach (CombatGraphNode node in _config.combatGraph.nodes)
             {
-                if (!_abilityConfig.TryGetSkillConfig(id, out SkillConfig config))
-                    throw new InvalidOperationException($"技能注册表引用了不存在的技能 {id}");
-
-                executors.AddRange(config.effects.Select(effect => _executors[effect.GetType()]).Distinct());
-
-                SkillInstance instance = new SkillInstance(config, executors.ToArray(), tickRate);
+                if (!_abilityConfig.TryGetSkillConfig(node.SkillId, out SkillConfig skillConfig))
+                {
+                    throw new InvalidOperationException($"技能注册表引用了不存在的技能 {node.SkillId}");        
+                }
+                
+                // 记录只有当前技能实例需要的效果执行器，避免多余的技能调度
+                executors.AddRange(skillConfig.effects.Select(effect => _executors[effect.GetType()]).Distinct());
+                
+                SkillInstance instance = new SkillInstance(skillConfig, executors.ToArray(), tickRate);
                 instance.OnCastCheck += OnCastCheck;
                 instance.OnSkillEffectStart += OnExecuteSkillEffect;
                 instance.OnSkillEffectEnd += OnStopSkillEffect;
                 instance.OnSkillEnded += OnInstanceEnded;
-                _skillInstances.Add(id, instance);
-                    
+                
+                // 管理所有技能实例
+                _skillInstances.Add(node.SkillId, instance);
+                
+                // 绑定技能实例，让连招图能够读取当前技能的各种运行信息
+                node.BindInstance(instance);
+                
                 executors.Clear();
             }
         }

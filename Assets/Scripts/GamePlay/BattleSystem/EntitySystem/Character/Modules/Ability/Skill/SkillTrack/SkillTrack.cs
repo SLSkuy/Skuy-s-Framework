@@ -14,8 +14,6 @@ namespace GamePlay.BattleSystem
 
         /// <summary> 技能轨道长度 </summary>
         private readonly uint _trackLength;
-        /// <summary> Tick频率 </summary>
-        private readonly int _tickRate;
 
         #region 属性
         public SkillTrackState State { get; private set; }
@@ -24,10 +22,8 @@ namespace GamePlay.BattleSystem
         /// <summary> Tick执行进度 </summary>
         public uint ElapsedTicks { get; private set; }
 
-        /// <summary>技能已用时间，由整数 Tick 推导 </summary>
-        public float SkillElapsedTime => (float)ElapsedTicks / _tickRate;
-        /// <summary>技能剩余时间，由总 Tick 减去已用 Tick 推导 </summary>
-        public float SkillRemainingTime => (float)(_trackLength - ElapsedTicks) / _tickRate;
+        /// <summary>技能剩余Tick</summary>
+        public uint RemainingTicks => _trackLength - ElapsedTicks;
         #endregion
 
         #region 事件
@@ -35,11 +31,9 @@ namespace GamePlay.BattleSystem
         public event Action<SkillEffectEvent> OnSkillEffect;
         #endregion
 
-        public SkillTrack(SkillConfig config, int tickRate)
+        public SkillTrack(SkillConfig config)
         {
             State = SkillTrackState.Init;
-            
-            _tickRate = tickRate;
             _config = config;
             _trackLength = config.durationTicks;
 

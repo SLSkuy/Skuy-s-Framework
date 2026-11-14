@@ -19,6 +19,8 @@ namespace GamePlay.BattleSystem
         private readonly bool[] _activeEffects;
         /// <summary>下一次技能冷却完毕时的时间。</summary>
         private double _nextExecutableTime;
+        /// <summary> Tick频率 </summary>
+        private readonly int _tickRate;
 
         #region 属性
         public uint SkillId => _config.skillId;
@@ -27,9 +29,18 @@ namespace GamePlay.BattleSystem
 
         /// <summary>技能冷却剩余时间</summary>
         public double CooldownRemainTime => Math.Max(0, _nextExecutableTime - Global.CurrentTime);
-
         /// <summary>技能冷却进度；无冷却技能始终就绪</summary>
         public float CooldownPercent => _config.cooldown > 0 ? 1 - (float)CooldownRemainTime / _config.cooldown : 1;
+
+        /// <summary>技能已用时间</summary>
+        public float SkillElapsedTime => (float)_track.ElapsedTicks / _tickRate;
+        /// <summary>技能释放进度百分比</summary>
+        public float SkillElapsedPercent => (float)_track.ElapsedTicks / _config.durationTicks;
+        
+        /// <summary>技能释放剩余时间</summary>
+        public float SkillRemainingTime => (float)_track.RemainingTicks / _tickRate;
+        /// <summary>技能释放剩余百分比</summary>
+        public float SkillRemainingPercent => (float)_track.RemainingTicks / _config.durationTicks;
         #endregion
 
         #region 事件
@@ -45,11 +56,12 @@ namespace GamePlay.BattleSystem
 
         public SkillInstance(SkillConfig skillConfig, IReadOnlyCollection<ISkillEffectExecutor> executors, int tickRate)
         {
+            _tickRate = tickRate;   
             _config = skillConfig;
             _requireExecutors = executors;
             _activeEffects = new bool[skillConfig.effects.Length];
             
-            _track = new SkillTrack(skillConfig, tickRate);
+            _track = new SkillTrack(skillConfig);
             _track.OnTrackEnded += OnTrackEnded;
             _track.OnSkillEffect += OnDispatchEffect;
         }
