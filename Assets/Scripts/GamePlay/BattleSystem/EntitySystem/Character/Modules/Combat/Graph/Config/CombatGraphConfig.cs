@@ -7,6 +7,7 @@ namespace GamePlay.BattleSystem
 {
     /// <summary>
     /// 连招图资产。转换保存在各节点内，运行时创建角色独立实例
+    /// TODO: 优化连招写入逻辑
     /// </summary>
     [CreateAssetMenu(menuName = "GamePlay/CombatGraphConfig")]
     public sealed class CombatGraphConfig : ScriptableObject

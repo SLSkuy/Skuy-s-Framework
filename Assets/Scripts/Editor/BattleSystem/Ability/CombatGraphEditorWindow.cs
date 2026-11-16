@@ -13,13 +13,15 @@ using UnityEngine.UIElements;
 namespace Editor
 {
     /// <summary>编辑连招资产中的节点及输入转换。</summary>
-    public sealed class CombatGraphEditorWindow : EditorWindow
+    public sealed class CombatGraphEditorWindow : EditorWindow, ISearchWindowProvider
     {
         [SerializeField] private CombatGraphConfig config;
         private CombatGraphView _graph;
         private VisualElement _skills;
         private HelpBox _message;
         private string _search = "";
+        private Port _pendingOutput;
+        private Vector2 _dropPosition;
 
         [MenuItem("Tools/BattleSystem/连招编辑器")]
         public static void Open()
@@ -66,7 +68,7 @@ namespace Editor
                 return;
             }
             var content = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
-            var sidebar = new VisualElement { style = { width = 240, paddingLeft = 4, paddingRight = 4 } };
+            var sidebar = new VisualElement { style = { width = 240, flexShrink = 0, paddingLeft = 6, paddingRight = 6 } };
             var tableField = new ObjectField("技能表") { objectType = typeof(SkillTable), value = config.skillTable, allowSceneObjects = false };
             tableField.RegisterValueChangedCallback(evt =>
             {
@@ -84,7 +86,11 @@ namespace Editor
                 RefreshSkills();
             });
             sidebar.Add(tableField);
-            var search = new ToolbarSearchField { value = _search };
+            var search = new ToolbarSearchField
+            {
+                value = _search,
+                style = { width = StyleKeyword.Auto, minWidth = 0, alignSelf = Align.Stretch }
+            };
             search.RegisterValueChangedCallback(evt => { _search = evt.newValue; RefreshSkills(); });
             sidebar.Add(search);
             _message = new HelpBox("", HelpBoxMessageType.Warning);
@@ -92,10 +98,38 @@ namespace Editor
             _skills = new ScrollView { style = { flexGrow = 1 } };
             sidebar.Add(_skills);
             content.Add(sidebar);
-            _graph = new CombatGraphView(config);
+            _graph = new CombatGraphView(config, OpenNodeSearch);
             content.Add(_graph);
             rootVisualElement.Add(content);
             RefreshSkills();
+        }
+
+        private void OpenNodeSearch(Port output, Vector2 position)
+        {
+            _pendingOutput = output;
+            _dropPosition = _graph.contentViewContainer.WorldToLocal(position);
+            SearchWindow.Open(new SearchWindowContext(GUIUtility.GUIToScreenPoint(position), 320), this);
+        }
+
+        public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
+        {
+            var entries = new List<SearchTreeEntry> { new SearchTreeGroupEntry(new GUIContent("选择后续技能")) };
+            var skills = config.skillTable ? config.skillTable.skills : null;
+            foreach (var skill in (skills ?? Array.Empty<SkillConfig>()).Where(s => s != null)
+                         .GroupBy(s => s.skillId).Select(group => group.First()).OrderBy(s => s.skillId))
+            {
+                entries.Add(new SearchTreeEntry(new GUIContent($"{skill.skillId}  {skill.skillName}"))
+                    { level = 1, userData = skill.skillId });
+            }
+            return entries;
+        }
+
+        public bool OnSelectEntry(SearchTreeEntry entry, SearchWindowContext context)
+        {
+            if (entry.userData is uint id && _pendingOutput?.panel != null)
+                _graph.AddSkill(id, _dropPosition, _pendingOutput);
+            _pendingOutput = null;
+            return true;
         }
 
         private void RefreshSkills()
@@ -165,12 +199,23 @@ namespace Editor
 
         private sealed class CombatNodeView : Node
         {
+            private readonly Dictionary<EntityCommandFlags, Port> _outputs = new();
+
             public uint Id { get; }
             public CombatNodeView(uint id, string label, Vector2 position)
             {
                 Id = id;
                 title = label;
-                if (id == 0) capabilities &= ~(Capabilities.Deletable | Capabilities.Copiable);
+                if (id == 0)
+                {
+                    capabilities &= ~(Capabilities.Deletable | Capabilities.Copiable | Capabilities.Collapsible);
+                    style.minWidth = 156;
+                    titleContainer.style.minHeight = 30;
+                    titleContainer.style.backgroundColor = new Color(0.16f, 0.43f, 0.28f);
+                    var heading = titleContainer.Q<Label>("title-label");
+                    heading.style.fontSize = 14;
+                    heading.style.unityFontStyleAndWeight = FontStyle.Bold;
+                }
                 SetPosition(new Rect(position, new Vector2(210, 150)));
                 if (id != 0)
                 {
@@ -178,33 +223,102 @@ namespace Editor
                     input.portName = "进入";
                     inputContainer.Add(input);
                 }
+                var addTransition = new ToolbarMenu { text = "添加转换" };
                 foreach (EntityCommandFlags command in Enum.GetValues(typeof(EntityCommandFlags)))
                 {
                     if (command == EntityCommandFlags.None) continue;
-                    var output = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
-                    output.portName = command.ToString();
-                    output.userData = command;
-                    outputContainer.Add(output);
+                    addTransition.menu.AppendAction(command.ToString(), _ => AddOutput(command),
+                        _ => _outputs.ContainsKey(command) ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
                 }
+                extensionContainer.Add(addTransition);
                 RefreshExpandedState();
+                RefreshPorts();
+            }
+
+            public Port AddOutput(EntityCommandFlags command)
+            {
+                if (_outputs.TryGetValue(command, out var output)) return output;
+                var graph = GetFirstAncestorOfType<CombatGraphView>();
+                output = new TransitionPort(graph);
+                output.portName = command.ToString();
+                output.userData = command;
+                var controls = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+                controls.Add(ActionButton("−", $"删除 {command} 转换", () => RemoveOutput(command)));
+                controls.Add(ActionButton("↑", "上移转换", () => MoveOutput(output, -1)));
+                controls.Add(ActionButton("↓", "下移转换", () => MoveOutput(output, 1)));
+                output.Add(controls);
+                _outputs.Add(command, output);
+                outputContainer.Add(output);
+                RefreshPorts();
+                return output;
+            }
+
+            private static Button ActionButton(string text, string tooltip, Action action)
+            {
+                return new Button(action)
+                {
+                    text = text, tooltip = tooltip,
+                    style = { width = 19, paddingLeft = 0, paddingRight = 0, marginLeft = 0, marginRight = 1 }
+                };
+            }
+
+            private void MoveOutput(Port output, int offset)
+            {
+                int target = outputContainer.IndexOf(output) + offset;
+                if (target < 0 || target >= outputContainer.childCount) return;
+                var sibling = outputContainer[target];
+                if (offset < 0) output.PlaceBehind(sibling);
+                else output.PlaceInFront(sibling);
+                GetFirstAncestorOfType<CombatGraphView>().SaveTransitionOrder(this);
+            }
+
+            public int OutputIndex(EntityCommandFlags command)
+            {
+                return _outputs.TryGetValue(command, out var port) ? outputContainer.IndexOf(port) : int.MaxValue;
+            }
+
+            private void RemoveOutput(EntityCommandFlags command)
+            {
+                var port = _outputs[command];
+                if (port.connected) GetFirstAncestorOfType<CombatGraphView>().DeleteElements(port.connections.ToList());
+                port.RemoveFromHierarchy();
+                _outputs.Remove(command);
                 RefreshPorts();
             }
         }
 
-        private sealed class CombatGraphView : GraphView
+        private sealed class TransitionPort : Port
+        {
+            public TransitionPort(IEdgeConnectorListener listener)
+                : base(Orientation.Horizontal, Direction.Output, Capacity.Single, typeof(bool))
+            {
+                m_EdgeConnector = new EdgeConnector<Edge>(listener);
+                this.AddManipulator(m_EdgeConnector);
+            }
+        }
+
+        private sealed class CombatGraphView : GraphView, IEdgeConnectorListener
         {
             private readonly CombatGraphConfig _config;
             private readonly Dictionary<uint, CombatNodeView> _nodes = new();
 
-            public CombatGraphView(CombatGraphConfig asset)
+            private readonly Action<Port, Vector2> _openSearch;
+
+            public CombatGraphView(CombatGraphConfig asset, Action<Port, Vector2> openSearch)
             {
                 _config = asset;
+                _openSearch = openSearch;
                 style.flexGrow = 1;
+                style.minWidth = 0;
+                style.overflow = Overflow.Hidden;
+                var grid = new GridBackground { pickingMode = PickingMode.Ignore };
+                Insert(0, grid);
+                grid.StretchToParentSize();
                 SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
                 this.AddManipulator(new ContentDragger());
                 this.AddManipulator(new SelectionDragger());
                 this.AddManipulator(new RectangleSelector());
-                AddNode(0, "入口", asset.rootPosition);
+                AddNode(0, "连招入口", asset.rootPosition);
                 foreach (var data in asset.nodes)
                 {
                     var skill = asset.skillTable ? asset.skillTable.skills?.FirstOrDefault(s => s != null && s.skillId == data.skillId) : null;
@@ -215,7 +329,7 @@ namespace Editor
                     foreach (var transition in GetTransitions(pair.Key))
                     {
                         if (!_nodes.TryGetValue(transition.targetNodeId, out var target) || target.Id == 0) continue;
-                        var output = pair.Value.outputContainer.Children().OfType<Port>().First(p => (EntityCommandFlags)p.userData == transition.command);
+                        var output = pair.Value.AddOutput(transition.command);
                         AddElement(output.ConnectTo(target.inputContainer.Children().OfType<Port>().First()));
                     }
                 }
@@ -224,15 +338,40 @@ namespace Editor
 
             public void AddSkill(uint skillId)
             {
+                AddSkill(skillId, contentViewContainer.WorldToLocal(worldBound.center), null);
+            }
+
+            public void AddSkill(uint skillId, Vector2 position, Port output)
+            {
                 // 添加时重新查询技能表，避免表编辑后旧列表加入非法 ID。
                 if (!_config.skillTable || !(_config.skillTable.skills?.Any(s => s != null && s.skillId == skillId) ?? false)) return;
                 var id = _config.nodes.Count == 0 ? 1u : checked(_config.nodes.Max(n => n.nodeId) + 1);
                 Undo.RecordObject(_config, "添加连招节点");
-                var position = contentViewContainer.WorldToLocal(worldBound.center);
                 _config.nodes.Add(new CombatGraphConfig.NodeData { nodeId = id, skillId = skillId, position = position });
                 var skill = _config.skillTable.skills.First(s => s != null && s.skillId == skillId);
                 AddNode(id, $"{skillId}  {skill.skillName}", position);
+                if (output != null)
+                {
+                    var target = _nodes[id];
+                    OnDrop(this, new Edge { output = output, input = target.inputContainer.Children().OfType<Port>().First() });
+                    ClearSelection();
+                    AddToSelection(target);
+                }
                 EditorUtility.SetDirty(_config);
+            }
+
+            public void OnDropOutsidePort(Edge edge, Vector2 position)
+            {
+                if (edge.output != null && worldBound.Contains(position)) _openSearch(edge.output, position);
+            }
+
+            public void OnDrop(GraphView graphView, Edge edge)
+            {
+                if (edge.output.connected) DeleteElements(edge.output.connections.ToList());
+                OnGraphChanged(new GraphViewChange { edgesToCreate = new List<Edge> { edge } });
+                edge.output.Connect(edge);
+                edge.input.Connect(edge);
+                AddElement(edge);
             }
 
             public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -250,6 +389,18 @@ namespace Editor
             private List<CombatGraphConfig.TransitionData> GetTransitions(uint id)
             {
                 return id == 0 ? _config.rootTransitions : _config.nodes.First(n => n.nodeId == id).transitions;
+            }
+
+            public void SaveTransitionOrder(CombatNodeView node)
+            {
+                Undo.RecordObject(_config, "调整连招转换顺序");
+                SortTransitions(node);
+                EditorUtility.SetDirty(_config);
+            }
+
+            private void SortTransitions(CombatNodeView node)
+            {
+                GetTransitions(node.Id).Sort((a, b) => node.OutputIndex(a.command).CompareTo(node.OutputIndex(b.command)));
             }
 
             private GraphViewChange OnGraphChanged(GraphViewChange change)
@@ -280,6 +431,7 @@ namespace Editor
                         var transitions = GetTransitions(source.Id);
                         transitions.RemoveAll(t => t.command == command);
                         transitions.Add(new CombatGraphConfig.TransitionData { command = command, targetNodeId = target.Id });
+                        SortTransitions(source);
                     }
                 }
                 if (change.movedElements != null)

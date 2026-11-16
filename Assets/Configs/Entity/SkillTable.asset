@@ -28,7 +28,7 @@ MonoBehaviour:
     cooldown: 0
     durationTicks: 84
     interruptRules:
-    - startTick: 32
+    - startTick: 36
       endTick: 84
       reason: 4
     castConditions:
