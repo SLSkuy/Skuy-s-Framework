@@ -30,6 +30,12 @@ namespace GamePlay.BattleSystem
         public float SkillExecutionPercent => _instance?.SkillElapsedPercent ?? 0;
         #endregion
 
+        public CombatGraphNode(uint nodeId, uint skillId)
+        {
+            this.nodeId = nodeId;
+            this.skillId = skillId;
+        }
+
         #region 初始化
 
         /// <summary>

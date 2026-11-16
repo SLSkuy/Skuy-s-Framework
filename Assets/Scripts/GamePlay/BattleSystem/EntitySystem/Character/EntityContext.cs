@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Framework;
 using UnityEngine;
@@ -27,13 +27,16 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 持续状态
-        /// <summary>
-        /// 期望速度
-        /// </summary>
+        /// <summary>期望速度</summary>
         public float DesiredSpeed;
         
         public bool IsRunning;
         public bool IsFocus;
+        #endregion
+
+        #region 连招控制
+        /// <summary>连招图实例，避免多实例读取同一个Config中的数据</summary>
+        public readonly CombatGraph CombatGraph;
         #endregion
 
         #region 属性
@@ -45,6 +48,7 @@ namespace GamePlay.BattleSystem
         {
             _character = character;
             Config = config;
+            CombatGraph = config.combatConfig.combatGraph.CreateGraph();
         }
 
         /// <summary>

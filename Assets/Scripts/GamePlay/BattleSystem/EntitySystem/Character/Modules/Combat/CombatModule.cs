@@ -70,6 +70,7 @@ namespace GamePlay.BattleSystem
             _stateMachine = Context.Get<EntityStateMachineModule>();
             _ability = Context.Get<AbilityModule>();
             
+            Graph = Context.CombatGraph;
             _config = Config.combatConfig;
             _ability.OnSkillEnded += OnSkillEnded;
 
@@ -85,7 +86,7 @@ namespace GamePlay.BattleSystem
         
         public override void Reset()
         {
-            CurrentNode = _config.combatGraph.rootNode;
+            CurrentNode = Graph.rootNode;
         }
         
         #endregion

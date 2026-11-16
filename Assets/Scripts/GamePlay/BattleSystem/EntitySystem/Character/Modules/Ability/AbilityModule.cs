@@ -17,7 +17,6 @@ namespace GamePlay.BattleSystem
 
         private MovementModule _movementModule;
         private ViewModule _viewModule;
-        private CombatConfig _config;
         
         /// <summary> 条件解释器，按条件配置的实际类型注册 </summary>
         private Dictionary<Type, IConditionInterpreter> _conditionInterpreters;
@@ -119,11 +118,18 @@ namespace GamePlay.BattleSystem
             
             // 每个技能示例只Tick它所需的技能效果
             List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
-            foreach (CombatGraphNode node in _config.combatGraph.nodes)
+            foreach (CombatGraphNode node in Context.CombatGraph.nodes)
             {
                 if (!_abilityConfig.TryGetSkillConfig(node.SkillId, out SkillConfig skillConfig))
                 {
                     throw new InvalidOperationException($"技能注册表引用了不存在的技能 {node.SkillId}");        
+                }
+                
+                // 指向同一个技能实例，防止错误的数据读取
+                if (_skillInstances.TryGetValue(node.SkillId, out SkillInstance sharedInstance))
+                {
+                    node.BindInstance(sharedInstance);
+                    continue;
                 }
                 
                 // 记录只有当前技能实例需要的效果执行器，避免多余的技能调度
@@ -207,7 +213,6 @@ namespace GamePlay.BattleSystem
             _movementModule = Context.Get<MovementModule>();
             _viewModule = Context.Get<ViewModule>();
             
-            _config = Config.combatConfig;
             
             DisposeSkills();
             InitEffectExecutors();

@@ -32,8 +32,5 @@ MonoBehaviour:
     animSpeedSmoothTime: 0.1
     animTurnSmoothTime: 0.15
   combatConfig:
-    combatGraph:
-      rootNode:
-        nodeId: 0
-      nodes: []
+    combatGraph: {fileID: 11400000, guid: c381ba68ebf980e4bbfe10a6cb504b13, type: 2}
     commandPriorities: 4000800000010002200010000800t

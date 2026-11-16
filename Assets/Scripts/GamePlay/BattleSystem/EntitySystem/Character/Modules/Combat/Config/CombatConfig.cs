@@ -8,7 +8,7 @@ namespace GamePlay.BattleSystem
     public class CombatConfig
     {
         [Header("连招图")]
-        public CombatGraph combatGraph = new();
+        public CombatGraphConfig combatGraph;
         
         [HideInInspector][Header("战斗命令优先级（从高到低）")]
         public EntityCommandFlags[] commandPriorities =
