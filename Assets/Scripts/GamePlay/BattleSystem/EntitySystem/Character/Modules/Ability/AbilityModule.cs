@@ -198,14 +198,24 @@ namespace GamePlay.BattleSystem
         
         public void Tick(float deltaTime)
         {
-            // 视角旋转
-            _viewModule.Look(Context.LastAimInput, deltaTime);
-            
-            // 模型旋转
-            _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
-            
-            // 技能效果
-            _currentSkill?.Tick(deltaTime);
+            if (_currentSkill != null)
+            {
+                ControlPolicy policy = _currentSkill.ControlPolicy;
+                if ((policy & ControlPolicy.LockViewRotate) == ControlPolicy.None)
+                {
+                    // 视角旋转
+                    _viewModule.Look(Context.LastAimInput, deltaTime);                    
+                }
+                
+                if ((policy & ControlPolicy.LockMeshRotate) == ControlPolicy.None)
+                {
+                    // 模型旋转
+                    _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
+                }
+                
+                // 技能效果
+                _currentSkill?.Tick(deltaTime);
+            }
         }
         
         protected override void OnBound(EntityCharacter target)

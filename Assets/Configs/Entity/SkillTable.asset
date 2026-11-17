@@ -17,6 +17,7 @@ MonoBehaviour:
     skillName: Roll
     cooldown: 0
     durationTicks: 65
+    controlPolicy: 0
     interruptRules: []
     castConditions:
     - rid: 4293588810657169548
@@ -27,6 +28,7 @@ MonoBehaviour:
     skillName: NoramlAttack1
     cooldown: 0
     durationTicks: 84
+    controlPolicy: 1
     interruptRules:
     - startTick: 36
       endTick: 84
@@ -39,6 +41,7 @@ MonoBehaviour:
     skillName: NoramlAttack2
     cooldown: 0
     durationTicks: 72
+    controlPolicy: 1
     interruptRules:
     - startTick: 22
       endTick: 72
@@ -51,6 +54,7 @@ MonoBehaviour:
     skillName: NoramlAttack3
     cooldown: 0
     durationTicks: 120
+    controlPolicy: 1
     interruptRules:
     - startTick: 63
       endTick: 120
@@ -63,6 +67,7 @@ MonoBehaviour:
     skillName: Skill1
     cooldown: 0
     durationTicks: 145
+    controlPolicy: 1
     interruptRules:
     - startTick: 77
       endTick: 145

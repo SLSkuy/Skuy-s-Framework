@@ -226,6 +226,8 @@ namespace Editor
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("skillName"), new GUIContent("名称"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("cooldown"), new GUIContent("冷却"));
             EditorGUILayout.PropertyField(skill.FindPropertyRelative("durationTicks"), new GUIContent("持续 Tick"));
+            EditorGUILayout.PropertyField(skill.FindPropertyRelative("controlPolicy"),
+                new GUIContent("控制策略", "技能释放期间的控制策略，可组合选择锁定模型旋转和锁定视角旋转。"));
             SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
             EditorGUILayout.LabelField("释放条件", EditorStyles.boldLabel);
             for (int i = 0; i < conditions.arraySize; i++)

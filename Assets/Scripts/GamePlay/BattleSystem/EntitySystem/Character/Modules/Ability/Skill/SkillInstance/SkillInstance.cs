@@ -25,6 +25,7 @@ namespace GamePlay.BattleSystem
         #region 属性
         public uint SkillId => _config.skillId;
         public SkillState State { get; private set; }
+        public ControlPolicy ControlPolicy => _config.controlPolicy;
         public bool IsCasting => State == SkillState.Casting;
 
         /// <summary>技能冷却剩余时间</summary>

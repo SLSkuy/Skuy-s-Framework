@@ -24,6 +24,8 @@ namespace GamePlay.BattleSystem
         /// <summary> 持续时间 </summary>
         public uint durationTicks;
         
+        public ControlPolicy controlPolicy;
+        
         /// <summary> 技能中断规则 </summary>
         public SkillInterruptRule[] interruptRules = Array.Empty<SkillInterruptRule>();
         
