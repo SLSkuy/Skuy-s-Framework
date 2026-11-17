@@ -13,30 +13,36 @@ MonoBehaviour:
   m_Name: CombatGraphConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.CombatGraphConfig
   skillTable: {fileID: 11400000, guid: d5aa2803e962eba47b5f609fd199b5f3, type: 2}
-  rootPosition: {x: -686, y: 7}
+  rootPosition: {x: 108, y: 347}
   rootTransitions:
   - command: 8
     targetNodeId: 1
   - command: 64
     targetNodeId: 4
+  - command: 128
+    targetNodeId: 5
   nodes:
   - nodeId: 1
     skillId: 2
-    position: {x: -328, y: -87}
+    position: {x: 466, y: 253}
     transitions:
     - command: 8
       targetNodeId: 2
   - nodeId: 2
     skillId: 3
-    position: {x: -4, y: -87}
+    position: {x: 790, y: 253}
     transitions:
     - command: 8
       targetNodeId: 3
   - nodeId: 3
     skillId: 4
-    position: {x: 331, y: -87}
+    position: {x: 1125, y: 253}
     transitions: []
   - nodeId: 4
     skillId: 1
-    position: {x: -328, y: 124}
+    position: {x: 466, y: 464}
+    transitions: []
+  - nodeId: 5
+    skillId: 5
+    position: {x: 466, y: 613}
     transitions: []

@@ -59,6 +59,18 @@ MonoBehaviour:
     - rid: 4293588810657169609
     effects:
     - rid: 4293588810657169608
+  - skillId: 5
+    skillName: Skill1
+    cooldown: 0
+    durationTicks: 145
+    interruptRules:
+    - startTick: 77
+      endTick: 145
+      reason: 1
+    castConditions:
+    - rid: 4293588899644047481
+    effects:
+    - rid: 4293588899644047482
   references:
     version: 2
     RefIds:
@@ -123,3 +135,16 @@ MonoBehaviour:
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         exclusiveStates: 03000000u
+    - rid: 4293588899644047481
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293588899644047482
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 145
+        endPolicy: 0
+        sampleOffset: 0
+        clip: {fileID: 974995637515267212, guid: 82cd7f971f4fa2b42b3a1799eb0994f8, type: 3}
