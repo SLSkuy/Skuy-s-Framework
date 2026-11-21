@@ -13,7 +13,7 @@ namespace GamePlay.BattleSystem
     {
         private readonly Dictionary<Type, EntityModuleBase> _modules = new();
         private readonly EntityCharacter _character;
-
+        
         public readonly CharacterConfig Config;
         public uint CurrentTick;
         
@@ -46,9 +46,9 @@ namespace GamePlay.BattleSystem
 
         public EntityContext(EntityCharacter character, CharacterConfig config)
         {
+            CombatGraph = config.combatConfig.combatGraph.CreateGraph();
             _character = character;
             Config = config;
-            CombatGraph = config.combatConfig.combatGraph.CreateGraph();
         }
 
         /// <summary>

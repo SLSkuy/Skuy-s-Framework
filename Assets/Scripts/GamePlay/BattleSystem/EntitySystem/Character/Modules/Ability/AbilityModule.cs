@@ -96,7 +96,8 @@ namespace GamePlay.BattleSystem
             _executors = new Dictionary<Type, ISkillEffectExecutor>
             {
                 { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
-                { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) }
+                { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) },
+                { typeof(HitBoxSkillEffect), new HitBoxEffectExecutor(Context) },
             };
         }
         
@@ -195,7 +196,17 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 生命周期
-        
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (_executors == null) return;
+
+            HitBoxEffectExecutor executor = (HitBoxEffectExecutor)_executors[typeof(HitBoxSkillEffect)];
+            executor.DrawGizmos();
+        }
+#endif
+
         public void Tick(float deltaTime)
         {
             if (_currentSkill != null)
