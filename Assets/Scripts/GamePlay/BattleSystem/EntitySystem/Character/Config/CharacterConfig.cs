@@ -5,6 +5,9 @@ namespace GamePlay.BattleSystem
     [CreateAssetMenu(fileName = "CharacterConfig", menuName = "GamePlay/CharacterConfig")]
     public class CharacterConfig : ScriptableObject
     {
+        [Header("基础实体属性")]
+        public AttributeConfig attributeConfig = new AttributeConfig();
+        
         [Header("基础移动属性")]
         public MovementConfig movementConfig = new MovementConfig();
 

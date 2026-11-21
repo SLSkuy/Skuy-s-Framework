@@ -34,6 +34,7 @@ namespace GamePlay.BattleSystem
             
             // 统一收集能力组件
             _context.AddAbility<EntityStateMachineModule>();
+            _context.AddAbility<AttributeModule>();
             _context.AddAbility<ViewModule>();
             _context.AddAbility<AnimationModule>();
             _context.AddAbility<AbilityModule>();
