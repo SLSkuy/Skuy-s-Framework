@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
@@ -32,7 +33,7 @@ namespace GamePlay.BattleSystem
 
         public void Damage(float damage)
         {
-            
+            Debug.Log($"造成伤害 {damage}");
         }
 
         public void Heal(float heal)

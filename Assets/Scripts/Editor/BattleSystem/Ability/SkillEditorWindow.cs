@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GamePlay.BattleSystem;
 using UnityEditor;
@@ -9,7 +10,7 @@ using UnityEngine.Timeline;
 
 namespace Editor
 {
-    /// <summary>编辑技能表中的技能效果，在独立场景中预览动画和位移。</summary>
+    /// <summary>编辑技能表中的技能效果，在独立场景中预览动画、位移和伤害范围。</summary>
     public class SkillEditorWindow : EditorWindow
     {
         [SerializeField] private SkillTable table;
@@ -18,6 +19,14 @@ namespace Editor
         [SerializeField] private int tickRate = 60;
         [SerializeField] private bool loopPreview;
         [SerializeField] private float trackHeight = 240;
+
+        private static readonly int[] HitBoxEdges =
+        {
+            0, 1, 1, 3, 3, 2, 2, 0,
+            4, 5, 5, 7, 7, 6, 6, 4,
+            0, 4, 1, 5, 2, 6, 3, 7
+        };
+
         private TimelineAsset _timeline;
         private TimelineClip[] _timelineClips = Array.Empty<TimelineClip>();
         private float _resizeMouseY;
@@ -27,6 +36,11 @@ namespace Editor
         private Type[] _conditionTypes;
         private PreviewRenderUtility _preview;
         private GameObject _model;
+        private Transform _previewActor;
+        private Transform _previewFacing;
+        private Mesh _hitBoxMesh;
+        private readonly List<Vector3> _hitBoxVertices = new();
+        private readonly List<int> _hitBoxIndices = new();
         private Transform[] _bones;
         private int[] _animationRootIndices;
         private Vector3[] _positions;
@@ -56,7 +70,7 @@ namespace Editor
         private PlayableGraph _graph;
         private AnimationClipPlayable _clipPlayable;
         private AnimationClip _previewClip;
-        private readonly System.Collections.Generic.List<Material> _previewMaterials = new();
+        private readonly List<Material> _previewMaterials = new();
 
         [MenuItem("Tools/BattleSystem/技能编辑器")]
         public static void Open()
@@ -84,6 +98,7 @@ namespace Editor
             _preview.lights[0].intensity = 1.2f;
             _preview.lights[0].transform.rotation = Quaternion.Euler(40, 30, 0);
             CreateEnvironment();
+            CreateHitBoxPreview();
             RebuildModel();
             Undo.undoRedoPerformed += OnUndo;
             EditorApplication.update += OnUpdate;
@@ -96,6 +111,7 @@ namespace Editor
             ClearAnimation();
             ClearTimeline();
             _preview?.Cleanup();
+            if (_hitBoxMesh) DestroyImmediate(_hitBoxMesh);
             foreach (Material material in _previewMaterials) DestroyImmediate(material);
             _previewMaterials.Clear();
             _serializedTable?.Dispose();
@@ -168,7 +184,7 @@ namespace Editor
                     if (selectedSkill >= 0) DrawTracks(skills.GetArrayElementAtIndex(selectedSkill));
                 }
             }
-            _serializedTable.ApplyModifiedProperties();
+            if (_serializedTable.ApplyModifiedProperties()) Repaint();
         }
 
         private void DrawSkills(SerializedProperty skills)
@@ -297,9 +313,14 @@ namespace Editor
                     {
                         SerializedProperty child = effect.Copy();
                         SerializedProperty end = child.GetEndProperty();
+                        bool isHitBox = effect.managedReferenceValue is HitBoxSkillEffect;
                         bool enter = true;
                         while (child.NextVisible(enter) && !SerializedProperty.EqualContents(child, end))
-                        { EditorGUILayout.PropertyField(child, true); enter = false; }
+                        {
+                            if (isHitBox) DrawHitBoxField(child);
+                            else EditorGUILayout.PropertyField(child, true);
+                            enter = false;
+                        }
                     }
                 }
             }
@@ -314,6 +335,32 @@ namespace Editor
                 menu.ShowAsContext();
             }
             EditorGUILayout.EndScrollView();
+        }
+
+        private static void DrawHitBoxField(SerializedProperty field)
+        {
+            switch (field.name)
+            {
+                case nameof(HitBoxSkillEffect.hitBoxPivot):
+                    EditorGUILayout.PropertyField(field, new GUIContent("中心偏移", "相对角色朝向的本地坐标。"));
+                    break;
+                case nameof(HitBoxSkillEffect.hitBoxRotation):
+                    Rect rect = EditorGUILayout.GetControlRect();
+                    GUIContent label = new GUIContent("本地旋转", "相对角色朝向的欧拉角，单位为度。");
+                    using (var property = new EditorGUI.PropertyScope(rect, label, field))
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        Vector3 angles = EditorGUI.Vector3Field(rect, property.content, field.quaternionValue.eulerAngles);
+                        if (EditorGUI.EndChangeCheck()) field.quaternionValue = Quaternion.Euler(angles);
+                    }
+                    break;
+                case nameof(HitBoxSkillEffect.hitBoxSize):
+                    EditorGUILayout.PropertyField(field, new GUIContent("盒尺寸", "盒子在各轴上的完整尺寸。"));
+                    break;
+                default:
+                    EditorGUILayout.PropertyField(field, true);
+                    break;
+            }
         }
 
         private void DrawInterruptRules(SerializedProperty skill)
@@ -723,6 +770,12 @@ namespace Editor
                     maxId = Math.Max(maxId, (uint)effects.GetArrayElementAtIndex(i).FindPropertyRelative("effectId").longValue);
                 value.effectId = maxId + 1;
                 value.durationTicks = (uint)skill.FindPropertyRelative("durationTicks").longValue;
+                if (value is HitBoxSkillEffect hitBox)
+                {
+                    hitBox.durationTicks = 1;
+                    hitBox.hitBoxPivot = new Vector3(0f, 1f, 1f);
+                    hitBox.hitBoxSize = Vector3.one;
+                }
                 effects.GetArrayElementAtIndex(index).managedReferenceValue = value;
                 effects.GetArrayElementAtIndex(index).isExpanded = true;
                 serialized.ApplyModifiedProperties();
@@ -734,12 +787,16 @@ namespace Editor
         {
             ClearAnimation();
             if (_model) DestroyImmediate(_model);
+            _previewActor = null;
+            _previewFacing = null;
             if (!modelPrefab) return;
             GameObject holder = new GameObject("Skill Preview");
             holder.SetActive(false);
             _preview.AddSingleGO(holder);
             _model = holder;
             GameObject instance = Instantiate(modelPrefab, holder.transform);
+            _previewActor = instance.transform;
+            _previewFacing = _previewActor.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/mesh");
             _animator = instance.GetComponentInChildren<Animator>(true);
             foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true)) DestroyImmediate(behaviour);
             foreach (Animator animator in instance.GetComponentsInChildren<Animator>(true))
@@ -774,25 +831,41 @@ namespace Editor
             }
             Rect rect = GUILayoutUtility.GetRect(100, 100, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             OnPreviewInput(rect);
-            if (Event.current.type != EventType.Repaint || !_model || rect.width <= 0 || rect.height <= 0) return;
-            for (int i = 0; i < _bones.Length; i++)
-            { _bones[i].localPosition = _positions[i]; _bones[i].localRotation = _rotations[i]; _bones[i].localScale = _scales[i]; }
+            if (Event.current.type != EventType.Repaint || rect.width <= 0 || rect.height <= 0) return;
+            if (_model)
+            {
+                for (int i = 0; i < _bones.Length; i++)
+                {
+                    _bones[i].localPosition = _positions[i];
+                    _bones[i].localRotation = _rotations[i];
+                    _bones[i].localScale = _scales[i];
+                }
+            }
+            SkillEffect[] effects = skill.effects ?? Array.Empty<SkillEffect>();
             float distance = 0;
-            foreach (SkillEffect effect in skill.effects ?? Array.Empty<SkillEffect>())
+            foreach (SkillEffect effect in effects)
             {
                 if (effect == null) continue;
                 float elapsed = Mathf.Clamp(_tick - effect.startTick, 0, effect.durationTicks) / tickRate;
                 if (effect is MoveSkillEffect move) distance += elapsed * move.speed;
-                if (effect is AnimationSkillEffect animation && animation.clip && _tick >= effect.startTick)
+                if (_model && effect is AnimationSkillEffect animation && animation.clip && _tick >= effect.startTick)
                     SamplePose(animation.clip, animation.sampleOffset + elapsed);
             }
             // Playables 经 Animator 提取根运动；根节点保持初始变换，只有移动效果驱动容器。
-            foreach (int index in _animationRootIndices)
+            Vector3 position = Vector3.forward * distance;
+            Quaternion facing = Quaternion.identity;
+            if (_model)
             {
-                _bones[index].localPosition = _positions[index];
-                _bones[index].localRotation = _rotations[index];
+                foreach (int index in _animationRootIndices)
+                {
+                    _bones[index].localPosition = _positions[index];
+                    _bones[index].localRotation = _rotations[index];
+                }
+                _model.transform.position = position;
+                position = _previewActor.position;
+                facing = _previewFacing ? _previewFacing.rotation : _previewActor.rotation;
             }
-            _model.transform.position = Vector3.forward * distance;
+            UpdateHitBoxPreview(effects, position, facing);
             _preview.BeginPreview(rect, GUIStyle.none);
             Quaternion rotation = Quaternion.Euler(_viewAngles.x, _viewAngles.y, 0);
             _preview.camera.transform.SetPositionAndRotation(_viewPivot - rotation * Vector3.forward * _viewDistance, rotation);
@@ -800,6 +873,53 @@ namespace Editor
             _preview.camera.farClipPlane = 1000;
             _preview.Render(true);
             GUI.DrawTexture(rect, _preview.EndPreview(), ScaleMode.StretchToFill, false);
+        }
+
+        private void CreateHitBoxPreview()
+        {
+            var previewObject = new GameObject("伤害范围预览");
+            _preview.AddSingleGO(previewObject);
+            _hitBoxMesh = new Mesh { name = "伤害范围", hideFlags = HideFlags.HideAndDontSave };
+            _hitBoxMesh.MarkDynamic();
+            previewObject.AddComponent<MeshFilter>().sharedMesh = _hitBoxMesh;
+            MeshRenderer renderer = previewObject.AddComponent<MeshRenderer>();
+            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
+                { hideFlags = HideFlags.HideAndDontSave };
+            material.SetColor("_BaseColor", Color.yellow);
+            _previewMaterials.Add(material);
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        private void UpdateHitBoxPreview(SkillEffect[] effects, Vector3 position, Quaternion facing)
+        {
+            _hitBoxVertices.Clear();
+            _hitBoxIndices.Clear();
+            foreach (SkillEffect effect in effects)
+            {
+                if (effect is not HitBoxSkillEffect hitBox) continue;
+                float elapsedTicks = _tick - hitBox.startTick;
+                if (elapsedTicks < 0 || elapsedTicks >= hitBox.durationTicks) continue;
+
+                Vector3 center = position + facing * hitBox.hitBoxPivot;
+                Quaternion rotation = facing * hitBox.hitBoxRotation;
+                Vector3 halfSize = hitBox.hitBoxSize * 0.5f;
+                int firstVertex = _hitBoxVertices.Count;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    Vector3 offset = new Vector3(
+                        (corner & 1) == 0 ? -halfSize.x : halfSize.x,
+                        (corner & 2) == 0 ? -halfSize.y : halfSize.y,
+                        (corner & 4) == 0 ? -halfSize.z : halfSize.z);
+                    _hitBoxVertices.Add(center + rotation * offset);
+                }
+                foreach (int index in HitBoxEdges) _hitBoxIndices.Add(firstVertex + index);
+            }
+
+            _hitBoxMesh.Clear();
+            _hitBoxMesh.SetVertices(_hitBoxVertices);
+            _hitBoxMesh.SetIndices(_hitBoxIndices, MeshTopology.Lines, 0);
         }
 
         private void ClearAnimation()
