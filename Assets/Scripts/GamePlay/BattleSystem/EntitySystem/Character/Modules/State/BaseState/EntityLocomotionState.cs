@@ -10,16 +10,19 @@ namespace GamePlay.BattleSystem
         
         #region 状态控制
 
-        protected override void Tick(float dt)
+        protected override void Tick(float deltaTime)
         {
             // 视角旋转
-            View.Look(LastAimInput, dt);
+            View.Look(LastAimInput, deltaTime);
             
             // 模型旋转
-            Movement.Rotate(LastMoveInput, View.Yaw, dt);
+            Movement.Rotate(LastMoveInput, View.Yaw, deltaTime);
             
             // 角色移动
-            Movement.Move(LastMoveInput, DesiredSpeed, dt);
+            Movement.Move(LastMoveInput, DesiredSpeed, deltaTime);
+            
+            // Tick驱动动画更新
+            Animation.Tick(deltaTime);
         }
 
         /// <summary>

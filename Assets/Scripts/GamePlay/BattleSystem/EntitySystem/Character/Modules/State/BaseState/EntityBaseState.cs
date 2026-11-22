@@ -11,6 +11,7 @@ namespace GamePlay.BattleSystem
         protected readonly EntityContext Context;
         protected readonly MovementModule Movement;
         protected readonly ViewModule View;
+        protected readonly AnimationModule Animation;
         protected readonly AbilityModule Ability;
 
         #region 基础状态属性
@@ -32,6 +33,7 @@ namespace GamePlay.BattleSystem
             
             Movement = context.Get<MovementModule>();
             View = context.Get<ViewModule>();
+            Animation = context.Get<AnimationModule>();
             Ability = context.Get<AbilityModule>();
         }
     }

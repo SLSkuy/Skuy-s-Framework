@@ -271,26 +271,7 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 生命周期
-
-        private void Update()
-        {
-            UpdateSpeedParam();
-            UpdateTurnParam();
-
-            // 更新动画播放进度
-            UpdateActionAnimation(Time.deltaTime);
-            _graph.Evaluate(Time.deltaTime);
-        }
-
-        private void OnDisable()
-        {
-            if (_graph.IsValid())
-            {
-                // 还池后从待机和初始播放时间重新开始
-                ResetAnimation();
-            }
-        }
-
+        
         protected override void OnBound(EntityCharacter target)
         {
             DestroyGraph();
@@ -330,6 +311,30 @@ namespace GamePlay.BattleSystem
         {
             ResetAnimation();
             DestroyGraph();
+        }
+        
+        private void OnDisable()
+        {
+            if (_graph.IsValid())
+            {
+                // 还池后从待机和初始播放时间重新开始
+                ResetAnimation();
+            }
+        }
+        
+        private void Update()
+        {
+            UpdateSpeedParam();
+            UpdateTurnParam();
+        }
+
+        /// <summary>
+        /// Tick驱动动画更新
+        /// </summary>
+        public void Tick(float deltaTime)
+        {
+            UpdateActionAnimation(deltaTime);
+            _graph.Evaluate(deltaTime);
         }
 
         private void OnDestroy()

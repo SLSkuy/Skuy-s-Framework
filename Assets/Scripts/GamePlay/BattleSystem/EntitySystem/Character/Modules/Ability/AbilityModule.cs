@@ -17,6 +17,7 @@ namespace GamePlay.BattleSystem
 
         private MovementModule _movementModule;
         private ViewModule _viewModule;
+        private AnimationModule _animationModule;
         
         /// <summary> 条件解释器，按条件配置的实际类型注册 </summary>
         private Dictionary<Type, IConditionInterpreter> _conditionInterpreters;
@@ -224,6 +225,9 @@ namespace GamePlay.BattleSystem
                     _movementModule.Rotate(Context.LastMoveInput, _viewModule.Yaw, deltaTime);
                 }
                 
+                // 动画更新
+                _animationModule.Tick(deltaTime);
+                
                 // 技能效果
                 _currentSkill?.Tick(deltaTime);
             }
@@ -233,7 +237,7 @@ namespace GamePlay.BattleSystem
         {
             _movementModule = Context.Get<MovementModule>();
             _viewModule = Context.Get<ViewModule>();
-            
+            _animationModule = Context.Get<AnimationModule>();
             
             DisposeSkills();
             InitEffectExecutors();

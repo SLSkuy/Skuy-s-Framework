@@ -53,7 +53,7 @@ namespace GamePlay.BattleSystem
             _gizmoVisibleUntil = Time.unscaledTime + GlobalConst.GIZMOS_VISIBLE_TIME;
 #endif
 
-            // 查询前提交已写入的碰撞体位姿，避免应用的Tick效果还没有应用到实体上
+            // 查询前提交已写入的碰撞体位姿，避免应用的Tick效果还没有应用到物理引擎上
             Physics.SyncTransforms();
 
             int hitCount = 0;

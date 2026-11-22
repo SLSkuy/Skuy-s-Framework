@@ -186,6 +186,7 @@ namespace GamePlay.BattleSystem
         
         #region 生命周期
         
+        // ReSharper disable Unity.PerformanceAnalysis
         public void Tick(float deltaTime)
         {
             if (!IsCasting) return;
