@@ -37,7 +37,7 @@ MonoBehaviour:
     - rid: 4293588810657169602
     effects:
     - rid: 4293588810657169601
-    - rid: 4293588993051721984
+    - rid: 4293589010553503901
   - skillId: 3
     skillName: NoramlAttack2
     cooldown: 0
@@ -51,7 +51,7 @@ MonoBehaviour:
     - rid: 4293588810657169607
     effects:
     - rid: 4293588810657169606
-    - rid: 4293588993051721986
+    - rid: 4293589010553503903
   - skillId: 4
     skillName: NoramlAttack3
     cooldown: 0
@@ -65,7 +65,7 @@ MonoBehaviour:
     - rid: 4293588810657169609
     effects:
     - rid: 4293588810657169608
-    - rid: 4293588993051721987
+    - rid: 4293589010553503904
   - skillId: 5
     skillName: Skill1
     cooldown: 0
@@ -79,6 +79,8 @@ MonoBehaviour:
     - rid: 4293588899644047481
     effects:
     - rid: 4293588899644047482
+    - rid: 4293589010553503909
+    - rid: 4293589010553503910
   references:
     version: 2
     RefIds:
@@ -156,33 +158,53 @@ MonoBehaviour:
         endPolicy: 0
         sampleOffset: 0
         clip: {fileID: 974995637515267212, guid: 82cd7f971f4fa2b42b3a1799eb0994f8, type: 3}
-    - rid: 4293588993051721984
-      type: {class: HitBoxSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+    - rid: 4293589010553503901
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         effectId: 2
-        startTick: 21
+        startTick: 22
         durationTicks: 4
         endPolicy: 0
-        hitBoxPivot: {x: -0.14, y: 0.76, z: 0.7}
-        hitBoxRotation: {x: 0, y: 0, z: 0.38268346, w: 0.9238795}
-        hitBoxSize: {x: 1.35, y: 0.25, z: 0.8}
-    - rid: 4293588993051721986
-      type: {class: HitBoxSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 5
+    - rid: 4293589010553503903
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         effectId: 2
-        startTick: 8
-        durationTicks: 6
+        startTick: 9
+        durationTicks: 5
         endPolicy: 0
-        hitBoxPivot: {x: -0.15, y: 0.94, z: 0.78}
-        hitBoxRotation: {x: 0, y: 0, z: 0.26841548, w: 0.96330327}
-        hitBoxSize: {x: 1.36, y: 0.25, z: 0.74}
-    - rid: 4293588993051721987
-      type: {class: HitBoxSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 5
+    - rid: 4293589010553503904
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         effectId: 2
         startTick: 25
         durationTicks: 6
         endPolicy: 0
-        hitBoxPivot: {x: 0, y: 1, z: 0.61}
-        hitBoxRotation: {x: 0, y: 0, z: 0.29086918, w: -0.95676285}
-        hitBoxSize: {x: 1, y: 0.25, z: 0.67}
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 5
+    - rid: 4293589010553503909
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 19
+        durationTicks: 9
+        endPolicy: 0
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 10
+    - rid: 4293589010553503910
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 3
+        startTick: 71
+        durationTicks: 8
+        endPolicy: 0
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 3

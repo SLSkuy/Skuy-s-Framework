@@ -11,15 +11,14 @@ namespace GamePlay.BattleSystem
         private readonly MovementModule _movement;
         private Collider[] _overlapResults = new Collider[32];
 
+#if UNITY_EDITOR
+        private readonly Queue<(Matrix4x4 Matrix, float VisibleUntil)> _queryGizmos = new();
+#endif
+
         private Vector3 _hitBoxPivot;
         private Quaternion _hitBoxRotation;
         private Vector3 _hitBoxSize;
         private bool _isAttacking;
-
-#if UNITY_EDITOR
-        private Matrix4x4 _lastQueryGizmoMatrix;
-        private float _gizmoVisibleUntil = 0.2f;
-#endif
 
         public HitBoxEffectExecutor(EntityContext context) : base(context)
         {
@@ -48,9 +47,10 @@ namespace GamePlay.BattleSystem
             Vector3 halfExtents = _hitBoxSize * 0.5f;
 
 #if UNITY_EDITOR
-            // 保留最近一次查询的位姿，便于观察只有一个 Tick 的命中窗口。
-            _lastQueryGizmoMatrix = Matrix4x4.TRS(center, rotation, _hitBoxSize);
-            _gizmoVisibleUntil = Time.unscaledTime + GlobalConst.GIZMOS_VISIBLE_TIME;
+            // 每次查询的位姿单独保留，便于观察只有一个 Tick 的命中窗口。
+            float now = Time.unscaledTime;
+            RemoveExpiredGizmos(now);
+            _queryGizmos.Enqueue((Matrix4x4.TRS(center, rotation, _hitBoxSize), now + GlobalConst.GIZMOS_VISIBLE_TIME));
 #endif
 
             // 查询前提交已写入的碰撞体位姿，避免应用的Tick效果还没有应用到物理引擎上
@@ -93,15 +93,27 @@ namespace GamePlay.BattleSystem
 #if UNITY_EDITOR
         internal void DrawGizmos()
         {
-            if (Time.unscaledTime >= _gizmoVisibleUntil) return;
+            RemoveExpiredGizmos(Time.unscaledTime);
+            if (_queryGizmos.Count == 0) return;
 
             Matrix4x4 previousMatrix = Gizmos.matrix;
             Color previousColor = Gizmos.color;
-            Gizmos.matrix = _lastQueryGizmoMatrix;
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            foreach (var query in _queryGizmos)
+            {
+                Gizmos.matrix = query.Matrix;
+                Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            }
             Gizmos.color = previousColor;
             Gizmos.matrix = previousMatrix;
+        }
+
+        private void RemoveExpiredGizmos(float now)
+        {
+            while (_queryGizmos.Count > 0 && _queryGizmos.Peek().VisibleUntil <= now)
+            {
+                _queryGizmos.Dequeue();
+            }
         }
 #endif
     }

@@ -204,8 +204,8 @@ namespace GamePlay.BattleSystem
         {
             if (_executors == null) return;
 
-            HitBoxEffectExecutor executor = (HitBoxEffectExecutor)_executors[typeof(HitBoxSkillEffect)];
-            executor.DrawGizmos();
+            ((HitBoxEffectExecutor)_executors[typeof(HitBoxSkillEffect)]).DrawGizmos();
+            ((WeaponCapsuleEffectExecutor)_executors[typeof(WeaponCapsuleSkillEffect)]).DrawGizmos();
         }
 #endif
 

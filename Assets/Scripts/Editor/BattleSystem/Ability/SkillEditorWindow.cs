@@ -38,9 +38,10 @@ namespace Editor
         private GameObject _model;
         private Transform _previewActor;
         private Transform _previewFacing;
-        private Mesh _hitBoxMesh;
-        private readonly List<Vector3> _hitBoxVertices = new();
-        private readonly List<int> _hitBoxIndices = new();
+        private Transform _previewWeaponAnchor;
+        private Mesh _hitRangeMesh;
+        private readonly List<Vector3> _hitRangeVertices = new();
+        private readonly List<int> _hitRangeIndices = new();
         private Transform[] _bones;
         private int[] _animationRootIndices;
         private Vector3[] _positions;
@@ -98,7 +99,7 @@ namespace Editor
             _preview.lights[0].intensity = 1.2f;
             _preview.lights[0].transform.rotation = Quaternion.Euler(40, 30, 0);
             CreateEnvironment();
-            CreateHitBoxPreview();
+            CreateHitRangePreview();
             RebuildModel();
             Undo.undoRedoPerformed += OnUndo;
             EditorApplication.update += OnUpdate;
@@ -111,7 +112,7 @@ namespace Editor
             ClearAnimation();
             ClearTimeline();
             _preview?.Cleanup();
-            if (_hitBoxMesh) DestroyImmediate(_hitBoxMesh);
+            if (_hitRangeMesh) DestroyImmediate(_hitRangeMesh);
             foreach (Material material in _previewMaterials) DestroyImmediate(material);
             _previewMaterials.Clear();
             _serializedTable?.Dispose();
@@ -300,7 +301,7 @@ namespace Editor
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        string name = effect.managedReferenceValue?.GetType().Name ?? "缺失效果";
+                        string name = GetEffectDisplayName(effect.managedReferenceValue?.GetType());
                         effect.isExpanded = EditorGUILayout.Foldout(effect.isExpanded, name, true);
                         if (GUILayout.Button("↑", GUILayout.Width(24)) && i > 0)
                         { effects.MoveArrayElement(i, i - 1); break; }
@@ -313,11 +314,12 @@ namespace Editor
                     {
                         SerializedProperty child = effect.Copy();
                         SerializedProperty end = child.GetEndProperty();
-                        bool isHitBox = effect.managedReferenceValue is HitBoxSkillEffect;
+                        object effectValue = effect.managedReferenceValue;
                         bool enter = true;
                         while (child.NextVisible(enter) && !SerializedProperty.EqualContents(child, end))
                         {
-                            if (isHitBox) DrawHitBoxField(child);
+                            if (effectValue is HitBoxSkillEffect) DrawHitBoxField(child);
+                            else if (effectValue is WeaponCapsuleSkillEffect) DrawWeaponCapsuleField(child);
                             else EditorGUILayout.PropertyField(child, true);
                             enter = false;
                         }
@@ -331,7 +333,7 @@ namespace Editor
                 SkillTable target = table;
                 int skillIndex = selectedSkill;
                 foreach (Type type in _effectTypes)
-                    menu.AddItem(new GUIContent(type.Name), false, () => AddEffect(target, skillIndex, type));
+                    menu.AddItem(new GUIContent(GetEffectDisplayName(type)), false, () => AddEffect(target, skillIndex, type));
                 menu.ShowAsContext();
             }
             EditorGUILayout.EndScrollView();
@@ -361,6 +363,29 @@ namespace Editor
                     EditorGUILayout.PropertyField(field, true);
                     break;
             }
+        }
+
+        private static void DrawWeaponCapsuleField(SerializedProperty field)
+        {
+            GUIContent label = field.name switch
+            {
+                nameof(SkillEffect.startTick) => new GUIContent("起始 Tick"),
+                nameof(SkillEffect.durationTicks) => new GUIContent("持续 Tick"),
+                nameof(WeaponCapsuleSkillEffect.weaponHeight) =>
+                    new GUIContent("胶囊总长", "沿武器挂点局部 +Z 方向延伸，包含两端半球。实际总长至少为两倍半径。"),
+                nameof(WeaponCapsuleSkillEffect.weaponRadius) =>
+                    new GUIContent("胶囊半径", "武器胶囊查询使用的世界空间半径。"),
+                nameof(WeaponCapsuleSkillEffect.hitRate) =>
+                    new GUIContent("检测次数", "从窗口首 Tick 开始分布检测。次数最多为窗口 Tick 数的一半，单 Tick 窗口检测一次。"),
+                _ => null
+            };
+            if (label == null) EditorGUILayout.PropertyField(field, true);
+            else EditorGUILayout.PropertyField(field, label, true);
+        }
+
+        private static string GetEffectDisplayName(Type type)
+        {
+            return type == typeof(WeaponCapsuleSkillEffect) ? "武器胶囊判定" : type?.Name ?? "缺失效果";
         }
 
         private void DrawInterruptRules(SerializedProperty skill)
@@ -442,7 +467,7 @@ namespace Editor
                         SkillTable target = table;
                         int index = selectedSkill;
                         foreach (Type type in _effectTypes)
-                            menu.AddItem(new GUIContent("技能效果/" + type.Name), false, () => AddEffect(target, index, type));
+                            menu.AddItem(new GUIContent("技能效果/" + GetEffectDisplayName(type)), false, () => AddEffect(target, index, type));
                         menu.AddItem(new GUIContent("中断窗口"), false, () => AddInterruptRule(target, index));
                         menu.ShowAsContext();
                     }
@@ -733,7 +758,7 @@ namespace Editor
                 SerializedProperty effect = effects.GetArrayElementAtIndex(i);
                 if (effect.managedReferenceValue == null) continue;
                 TimelineClip clip = _timelineClips[i];
-                clip.displayName = effect.managedReferenceValue.GetType().Name;
+                clip.displayName = GetEffectDisplayName(effect.managedReferenceValue.GetType());
                 clip.GetParentTrack().name = clip.displayName;
                 clip.start = (double)effect.FindPropertyRelative("startTick").longValue / tickRate;
                 clip.duration = Math.Max(0.000001, (double)effect.FindPropertyRelative("durationTicks").longValue / tickRate);
@@ -776,6 +801,12 @@ namespace Editor
                     hitBox.hitBoxPivot = new Vector3(0f, 1f, 1f);
                     hitBox.hitBoxSize = Vector3.one;
                 }
+                else if (value is WeaponCapsuleSkillEffect capsule)
+                {
+                    capsule.durationTicks = 1;
+                    capsule.weaponHeight = 1f;
+                    capsule.weaponRadius = 0.1f;
+                }
                 effects.GetArrayElementAtIndex(index).managedReferenceValue = value;
                 effects.GetArrayElementAtIndex(index).isExpanded = true;
                 serialized.ApplyModifiedProperties();
@@ -789,6 +820,7 @@ namespace Editor
             if (_model) DestroyImmediate(_model);
             _previewActor = null;
             _previewFacing = null;
+            _previewWeaponAnchor = null;
             if (!modelPrefab) return;
             GameObject holder = new GameObject("Skill Preview");
             holder.SetActive(false);
@@ -798,6 +830,9 @@ namespace Editor
             _previewActor = instance.transform;
             _previewFacing = _previewActor.Find($"{EntityVisualPresentation.VISUAL_CHILD_NAME}/mesh");
             _animator = instance.GetComponentInChildren<Animator>(true);
+            // 预览会移除运行时脚本，先保存武器挂点的 Transform。
+            if (instance.TryGetComponent(out EntityCharacter character) && character.anchor)
+                _previewWeaponAnchor = character.anchor.transform;
             foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true)) DestroyImmediate(behaviour);
             foreach (Animator animator in instance.GetComponentsInChildren<Animator>(true))
             {
@@ -822,6 +857,7 @@ namespace Editor
 
         private void DrawPreview(SkillConfig skill)
         {
+            SkillEffect[] effects = skill.effects ?? Array.Empty<SkillEffect>();
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUI.BeginChangeCheck();
@@ -829,6 +865,8 @@ namespace Editor
                 if (EditorGUI.EndChangeCheck()) RebuildModel();
                 if (GUILayout.Button("居中", GUILayout.Width(45))) FrameModel();
             }
+            if (!_previewWeaponAnchor && effects.Any(effect => effect is WeaponCapsuleSkillEffect))
+                EditorGUILayout.HelpBox("请选择已在 EntityCharacter 上配置武器挂点的预览 Prefab。", MessageType.Info);
             Rect rect = GUILayoutUtility.GetRect(100, 100, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             OnPreviewInput(rect);
             if (Event.current.type != EventType.Repaint || rect.width <= 0 || rect.height <= 0) return;
@@ -841,7 +879,6 @@ namespace Editor
                     _bones[i].localScale = _scales[i];
                 }
             }
-            SkillEffect[] effects = skill.effects ?? Array.Empty<SkillEffect>();
             float distance = 0;
             foreach (SkillEffect effect in effects)
             {
@@ -865,7 +902,7 @@ namespace Editor
                 position = _previewActor.position;
                 facing = _previewFacing ? _previewFacing.rotation : _previewActor.rotation;
             }
-            UpdateHitBoxPreview(effects, position, facing);
+            UpdateHitRangePreview(effects, position, facing);
             _preview.BeginPreview(rect, GUIStyle.none);
             Quaternion rotation = Quaternion.Euler(_viewAngles.x, _viewAngles.y, 0);
             _preview.camera.transform.SetPositionAndRotation(_viewPivot - rotation * Vector3.forward * _viewDistance, rotation);
@@ -875,13 +912,13 @@ namespace Editor
             GUI.DrawTexture(rect, _preview.EndPreview(), ScaleMode.StretchToFill, false);
         }
 
-        private void CreateHitBoxPreview()
+        private void CreateHitRangePreview()
         {
             var previewObject = new GameObject("伤害范围预览");
             _preview.AddSingleGO(previewObject);
-            _hitBoxMesh = new Mesh { name = "伤害范围", hideFlags = HideFlags.HideAndDontSave };
-            _hitBoxMesh.MarkDynamic();
-            previewObject.AddComponent<MeshFilter>().sharedMesh = _hitBoxMesh;
+            _hitRangeMesh = new Mesh { name = "伤害范围", hideFlags = HideFlags.HideAndDontSave };
+            _hitRangeMesh.MarkDynamic();
+            previewObject.AddComponent<MeshFilter>().sharedMesh = _hitRangeMesh;
             MeshRenderer renderer = previewObject.AddComponent<MeshRenderer>();
             var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"))
                 { hideFlags = HideFlags.HideAndDontSave };
@@ -892,34 +929,54 @@ namespace Editor
             renderer.receiveShadows = false;
         }
 
-        private void UpdateHitBoxPreview(SkillEffect[] effects, Vector3 position, Quaternion facing)
+        private void UpdateHitRangePreview(SkillEffect[] effects, Vector3 position, Quaternion facing)
         {
-            _hitBoxVertices.Clear();
-            _hitBoxIndices.Clear();
+            _hitRangeVertices.Clear();
+            _hitRangeIndices.Clear();
             foreach (SkillEffect effect in effects)
             {
+                if (effect == null) continue;
+                float elapsedTicks = _tick - effect.startTick;
+                if (elapsedTicks < 0 || elapsedTicks >= effect.durationTicks) continue;
+
+                if (effect is WeaponCapsuleSkillEffect capsule && _previewWeaponAnchor)
+                {
+                    WeaponCapsuleEffectExecutor.GetCapsuleEndpoints(_previewWeaponAnchor, capsule.weaponHeight,
+                        capsule.weaponRadius, out Vector3 start, out Vector3 end);
+                    WeaponCapsuleEffectExecutor.DrawWireCapsule(start, end, _previewWeaponAnchor.rotation,
+                        capsule.weaponRadius, AddHitRangeLine);
+                    continue;
+                }
+
                 if (effect is not HitBoxSkillEffect hitBox) continue;
-                float elapsedTicks = _tick - hitBox.startTick;
-                if (elapsedTicks < 0 || elapsedTicks >= hitBox.durationTicks) continue;
 
                 Vector3 center = position + facing * hitBox.hitBoxPivot;
                 Quaternion rotation = facing * hitBox.hitBoxRotation;
                 Vector3 halfSize = hitBox.hitBoxSize * 0.5f;
-                int firstVertex = _hitBoxVertices.Count;
+                int firstVertex = _hitRangeVertices.Count;
                 for (int corner = 0; corner < 8; corner++)
                 {
                     Vector3 offset = new Vector3(
                         (corner & 1) == 0 ? -halfSize.x : halfSize.x,
                         (corner & 2) == 0 ? -halfSize.y : halfSize.y,
                         (corner & 4) == 0 ? -halfSize.z : halfSize.z);
-                    _hitBoxVertices.Add(center + rotation * offset);
+                    _hitRangeVertices.Add(center + rotation * offset);
                 }
-                foreach (int index in HitBoxEdges) _hitBoxIndices.Add(firstVertex + index);
+                foreach (int index in HitBoxEdges) _hitRangeIndices.Add(firstVertex + index);
             }
 
-            _hitBoxMesh.Clear();
-            _hitBoxMesh.SetVertices(_hitBoxVertices);
-            _hitBoxMesh.SetIndices(_hitBoxIndices, MeshTopology.Lines, 0);
+            _hitRangeMesh.Clear();
+            _hitRangeMesh.SetVertices(_hitRangeVertices);
+            _hitRangeMesh.SetIndices(_hitRangeIndices, MeshTopology.Lines, 0);
+        }
+
+        private void AddHitRangeLine(Vector3 start, Vector3 end)
+        {
+            int firstVertex = _hitRangeVertices.Count;
+            _hitRangeVertices.Add(start);
+            _hitRangeVertices.Add(end);
+            _hitRangeIndices.Add(firstVertex);
+            _hitRangeIndices.Add(firstVertex + 1);
         }
 
         private void ClearAnimation()
