@@ -9,6 +9,9 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class EntityCharacter : MonoBehaviour, IPoolable
     {
+        // TODO: 独立的装备管理模块处理武器信息
+        [Header("武器根节点")] public WeaponAnchor anchor;
+        
         // 能力组件
         private EntityVisualPresentation _visualPresentation;
         private EntitySimulator _simulator;

@@ -99,6 +99,7 @@ namespace GamePlay.BattleSystem
                 { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
                 { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) },
                 { typeof(HitBoxSkillEffect), new HitBoxEffectExecutor(Context) },
+                { typeof(WeaponCapsuleSkillEffect), new WeaponCapsuleEffectExecutor(Context) },
             };
         }
         

@@ -34,9 +34,11 @@ namespace GamePlay.BattleSystem
         public bool IsFocus;
         #endregion
 
-        #region 连招控制
+        #region 战斗系统
         /// <summary>连招图实例，避免多实例读取同一个Config中的数据</summary>
         public readonly CombatGraph CombatGraph;
+        /// <summary>武器锚点</summary>
+        public WeaponAnchor Anchor => _character.anchor;
         #endregion
 
         #region 属性

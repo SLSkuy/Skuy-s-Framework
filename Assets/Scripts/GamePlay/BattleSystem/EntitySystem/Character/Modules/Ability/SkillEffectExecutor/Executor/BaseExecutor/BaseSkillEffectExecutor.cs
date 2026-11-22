@@ -2,7 +2,7 @@
 {
     public abstract class BaseSkillEffectExecutor : ISkillEffectExecutor
     {
-        protected EntityContext _context;
+        protected readonly EntityContext _context;
 
         protected BaseSkillEffectExecutor(EntityContext context) { _context = context; }
         

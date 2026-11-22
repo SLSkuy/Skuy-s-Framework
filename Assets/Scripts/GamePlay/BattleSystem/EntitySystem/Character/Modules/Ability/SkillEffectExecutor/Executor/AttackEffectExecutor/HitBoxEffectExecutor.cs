@@ -61,7 +61,8 @@ namespace GamePlay.BattleSystem
             {
                 // 使用全局定义敌人碰撞盒层级
                 int layerMask = GlobalConst.EnemyLayerMask;
-                hitCount = Physics.OverlapBoxNonAlloc(center, halfExtents, _overlapResults, rotation, layerMask, QueryTriggerInteraction.Collide);
+                hitCount = Physics.OverlapBoxNonAlloc(center, halfExtents, _overlapResults, rotation, 
+                    layerMask, QueryTriggerInteraction.Collide);
                 if (hitCount < _overlapResults.Length) break;
 
                 // 缓冲区写满时结果可能被截断，扩容后重新查询。
