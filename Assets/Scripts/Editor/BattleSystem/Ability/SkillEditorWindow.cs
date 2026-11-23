@@ -34,7 +34,7 @@ namespace Editor
         private SerializedObject _serializedTable;
         private Type[] _effectTypes;
         private Type[] _conditionTypes;
-        private PreviewRenderUtility _preview;
+        private BattlePreviewViewport _preview;
         private GameObject _model;
         private Transform _previewActor;
         private Transform _previewFacing;
@@ -63,10 +63,6 @@ namespace Editor
         private float _tick;
         private bool _playing;
         private double _lastTime;
-        private Vector3 _viewPivot = Vector3.up;
-        private Vector2 _viewAngles = new Vector2(15, -34);
-        private float _viewDistance = 7.5f;
-        private int _viewButton;
         private Animator _animator;
         private PlayableGraph _graph;
         private AnimationClipPlayable _clipPlayable;
@@ -94,11 +90,7 @@ namespace Editor
                 if (guid != null) table = AssetDatabase.LoadAssetAtPath<SkillTable>(AssetDatabase.GUIDToAssetPath(guid));
             }
             BindTable();
-            _preview = new PreviewRenderUtility();
-            _preview.camera.fieldOfView = 35;
-            _preview.lights[0].intensity = 1.2f;
-            _preview.lights[0].transform.rotation = Quaternion.Euler(40, 30, 0);
-            CreateEnvironment();
+            _preview = new BattlePreviewViewport();
             CreateHitRangePreview();
             RebuildModel();
             Undo.undoRedoPerformed += OnUndo;
@@ -111,7 +103,7 @@ namespace Editor
             EditorApplication.update -= OnUpdate;
             ClearAnimation();
             ClearTimeline();
-            _preview?.Cleanup();
+            _preview?.Dispose();
             if (_hitRangeMesh) DestroyImmediate(_hitRangeMesh);
             foreach (Material material in _previewMaterials) DestroyImmediate(material);
             _previewMaterials.Clear();
@@ -844,7 +836,6 @@ namespace Editor
             foreach (SkinnedMeshRenderer renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 renderer.updateWhenOffscreen = true;
             foreach (Camera camera in instance.GetComponentsInChildren<Camera>(true)) camera.enabled = false;
-            _preview.camera.useOcclusionCulling = false;
             _bones = instance.GetComponentsInChildren<Transform>(true);
             _animationRootIndices = instance.GetComponentsInChildren<Animator>(true)
                 .Select(animator => Array.IndexOf(_bones, animator.transform)).Append(0).Distinct().ToArray();
@@ -868,8 +859,11 @@ namespace Editor
             if (!_previewWeaponAnchor && effects.Any(effect => effect is WeaponCapsuleSkillEffect))
                 EditorGUILayout.HelpBox("请选择已在 EntityCharacter 上配置武器挂点的预览 Prefab。", MessageType.Info);
             Rect rect = GUILayoutUtility.GetRect(100, 100, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-            OnPreviewInput(rect);
-            if (Event.current.type != EventType.Repaint || rect.width <= 0 || rect.height <= 0) return;
+            if (Event.current.type != EventType.Repaint || rect.width <= 0 || rect.height <= 0)
+            {
+                _preview.Draw(rect, this);
+                return;
+            }
             if (_model)
             {
                 for (int i = 0; i < _bones.Length; i++)
@@ -903,13 +897,7 @@ namespace Editor
                 facing = _previewFacing ? _previewFacing.rotation : _previewActor.rotation;
             }
             UpdateHitRangePreview(effects, position, facing);
-            _preview.BeginPreview(rect, GUIStyle.none);
-            Quaternion rotation = Quaternion.Euler(_viewAngles.x, _viewAngles.y, 0);
-            _preview.camera.transform.SetPositionAndRotation(_viewPivot - rotation * Vector3.forward * _viewDistance, rotation);
-            _preview.camera.nearClipPlane = 0.01f;
-            _preview.camera.farClipPlane = 1000;
-            _preview.Render(true);
-            GUI.DrawTexture(rect, _preview.EndPreview(), ScaleMode.StretchToFill, false);
+            _preview.Draw(rect, this);
         }
 
         private void CreateHitRangePreview()
@@ -1017,91 +1005,8 @@ namespace Editor
                     foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
                 }
             }
-            _viewPivot = bounds.center;
-            _viewAngles = new Vector2(15, -34);
-            _viewDistance = Mathf.Max(1, bounds.extents.magnitude * 1.3f / Mathf.Sin(17.5f * Mathf.Deg2Rad));
+            _preview.Frame(bounds);
             Repaint();
-        }
-
-        private void CreateEnvironment()
-        {
-            var sky = new Material(Shader.Find("Skybox/Procedural")) { hideFlags = HideFlags.HideAndDontSave };
-            _previewMaterials.Add(sky);
-            _preview.camera.gameObject.AddComponent<Skybox>().material = sky;
-            _preview.camera.clearFlags = CameraClearFlags.Skybox;
-            var grid = new GameObject("Preview Coordinates");
-            _preview.AddSingleGO(grid);
-            for (int i = -10; i <= 10; i++)
-            {
-                if (i == 0) continue;
-                CreateLine(grid.transform, new Vector3(i, 0, -10), new Vector3(i, 0, 10), Color.gray, 0.008f);
-                CreateLine(grid.transform, new Vector3(-10, 0, i), new Vector3(10, 0, i), Color.gray, 0.008f);
-            }
-            CreateLine(grid.transform, Vector3.left * 10, Vector3.right * 10, Color.red, 0.02f);
-            CreateLine(grid.transform, Vector3.zero, Vector3.up * 3, Color.green, 0.02f);
-            CreateLine(grid.transform, Vector3.back * 10, Vector3.forward * 10, Color.blue, 0.02f);
-        }
-
-        private void CreateLine(Transform parent, Vector3 start, Vector3 end, Color color, float width)
-        {
-            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { hideFlags = HideFlags.HideAndDontSave };
-            material.SetColor("_BaseColor", color);
-            _previewMaterials.Add(material);
-            var lineObject = new GameObject("Grid Line");
-            lineObject.transform.SetParent(parent, false);
-            var line = lineObject.AddComponent<LineRenderer>();
-            line.sharedMaterial = material;
-            line.positionCount = 2;
-            line.SetPositions(new[] { start, end });
-            line.startWidth = line.endWidth = width;
-            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            line.receiveShadows = false;
-        }
-
-        private void OnPreviewInput(Rect rect)
-        {
-            int control = GUIUtility.GetControlID(FocusType.Passive);
-            Event current = Event.current;
-            EventType eventType = current.GetTypeForControl(control);
-            if (eventType == EventType.MouseDown && rect.Contains(current.mousePosition) &&
-                (current.button == 1 || current.button == 2 || (current.button == 0 && current.alt)))
-            {
-                GUIUtility.hotControl = control;
-                _viewButton = current.button;
-                current.Use();
-            }
-            else if (eventType == EventType.MouseDrag && GUIUtility.hotControl == control)
-            {
-                Quaternion rotation = Quaternion.Euler(_viewAngles.x, _viewAngles.y, 0);
-                if (_viewButton == 2)
-                {
-                    float scale = 2 * _viewDistance * Mathf.Tan(_preview.camera.fieldOfView * Mathf.Deg2Rad * 0.5f) / Mathf.Max(1, rect.height);
-                    _viewPivot += rotation * new Vector3(-current.delta.x, current.delta.y, 0) * scale;
-                }
-                else if (_viewButton == 1 && current.alt)
-                    _viewDistance = Mathf.Clamp(_viewDistance * Mathf.Exp(current.delta.x * 0.01f), 0.05f, 500);
-                else
-                {
-                    Vector3 position = _viewPivot - rotation * Vector3.forward * _viewDistance;
-                    _viewAngles += new Vector2(current.delta.y, current.delta.x) * 0.4f;
-                    _viewAngles.x = Mathf.Clamp(_viewAngles.x, -89, 89);
-                    if (_viewButton == 1)
-                        _viewPivot = position + Quaternion.Euler(_viewAngles.x, _viewAngles.y, 0) * Vector3.forward * _viewDistance;
-                }
-                current.Use();
-                Repaint();
-            }
-            else if (eventType == EventType.MouseUp && GUIUtility.hotControl == control)
-            {
-                GUIUtility.hotControl = 0;
-                current.Use();
-            }
-            else if (eventType == EventType.ScrollWheel && rect.Contains(current.mousePosition))
-            {
-                _viewDistance = Mathf.Clamp(_viewDistance * Mathf.Exp(current.delta.y * 0.08f), 0.05f, 500);
-                current.Use();
-                Repaint();
-            }
         }
     }
 }
