@@ -175,12 +175,10 @@ namespace GamePlay.BattleSystem
 
         private void ApplyMovement(Vector2 deltaPos)
         {
-            Vector3 movement = new Vector3
-            {
-                x = _lastMoveDir.x * deltaPos.x,
-                y = _verticalVelocity,
-                z = _lastMoveDir.z * deltaPos.y
-            };
+            Vector3 forward = _lastMoveDir;
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+            Vector3 movement = right * deltaPos.x + forward * deltaPos.y;
+            movement.y = _verticalVelocity;
             _controller.Move(movement);
         }
 

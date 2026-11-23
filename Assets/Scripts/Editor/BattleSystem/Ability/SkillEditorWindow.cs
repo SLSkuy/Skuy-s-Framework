@@ -312,6 +312,7 @@ namespace Editor
                         {
                             if (effectValue is HitBoxSkillEffect) DrawHitBoxField(child);
                             else if (effectValue is WeaponCapsuleSkillEffect) DrawWeaponCapsuleField(child);
+                            else if (effectValue is RootMotionSkillEffect) DrawRootMotionField(child);
                             else EditorGUILayout.PropertyField(child, true);
                             enter = false;
                         }
@@ -375,9 +376,25 @@ namespace Editor
             else EditorGUILayout.PropertyField(field, label, true);
         }
 
+        private static void DrawRootMotionField(SerializedProperty field)
+        {
+            GUIContent label = field.name switch
+            {
+                nameof(SkillEffect.startTick) => new GUIContent("起始 Tick"),
+                nameof(SkillEffect.durationTicks) => new GUIContent("持续 Tick"),
+                nameof(RootMotionSkillEffect.motionData) => new GUIContent("根运动数据", "根运动烘焙窗口生成的位移数据。技能预览应用 XZ 位移。"),
+                nameof(RootMotionSkillEffect.collisionPolicy) => new GUIContent("碰撞策略"),
+                _ => null
+            };
+            if (label == null) EditorGUILayout.PropertyField(field, true);
+            else EditorGUILayout.PropertyField(field, label, true);
+        }
+
         private static string GetEffectDisplayName(Type type)
         {
-            return type == typeof(WeaponCapsuleSkillEffect) ? "武器胶囊判定" : type?.Name ?? "缺失效果";
+            if (type == typeof(WeaponCapsuleSkillEffect)) return "武器胶囊判定";
+            if (type == typeof(RootMotionSkillEffect)) return "根运动位移";
+            return type?.Name ?? "缺失效果";
         }
 
         private void DrawInterruptRules(SerializedProperty skill)
@@ -873,17 +890,25 @@ namespace Editor
                     _bones[i].localScale = _scales[i];
                 }
             }
-            float distance = 0;
+            Vector3 position = Vector3.zero;
             foreach (SkillEffect effect in effects)
             {
                 if (effect == null) continue;
-                float elapsed = Mathf.Clamp(_tick - effect.startTick, 0, effect.durationTicks) / tickRate;
-                if (effect is MoveSkillEffect move) distance += elapsed * move.speed;
-                if (_model && effect is AnimationSkillEffect animation && animation.clip && _tick >= effect.startTick)
+                float elapsedTicks = _tick - effect.startTick;
+                if (elapsedTicks < 0f) continue;
+                float elapsed = Mathf.Min(elapsedTicks, effect.durationTicks) / tickRate;
+                if (effect is MoveSkillEffect move)
+                    position += Vector3.forward * (elapsed * move.speed);
+                else if (effect is RootMotionSkillEffect rootMotion && rootMotion.motionData)
+                {
+                    BakedAnimMotionData data = rootMotion.motionData;
+                    Vector2 displacement = data.EvaluatePositionXZ(elapsed) - data.EvaluatePositionXZ(0f);
+                    position += new Vector3(displacement.x, 0f, displacement.y);
+                }
+                else if (_model && effect is AnimationSkillEffect animation && animation.clip)
                     SamplePose(animation.clip, animation.sampleOffset + elapsed);
             }
             // Playables 经 Animator 提取根运动；根节点保持初始变换，只有移动效果驱动容器。
-            Vector3 position = Vector3.forward * distance;
             Quaternion facing = Quaternion.identity;
             if (_model)
             {

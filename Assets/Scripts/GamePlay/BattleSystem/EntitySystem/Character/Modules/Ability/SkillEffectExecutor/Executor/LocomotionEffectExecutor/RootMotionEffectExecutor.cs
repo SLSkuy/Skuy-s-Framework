@@ -31,7 +31,7 @@ namespace GamePlay.BattleSystem
         {
             if (_isMoving)
             {
-                Vector2 deltaPosXZ = _motionData.EvaluateTickDeltaPosXZ(_elapsedTick);
+                Vector2 deltaPosXZ = _motionData.EvaluateTickDeltaPosXZ(_elapsedTick++);
                 _movement.Move(Vector2.up, deltaPosXZ, deltaTime);
             }
         }

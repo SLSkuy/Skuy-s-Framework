@@ -69,18 +69,17 @@ MonoBehaviour:
   - skillId: 5
     skillName: Skill1
     cooldown: 0
-    durationTicks: 145
+    durationTicks: 240
     controlPolicy: 1
-    interruptRules:
-    - startTick: 77
-      endTick: 145
-      reason: 1
+    interruptRules: []
     castConditions:
     - rid: 4293588899644047481
     effects:
     - rid: 4293588899644047482
-    - rid: 4293589010553503909
-    - rid: 4293589010553503910
+    - rid: 4293589038023835832
+    - rid: 4293589038023835828
+    - rid: 4293589038023835829
+    - rid: 4293589038023835830
   references:
     version: 2
     RefIds:
@@ -154,10 +153,10 @@ MonoBehaviour:
       data:
         effectId: 1
         startTick: 0
-        durationTicks: 145
+        durationTicks: 240
         endPolicy: 0
         sampleOffset: 0
-        clip: {fileID: 974995637515267212, guid: 82cd7f971f4fa2b42b3a1799eb0994f8, type: 3}
+        clip: {fileID: 7505113491735756931, guid: a2384aff7e3a57b45a6f405b011d4a85, type: 3}
     - rid: 4293589010553503901
       type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -188,23 +187,42 @@ MonoBehaviour:
         weaponHeight: 0.7
         weaponRadius: 0.1
         hitRate: 5
-    - rid: 4293589010553503909
-      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        effectId: 2
-        startTick: 19
-        durationTicks: 9
-        endPolicy: 0
-        weaponHeight: 0.7
-        weaponRadius: 0.1
-        hitRate: 10
-    - rid: 4293589010553503910
+    - rid: 4293589038023835828
       type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
         effectId: 3
-        startTick: 71
+        startTick: 39
         durationTicks: 8
         endPolicy: 0
         weaponHeight: 0.7
         weaponRadius: 0.1
-        hitRate: 3
+        hitRate: 5
+    - rid: 4293589038023835829
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 4
+        startTick: 68
+        durationTicks: 31
+        endPolicy: 0
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 10
+    - rid: 4293589038023835830
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 5
+        startTick: 120
+        durationTicks: 14
+        endPolicy: 0
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 7
+    - rid: 4293589038023835832
+      type: {class: RootMotionSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 0
+        durationTicks: 240
+        endPolicy: 0
+        motionData: {fileID: 11400000, guid: 46a26ccb437f5e447ae5e1d458bc43d7, type: 2}
+        collisionPolicy: 0
