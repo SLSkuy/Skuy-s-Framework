@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GamePlay.BattleSystem
@@ -133,9 +134,9 @@ namespace GamePlay.BattleSystem
             Gizmos.color = previousColor;
         }
 
-        /// <summary>输出胶囊轮廓线段，供场景 Gizmos 和技能编辑器预览使用。</summary>
+        /// <summary>输出胶囊轮廓线段，供场景 Gizmos 和技能编辑器预览使用</summary>
         public static void DrawWireCapsule(Vector3 start, Vector3 end, Quaternion rotation, float radius,
-            System.Action<Vector3, Vector3> drawLine)
+            Action<Vector3, Vector3> drawLine)
         {
             Vector3 right = rotation * Vector3.right * radius;
             Vector3 up = rotation * Vector3.up * radius;
@@ -154,7 +155,7 @@ namespace GamePlay.BattleSystem
         }
 
         private static void DrawArc(Vector3 center, Vector3 firstAxis, Vector3 secondAxis, float sweep,
-            System.Action<Vector3, Vector3> drawLine)
+            Action<Vector3, Vector3> drawLine)
         {
             const int segments = 16;
             Vector3 previous = center + firstAxis;

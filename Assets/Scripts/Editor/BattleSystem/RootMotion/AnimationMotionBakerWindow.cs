@@ -109,8 +109,9 @@ namespace Editor
                 data.sourceClip = clip;
                 data.sourceAvatar = animator.avatar;
                 data.duration = clip.length;
-                data.sampleRate = sampleRate;
+                data.sampleRate = (uint)sampleRate;
                 data.positionX.AddKey(0f, 0f);
+                data.positionY.AddKey(0f, 0f);
                 data.positionZ.AddKey(0f, 0f);
                 data.yaw.AddKey(0f, 0f);
                 int steps = Mathf.CeilToInt(clip.length * sampleRate);
@@ -128,6 +129,7 @@ namespace Editor
                     Vector3 nextForward = Vector3.ProjectOnPlane(nextRotation * Vector3.forward, Vector3.up);
                     yaw += Vector3.SignedAngle(previousForward, nextForward, Vector3.up);
                     data.positionX.AddKey(time, position.x);
+                    data.positionY.AddKey(time, position.y);
                     data.positionZ.AddKey(time, position.z);
                     data.yaw.AddKey(time, yaw);
                     worldPosition += delta;
@@ -135,6 +137,7 @@ namespace Editor
                     previousTime = time;
                 }
                 SetLinearTangents(data.positionX);
+                SetLinearTangents(data.positionY);
                 SetLinearTangents(data.positionZ);
                 SetLinearTangents(data.yaw);
                 data.hideFlags = HideFlags.HideAndDontSave;
@@ -359,7 +362,7 @@ namespace Editor
                     DrawMetric("采样频率", $"{_preview.sampleRate} Hz");
                 }
                 if (_preview.planarDistance < 0.001f && Mathf.Abs(_preview.TotalYaw) < 0.01f)
-                    EditorGUILayout.HelpBox("未检测到明显根运动。请检查动画是否为原地动作、Bake Into Pose 设置及 Avatar。", MessageType.Warning);
+                    EditorGUILayout.HelpBox("未检测到明显的水平位移或转向。", MessageType.Info);
                 GUILayout.Space(6f);
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
@@ -369,11 +372,13 @@ namespace Editor
                     else
                     {
                         DrawCurve("X 位移", _preview.positionX, Accent, "m");
+                        DrawCurve("Y 位移", _preview.positionY, Accent, "m");
                         DrawCurve("Z 位移", _preview.positionZ, StartColor, "m");
                         DrawCurve("Yaw 转角", _preview.yaw, EndColor, "°");
                     }
                     Vector3 position = _preview.EvaluatePosition(_previewTime);
-                    EditorGUILayout.LabelField($"当前采样  X {position.x:F3} m   Z {position.z:F3} m   Yaw {_preview.yaw.Evaluate(_previewTime):F2}°", _hintStyle);
+                    float positionY = _preview.positionY.Evaluate(_previewTime);
+                    EditorGUILayout.LabelField($"当前采样  X {position.x:F3} m   Y {positionY:F3} m   Z {position.z:F3} m   Yaw {_preview.yaw.Evaluate(_previewTime):F2}°", _hintStyle);
                     EditorGUILayout.LabelField("曲线横轴：0 → 动画时长（秒），拖动时间滑块检查对应轨迹位置。", _hintStyle);
                 }
             }
@@ -383,7 +388,7 @@ namespace Editor
                 EditorGUILayout.HelpBox("采样后显示速度统计、俯视轨迹和位移 / 转角曲线。采样在独立预览场景中完成。", MessageType.None);
             }
             GUILayout.Space(6f);
-            EditorGUILayout.LabelField("XZ 位移或 Rotation 已 Bake Into Pose 时，对应运动可能为零。", _hintStyle);
+            EditorGUILayout.LabelField("根运动位移或旋转已 Bake Into Pose 时，对应运动可能为零。", _hintStyle);
             EditorGUILayout.EndScrollView();
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {

@@ -5,7 +5,7 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 移动技能效果处理器，处理技能释放期间的角色位移效果
     /// </summary>
-    public class LocomotionEffectExecutor : BaseSkillEffectExecutor
+    public class MoveEffectExecutor : BaseSkillEffectExecutor
     {
         private readonly MovementModule _movement;
 
@@ -13,7 +13,7 @@ namespace GamePlay.BattleSystem
         private float _speed;
         private bool _isMoving;
 
-        public LocomotionEffectExecutor(EntityContext context) : base(context)
+        public MoveEffectExecutor(EntityContext context) : base(context)
         {
             _movement = context.Get<MovementModule>();
         }
@@ -25,28 +25,20 @@ namespace GamePlay.BattleSystem
                 _speed = moveEffect.speed;
                 _isMoving = true;
             }
-
-            if (effect is RootMotionSkillEffect rootMotionEffect)
-            {
-                
-            }
         }
-
-        public override void StopExecution()
-        {
-            if (_isMoving)
-            {
-                _isMoving = false;
-                _speed = 0;
-            }
-        }
-
+        
         public override void Tick(float deltaTime)
         {
             if (_isMoving)
             {
                 _movement.Move(Vector2.up, _speed, deltaTime);
             }
+        }
+
+        public override void StopExecution()
+        {
+            _isMoving = false;
+            _speed = 0;
         }
     }
 }

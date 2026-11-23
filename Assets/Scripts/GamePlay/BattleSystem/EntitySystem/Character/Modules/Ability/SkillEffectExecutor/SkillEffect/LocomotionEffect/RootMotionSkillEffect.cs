@@ -8,6 +8,10 @@ namespace GamePlay.BattleSystem
     [Serializable]
     public class RootMotionSkillEffect : SkillEffect
     {
-        // TODO: 完善根动画移动技能动画效果
+        /// <summary>根运动烘焙数据</summary>
+        public BakedAnimMotionData motionData;
+        
+        /// <summary>技能碰撞策略</summary>
+        public SkillLocomotionCollisionPolicy collisionPolicy;
     }
 }

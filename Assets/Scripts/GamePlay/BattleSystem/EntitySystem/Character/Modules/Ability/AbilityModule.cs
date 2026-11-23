@@ -97,7 +97,8 @@ namespace GamePlay.BattleSystem
             _executors = new Dictionary<Type, ISkillEffectExecutor>
             {
                 { typeof(AnimationSkillEffect), new AnimationEffectExecutor(Context, _simulation.TickRate) },
-                { typeof(MoveSkillEffect), new LocomotionEffectExecutor(Context) },
+                { typeof(MoveSkillEffect), new MoveEffectExecutor(Context) },
+                { typeof(RootMotionSkillEffect), new RootMotionEffectExecutor(Context) },
                 { typeof(HitBoxSkillEffect), new HitBoxEffectExecutor(Context) },
                 { typeof(WeaponCapsuleSkillEffect), new WeaponCapsuleEffectExecutor(Context) },
             };

@@ -96,6 +96,20 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
+        /// 根运动位移入口
+        /// </summary>
+        public void Move(Vector2 inputDir, Vector2 deltaPos, float dt)
+        {
+            if (!_controller) return;
+            
+            UpdateMoveDirVector(inputDir);
+            
+            ApplyGravity(dt);
+            ApplyMovement(deltaPos);
+            _isGrounded = _controller.isGrounded;
+        }
+
+        /// <summary>
         /// 尝试跳跃，成功则设置垂直速度并累计跳跃次数
         /// </summary>
         public bool Jump(float jumpSpeed, int maxJumpCount)
@@ -157,6 +171,17 @@ namespace GamePlay.BattleSystem
             velocity.y = _verticalVelocity;
             // LinearVelocity = velocity;
             _controller.Move(velocity * dt);
+        }
+
+        private void ApplyMovement(Vector2 deltaPos)
+        {
+            Vector3 movement = new Vector3
+            {
+                x = _lastMoveDir.x * deltaPos.x,
+                y = _verticalVelocity,
+                z = _lastMoveDir.z * deltaPos.y
+            };
+            _controller.Move(movement);
         }
 
         #region 快照逻辑

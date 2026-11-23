@@ -8,10 +8,10 @@ namespace GamePlay.BattleSystem
     [Serializable]
     public sealed class MoveSkillEffect : SkillEffect
     {
-        /// <summary> 位移速度 </summary>
+        /// <summary>位移速度</summary>
         public float speed;
         
-        /// <summary> 技能碰撞策略 </summary>
+        /// <summary>技能碰撞策略</summary>
         public SkillLocomotionCollisionPolicy collisionPolicy;
     }
 }
