@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Framework;
 
@@ -104,7 +104,7 @@ namespace GamePlay.BattleSystem
         {
             _conditionInterpreters = new Dictionary<Type, ITransitionConditionInterpreter>
             {
-                // TODO: 注册转换条件执行器
+                [typeof(EntityStateTransitionCondition)] = new EntityStateTransitionConditionInterpreter(_stateMachine)
             };
         }
         

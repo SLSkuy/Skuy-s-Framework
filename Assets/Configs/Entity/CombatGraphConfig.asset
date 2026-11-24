@@ -13,38 +13,74 @@ MonoBehaviour:
   m_Name: CombatGraphConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.CombatGraphConfig
   skillTable: {fileID: 11400000, guid: d5aa2803e962eba47b5f609fd199b5f3, type: 2}
-  rootPosition: {x: 108, y: 347}
+  rootPosition: {x: 121, y: 365}
   rootTransitions:
   - command: 8
     targetNodeId: 1
+    commandState: 1
+    stateConditions: []
+    sourceView: 0
+    targetView: 0
   - command: 128
+    targetNodeId: 4
+    commandState: 1
+    stateConditions: []
+    sourceView: 0
+    targetView: 0
+  anyPosition: {x: 119, y: 665}
+  anyTransitions:
+  - command: 64
     targetNodeId: 5
+    commandState: 1
+    stateConditions: []
+    sourceView: 0
+    targetView: 0
+  - command: 1
+    targetNodeId: 6
+    commandState: 1
+    stateConditions: []
+    sourceView: 0
+    targetView: 0
   nodes:
   - nodeId: 1
     skillId: 2
-    position: {x: 466, y: 253}
+    position: {x: 386, y: 288}
+    copies: []
     transitions:
     - command: 8
       targetNodeId: 2
+      commandState: 1
+      stateConditions: []
+      sourceView: 0
+      targetView: 0
   - nodeId: 2
     skillId: 3
-    position: {x: 790, y: 253}
+    position: {x: 671, y: 288}
+    copies: []
     transitions:
     - command: 8
       targetNodeId: 3
+      commandState: 1
+      stateConditions: []
+      sourceView: 0
+      targetView: 0
   - nodeId: 3
     skillId: 4
-    position: {x: 1125, y: 253}
+    position: {x: 946, y: 288}
+    copies: []
+    transitions: []
+  - nodeId: 4
+    skillId: 5
+    position: {x: 386, y: 450}
+    copies: []
     transitions: []
   - nodeId: 5
-    skillId: 5
-    position: {x: 466, y: 450}
-    transitions: []
-  - nodeId: 7
-    skillId: 6
-    position: {x: 466, y: 597}
-    transitions: []
-  - nodeId: 8
     skillId: 1
-    position: {x: 331, y: 597}
+    position: {x: 386, y: 732}
+    copies: []
+    transitions: []
+  - nodeId: 6
+    skillId: 6
+    position: {x: 386, y: 606}
+    copies: []
     transitions: []

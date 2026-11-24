@@ -24,6 +24,8 @@ namespace GamePlay.BattleSystem
         public float SkillExecutionPercent => _instance?.SkillElapsedPercent ?? 0;
         #endregion
 
+        internal void InitializeSkill(uint id) => skillId = id;
+
         #region 初始化
 
         /// <summary>

@@ -26,6 +26,8 @@ namespace GamePlay.BattleSystem
         public event Func<ITransitionCondition[], bool> OnTransitionCheck;
         #endregion
         
+        internal void InitializeId(uint id) => nodeId = id;
+
         public void AddTransition(CombatGraphTransition transition)
         {
             if (transition.targetNode is not CombatGraphNode)

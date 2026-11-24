@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GamePlay.BattleSystem;
@@ -26,6 +26,9 @@ namespace Editor
             4, 5, 5, 7, 7, 6, 6, 4,
             0, 4, 1, 5, 2, 6, 3, 7
         };
+
+        private static readonly EntityState[] EntityStates = (EntityState[])Enum.GetValues(typeof(EntityState));
+        private static readonly string[] EntityStateNames = Enum.GetNames(typeof(EntityState));
 
         private TimelineAsset _timeline;
         private TimelineClip[] _timelineClips = Array.Empty<TimelineClip>();
@@ -228,6 +231,44 @@ namespace Editor
             }
         }
 
+        private static void DrawExcludedStates(SerializedProperty states)
+        {
+            int mask = 0;
+            for (int i = 0; i < states.arraySize; i++)
+            {
+                var state = (EntityState)states.GetArrayElementAtIndex(i).uintValue;
+                int index = Array.IndexOf(EntityStates, state);
+                if (index >= 0) mask |= 1 << index;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            int selected = EditorGUILayout.MaskField(new GUIContent("禁止释放状态", "匹配任意勾选状态时禁止释放。"), mask, EntityStateNames);
+            if (!EditorGUI.EndChangeCheck()) return;
+
+            states.ClearArray();
+            for (int i = 0; i < EntityStates.Length; i++)
+            {
+                if ((selected & (1 << i)) == 0) continue;
+                int index = states.arraySize++;
+                states.GetArrayElementAtIndex(index).uintValue = (uint)EntityStates[i];
+            }
+        }
+
+        private static bool DrawMoveButtons(SerializedProperty entries, int index)
+        {
+            using (new EditorGUI.DisabledScope(index == 0))
+            {
+                if (GUILayout.Button("↑", GUILayout.Width(24)))
+                    return entries.MoveArrayElement(index, index - 1);
+            }
+            using (new EditorGUI.DisabledScope(index == entries.arraySize - 1))
+            {
+                if (GUILayout.Button("↓", GUILayout.Width(24)))
+                    return entries.MoveArrayElement(index, index + 1);
+            }
+            return false;
+        }
+
         private void DrawEffects(SerializedProperty skill)
         {
             _effectScroll = EditorGUILayout.BeginScrollView(_effectScroll);
@@ -248,14 +289,15 @@ namespace Editor
                     {
                         string name = condition.managedReferenceValue?.GetType().Name ?? "缺失条件";
                         condition.isExpanded = EditorGUILayout.Foldout(condition.isExpanded, name, true);
-                        if (GUILayout.Button("↑", GUILayout.Width(24)) && i > 0)
-                        { conditions.MoveArrayElement(i, i - 1); break; }
-                        if (GUILayout.Button("↓", GUILayout.Width(24)) && i < conditions.arraySize - 1)
-                        { conditions.MoveArrayElement(i, i + 1); break; }
+                        if (DrawMoveButtons(conditions, i)) break;
                         if (GUILayout.Button("×", GUILayout.Width(24)))
                         { conditions.DeleteArrayElementAtIndex(i); break; }
                     }
-                    if (condition.isExpanded)
+                    if (condition.isExpanded && condition.managedReferenceValue is EntityStateCastCondition)
+                    {
+                        DrawExcludedStates(condition.FindPropertyRelative(nameof(EntityStateCastCondition.exclusiveStates)));
+                    }
+                    else if (condition.isExpanded)
                     {
                         SerializedProperty child = condition.Copy();
                         SerializedProperty end = child.GetEndProperty();
@@ -295,10 +337,7 @@ namespace Editor
                     {
                         string name = GetEffectDisplayName(effect.managedReferenceValue?.GetType());
                         effect.isExpanded = EditorGUILayout.Foldout(effect.isExpanded, name, true);
-                        if (GUILayout.Button("↑", GUILayout.Width(24)) && i > 0)
-                        { effects.MoveArrayElement(i, i - 1); break; }
-                        if (GUILayout.Button("↓", GUILayout.Width(24)) && i < effects.arraySize - 1)
-                        { effects.MoveArrayElement(i, i + 1); break; }
+                        if (DrawMoveButtons(effects, i)) break;
                         if (GUILayout.Button("×", GUILayout.Width(24)))
                         { effects.DeleteArrayElementAtIndex(i); break; }
                     }
