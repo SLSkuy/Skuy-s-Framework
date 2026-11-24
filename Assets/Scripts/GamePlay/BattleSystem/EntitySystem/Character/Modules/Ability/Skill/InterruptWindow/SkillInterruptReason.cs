@@ -6,9 +6,19 @@
     public enum SkillInterruptReason
     {
         /// <summary>
-        /// 技能取消
+        /// 移动打断
         /// </summary>
-        Cancel,
+        Locomotion,
+        
+        /// <summary>
+        /// 跳跃打断
+        /// </summary>
+        Jump,
+        
+        /// <summary>
+        /// 闪避打断
+        /// </summary>
+        Dodge,
         
         /// <summary>
         /// 翻滚打断

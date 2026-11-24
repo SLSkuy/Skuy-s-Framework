@@ -25,7 +25,9 @@
                 {
                     clip = animationEffect.clip,
                     sampleOffset = animationEffect.sampleOffset,
-                    duration = duration
+                    duration = duration,
+                    blendIn = animationEffect.blendIn,
+                    blendOut = animationEffect.blendOut,
                 });
             }
         }

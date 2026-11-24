@@ -15,8 +15,13 @@ namespace GamePlay.BattleSystem
         /// <summary> 采样偏移 </summary>
         public float sampleOffset;
         
-        //// <summary> 动画过渡时间 </summary>
-        // public float transitionTime = 0.15f;
+        /// <summary> 切入此动作的混合时长（秒） </summary>
+        [Min(0f)]
+        public float blendIn = 0.15f;
+
+        /// <summary> 从此动作回到移动动画的混合时长（秒） </summary>
+        [Min(0f)]
+        public float blendOut = 0.15f;
         
         /// <summary> 动画片段源文件 </summary>
         public AnimationClip clip;

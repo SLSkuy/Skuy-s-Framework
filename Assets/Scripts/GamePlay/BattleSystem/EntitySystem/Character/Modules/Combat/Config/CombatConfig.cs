@@ -13,6 +13,7 @@ namespace GamePlay.BattleSystem
         [HideInInspector][Header("战斗命令优先级（从高到低）")]
         public EntityCommandFlags[] commandPriorities =
         {
+            EntityCommandFlags.Run,
             EntityCommandFlags.Roll, 
             EntityCommandFlags.SkillQ, 
             EntityCommandFlags.SkillE,

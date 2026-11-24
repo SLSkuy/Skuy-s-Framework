@@ -147,7 +147,7 @@ namespace GamePlay.BattleSystem
             if (!_isInitialized) return;
             _isInitialized = false;
 
-            // 先退出状态，避免退出逻辑修改已清理的模块数据。
+            // 先退出状态，避免状态退出逻辑修改已清理的模块数据
             EntityStateMachineModule stateMachine = _context.Get<EntityStateMachineModule>();
             stateMachine.Reset();
             

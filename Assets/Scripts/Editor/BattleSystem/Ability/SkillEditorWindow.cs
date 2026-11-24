@@ -313,6 +313,7 @@ namespace Editor
                             if (effectValue is HitBoxSkillEffect) DrawHitBoxField(child);
                             else if (effectValue is WeaponCapsuleSkillEffect) DrawWeaponCapsuleField(child);
                             else if (effectValue is RootMotionSkillEffect) DrawRootMotionField(child);
+                            else if (effectValue is AnimationSkillEffect) DrawAnimationField(child);
                             else EditorGUILayout.PropertyField(child, true);
                             enter = false;
                         }
@@ -390,8 +391,23 @@ namespace Editor
             else EditorGUILayout.PropertyField(field, label, true);
         }
 
+        private static void DrawAnimationField(SerializedProperty field)
+        {
+            GUIContent label = field.name switch
+            {
+                nameof(AnimationSkillEffect.blendIn) =>
+                    new GUIContent("淡入（秒）", "从移动动画或上一动作切入此动作。设为 0 时立即切换。"),
+                nameof(AnimationSkillEffect.blendOut) =>
+                    new GUIContent("淡出（秒）", "此动作结束或被打断后过渡回移动动画。设为 0 时立即切换。"),
+                _ => null
+            };
+            if (label == null) EditorGUILayout.PropertyField(field, true);
+            else EditorGUILayout.PropertyField(field, label, true);
+        }
+
         private static string GetEffectDisplayName(Type type)
         {
+            if (type == typeof(AnimationSkillEffect)) return "动画";
             if (type == typeof(WeaponCapsuleSkillEffect)) return "武器胶囊判定";
             if (type == typeof(RootMotionSkillEffect)) return "根运动位移";
             return type?.Name ?? "缺失效果";
@@ -570,15 +586,22 @@ namespace Editor
                     string label = isInterrupt
                         ? $"中断窗口 {i - effects.arraySize + 1} · {(SkillInterruptReason)entry.FindPropertyRelative("reason").enumValueIndex}"
                         : _timelineClips[i].displayName;
+                    string tooltip = label;
+                    if (!isInterrupt && entry.managedReferenceValue is AnimationSkillEffect)
+                    {
+                        float blendIn = entry.FindPropertyRelative(nameof(AnimationSkillEffect.blendIn)).floatValue;
+                        float blendOut = entry.FindPropertyRelative(nameof(AnimationSkillEffect.blendOut)).floatValue;
+                        tooltip = $"{label}\n淡入 {blendIn} 秒\n淡出 {blendOut} 秒";
+                    }
                     float y = canvas.y + 28 + i * 38;
                     EditorGUI.DrawRect(new Rect(canvas.x, y - 2, canvas.width, 36), new Color(1, 1, 1, i % 2 == 0 ? 0.025f : 0.055f));
                     EditorGUI.DrawRect(new Rect(canvas.x, y - 2, 178, 36), new Color(0.20f, 0.20f, 0.20f));
                     EditorGUI.DrawRect(new Rect(canvas.x, y - 2, 3, 36), isInterrupt ? new Color(0.85f, 0.55f, 0.25f) : new Color(0.28f, 0.55f, 0.72f));
-                    GUI.Label(new Rect(canvas.x + 10, y + 2, 165, 24), label, EditorStyles.miniBoldLabel);
+                    GUI.Label(new Rect(canvas.x + 10, y + 2, 165, 24), new GUIContent(label, tooltip), EditorStyles.miniBoldLabel);
                     Rect bar = new Rect(origin + start * _pixelsPerTick, y, Mathf.Max(12, duration * _pixelsPerTick), 24);
                     EditorGUI.DrawRect(bar, _selectedTrack == i ? new Color(0.28f, 0.52f, 0.68f) : new Color(0.23f, 0.33f, 0.40f));
                     EditorGUI.DrawRect(new Rect(bar.x, bar.y, bar.width, 3), new Color(0.4f, 0.7f, 0.88f));
-                    GUI.Label(new Rect(bar.x + 8, bar.y + 2, Mathf.Max(0, bar.width - 16), 20), new GUIContent($"{start} – {start + duration}", label), EditorStyles.whiteMiniLabel);
+                    GUI.Label(new Rect(bar.x + 8, bar.y + 2, Mathf.Max(0, bar.width - 16), 20), new GUIContent($"{start} – {start + duration}", tooltip), EditorStyles.whiteMiniLabel);
                     float edgeWidth = Mathf.Min(8, bar.width * 0.5f);
                     Rect left = new Rect(bar.x, bar.y, edgeWidth, bar.height);
                     Rect right = new Rect(bar.xMax - edgeWidth, bar.y, edgeWidth, bar.height);

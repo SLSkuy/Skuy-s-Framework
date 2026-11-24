@@ -10,8 +10,6 @@ namespace GamePlay.BattleSystem
     /// </summary>
     public class AnimationModule : EntityModuleBase
     {
-        private const float TRANSITION_TIME = 0.15f;
-
         private const int LOCOMOTION_PORT = 0;
         private const int ACTION_PORT = 1;
 
@@ -35,6 +33,8 @@ namespace GamePlay.BattleSystem
         // 一次性动画时间记录
         private float _actionElapsed;
         private float _actionDuration;
+        private float _blendIn;
+        private float _blendOut;
         // 动画过渡时间记录
         private float _transitionElapsed;
         private float _transitionDuration;
@@ -67,9 +67,11 @@ namespace GamePlay.BattleSystem
             _actionElapsed = 0f;
             _actionDuration = request.duration;
 
-            // 设置过渡时间
+            // 顶层使用配置时长，Action 内部的交叉混合最多占动作时长的一半
+            _blendIn = Mathf.Max(0f, request.blendIn);
+            _blendOut = Mathf.Max(0f, request.blendOut);
             _transitionElapsed = 0f;
-            _transitionDuration = Mathf.Min(request.duration * 0.5f, TRANSITION_TIME);
+            _transitionDuration = Mathf.Min(_actionDuration * 0.5f, _blendIn);
 
             // 更新起始权重
             foreach (AnimationTransitionData action in _actions)
@@ -127,9 +129,11 @@ namespace GamePlay.BattleSystem
                 }
             }
 
-            // 顶层过渡，由Locomotion过渡到Action
+            // 顶层在移动动画和动作动画之间混合
             float targetWeight = _isAction ? 1f : 0f;
-            float actionWeight = Mathf.MoveTowards(_topMixer.GetInputWeight(ACTION_PORT), targetWeight, deltaTime / TRANSITION_TIME);
+            float blendDuration = _isAction ? _blendIn : _blendOut;
+            float actionWeight = blendDuration > 0f ? Mathf.MoveTowards(_topMixer.GetInputWeight(ACTION_PORT), 
+                targetWeight, deltaTime / blendDuration) : targetWeight;
             _topMixer.SetInputWeight(ACTION_PORT, actionWeight);
             _topMixer.SetInputWeight(LOCOMOTION_PORT, 1f - actionWeight);
 
@@ -203,6 +207,8 @@ namespace GamePlay.BattleSystem
             _isTransitioning = false;
             _actionElapsed = 0f;
             _actionDuration = 0f;
+            _blendIn = 0f;
+            _blendOut = 0f;
             _transitionElapsed = 0f;
             _transitionDuration = 0f;
         }

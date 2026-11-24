@@ -17,8 +17,6 @@ MonoBehaviour:
   rootTransitions:
   - command: 8
     targetNodeId: 1
-  - command: 64
-    targetNodeId: 4
   - command: 128
     targetNodeId: 5
   nodes:
@@ -38,11 +36,7 @@ MonoBehaviour:
     skillId: 4
     position: {x: 1125, y: 253}
     transitions: []
-  - nodeId: 4
-    skillId: 1
-    position: {x: 466, y: 464}
-    transitions: []
   - nodeId: 5
     skillId: 5
-    position: {x: 466, y: 613}
+    position: {x: 466, y: 450}
     transitions: []

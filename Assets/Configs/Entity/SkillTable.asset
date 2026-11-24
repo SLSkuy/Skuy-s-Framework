@@ -32,7 +32,7 @@ MonoBehaviour:
     interruptRules:
     - startTick: 36
       endTick: 84
-      reason: 4
+      reason: 6
     castConditions:
     - rid: 4293588810657169602
     effects:
@@ -46,7 +46,7 @@ MonoBehaviour:
     interruptRules:
     - startTick: 22
       endTick: 72
-      reason: 4
+      reason: 6
     castConditions:
     - rid: 4293588810657169607
     effects:
@@ -60,7 +60,7 @@ MonoBehaviour:
     interruptRules:
     - startTick: 63
       endTick: 120
-      reason: 4
+      reason: 6
     castConditions:
     - rid: 4293588810657169609
     effects:
@@ -80,6 +80,20 @@ MonoBehaviour:
     - rid: 4293589038023835828
     - rid: 4293589038023835829
     - rid: 4293589038023835830
+  - skillId: 6
+    skillName: Dodge
+    cooldown: 0
+    durationTicks: 60
+    controlPolicy: 0
+    interruptRules:
+    - startTick: 20
+      endTick: 60
+      reason: 0
+    castConditions:
+    - rid: 4293589056357400664
+    effects:
+    - rid: 4293589056357400665
+    - rid: 4293589056357400666
   references:
     version: 2
     RefIds:
@@ -91,6 +105,8 @@ MonoBehaviour:
         durationTicks: 65
         endPolicy: 0
         sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
         clip: {fileID: 7400000, guid: b1edb12813a329e43babae80ee3cbc23, type: 2}
     - rid: 4293588675574366439
       type: {class: MoveSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
@@ -113,6 +129,8 @@ MonoBehaviour:
         durationTicks: 84
         endPolicy: 0
         sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
         clip: {fileID: 4281710398320194202, guid: 6efba5285b728de4ea0d7fa1562fce5d, type: 3}
     - rid: 4293588810657169602
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
@@ -126,6 +144,8 @@ MonoBehaviour:
         durationTicks: 72
         endPolicy: 0
         sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
         clip: {fileID: 8358961154681530694, guid: e37fd5d62a2ba5646bdacf506a35cc16, type: 3}
     - rid: 4293588810657169607
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
@@ -139,6 +159,8 @@ MonoBehaviour:
         durationTicks: 120
         endPolicy: 0
         sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
         clip: {fileID: -1625625506961811243, guid: 65d700cc6ee8e68449b1afa20ef808b0, type: 3}
     - rid: 4293588810657169609
       type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
@@ -156,6 +178,8 @@ MonoBehaviour:
         durationTicks: 240
         endPolicy: 0
         sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
         clip: {fileID: 7505113491735756931, guid: a2384aff7e3a57b45a6f405b011d4a85, type: 3}
     - rid: 4293589010553503901
       type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
@@ -225,4 +249,28 @@ MonoBehaviour:
         durationTicks: 240
         endPolicy: 0
         motionData: {fileID: 11400000, guid: 46a26ccb437f5e447ae5e1d458bc43d7, type: 2}
+        collisionPolicy: 0
+    - rid: 4293589056357400664
+      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400665
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 60
+        endPolicy: 0
+        sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
+        clip: {fileID: -917312218917175174, guid: 7ddba21772e78b44285fc7f154d3fa8f, type: 3}
+    - rid: 4293589056357400666
+      type: {class: RootMotionSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 0
+        durationTicks: 60
+        endPolicy: 0
+        motionData: {fileID: 11400000, guid: 3dc4f48ea02acec45ab4552297389a84, type: 2}
         collisionPolicy: 0
