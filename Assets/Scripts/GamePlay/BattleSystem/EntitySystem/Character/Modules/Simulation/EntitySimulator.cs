@@ -35,11 +35,11 @@ namespace GamePlay.BattleSystem
             _context.CurrentTick = tick;
             _context.LastMoveInput = command.move;
             _context.LastAimInput = command.aim;
-            _context.IsRunning = command.IsHeld(EntityCommandFlags.Run);
-            _context.JumpRequest = command.IsPressed(EntityCommandFlags.Jump);
+            _context.IsRunning = command.IsHeld(InputCommandFlags.Run);
+            _context.JumpRequest = command.IsPressed(InputCommandFlags.Jump);
             
             // 处理战斗控制输入，内部处理是否需要进入Action状态
-            _combat.CheckAction(command);
+            _combat.ResolveCommand(command);
             
             // 战斗模块先切换状态，新释放的技能在本Tick由ACTION推进一次。
             _stateMachine.Step(deltaTime);

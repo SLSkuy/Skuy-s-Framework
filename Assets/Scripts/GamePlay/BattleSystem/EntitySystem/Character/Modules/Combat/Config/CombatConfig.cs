@@ -11,16 +11,22 @@ namespace GamePlay.BattleSystem
         public CombatGraphConfig combatGraph;
         
         [HideInInspector][Header("战斗命令优先级（从高到低）")]
-        public EntityCommandFlags[] commandPriorities =
+        public InputCommandFlags[] commandPriorities =
         {
-            EntityCommandFlags.Run,
-            EntityCommandFlags.Roll, 
-            EntityCommandFlags.SkillQ, 
-            EntityCommandFlags.SkillE,
-            EntityCommandFlags.SkillX, 
-            EntityCommandFlags.SpecialAction,
-            EntityCommandFlags.SpecialAttack,
-            EntityCommandFlags.PrimaryAttack
+            InputCommandFlags.SkillQ, 
+            InputCommandFlags.SkillE,
+            InputCommandFlags.SkillX, 
+            InputCommandFlags.SpecialAction,
+            InputCommandFlags.SpecialAttack,
+            InputCommandFlags.PrimaryAttack
         };
+
+        /// <summary>
+        /// 创建运行时连招图
+        /// </summary>
+        public CombatGraph CreateRuntimeCombatGraph()
+        {
+            return combatGraph.CreateGraph();
+        }
     }
 }

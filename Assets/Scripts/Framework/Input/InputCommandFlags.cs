@@ -6,7 +6,7 @@ namespace Framework
     /// 实体控制命令类型枚举定义
     /// </summary>
     [Flags]
-    public enum EntityCommandFlags : ushort
+    public enum InputCommandFlags : ushort
     {
         None = 0,
         

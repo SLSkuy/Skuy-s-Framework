@@ -85,23 +85,23 @@ namespace Framework
         
         public InputCommand GetInputCommand()
         {
-            EntityCommandFlags flags = EntityCommandFlags.None;
+            InputCommandFlags flags = InputCommandFlags.None;
             
             // 基础操作
-            if (_playerActions.Run.IsPressed()) flags |= EntityCommandFlags.Run;
-            if (_playerActions.Jump.IsPressed()) flags |= EntityCommandFlags.Jump;
+            if (_playerActions.Run.IsPressed()) flags |= InputCommandFlags.Run;
+            if (_playerActions.Jump.IsPressed()) flags |= InputCommandFlags.Jump;
             
             // 交互操作
-            if (_playerActions.Interact.IsPressed()) flags |= EntityCommandFlags.Interact;
+            if (_playerActions.Interact.IsPressed()) flags |= InputCommandFlags.Interact;
             
             // 战斗操作
-            if (_playerActions.PrimaryAttack.IsPressed()) flags |= EntityCommandFlags.PrimaryAttack;
-            if (_playerActions.SpecialAttack.IsPressed()) flags |= EntityCommandFlags.SpecialAttack;
-            if (_playerActions.SpecialAction.IsPressed()) flags |= EntityCommandFlags.SpecialAction;
-            if (_playerActions.Roll.IsPressed()) flags |= EntityCommandFlags.Roll;
-            if (_playerActions.SkillQ.IsPressed()) flags |= EntityCommandFlags.SkillQ;
-            if (_playerActions.SkillE.IsPressed()) flags |= EntityCommandFlags.SkillE;
-            if (_playerActions.SkillX.IsPressed()) flags |= EntityCommandFlags.SkillX;
+            if (_playerActions.PrimaryAttack.IsPressed()) flags |= InputCommandFlags.PrimaryAttack;
+            if (_playerActions.SpecialAttack.IsPressed()) flags |= InputCommandFlags.SpecialAttack;
+            if (_playerActions.SpecialAction.IsPressed()) flags |= InputCommandFlags.SpecialAction;
+            if (_playerActions.Roll.IsPressed()) flags |= InputCommandFlags.Roll;
+            if (_playerActions.SkillQ.IsPressed()) flags |= InputCommandFlags.SkillQ;
+            if (_playerActions.SkillE.IsPressed()) flags |= InputCommandFlags.SkillE;
+            if (_playerActions.SkillX.IsPressed()) flags |= InputCommandFlags.SkillX;
 
             return new InputCommand
             {

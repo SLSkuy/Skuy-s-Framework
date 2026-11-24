@@ -1,4 +1,6 @@
-﻿using Framework;
+﻿using System;
+using System.Collections.Generic;
+using Framework;
 
 namespace GamePlay.BattleSystem
 {
@@ -10,6 +12,9 @@ namespace GamePlay.BattleSystem
         private EntityStateMachineModule _stateMachine;
         private AbilityModule _ability;
         private CombatConfig _config;
+        
+        /// <summary> 条件解释器，按条件配置的实际类型注册 </summary>
+        private Dictionary<Type, ITransitionConditionInterpreter> _conditionInterpreters;
 
         #region 连招图管理
         /// <summary>连招图实例</summary>
@@ -28,33 +33,92 @@ namespace GamePlay.BattleSystem
         /// <summary>
         /// 仅尝试本 Tick 按下的最高优先级命令，不保留或重试输入
         /// </summary>
-        public void CheckAction(in EntityControlCommand command)
+        public void ResolveCommand(in EntityControlCommand command)
         {
             // 按照优先级处理按键
             // TODO: 按照动作优先级处理输入命令
-            foreach (EntityCommandFlags input in _config.commandPriorities)
+            foreach (InputCommandFlags input in _config.commandPriorities)
             {
-                // TODO: 添加按下/按住/松开的逻辑处理
-                if (!command.IsPressed(input)) continue;
+                InputCommandState state = command.GetCommandState(input);
                 
-                // 不存在对应派生操作，退出检测
-                if (!CurrentNode.CheckTransition(input, out CombatGraphNode targetNode)) return;
-                
-                // 判断是否为派生释放
-                bool replacing = _ability.IsCasting;
-                
-                // 释放技能
-                uint skillId = targetNode.SkillId;
-                SkillExecutionCheckResult checkResult = _ability.TryCastSkill(skillId);
-                if (!checkResult.IsSuccess) return;
+                // TODO: 处理全局入口节点
+                // TODO: 处理某一条转换能够执行但是目标技能不能释放后，自动流转到其他的转换边，直到所有转换及目标技能都不能执行
+                TransitionCheckResult checkTransition = CurrentNode.CheckTransition(input, state);
 
-                CurrentNode = targetNode;  // 若非替换，则需要进入Action状态
-                if (!replacing) _stateMachine.ChangeState(EntityState.ACTION);
-                return;
+                // 没有可以执行的节点转换，直接退出
+                if (!checkTransition.IsSuccess) continue;
+
+                // 理论上一定能进入这条判断，转换都是进入普通连招节点
+                if (checkTransition.TargetNode is CombatGraphNode targetNode)
+                {
+                    // 检测技能释放条件
+                    uint skillId = targetNode.SkillId;
+                    SkillInterruptReason reason = SkillInterruptReason.Replace;
+                    if (input is InputCommandFlags.Run or InputCommandFlags.Roll)
+                    {
+                        // 闪避打断
+                        reason = SkillInterruptReason.Dodge;
+                    }
+                    
+                    SkillExecutionCheckResult checkCast = _ability.CheckCast(skillId, reason);
+                    if (!checkCast.IsSuccess) continue;
+                    
+                    // 释放技能
+                    _ability.CastSkill(skillId, reason);
+
+                    // 若非技能派生，则需要进入Action状态
+                    if (checkCast.Code == SkillExecutionCheckCode.Success) _stateMachine.ChangeState(EntityState.ACTION);
+                    CurrentNode = targetNode;  
+                    break;
+                }
             }
+
+            // TODO: 处理移动和跳跃输入的打断检测
+        }
+
+        private void InitCombatGraph()
+        {
+            // TODO: 初始化连招图节点信息
+            Graph = _config.CreateRuntimeCombatGraph();
+
+            foreach (CombatGraphNode node in Graph.nodes)
+            {
+                SkillInstance instance = _ability.RegisterSkill(node.SkillId);
+                node.BindSkillInstance(instance);     
+                node.OnTransitionCheck += OnTransitionCheck;
+            }   
+            
+            Graph.rootNode.OnTransitionCheck += OnTransitionCheck;
+            Graph.anyNode.OnTransitionCheck += OnTransitionCheck;
+        }
+
+        /// <summary>
+        /// 初始化条件执行器
+        /// </summary>
+        private void InitConditionInterpreters()
+        {
+            _conditionInterpreters = new Dictionary<Type, ITransitionConditionInterpreter>
+            {
+                // TODO: 注册转换条件执行器
+            };
         }
         
         #region 事件回调
+
+        private bool OnTransitionCheck(ITransitionCondition[] conditions)
+        {
+            foreach (ITransitionCondition condition in conditions)
+            {
+                if (!_conditionInterpreters[condition.GetType()].Evaluate(condition))
+                {
+                    // 某一个条件不满足，节点不能进行该转换
+                    return false;
+                }
+            }
+            
+            // 所有条件满足。可以进行转换
+            return true;
+        }
 
         private void OnSkillEnded(SkillEndResult result)
         {
@@ -70,16 +134,18 @@ namespace GamePlay.BattleSystem
             _stateMachine = Context.Get<EntityStateMachineModule>();
             _ability = Context.Get<AbilityModule>();
             
-            Graph = Context.CombatGraph;
             _config = Config.combatConfig;
             _ability.OnSkillEnded += OnSkillEnded;
+            
+            InitCombatGraph();
+            InitConditionInterpreters();
 
             Reset();
         }
 
         protected override void OnUnbound(EntityCharacter oldTarget)
         {
-            Reset();
+            DisposeGraph();
             
             _ability.OnSkillEnded -= OnSkillEnded;
         }
@@ -87,6 +153,12 @@ namespace GamePlay.BattleSystem
         public override void Reset()
         {
             CurrentNode = Graph.rootNode;
+        }
+
+        private void DisposeGraph()
+        {
+            CurrentNode = null;
+            Graph?.Dispose();
         }
         
         #endregion

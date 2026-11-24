@@ -199,7 +199,7 @@ namespace Editor
 
         private sealed class CombatNodeView : Node
         {
-            private readonly Dictionary<EntityCommandFlags, Port> _outputs = new();
+            private readonly Dictionary<InputCommandFlags, Port> _outputs = new();
 
             public uint Id { get; }
             public CombatNodeView(uint id, string label, Vector2 position)
@@ -224,9 +224,9 @@ namespace Editor
                     inputContainer.Add(input);
                 }
                 var addTransition = new ToolbarMenu { text = "添加转换" };
-                foreach (EntityCommandFlags command in Enum.GetValues(typeof(EntityCommandFlags)))
+                foreach (InputCommandFlags command in Enum.GetValues(typeof(InputCommandFlags)))
                 {
-                    if (command == EntityCommandFlags.None) continue;
+                    if (command == InputCommandFlags.None) continue;
                     addTransition.menu.AppendAction(command.ToString(), _ => AddOutput(command),
                         _ => _outputs.ContainsKey(command) ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
                 }
@@ -235,7 +235,7 @@ namespace Editor
                 RefreshPorts();
             }
 
-            public Port AddOutput(EntityCommandFlags command)
+            public Port AddOutput(InputCommandFlags command)
             {
                 if (_outputs.TryGetValue(command, out var output)) return output;
                 var graph = GetFirstAncestorOfType<CombatGraphView>();
@@ -272,12 +272,12 @@ namespace Editor
                 GetFirstAncestorOfType<CombatGraphView>().SaveTransitionOrder(this);
             }
 
-            public int OutputIndex(EntityCommandFlags command)
+            public int OutputIndex(InputCommandFlags command)
             {
                 return _outputs.TryGetValue(command, out var port) ? outputContainer.IndexOf(port) : int.MaxValue;
             }
 
-            private void RemoveOutput(EntityCommandFlags command)
+            private void RemoveOutput(InputCommandFlags command)
             {
                 var port = _outputs[command];
                 if (port.connected) GetFirstAncestorOfType<CombatGraphView>().DeleteElements(port.connections.ToList());
@@ -411,7 +411,7 @@ namespace Editor
                     foreach (var edge in change.elementsToRemove.OfType<Edge>())
                     {
                         var source = (CombatNodeView)edge.output.node;
-                        GetTransitions(source.Id).RemoveAll(t => t.command == (EntityCommandFlags)edge.output.userData);
+                        GetTransitions(source.Id).RemoveAll(t => t.command == (InputCommandFlags)edge.output.userData);
                     }
                     foreach (var node in change.elementsToRemove.OfType<CombatNodeView>())
                     {
@@ -427,7 +427,7 @@ namespace Editor
                     {
                         var source = (CombatNodeView)edge.output.node;
                         var target = (CombatNodeView)edge.input.node;
-                        var command = (EntityCommandFlags)edge.output.userData;
+                        var command = (InputCommandFlags)edge.output.userData;
                         var transitions = GetTransitions(source.Id);
                         transitions.RemoveAll(t => t.command == command);
                         transitions.Add(new CombatGraphConfig.TransitionData { command = command, targetNodeId = target.Id });

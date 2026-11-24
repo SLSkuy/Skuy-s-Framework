@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53908586df7242d094dd7df3a2e65933, type: 3}
   m_Name: EntityConfig
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.EntitySystem.EntityConfig
+  attributeConfig:
+    hp: 0
+    mp: 0
+    def: 0
+    atk: 0
   movementConfig:
     walkSpeed: 1.8
     runSpeed: 4.25
@@ -32,5 +37,7 @@ MonoBehaviour:
     animSpeedSmoothTime: 0.1
     animTurnSmoothTime: 0.15
   combatConfig:
+    dodgeSkillId: 6
+    rollSkillId: 1
     combatGraph: {fileID: 11400000, guid: c381ba68ebf980e4bbfe10a6cb504b13, type: 2}
     commandPriorities: 4000800000010002200010000800t

@@ -16,14 +16,9 @@
         Jump,
         
         /// <summary>
-        /// 闪避打断
+        /// 闪避/翻滚打断
         /// </summary>
         Dodge,
-        
-        /// <summary>
-        /// 翻滚打断
-        /// </summary>
-        Roll,
         
         /// <summary>
         /// 角色受击（普通攻击）

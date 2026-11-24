@@ -35,8 +35,6 @@ namespace GamePlay.BattleSystem
         #endregion
 
         #region 战斗系统
-        /// <summary>连招图实例，避免多实例读取同一个Config中的数据</summary>
-        public readonly CombatGraph CombatGraph;
         /// <summary>武器锚点</summary>
         public WeaponAnchor Anchor => _character.anchor;
         #endregion
@@ -48,7 +46,6 @@ namespace GamePlay.BattleSystem
 
         public EntityContext(EntityCharacter character, CharacterConfig config)
         {
-            CombatGraph = config.combatConfig.combatGraph.CreateGraph();
             _character = character;
             Config = config;
         }

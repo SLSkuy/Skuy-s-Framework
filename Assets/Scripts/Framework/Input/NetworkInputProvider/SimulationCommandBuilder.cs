@@ -7,14 +7,14 @@ namespace Framework
     /// </summary>
     public class SimulationCommandBuilder
     {
-        private EntityCommandFlags _previousHeldFlags;
+        private InputCommandFlags _previousHeldFlags;
 
         /// <summary>
         /// 根据当前输入状态构建命令。
         /// </summary>
         public EntityControlCommand Build(in InputCommand input)
         {
-            EntityCommandFlags heldFlags = input.FlagsHeld;
+            InputCommandFlags heldFlags = input.FlagsHeld;
             EntityControlCommand command = new()
             {
                 move = input.MoveInput,
@@ -33,7 +33,7 @@ namespace Framework
         /// </summary>
         public void Reset()
         {
-            _previousHeldFlags = EntityCommandFlags.None;
+            _previousHeldFlags = InputCommandFlags.None;
         }
     }
 }

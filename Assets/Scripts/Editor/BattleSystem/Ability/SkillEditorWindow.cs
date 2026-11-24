@@ -81,7 +81,7 @@ namespace Editor
             _effectTypes = TypeCache.GetTypesDerivedFrom<SkillEffect>()
                 .Where(type => !type.IsAbstract && !type.ContainsGenericParameters && type.IsSerializable &&
                     type.GetConstructor(Type.EmptyTypes) != null).OrderBy(type => type.FullName).ToArray();
-            _conditionTypes = TypeCache.GetTypesDerivedFrom<ICondition>()
+            _conditionTypes = TypeCache.GetTypesDerivedFrom<ICastCondition>()
                 .Where(type => type.IsClass && !type.IsAbstract && !type.ContainsGenericParameters && type.IsSerializable &&
                     type.GetConstructor(Type.EmptyTypes) != null).OrderBy(type => type.FullName).ToArray();
             if (!table)

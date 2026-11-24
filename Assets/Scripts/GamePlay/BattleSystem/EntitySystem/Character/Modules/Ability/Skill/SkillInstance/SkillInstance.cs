@@ -46,7 +46,7 @@ namespace GamePlay.BattleSystem
 
         #region 事件
         /// <summary>由所属 AbilityModule 解释条件；多个订阅者必须全部通过</summary>
-        public event Func<ICondition, bool> OnCastCheck;
+        public event Func<ICastCondition, bool> OnCastCheck;
         
         public event Action<SkillEffect> OnSkillEffectStart;
         public event Action<SkillEffect> OnSkillEffectEnd;
@@ -68,29 +68,29 @@ namespace GamePlay.BattleSystem
         }
 
         /// <summary>
-        /// 只检查释放资格；替换自身时使用结束后冷却规则，避免先中断再释放失败
+        /// 检测当前技能当前状态
         /// </summary>
-        public SkillExecutionCheckResult CheckCast()
+        public SkillStateCheckResult CheckCast()
         {
-            if (State == SkillState.Casting) return new SkillExecutionCheckResult(SkillId, SkillExecutionCheckCode.Casting);
-            if (State == SkillState.Locked) return new SkillExecutionCheckResult(SkillId, SkillExecutionCheckCode.SkillLocked);
+            if (State == SkillState.Casting) return SkillStateCheckResult.Casting;
+            if (State == SkillState.Locked) return SkillStateCheckResult.SkillLocked;
 
             // 自身结束后会开始冷却；有冷却的技能不能在同一次提交中重启。
-            if (Global.CurrentTime < _nextExecutableTime) return new SkillExecutionCheckResult(SkillId, SkillExecutionCheckCode.Cooldown);
+            if (Global.CurrentTime < _nextExecutableTime) return SkillStateCheckResult.Cooldown;
 
             // 执行条件判断
-            foreach (ICondition condition in _config.castConditions)
+            foreach (ICastCondition condition in _config.castConditions)
             {
                 if (OnCastCheck == null) throw new InvalidOperationException("技能条件检测必须绑定 AbilityModule");
-                foreach (var subscriber in OnCastCheck.GetInvocationList())
+                if (!OnCastCheck(condition))
                 {
-                    var check = (Func<ICondition, bool>)subscriber;
-                    if (!check(condition)) return new SkillExecutionCheckResult(SkillId, SkillExecutionCheckCode.ConditionFailed);
+                    // 执行条件判断失败
+                    return SkillStateCheckResult.ConditionFailed;
                 }
             }
             
             // 返回技能执行检测结果
-            return new SkillExecutionCheckResult(SkillId, SkillExecutionCheckCode.Success);
+            return SkillStateCheckResult.Ready;
         }
 
         /// <summary>

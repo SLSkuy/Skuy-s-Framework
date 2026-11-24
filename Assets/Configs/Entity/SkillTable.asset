@@ -20,7 +20,7 @@ MonoBehaviour:
     controlPolicy: 0
     interruptRules: []
     castConditions:
-    - rid: 4293588810657169548
+    - rid: 4293589056357400761
     effects:
     - rid: 4293588675574366438
     - rid: 4293588675574366439
@@ -32,9 +32,9 @@ MonoBehaviour:
     interruptRules:
     - startTick: 36
       endTick: 84
-      reason: 6
+      reason: 5
     castConditions:
-    - rid: 4293588810657169602
+    - rid: 4293589056357400756
     effects:
     - rid: 4293588810657169601
     - rid: 4293589010553503901
@@ -46,9 +46,9 @@ MonoBehaviour:
     interruptRules:
     - startTick: 22
       endTick: 72
-      reason: 6
+      reason: 5
     castConditions:
-    - rid: 4293588810657169607
+    - rid: 4293589056357400757
     effects:
     - rid: 4293588810657169606
     - rid: 4293589010553503903
@@ -60,9 +60,9 @@ MonoBehaviour:
     interruptRules:
     - startTick: 63
       endTick: 120
-      reason: 6
+      reason: 5
     castConditions:
-    - rid: 4293588810657169609
+    - rid: 4293589056357400758
     effects:
     - rid: 4293588810657169608
     - rid: 4293589010553503904
@@ -73,7 +73,7 @@ MonoBehaviour:
     controlPolicy: 1
     interruptRules: []
     castConditions:
-    - rid: 4293588899644047481
+    - rid: 4293589056357400759
     effects:
     - rid: 4293588899644047482
     - rid: 4293589038023835832
@@ -90,7 +90,7 @@ MonoBehaviour:
       endTick: 60
       reason: 0
     castConditions:
-    - rid: 4293589056357400664
+    - rid: 4293589056357400760
     effects:
     - rid: 4293589056357400665
     - rid: 4293589056357400666
@@ -117,10 +117,6 @@ MonoBehaviour:
         endPolicy: 0
         speed: 4
         collisionPolicy: 0
-    - rid: 4293588810657169548
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
     - rid: 4293588810657169601
       type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -132,10 +128,6 @@ MonoBehaviour:
         blendIn: 0.15
         blendOut: 0.15
         clip: {fileID: 4281710398320194202, guid: 6efba5285b728de4ea0d7fa1562fce5d, type: 3}
-    - rid: 4293588810657169602
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
     - rid: 4293588810657169606
       type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -147,10 +139,6 @@ MonoBehaviour:
         blendIn: 0.15
         blendOut: 0.15
         clip: {fileID: 8358961154681530694, guid: e37fd5d62a2ba5646bdacf506a35cc16, type: 3}
-    - rid: 4293588810657169607
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
     - rid: 4293588810657169608
       type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -162,14 +150,6 @@ MonoBehaviour:
         blendIn: 0.15
         blendOut: 0.15
         clip: {fileID: -1625625506961811243, guid: 65d700cc6ee8e68449b1afa20ef808b0, type: 3}
-    - rid: 4293588810657169609
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
-    - rid: 4293588899644047481
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
     - rid: 4293588899644047482
       type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -250,10 +230,6 @@ MonoBehaviour:
         endPolicy: 0
         motionData: {fileID: 11400000, guid: 46a26ccb437f5e447ae5e1d458bc43d7, type: 2}
         collisionPolicy: 0
-    - rid: 4293589056357400664
-      type: {class: EntityStateCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
-      data:
-        exclusiveStates: 03000000u
     - rid: 4293589056357400665
       type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
       data:
@@ -274,3 +250,27 @@ MonoBehaviour:
         endPolicy: 0
         motionData: {fileID: 11400000, guid: 3dc4f48ea02acec45ab4552297389a84, type: 2}
         collisionPolicy: 0
+    - rid: 4293589056357400756
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400757
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400758
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400759
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400760
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
+    - rid: 4293589056357400761
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u

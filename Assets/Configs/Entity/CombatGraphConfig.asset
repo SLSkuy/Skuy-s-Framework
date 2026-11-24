@@ -40,3 +40,11 @@ MonoBehaviour:
     skillId: 5
     position: {x: 466, y: 450}
     transitions: []
+  - nodeId: 7
+    skillId: 6
+    position: {x: 466, y: 597}
+    transitions: []
+  - nodeId: 8
+    skillId: 1
+    position: {x: 331, y: 597}
+    transitions: []

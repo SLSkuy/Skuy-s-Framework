@@ -15,11 +15,11 @@ namespace Framework
         /// <summary>
         /// 当前采样时持续按住的按键集合，按下和释放边沿由命令构建器计算。
         /// </summary>
-        public EntityCommandFlags FlagsHeld { get; set; }
+        public InputCommandFlags FlagsHeld { get; set; }
 
         /// <summary>
         /// 判断当前输入是否包含指定的按住标志。
         /// </summary>
-        public readonly bool IsHeld(EntityCommandFlags flag) => (FlagsHeld & flag) != 0;
+        public readonly bool IsHeld(InputCommandFlags flag) => (FlagsHeld & flag) != 0;
     }
 }

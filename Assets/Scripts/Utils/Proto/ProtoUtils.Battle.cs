@@ -31,7 +31,7 @@ namespace Utils
             {
                 MoveInput = input.MoveInput.ToUnity(),
                 AimInput = input.AimInput.ToUnity(),
-                FlagsHeld = (EntityCommandFlags)input.Flags
+                FlagsHeld = (InputCommandFlags)input.Flags
             };
         }
         

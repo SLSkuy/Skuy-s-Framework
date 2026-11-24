@@ -30,7 +30,7 @@ namespace GamePlay.BattleSystem
         public SkillInterruptRule[] interruptRules = Array.Empty<SkillInterruptRule>();
         
         /// <summary> 释放条件，必须全部满足；空数组表示无额外条件 </summary>
-        [SerializeReference] public ICondition[] castConditions = Array.Empty<ICondition>();
+        [SerializeReference] public ICastCondition[] castConditions = Array.Empty<ICastCondition>();
 
         /// <summary> 技能效果 </summary>
         [SerializeReference] public SkillEffect[] effects = Array.Empty<SkillEffect>();

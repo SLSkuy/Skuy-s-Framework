@@ -20,13 +20,13 @@ namespace GamePlay.BattleSystem
         private AnimationModule _animationModule;
         
         /// <summary> 条件解释器，按条件配置的实际类型注册 </summary>
-        private Dictionary<Type, IConditionInterpreter> _conditionInterpreters;
+        private Dictionary<Type, ICastConditionInterpreter> _conditionInterpreters;
         
         /// <summary> 所有技能效果执行器，按配置实际类型注册 </summary>
         private Dictionary<Type, ISkillEffectExecutor> _executors;
         
         /// <summary> 实体技能示例，创建时进行注册 </summary>
-        private Dictionary<uint, SkillInstance> _skillInstances;
+        private Dictionary<uint, SkillInstance> _skillInstances = new();
         private SkillInstance _currentSkill;
 
         #region 属性
@@ -39,11 +39,13 @@ namespace GamePlay.BattleSystem
         #region 事件
         public event Action<SkillEndResult> OnSkillEnded;
         #endregion
+        
+        #region 技能管理
 
         /// <summary>
-        /// 单技能释放；返回状态、冷却和条件检查的结果
+        /// 检测单技能是否能够进行释放
         /// </summary>
-        public SkillExecutionCheckResult TryCastSkill(uint skillId)
+        public SkillExecutionCheckResult CheckCast(uint skillId, SkillInterruptReason reason)
         {
             // 不存在技能配置
             if (!_skillInstances.TryGetValue(skillId, out SkillInstance instance))
@@ -52,30 +54,42 @@ namespace GamePlay.BattleSystem
                 return new SkillExecutionCheckResult(skillId, SkillExecutionCheckCode.SkillNotFound);
             }
             
-            SkillExecutionCheckResult checkResult = instance.CheckCast();
-            if (checkResult.IsSuccess)
+            // 检测目标技能状态
+            SkillStateCheckResult code = instance.CheckCast();
+            if (code != SkillStateCheckResult.Ready)
             {
-                // 目标技能可用，检测是否需要打断当前释放的技能
-                if (IsCasting)
+                return new SkillExecutionCheckResult(skillId, code);
+            }
+            
+            // 目标技能状态通过，检测当前技能打断状态
+            if (IsCasting)
+            {
+                if (!_currentSkill.CheckInterrupt(reason))
                 {
-                    SkillInterruptReason reason = SkillInterruptReason.Replace;
-                    if (!_currentSkill.CheckInterrupt(reason))
-                    {
-                        // 不能进行转换打断，返回判断结果
-                        return new SkillExecutionCheckResult(skillId, SkillExecutionCheckCode.ReplaceNotAllowed);
-                    }
-                    
-                    // 打断当前技能
-                    _currentSkill.Interrupt(reason);
+                    // 不能进行转换打断，返回判断结果
+                    return new SkillExecutionCheckResult(skillId, SkillExecutionCheckCode.ReplaceNotAllowed);
                 }
                 
-                // 执行新的技能
-                _currentSkill = instance;
-                _currentSkill.StartCast();
+                // 技能运行派生
+                return new SkillExecutionCheckResult(skillId, SkillExecutionCheckCode.ReplaceAllowed);
             }
 
-            // 返回执行结果
-            return checkResult;
+            // 技能运行释放（之前没有释放过任何技能）
+            return new SkillExecutionCheckResult(skillId, SkillExecutionCheckCode.Success);
+        }
+
+        /// <summary>
+        /// 强制执行技能
+        /// </summary>
+        public void CastSkill(uint skillId, SkillInterruptReason reason)
+        {
+            if (IsCasting)
+            {
+                _currentSkill.Interrupt(reason);
+            }
+
+            _currentSkill = _skillInstances[skillId];
+            _currentSkill.StartCast();
         }
         
         /// <summary>
@@ -88,6 +102,41 @@ namespace GamePlay.BattleSystem
             
             return _currentSkill?.TryInterrupt(reason) ?? false;
         }
+
+        /// <summary>
+        /// 注册技能实例，未注册的技能无法进行释放
+        /// </summary>
+        public SkillInstance RegisterSkill(uint skillId)
+        {
+            if (!_abilityConfig.TryGetSkillConfig(skillId, out SkillConfig skillConfig))
+            {
+                throw new InvalidOperationException($"技能注册表引用了不存在的技能 {skillId}");        
+            }
+                
+            // 指向同一个技能实例，防止错误的数据读取
+            if (_skillInstances.TryGetValue(skillId, out SkillInstance sharedInstance))
+            {
+                return sharedInstance;
+            }
+         
+            int tickRate = _simulation.TickRate;
+            
+            // 记录只有当前技能实例需要的效果执行器，避免多余的技能调度
+            List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
+            executors.AddRange(skillConfig.effects.Select(effect => _executors[effect.GetType()]).Distinct());
+                
+            SkillInstance instance = new SkillInstance(skillConfig, executors.ToArray(), tickRate);
+            instance.OnCastCheck += OnCastCheck;
+            instance.OnSkillEffectStart += OnExecuteSkillEffect;
+            instance.OnSkillEffectEnd += OnStopSkillEffect;
+            instance.OnSkillEnded += OnSkillInstanceEnded;
+                
+            // 管理所有技能实例
+            _skillInstances.Add(skillId, instance);
+            return instance;
+        }
+
+        #endregion
         
         /// <summary>
         /// 初始化所有技能效果执行器
@@ -106,63 +155,20 @@ namespace GamePlay.BattleSystem
         
         private void InitConditionInterpreters()
         {
-            _conditionInterpreters = new Dictionary<Type, IConditionInterpreter>
+            _conditionInterpreters = new Dictionary<Type, ICastConditionInterpreter>
             {
-                { typeof(EntityStateCondition), new EntityStateConditionInterpreter(Context) }
+                { typeof(EntityStateCastCondition), new EntityStateCastConditionInterpreter(Context) }
             };
         }
-
-        /// <summary>
-        /// 初始化当前实体能够执行的所有技能
-        /// </summary>
-        private void InitSkills()
-        {
-            _skillInstances = new Dictionary<uint, SkillInstance>();
-            int tickRate = _simulation.TickRate;
-            
-            // 每个技能示例只Tick它所需的技能效果
-            List<ISkillEffectExecutor> executors = new List<ISkillEffectExecutor>();
-            foreach (CombatGraphNode node in Context.CombatGraph.nodes)
-            {
-                if (!_abilityConfig.TryGetSkillConfig(node.SkillId, out SkillConfig skillConfig))
-                {
-                    throw new InvalidOperationException($"技能注册表引用了不存在的技能 {node.SkillId}");        
-                }
-                
-                // 指向同一个技能实例，防止错误的数据读取
-                if (_skillInstances.TryGetValue(node.SkillId, out SkillInstance sharedInstance))
-                {
-                    node.BindInstance(sharedInstance);
-                    continue;
-                }
-                
-                // 记录只有当前技能实例需要的效果执行器，避免多余的技能调度
-                executors.AddRange(skillConfig.effects.Select(effect => _executors[effect.GetType()]).Distinct());
-                
-                SkillInstance instance = new SkillInstance(skillConfig, executors.ToArray(), tickRate);
-                instance.OnCastCheck += OnCastCheck;
-                instance.OnSkillEffectStart += OnExecuteSkillEffect;
-                instance.OnSkillEffectEnd += OnStopSkillEffect;
-                instance.OnSkillEnded += OnInstanceEnded;
-                
-                // 管理所有技能实例
-                _skillInstances.Add(node.SkillId, instance);
-                
-                // 绑定技能实例，让连招图能够读取当前技能的各种运行信息
-                node.BindInstance(instance);
-                
-                executors.Clear();
-            }
-        }
-
+        
         #region 事件回调
         
         /// <summary>
         /// 检测执行条件
         /// </summary>
-        private bool OnCastCheck(ICondition condition)
+        private bool OnCastCheck(ICastCondition castCondition)
         {
-            return _conditionInterpreters[condition.GetType()].Evaluate(condition);
+            return _conditionInterpreters[castCondition.GetType()].Evaluate(castCondition);
         }
         
         private void OnExecuteSkillEffect(SkillEffect effect)
@@ -175,7 +181,7 @@ namespace GamePlay.BattleSystem
             _executors[effect.GetType()].StopExecution();
         }
 
-        private void OnInstanceEnded(SkillEndResult result)
+        private void OnSkillInstanceEnded(SkillEndResult result)
         {
             _currentSkill = null;
             OnSkillEnded?.Invoke(result);
@@ -244,7 +250,6 @@ namespace GamePlay.BattleSystem
             DisposeSkills();
             InitEffectExecutors();
             InitConditionInterpreters();
-            InitSkills();
         }
 
         protected override void OnUnbound(EntityCharacter oldTarget)
