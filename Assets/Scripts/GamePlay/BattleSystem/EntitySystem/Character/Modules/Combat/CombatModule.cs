@@ -41,11 +41,16 @@ namespace GamePlay.BattleSystem
             {
                 InputCommandState state = command.GetCommandState(input);
                 
-                // TODO: 处理全局入口节点
-                // TODO: 处理某一条转换能够执行但是目标技能不能释放后，自动流转到其他的转换边，直到所有转换及目标技能都不能执行
-                TransitionCheckResult checkTransition = CurrentNode.CheckTransition(input, state);
+                // 全局节点入口处理
+                CombatGraphAnyNode anyNode = Graph.anyNode;
+                TransitionCheckResult checkTransition = anyNode.CheckTransition(input, state);
+                if (!checkTransition.IsSuccess)
+                {
+                    // TODO: 处理某一条转换能够执行但是目标技能不能释放后，自动流转到其他的转换边，直到所有转换及目标技能都不能执行
+                    checkTransition = CurrentNode.CheckTransition(input, state);
+                }
 
-                // 没有可以执行的节点转换，直接退出
+                // 当前节点仍然没有可以执行的节点转换，直接退出
                 if (!checkTransition.IsSuccess) continue;
 
                 // 理论上一定能进入这条判断，转换都是进入普通连招节点
