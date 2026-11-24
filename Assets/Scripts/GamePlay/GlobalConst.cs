@@ -21,6 +21,11 @@ namespace GamePlay
         public static readonly int EnemyLayerMask = LayerMask.GetMask("Enemy");
         #endregion
 
+        #region 动画系统
+        public const float DEFAULT_BLEND_IN = 0.15f;
+        public const float DEFAULT_BLEND_OUT = 0.15f;
+        #endregion
+
 #if UNITY_EDITOR
         #region Gizmos数据
         public const float GIZMOS_VISIBLE_TIME = 0.5f;

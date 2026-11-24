@@ -17,11 +17,11 @@ namespace GamePlay.BattleSystem
         
         /// <summary> 切入此动作的混合时长（秒） </summary>
         [Min(0f)]
-        public float blendIn = 0.15f;
+        public float blendIn = GlobalConst.DEFAULT_BLEND_IN;
 
         /// <summary> 从此动作回到移动动画的混合时长（秒） </summary>
         [Min(0f)]
-        public float blendOut = 0.15f;
+        public float blendOut = GlobalConst.DEFAULT_BLEND_OUT;
         
         /// <summary> 动画片段源文件 </summary>
         public AnimationClip clip;

@@ -16,7 +16,9 @@ namespace Editor
     public sealed class CombatGraphEditorWindow : EditorWindow, ISearchWindowProvider
     {
         [SerializeField] private CombatGraphConfig config;
+        [SerializeField] private GameObject previewModel;
         private CombatGraphView _graph;
+        private CombatTransitionPreview _transitionPreview;
         private VisualElement _skills;
         private HelpBox _message;
         private string _search = "";
@@ -74,8 +76,11 @@ namespace Editor
 
         public void CreateGUI()
         {
+            _transitionPreview?.Dispose();
+            _transitionPreview = null;
+            _graph = null;
             _chooseSkill = null;
-            minSize = new Vector2(900, 550);
+            minSize = new Vector2(940, 600);
             rootVisualElement.Clear();
             var toolbar = new Toolbar();
             var assetField = new ObjectField { objectType = typeof(CombatGraphConfig), value = config, allowSceneObjects = false };
@@ -95,7 +100,7 @@ namespace Editor
                 rootVisualElement.Add(new HelpBox("请选择或新建连招配置。", HelpBoxMessageType.Info));
                 return;
             }
-            var content = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
+            var content = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1, minHeight = 0 } };
             var sidebar = new VisualElement { style = { width = 240, flexShrink = 0, paddingLeft = 6, paddingRight = 6 } };
             var tableField = new ObjectField("技能表") { objectType = typeof(SkillTable), value = config.skillTable, allowSceneObjects = false };
             tableField.RegisterValueChangedCallback(evt =>
@@ -128,13 +133,63 @@ namespace Editor
             sidebar.Add(_skills);
             content.Add(sidebar);
             _graph = new CombatGraphView(config, OpenSkillPicker);
-            content.Add(_graph);
-            var inspector = new VisualElement { style = { width = 275, flexShrink = 0, paddingLeft = 8, paddingRight = 8 } };
-            var details = new ScrollView { style = { flexGrow = 1, flexBasis = 0 } };
+            var mainSplit = new TwoPaneSplitView(1, 480, TwoPaneSplitViewOrientation.Horizontal)
+            {
+                viewDataKey = "combat-inspector-width",
+                style = { flexGrow = 1, minWidth = 0 }
+            };
+            _graph.style.minWidth = 180;
+            mainSplit.Add(_graph);
+            var inspector = new VisualElement { style = { minWidth = 360, paddingLeft = 8, paddingRight = 8 } };
+            var inspectorSplit = new TwoPaneSplitView(1, 490, TwoPaneSplitViewOrientation.Vertical)
+            {
+                viewDataKey = "combat-preview-height",
+                style = { flexGrow = 1, minHeight = 0 }
+            };
+            var settings = new VisualElement { style = { minHeight = 100 } };
+            var details = new ScrollView { style = { flexGrow = 1, flexBasis = 0, minHeight = 0 } };
             details.Add(new IMGUIContainer(_graph.DrawInspector));
-            inspector.Add(details);
-            inspector.Add(_graph.DeleteButton);
-            content.Add(inspector);
+            settings.Add(details);
+            settings.Add(_graph.DeleteButton);
+            var simulation = AssetDatabase.LoadAssetAtPath<SimulationConfig>("Assets/Configs/Simulation/SimulationConfig.asset");
+            _transitionPreview = new CombatTransitionPreview(this, simulation ? simulation.simulationTickRate : 60);
+            var previewPane = new VisualElement
+            {
+                style =
+                {
+                    minHeight = 325, marginTop = 4, borderTopWidth = 1,
+                    borderTopColor = new Color(.45f, .45f, .45f, .7f)
+                }
+            };
+            var preview = new IMGUIContainer(() =>
+                _graph.DrawTransitionPreview(_transitionPreview, ref previewModel, previewPane.contentRect.height))
+            {
+                style = { flexGrow = 1 }
+            };
+            previewPane.Add(preview);
+            inspectorSplit.Add(settings);
+            inspectorSplit.Add(previewPane);
+            inspector.Add(inspectorSplit);
+            mainSplit.Add(inspector);
+            content.Add(mainSplit);
+            bool showPreview = false;
+            inspectorSplit.RegisterCallback<GeometryChangedEvent>(OnInspectorFirstLayout);
+            void OnInspectorFirstLayout(GeometryChangedEvent evt)
+            {
+                if (evt.newRect.height <= 0f) return;
+                inspectorSplit.UnregisterCallback<GeometryChangedEvent>(OnInspectorFirstLayout);
+                if (!showPreview) inspectorSplit.CollapseChild(1);
+            }
+            _graph.TransitionSelected += hasTransition =>
+            {
+                _transitionPreview.Reset();
+                showPreview = hasTransition;
+                if (hasTransition) inspectorSplit.UnCollapse();
+                else inspectorSplit.CollapseChild(1);
+                preview.MarkDirtyLayout();
+                Repaint();
+            };
+            previewPane.RegisterCallback<GeometryChangedEvent>(_ => preview.MarkDirtyLayout());
             rootVisualElement.Add(content);
             RefreshSkills();
         }
@@ -191,6 +246,8 @@ namespace Editor
 
         private void OnEnable()
         {
+            if (!previewModel)
+                previewModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entity/NetPlayer.prefab");
             if (!config)
             {
                 var guid = AssetDatabase.FindAssets("t:CombatGraphConfig").FirstOrDefault();
@@ -202,8 +259,14 @@ namespace Editor
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndoRedo;
+            _transitionPreview?.Dispose();
+            _transitionPreview = null;
         }
 
+        private void Update()
+        {
+            _transitionPreview?.Tick();
+        }
 
         private sealed class CombatNodeView : Node
         {
@@ -264,6 +327,7 @@ namespace Editor
             private bool _draggingRow;
 
             public Button DeleteButton { get; }
+            public event Action<bool> TransitionSelected;
 
             public CombatGraphView(CombatGraphConfig asset, Action<Vector2, Action<uint>> openPicker)
             {
@@ -546,8 +610,10 @@ namespace Editor
 
             private void SelectTransition(CombatGraphConfig.TransitionData transition)
             {
+                if (_transition == transition) return;
                 _transition = transition;
                 DeleteButton.style.display = transition == null ? DisplayStyle.None : DisplayStyle.Flex;
+                TransitionSelected?.Invoke(transition != null);
             }
 
             private void Inspect(uint source, CombatGraphConfig.TransitionData transition)
@@ -758,6 +824,24 @@ namespace Editor
                     });
                     menu.ShowAsContext();
                 }
+            }
+
+            public void DrawTransitionPreview(CombatTransitionPreview preview, ref GameObject model, float paneHeight)
+            {
+                if (_transition == null) return;
+                SkillConfig[] skills = _config.skillTable ? _config.skillTable.skills : null;
+                bool hasSource = _source != 0 && _source != uint.MaxValue;
+                var source = hasSource ? FindSkill(_source, skills) : null;
+                var target = FindSkill(_transition.targetNodeId, skills);
+                var reason = _transition.command is InputCommandFlags.Run or InputCommandFlags.Roll
+                    ? SkillInterruptReason.Dodge : SkillInterruptReason.Replace;
+                preview.Draw(ref model, source, target, hasSource, reason, paneHeight);
+            }
+
+            private SkillConfig FindSkill(uint nodeId, SkillConfig[] skills)
+            {
+                uint skillId = Data(nodeId).skillId;
+                return skills?.FirstOrDefault(skill => skill != null && skill.skillId == skillId);
             }
         }
     }
