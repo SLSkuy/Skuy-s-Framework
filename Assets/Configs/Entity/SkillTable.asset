@@ -33,6 +33,9 @@ MonoBehaviour:
     - startTick: 36
       endTick: 84
       reason: 5
+    - startTick: 36
+      endTick: 84
+      reason: 2
     castConditions:
     - rid: 4293589056357400756
     effects:
@@ -47,6 +50,9 @@ MonoBehaviour:
     - startTick: 22
       endTick: 72
       reason: 5
+    - startTick: 22
+      endTick: 72
+      reason: 2
     castConditions:
     - rid: 4293589056357400757
     effects:
@@ -61,6 +67,9 @@ MonoBehaviour:
     - startTick: 63
       endTick: 120
       reason: 5
+    - startTick: 63
+      endTick: 120
+      reason: 2
     castConditions:
     - rid: 4293589056357400758
     effects:
@@ -71,7 +80,13 @@ MonoBehaviour:
     cooldown: 0
     durationTicks: 240
     controlPolicy: 1
-    interruptRules: []
+    interruptRules:
+    - startTick: 47
+      endTick: 57
+      reason: 2
+    - startTick: 134
+      endTick: 240
+      reason: 2
     castConditions:
     - rid: 4293589056357400759
     effects:
@@ -84,7 +99,7 @@ MonoBehaviour:
     skillName: Dodge
     cooldown: 0
     durationTicks: 60
-    controlPolicy: 0
+    controlPolicy: 1
     interruptRules:
     - startTick: 20
       endTick: 60

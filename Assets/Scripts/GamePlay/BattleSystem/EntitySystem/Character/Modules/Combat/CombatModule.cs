@@ -40,6 +40,7 @@ namespace GamePlay.BattleSystem
             foreach (InputCommandFlags input in _config.commandPriorities)
             {
                 InputCommandState state = command.GetCommandState(input);
+                if(state == InputCommandState.None) continue;   // 没有对应输入命令
                 
                 // 全局节点入口处理
                 CombatGraphAnyNode anyNode = Graph.anyNode;

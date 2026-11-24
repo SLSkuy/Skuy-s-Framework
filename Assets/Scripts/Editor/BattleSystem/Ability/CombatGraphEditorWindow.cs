@@ -328,6 +328,7 @@ namespace Editor
                 schedule.Execute(() => FrameAll());
             }
 
+            [Obsolete("Obsolete")]
             private void DrawGrid(MeshGenerationContext context, VisualElement grid)
             {
                 var painter = context.painter2D;
