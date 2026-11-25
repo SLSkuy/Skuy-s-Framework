@@ -36,7 +36,7 @@ namespace GamePlay.BattleSystem
         public void ResolveCommand(in EntityControlCommand command)
         {
             // 按照优先级处理按键
-            // TODO: 按照动作优先级处理输入命令
+            // 处理技能间的派生
             foreach (InputCommandFlags input in _config.commandPriorities)
             {
                 InputCommandState state = command.GetCommandState(input);
@@ -79,7 +79,29 @@ namespace GamePlay.BattleSystem
                 }
             }
 
-            // TODO: 处理移动和跳跃输入的打断检测
+            // 技能状态的打断处理
+            if (!_ability.IsCasting) return;
+
+            // 处理跳跃输入的打断操作
+            if (command.GetCommandState(InputCommandFlags.Jump) == InputCommandState.Pressed)
+            {
+                if (_ability.CheckInterrupt(SkillInterruptReason.Jump))
+                {
+                    _ability.InterruptSkill(SkillInterruptReason.Jump);
+                    return;
+                }
+            }
+            
+            // 处理移动输入的打断操作
+            InputCommandState locomotionState = command.GetCommandState(InputCommandFlags.Locomotion);
+            if (locomotionState is InputCommandState.Pressed or InputCommandState.Held)
+            {
+                if (_ability.CheckInterrupt(SkillInterruptReason.Locomotion))
+                {
+                    _ability.InterruptSkill(SkillInterruptReason.Locomotion);
+                    return;
+                }
+            }
         }
 
         private void InitCombatGraph()

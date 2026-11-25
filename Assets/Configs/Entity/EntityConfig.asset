@@ -38,4 +38,4 @@ MonoBehaviour:
     animTurnSmoothTime: 0.15
   combatConfig:
     combatGraph: {fileID: 11400000, guid: c381ba68ebf980e4bbfe10a6cb504b13, type: 2}
-    commandPriorities: 01004000800000010002200010000800t
+    commandPriorities: 02008000000100020004400020001000t

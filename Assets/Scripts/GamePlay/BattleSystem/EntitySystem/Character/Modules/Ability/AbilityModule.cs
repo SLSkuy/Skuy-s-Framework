@@ -91,16 +91,38 @@ namespace GamePlay.BattleSystem
             _currentSkill = _skillInstances[skillId];
             _currentSkill.StartCast();
         }
-        
+
         /// <summary>
-        /// 尝试在对应窗口中断技能；Replace 必须通过 TryReplaceSkill 指定目标技能。
+        /// 检测打断条件是否能够进行打断
+        /// </summary>
+        public bool CheckInterrupt(SkillInterruptReason reason)
+        {
+            if (reason == SkillInterruptReason.Replace) 
+                throw new ArgumentException("技能派生必须通过 TryReplaceSkill 提交目标技能", nameof(reason));
+            
+            return _currentSkill.CheckInterrupt(reason);
+        }
+
+        /// <summary>
+        /// 强制打断当前技能
+        /// </summary>
+        public void InterruptSkill(SkillInterruptReason reason)
+        {
+            if (reason == SkillInterruptReason.Replace) 
+                throw new ArgumentException("技能派生必须通过 TryReplaceSkill 提交目标技能", nameof(reason));
+            
+            _currentSkill.Interrupt(reason);
+        }
+
+        /// <summary>
+        /// 尝试打断当前技能
         /// </summary>
         public bool TryInterruptSkill(SkillInterruptReason reason)
         {
             if (reason == SkillInterruptReason.Replace) 
                 throw new ArgumentException("技能派生必须通过 TryReplaceSkill 提交目标技能", nameof(reason));
             
-            return _currentSkill?.TryInterrupt(reason) ?? false;
+            return _currentSkill.TryInterrupt(reason);
         }
 
         /// <summary>

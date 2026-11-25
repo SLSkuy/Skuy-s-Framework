@@ -88,6 +88,7 @@ namespace Framework
             InputCommandFlags flags = InputCommandFlags.None;
             
             // 基础操作
+            if (_playerActions.Move.IsPressed()) flags |= InputCommandFlags.Locomotion;
             if (_playerActions.Run.IsPressed()) flags |= InputCommandFlags.Run;
             if (_playerActions.Jump.IsPressed()) flags |= InputCommandFlags.Jump;
             

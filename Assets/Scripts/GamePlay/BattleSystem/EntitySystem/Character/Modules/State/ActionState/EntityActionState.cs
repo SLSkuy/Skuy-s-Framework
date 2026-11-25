@@ -26,6 +26,11 @@ namespace GamePlay.BattleSystem
                 return;
             }
             
+            if (JumpRequest)
+            {
+                Movement.Jump(Config.jumpSpeed, Config.jumpCount);
+            }
+            
             if (LastMoveInput == Vector2.zero) _stateMachine.ChangeState(EntityState.IDLE);
             else _stateMachine.ChangeState(IsRunning ? EntityState.RUN : EntityState.WALK);
         }

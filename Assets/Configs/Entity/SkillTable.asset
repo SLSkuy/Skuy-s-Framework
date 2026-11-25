@@ -101,9 +101,12 @@ MonoBehaviour:
     durationTicks: 60
     controlPolicy: 1
     interruptRules:
-    - startTick: 20
+    - startTick: 9
       endTick: 60
       reason: 0
+    - startTick: 16
+      endTick: 60
+      reason: 1
     castConditions:
     - rid: 4293589056357400760
     effects:

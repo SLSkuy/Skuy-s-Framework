@@ -109,6 +109,14 @@ namespace GamePlay.BattleSystem
         {
             return IsCasting && _track.CheckInterrupt(reason);
         }
+        
+        /// <summary>
+        /// 强制打断当前技能的释放
+        /// </summary>
+        public void Interrupt(SkillInterruptReason reason)
+        {
+            _track.Interrupt(reason);
+        }
 
         /// <summary>
         /// 尝试以对应的中断原因进行技能中夺冠
@@ -116,14 +124,6 @@ namespace GamePlay.BattleSystem
         public bool TryInterrupt(SkillInterruptReason reason)
         {
             return IsCasting && _track.TryInterrupt(reason);
-        }
-
-        /// <summary>
-        /// 强制打断当前技能的释放
-        /// </summary>
-        public void Interrupt(SkillInterruptReason reason)
-        {
-            _track.Interrupt(reason);
         }
 
         private void StopActiveEffects()
