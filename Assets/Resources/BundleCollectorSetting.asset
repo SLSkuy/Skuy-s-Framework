@@ -43,7 +43,7 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/Configs
+      - CollectPath: Assets/FrameworkConfigs
         CollectorGUID: b96a7c319ae980b42b69d5bd6f24a10e
         CollectorType: 0
         AddressRuleName: AddressByGroupAndFileName

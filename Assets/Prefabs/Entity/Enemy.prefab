@@ -215,7 +215,7 @@ Animator:
   m_GameObject: {fileID: 2547078062513330004}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: de28a00323227ae4fba577b99e663c2a, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -262,6 +262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46837910ba0645d8906d6363aaae08b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.EntityCharacter
+  anchor: {fileID: 0}
 --- !u!114 &6019194987925613399
 MonoBehaviour:
   m_ObjectHideFlags: 0
