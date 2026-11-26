@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GamePlay.BattleSystem
 {
@@ -8,13 +8,17 @@ namespace GamePlay.BattleSystem
     [CreateAssetMenu(fileName = "AnimationMotionData", menuName = "GamePlay/AnimationMotionData")]
     public class BakedAnimMotionData : ScriptableObject
     {
+#if UNITY_EDITOR
         [Header("数据源")]
         public AnimationClip sourceClip;
-        public Avatar sourceAvatar;
+        [Tooltip("用于根运动采样的模型预制体")] public GameObject sourcePrefab;
+#endif
         
         [Header("烘培动画信息")]
         [Tooltip("动画持续时间")]public float duration;
+#if UNITY_EDITOR
         [Tooltip("平面移动距离")]public float planarDistance;
+#endif
         [Tooltip("动画采样率")]public uint sampleRate;
         
         [Header("动画曲线")]
@@ -24,9 +28,13 @@ namespace GamePlay.BattleSystem
         public AnimationCurve yaw = new();
 
         #region 属性
+        
+#if UNITY_EDITOR
         public float AveragePlanarSpeed => duration > 0f ? planarDistance / duration : 0f;
         public float TotalYaw => yaw.Evaluate(duration) - yaw.Evaluate(0f);
         public float AverageYawSpeed => duration > 0f ? TotalYaw / duration : 0f;
+#endif
+        
         #endregion
 
         #region 根运动查询

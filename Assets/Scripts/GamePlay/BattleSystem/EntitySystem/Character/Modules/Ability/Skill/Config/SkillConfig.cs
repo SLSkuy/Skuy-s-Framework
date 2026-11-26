@@ -6,14 +6,13 @@ namespace GamePlay.BattleSystem
     /// <summary>
     /// 通用技能配置，静态存在，加载后只读
     /// </summary>
-    [Serializable]
-    public class SkillConfig
+    public class SkillConfig : ScriptableObject
     {
         /// <summary> 技能ID </summary>
-        public uint skillId;
+        [HideInInspector] public uint skillId;
         
         /// <summary> 技能名称 </summary>
-        public string skillName;
+        [HideInInspector] public string skillName;
         
         /// <summary> 技能冷却时间 </summary>
         public float cooldown;

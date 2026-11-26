@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0266e45501892cf408baf73f294b9aa5, type: 3}
   m_Name: S_Sp_Skill1_Motion
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.BakedAnimMotionData
-  sourceClip: {fileID: 7505113491735756931, guid: a2384aff7e3a57b45a6f405b011d4a85, type: 3}
-  sourceAvatar: {fileID: 9000000, guid: 495b83a394c5cec429dd0df10492ed56, type: 3}
+  sourceClip: {fileID: 7400000, guid: 24a46b8e68c2d0d4e8cc2742eb7eded8, type: 2}
+  sourcePrefab: {fileID: 6549454998251404434, guid: 51d2ea67f4d34df4780bdc9f632861f9, type: 3}
   duration: 4
   planarDistance: 4.5194345
   sampleRate: 60

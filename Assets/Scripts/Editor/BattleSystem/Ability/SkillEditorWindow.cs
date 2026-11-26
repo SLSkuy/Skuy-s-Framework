@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using GamePlay.BattleSystem;
@@ -34,7 +34,7 @@ namespace Editor
         private TimelineClip[] _timelineClips = Array.Empty<TimelineClip>();
         private float _resizeMouseY;
         private float _resizeHeight;
-        private SerializedObject _serializedTable;
+        private SerializedObject _serializedSkill;
         private Type[] _effectTypes;
         private Type[] _conditionTypes;
         private BattlePreviewViewport _preview;
@@ -78,6 +78,48 @@ namespace Editor
             GetWindow<SkillEditorWindow>("技能编辑器").Show();
         }
 
+        public static void Open(SkillTable target)
+        {
+            var window = GetWindow<SkillEditorWindow>("技能编辑器");
+            window.table = target;
+            window.BindTable();
+            window.Show();
+        }
+
+        public static void Open(SkillConfig skill)
+        {
+            var window = GetWindow<SkillEditorWindow>("技能编辑器");
+            SkillTable target = window.table;
+            int index = target ? Array.IndexOf(target.skills, skill) : -1;
+            if (index < 0)
+            {
+                foreach (string guid in AssetDatabase.FindAssets("t:SkillTable"))
+                {
+                    var candidate = AssetDatabase.LoadAssetAtPath<SkillTable>(AssetDatabase.GUIDToAssetPath(guid));
+                    index = Array.IndexOf(candidate.skills, skill);
+                    if (index < 0) continue;
+
+                    target = candidate;
+                    break;
+                }
+            }
+
+            window.Show();
+            window.Focus();
+            if (index < 0)
+            {
+                window.ShowNotification(new GUIContent("此技能配置尚未加入技能表。"));
+                return;
+            }
+
+            window.table = target;
+            window.selectedSkill = index;
+            window.BindTable();
+            window._search = "";
+            window._effectScroll = Vector2.zero;
+            window.Repaint();
+        }
+
         private void OnEnable()
         {
             minSize = new Vector2(1000, 600);
@@ -110,13 +152,13 @@ namespace Editor
             if (_hitRangeMesh) DestroyImmediate(_hitRangeMesh);
             foreach (Material material in _previewMaterials) DestroyImmediate(material);
             _previewMaterials.Clear();
-            _serializedTable?.Dispose();
+            _serializedSkill?.Dispose();
         }
 
         private void BindTable()
         {
-            _serializedTable?.Dispose();
-            _serializedTable = table ? new SerializedObject(table) : null;
+            _serializedSkill?.Dispose();
+            _serializedSkill = null;
             selectedSkill = table && table.skills != null && table.skills.Length > 0
                 ? Mathf.Clamp(selectedSkill, 0, table.skills.Length - 1) : -1;
             _tick = 0;
@@ -132,7 +174,7 @@ namespace Editor
         private void OnUpdate()
         {
             double now = EditorApplication.timeSinceStartup;
-            if (_playing && table && selectedSkill >= 0 && selectedSkill < table.skills.Length)
+            if (_playing && table && selectedSkill >= 0 && selectedSkill < table.skills.Length && table.skills[selectedSkill])
             {
                 _tick += (float)(now - _lastTime) * tickRate;
                 float end = table.skills[selectedSkill].durationTicks;
@@ -155,44 +197,54 @@ namespace Editor
                 if (EditorGUI.EndChangeCheck()) BindTable();
                 GUILayout.FlexibleSpace();
                 using (new EditorGUI.DisabledScope(!table))
-                    if (GUILayout.Button("保存", EditorStyles.toolbarButton)) AssetDatabase.SaveAssetIfDirty(table);
+                    if (GUILayout.Button("保存", EditorStyles.toolbarButton))
+                    {
+                        AssetDatabase.SaveAssetIfDirty(table);
+                        foreach (SkillConfig skill in table.skills)
+                            if (skill) AssetDatabase.SaveAssetIfDirty(skill);
+                    }
             }
             if (!table) { EditorGUILayout.HelpBox("请选择 SkillTable。", MessageType.Info); return; }
-            _serializedTable.Update();
-            SerializedProperty skills = _serializedTable.FindProperty("skills");
-            if (selectedSkill >= skills.arraySize) selectedSkill = -1;
+            if (selectedSkill >= table.skills.Length) selectedSkill = -1;
             using (new EditorGUILayout.HorizontalScope())
             {
-                DrawSkills(skills);
+                DrawSkills();
+                SkillConfig skill = selectedSkill >= 0 ? table.skills[selectedSkill] : null;
+                if (_serializedSkill?.targetObject != skill)
+                {
+                    _serializedSkill?.Dispose();
+                    _serializedSkill = skill ? new SerializedObject(skill) : null;
+                }
+                _serializedSkill?.Update();
                 using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(true)))
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(true)))
                         {
-                            if (selectedSkill >= 0) DrawPreview(table.skills[selectedSkill]);
+                            if (skill) DrawPreview(skill);
                         }
                         using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Width(330)))
                         {
-                            if (selectedSkill >= 0) DrawEffects(skills.GetArrayElementAtIndex(selectedSkill));
+                            if (skill) DrawEffects(_serializedSkill);
                         }
                     }
-                    if (selectedSkill >= 0) DrawTracks(skills.GetArrayElementAtIndex(selectedSkill));
+                    if (skill) DrawTracks(_serializedSkill);
                 }
             }
-            if (_serializedTable.ApplyModifiedProperties()) Repaint();
+            if (_serializedSkill != null && _serializedSkill.ApplyModifiedProperties()) Repaint();
         }
 
-        private void DrawSkills(SerializedProperty skills)
+        private void DrawSkills()
         {
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Width(230)))
             {
                 _search = EditorGUILayout.TextField(_search, EditorStyles.toolbarSearchField);
                 _skillScroll = EditorGUILayout.BeginScrollView(_skillScroll);
-                for (int i = 0; i < skills.arraySize; i++)
+                for (int i = 0; i < table.skills.Length; i++)
                 {
-                    SerializedProperty skill = skills.GetArrayElementAtIndex(i);
-                    string label = $"{skill.FindPropertyRelative("skillId").longValue}  {skill.FindPropertyRelative("skillName").stringValue}";
+                    SkillConfig skill = table.skills[i];
+                    string label = skill ? $"{skill.skillId}  {skill.skillName}" : "缺少技能配置";
                     if (label.IndexOf(_search, StringComparison.OrdinalIgnoreCase) < 0) continue;
                     if (GUILayout.Toggle(selectedSkill == i, label, "Button") && selectedSkill != i)
                     { selectedSkill = i; _tick = 0; _playing = false; }
@@ -200,30 +252,27 @@ namespace Editor
                 EditorGUILayout.EndScrollView();
                 if (GUILayout.Button("新建技能"))
                 {
-                    _serializedTable.ApplyModifiedProperties();
-                    uint id = 1;
-                    var usedIds = new System.Collections.Generic.HashSet<uint>(
-                        (table.skills ?? Array.Empty<SkillConfig>()).Select(item => item.skillId));
-                    while (usedIds.Contains(id)) id = checked(id + 1);
-                    Undo.RecordObject(table, "新建技能");
-                    SkillConfig[] entries = table.skills ?? Array.Empty<SkillConfig>();
+                    SkillConfig skill = SkillAssetUtils.CreateSkill((uint)tickRate);
+                    if (!skill) return;
+                    SkillConfig[] entries = table.skills;
                     selectedSkill = entries.Length;
                     Array.Resize(ref entries, entries.Length + 1);
-                    entries[selectedSkill] = new SkillConfig { skillId = id, skillName = "新技能", durationTicks = (uint)tickRate };
+                    entries[selectedSkill] = skill;
                     table.skills = entries;
                     EditorUtility.SetDirty(table);
-                    _serializedTable.Update();
+                    AssetDatabase.SaveAssetIfDirty(table);
                     _search = "";
                     _tick = 0;
                     _playing = false;
                 }
                 using (new EditorGUI.DisabledScope(selectedSkill < 0))
                 {
-                    if (GUILayout.Button("删除技能"))
+                    if (GUILayout.Button(new GUIContent("移出技能表", "保留技能配置和同目录下的资源。")))
                     {
-                        skills.DeleteArrayElementAtIndex(selectedSkill);
-                        _serializedTable.ApplyModifiedProperties();
-                        selectedSkill = Mathf.Min(selectedSkill, skills.arraySize - 1);
+                        Undo.RecordObject(table, "移出技能表");
+                        table.skills = table.skills.Where((_, index) => index != selectedSkill).ToArray();
+                        EditorUtility.SetDirty(table);
+                        selectedSkill = Mathf.Min(selectedSkill, table.skills.Length - 1);
                         _tick = 0;
                         _playing = false;
                     }
@@ -269,16 +318,15 @@ namespace Editor
             return false;
         }
 
-        private void DrawEffects(SerializedProperty skill)
+        private void DrawEffects(SerializedObject skill)
         {
             _effectScroll = EditorGUILayout.BeginScrollView(_effectScroll);
-            EditorGUILayout.PropertyField(skill.FindPropertyRelative("skillId"), new GUIContent("技能 ID"));
-            EditorGUILayout.PropertyField(skill.FindPropertyRelative("skillName"), new GUIContent("名称"));
-            EditorGUILayout.PropertyField(skill.FindPropertyRelative("cooldown"), new GUIContent("冷却"));
-            EditorGUILayout.PropertyField(skill.FindPropertyRelative("durationTicks"), new GUIContent("持续 Tick"));
-            EditorGUILayout.PropertyField(skill.FindPropertyRelative("controlPolicy"),
+            if (SkillAssetUtils.DrawIdentity((SkillConfig)skill.targetObject)) skill.Update();
+            EditorGUILayout.PropertyField(skill.FindProperty("cooldown"), new GUIContent("冷却"));
+            EditorGUILayout.PropertyField(skill.FindProperty("durationTicks"), new GUIContent("持续 Tick"));
+            EditorGUILayout.PropertyField(skill.FindProperty("controlPolicy"),
                 new GUIContent("控制策略", "技能释放期间的控制策略，可组合选择锁定模型旋转和锁定视角旋转。"));
-            SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
+            SerializedProperty conditions = skill.FindProperty("castConditions");
             EditorGUILayout.LabelField("释放条件", EditorStyles.boldLabel);
             for (int i = 0; i < conditions.arraySize; i++)
             {
@@ -311,10 +359,9 @@ namespace Editor
             if (EditorGUILayout.DropdownButton(new GUIContent("添加条件"), FocusType.Keyboard))
             {
                 var menu = new GenericMenu();
-                SkillTable target = table;
-                int skillIndex = selectedSkill;
+                var target = (SkillConfig)skill.targetObject;
                 foreach (Type type in _conditionTypes)
-                    menu.AddItem(new GUIContent(type.Name), false, () => AddCondition(target, skillIndex, type));
+                    menu.AddItem(new GUIContent(type.Name), false, () => AddCondition(target, type));
                 menu.ShowAsContext();
             }
             EditorGUILayout.Space();
@@ -327,7 +374,7 @@ namespace Editor
             EditorGUI.DrawRect(separator, new Color(0.5f, 0.5f, 0.5f, 0.6f));
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("技能效果", EditorStyles.boldLabel);
-            SerializedProperty effects = skill.FindPropertyRelative("effects");
+            SerializedProperty effects = skill.FindProperty("effects");
             for (int i = 0; i < effects.arraySize; i++)
             {
                 SerializedProperty effect = effects.GetArrayElementAtIndex(i);
@@ -351,7 +398,18 @@ namespace Editor
                         {
                             if (effectValue is HitBoxSkillEffect) DrawHitBoxField(child);
                             else if (effectValue is WeaponCapsuleSkillEffect) DrawWeaponCapsuleField(child);
+                            else if (effectValue is RootMotionSkillEffect && child.name == nameof(RootMotionSkillEffect.motionData))
+                                SkillAssetUtils.DrawLocalAsset(child, new GUIContent("根运动数据",
+                                    "根运动烘焙窗口生成的位移数据。技能预览应用 XZ 位移。"), typeof(BakedAnimMotionData));
                             else if (effectValue is RootMotionSkillEffect) DrawRootMotionField(child);
+                            else if (effectValue is AnimationSkillEffect && child.name == nameof(AnimationSkillEffect.clip))
+                            {
+                                SkillAssetUtils.DrawLocalAsset(child, new GUIContent("动画片段"), typeof(AnimationClip));
+                                var clip = (AnimationClip)child.objectReferenceValue;
+                                using (new EditorGUI.DisabledScope(!clip))
+                                    if (GUILayout.Button("烘焙根运动"))
+                                        AnimationMotionBakerWindow.Open((SkillConfig)skill.targetObject, modelPrefab, clip);
+                            }
                             else if (effectValue is AnimationSkillEffect) DrawAnimationField(child);
                             else EditorGUILayout.PropertyField(child, true);
                             enter = false;
@@ -363,10 +421,9 @@ namespace Editor
             if (EditorGUILayout.DropdownButton(new GUIContent("添加效果"), FocusType.Keyboard))
             {
                 var menu = new GenericMenu();
-                SkillTable target = table;
-                int skillIndex = selectedSkill;
+                var target = (SkillConfig)skill.targetObject;
                 foreach (Type type in _effectTypes)
-                    menu.AddItem(new GUIContent(GetEffectDisplayName(type)), false, () => AddEffect(target, skillIndex, type));
+                    menu.AddItem(new GUIContent(GetEffectDisplayName(type)), false, () => AddEffect(target, type));
                 menu.ShowAsContext();
             }
             EditorGUILayout.EndScrollView();
@@ -422,7 +479,6 @@ namespace Editor
             {
                 nameof(SkillEffect.startTick) => new GUIContent("起始 Tick"),
                 nameof(SkillEffect.durationTicks) => new GUIContent("持续 Tick"),
-                nameof(RootMotionSkillEffect.motionData) => new GUIContent("根运动数据", "根运动烘焙窗口生成的位移数据。技能预览应用 XZ 位移。"),
                 nameof(RootMotionSkillEffect.collisionPolicy) => new GUIContent("碰撞策略"),
                 _ => null
             };
@@ -452,10 +508,10 @@ namespace Editor
             return type?.Name ?? "缺失效果";
         }
 
-        private void DrawInterruptRules(SerializedProperty skill)
+        private void DrawInterruptRules(SerializedObject skill)
         {
             EditorGUILayout.LabelField("中断窗口", EditorStyles.boldLabel);
-            SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+            SerializedProperty rules = skill.FindProperty("interruptRules");
             for (int i = 0; i < rules.arraySize; i++)
             {
                 SerializedProperty rule = rules.GetArrayElementAtIndex(i);
@@ -488,23 +544,23 @@ namespace Editor
             }
             if (GUILayout.Button("添加中断窗口"))
             {
-                _serializedTable.ApplyModifiedProperties();
-                AddInterruptRule(table, selectedSkill);
-                _serializedTable.Update();
+                skill.ApplyModifiedProperties();
+                AddInterruptRule((SkillConfig)skill.targetObject);
+                skill.Update();
             }
         }
 
-        private void AddInterruptRule(SkillTable target, int skillIndex)
+        private void AddInterruptRule(SkillConfig target)
         {
+            if (!target) return;
             using (var serialized = new SerializedObject(target))
             {
-                SerializedProperty skill = serialized.FindProperty("skills").GetArrayElementAtIndex(skillIndex);
-                SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+                SerializedProperty rules = serialized.FindProperty("interruptRules");
                 int index = rules.arraySize++;
                 SerializedProperty rule = rules.GetArrayElementAtIndex(index);
                 rule.FindPropertyRelative("startTick").intValue = 0;
                 rule.FindPropertyRelative("endTick").intValue = (int)Math.Min(int.MaxValue,
-                    skill.FindPropertyRelative("durationTicks").longValue);
+                    serialized.FindProperty("durationTicks").longValue);
                 rule.FindPropertyRelative("reason").enumValueIndex = 0;
                 rule.isExpanded = true;
                 serialized.ApplyModifiedProperties();
@@ -512,13 +568,13 @@ namespace Editor
             Repaint();
         }
 
-        private void DrawTracks(SerializedProperty skill)
+        private void DrawTracks(SerializedObject skill)
         {
             DrawTrackSplitter();
             SyncTimeline(skill);
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Height(Mathf.Clamp(trackHeight, 140, Mathf.Max(140, position.height - 220)))))
             {
-                DrawPlaybackControls(skill.FindPropertyRelative("durationTicks").longValue);
+                DrawPlaybackControls(skill.FindProperty("durationTicks").longValue);
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
                 {
                     GUILayout.Label("技能编辑轨道", EditorStyles.miniBoldLabel);
@@ -528,18 +584,17 @@ namespace Editor
                     if (GUILayout.Button("添加轨道", EditorStyles.toolbarDropDown, GUILayout.Width(85)))
                     {
                         var menu = new GenericMenu();
-                        SkillTable target = table;
-                        int index = selectedSkill;
+                        var target = (SkillConfig)skill.targetObject;
                         foreach (Type type in _effectTypes)
-                            menu.AddItem(new GUIContent("技能效果/" + GetEffectDisplayName(type)), false, () => AddEffect(target, index, type));
-                        menu.AddItem(new GUIContent("中断窗口"), false, () => AddInterruptRule(target, index));
+                            menu.AddItem(new GUIContent("技能效果/" + GetEffectDisplayName(type)), false, () => AddEffect(target, type));
+                        menu.AddItem(new GUIContent("中断窗口"), false, () => AddInterruptRule(target));
                         menu.ShowAsContext();
                     }
                 }
-                SerializedProperty effects = skill.FindPropertyRelative("effects");
-                SerializedProperty rules = skill.FindPropertyRelative("interruptRules");
+                SerializedProperty effects = skill.FindProperty("effects");
+                SerializedProperty rules = skill.FindProperty("interruptRules");
                 int trackCount = effects.arraySize + rules.arraySize;
-                long length = Math.Max(1, skill.FindPropertyRelative("durationTicks").longValue);
+                long length = Math.Max(1, skill.FindProperty("durationTicks").longValue);
                 for (int i = 0; i < rules.arraySize; i++)
                     length = Math.Max(length, rules.GetArrayElementAtIndex(i).FindPropertyRelative("endTick").longValue);
                 for (int i = 0; i < effects.arraySize; i++)
@@ -571,7 +626,7 @@ namespace Editor
                 if (current.type == EventType.KeyDown && current.keyCode == KeyCode.Space &&
                     GUIUtility.keyboardControl == control && !EditorGUIUtility.editingTextField && GUIUtility.hotControl == 0)
                 {
-                    TogglePlayback(skill.FindPropertyRelative("durationTicks").longValue);
+                    TogglePlayback(skill.FindProperty("durationTicks").longValue);
                     current.Use();
                 }
                 Rect ruler = new Rect(origin, canvas.y, canvas.width - 180, 24);
@@ -583,7 +638,7 @@ namespace Editor
                     _scrubbing = true;
                     _playing = false;
                     _tick = Mathf.Clamp(Mathf.Round((current.mousePosition.x - origin) / _pixelsPerTick), 0,
-                        skill.FindPropertyRelative("durationTicks").longValue);
+                        skill.FindProperty("durationTicks").longValue);
                     current.Use();
                     Repaint();
                 }
@@ -592,7 +647,7 @@ namespace Editor
                     if (current.type == EventType.MouseDrag)
                     {
                         _tick = Mathf.Clamp(Mathf.Round((current.mousePosition.x - origin) / _pixelsPerTick), 0,
-                            skill.FindPropertyRelative("durationTicks").longValue);
+                            skill.FindProperty("durationTicks").longValue);
                         current.Use();
                         Repaint();
                     }
@@ -680,7 +735,7 @@ namespace Editor
                         long delta = (long)Math.Round((current.mousePosition.x - _dragMouseX) / _pixelsPerTick);
                         long end = _dragStart + _dragDuration;
                         long start = _dragStart;
-                        long limit = Math.Max(0, skill.FindPropertyRelative("durationTicks").longValue);
+                        long limit = Math.Max(0, skill.FindProperty("durationTicks").longValue);
                         if (_dragEdge < 0) start = Math.Clamp(_dragStart + delta, 0, end);
                         else if (_dragEdge > 0) end = Math.Clamp(end + delta, start, Math.Max(start, limit));
                         else
@@ -705,7 +760,7 @@ namespace Editor
                     }
                     else if (current.rawType == EventType.MouseUp)
                     {
-                        _serializedTable.ApplyModifiedProperties();
+                        skill.ApplyModifiedProperties();
                         Undo.CollapseUndoOperations(_trackUndoGroup);
                         _dragTrack = -1;
                         GUIUtility.hotControl = 0;
@@ -806,9 +861,9 @@ namespace Editor
             _timelineClips = Array.Empty<TimelineClip>();
         }
 
-        private void SyncTimeline(SerializedProperty skill)
+        private void SyncTimeline(SerializedObject skill)
         {
-            SerializedProperty effects = skill.FindPropertyRelative("effects");
+            SerializedProperty effects = skill.FindProperty("effects");
             if (!_timeline || _timelineClips.Length != effects.arraySize)
             {
                 ClearTimeline();
@@ -836,13 +891,12 @@ namespace Editor
             }
         }
 
-        private void AddCondition(SkillTable target, int skillIndex, Type type)
+        private void AddCondition(SkillConfig target, Type type)
         {
-            if (!target || skillIndex >= target.skills.Length) return;
+            if (!target) return;
             using (var serialized = new SerializedObject(target))
             {
-                SerializedProperty skill = serialized.FindProperty("skills").GetArrayElementAtIndex(skillIndex);
-                SerializedProperty conditions = skill.FindPropertyRelative("castConditions");
+                SerializedProperty conditions = serialized.FindProperty("castConditions");
                 int index = conditions.arraySize++;
                 conditions.GetArrayElementAtIndex(index).managedReferenceValue = Activator.CreateInstance(type);
                 conditions.GetArrayElementAtIndex(index).isExpanded = true;
@@ -852,20 +906,19 @@ namespace Editor
             Repaint();
         }
 
-        private void AddEffect(SkillTable target, int skillIndex, Type type)
+        private void AddEffect(SkillConfig target, Type type)
         {
-            if (!target || skillIndex >= target.skills.Length) return;
+            if (!target) return;
             using (var serialized = new SerializedObject(target))
             {
-                SerializedProperty skill = serialized.FindProperty("skills").GetArrayElementAtIndex(skillIndex);
-                SerializedProperty effects = skill.FindPropertyRelative("effects");
+                SerializedProperty effects = serialized.FindProperty("effects");
                 int index = effects.arraySize++;
                 SkillEffect value = (SkillEffect)Activator.CreateInstance(type);
                 uint maxId = 0;
                 for (int i = 0; i < index; i++)
                     maxId = Math.Max(maxId, (uint)effects.GetArrayElementAtIndex(i).FindPropertyRelative("effectId").longValue);
                 value.effectId = maxId + 1;
-                value.durationTicks = (uint)skill.FindPropertyRelative("durationTicks").longValue;
+                value.durationTicks = (uint)serialized.FindProperty("durationTicks").longValue;
                 if (value is HitBoxSkillEffect hitBox)
                 {
                     hitBox.durationTicks = 1;

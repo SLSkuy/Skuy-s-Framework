@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5484dea7bbee44cf9ab77ca28e180fec, type: 3}
+  m_Name: NoramlAttack3
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.SkillConfig
+  skillId: 4
+  skillName: NoramlAttack3
+  cooldown: 0
+  durationTicks: 120
+  controlPolicy: 1
+  interruptRules:
+  - startTick: 63
+    endTick: 120
+    reason: 5
+  - startTick: 63
+    endTick: 120
+    reason: 2
+  castConditions:
+  - rid: 4293589056357400758
+  effects:
+  - rid: 4293588810657169608
+  - rid: 4293589010553503904
+  references:
+    version: 2
+    RefIds:
+    - rid: 4293588810657169608
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 120
+        endPolicy: 0
+        sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
+        clip: {fileID: 7400000, guid: e4553b461eea1ca408cd7333d0211f30, type: 2}
+    - rid: 4293589010553503904
+      type: {class: WeaponCapsuleSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 25
+        durationTicks: 6
+        endPolicy: 0
+        weaponHeight: 0.7
+        weaponRadius: 0.1
+        hitRate: 5
+    - rid: 4293589056357400758
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u

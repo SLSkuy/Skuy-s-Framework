@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using GamePlay.BattleSystem;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +14,8 @@ namespace Editor
     {
         [SerializeField] private GameObject modelPrefab;
         [SerializeField] private AnimationClip clip;
+        [SerializeField] private SkillConfig skill;
+        [SerializeField] private BakedAnimMotionData sourceData;
         [SerializeField] private int sampleRate = 60;
         [SerializeField] private bool loopPreview;
 
@@ -39,6 +43,34 @@ namespace Editor
             GetWindow<AnimationMotionBakerWindow>("根运动烘焙").Show();
         }
 
+        public static void Open(SkillConfig target, GameObject model, AnimationClip animation)
+        {
+            var window = GetWindow<AnimationMotionBakerWindow>("根运动烘焙");
+            window.ClearPreview();
+            window.skill = target;
+            window.sourceData = null;
+            if (model) window.modelPrefab = model;
+            window.clip = animation;
+            window.Show();
+        }
+
+        public static void Open(BakedAnimMotionData data)
+        {
+            var window = GetWindow<AnimationMotionBakerWindow>("根运动烘焙");
+            window.ClearPreview();
+            window.sourceData = data;
+            window.clip = data.sourceClip;
+            window.modelPrefab = data.sourcePrefab;
+            window.sampleRate = (int)data.sampleRate;
+
+            string folder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(data)).Replace('\\', '/');
+            window.skill = AssetDatabase.FindAssets("t:SkillConfig", new[] { folder })
+                .Select(guid => AssetDatabase.LoadAssetAtPath<SkillConfig>(AssetDatabase.GUIDToAssetPath(guid)))
+                .FirstOrDefault(config => config.effects.OfType<RootMotionSkillEffect>().Any(effect => effect.motionData == data));
+            window.Show();
+            window.Focus();
+        }
+
         private void BakePreview()
         {
             ClearPreview();
@@ -60,7 +92,7 @@ namespace Editor
                 float yaw = 0f;
                 float previousTime = 0f;
                 data.sourceClip = clip;
-                data.sourceAvatar = animator.avatar;
+                data.sourcePrefab = modelPrefab;
                 data.duration = clip.length;
                 data.sampleRate = (uint)sampleRate;
                 data.positionX.AddKey(0f, 0f);
@@ -252,9 +284,10 @@ namespace Editor
         private void DrawInputs()
         {
             EditorGUILayout.LabelField("资源与采样", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck();
             float previousLabelWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 78f;
+            skill = (SkillConfig)EditorGUILayout.ObjectField("技能配置", skill, typeof(SkillConfig), false);
+            EditorGUI.BeginChangeCheck();
             modelPrefab = (GameObject)EditorGUILayout.ObjectField("角色模型", modelPrefab, typeof(GameObject), false);
             clip = (AnimationClip)EditorGUILayout.ObjectField("动画片段", clip, typeof(AnimationClip), false);
             sampleRate = EditorGUILayout.IntSlider("采样率 (Hz)", sampleRate, 15, 240);
@@ -313,7 +346,7 @@ namespace Editor
 
                 using (new EditorGUI.DisabledScope(!_preview || issue != null))
                 {
-                    if (GUILayout.Button("保存运动数据…"))
+                    if (GUILayout.Button(skill || sourceData ? "保存运动数据" : "保存运动数据…"))
                         SavePreview();
                 }
             }
@@ -394,6 +427,8 @@ namespace Editor
                 return "请退出播放模式后采样。";
             if (!modelPrefab)
                 return "请选择包含 Animator 和骨骼的角色模型 Prefab。";
+            if (!PrefabUtility.IsPartOfPrefabAsset(modelPrefab))
+                return "请选择项目中的模型预制体。";
             if (!clip)
                 return "请选择动画片段。";
             if (clip.legacy || clip.length <= 0f)
@@ -403,17 +438,91 @@ namespace Editor
 
         private void SavePreview()
         {
-            string path = EditorUtility.SaveFilePanelInProject("保存运动数据", clip.name + "_Motion", "asset", "选择新的数据资产路径");
-            if (string.IsNullOrEmpty(path))
-                return;
+            RootMotionSkillEffect effect = skill ? FindRootMotionEffect() : null;
+            BakedAnimMotionData asset = effect?.motionData;
+            if (!asset) asset = sourceData;
 
-            path = AssetDatabase.GenerateUniqueAssetPath(path);
-            BakedAnimMotionData asset = Instantiate(_preview);
-            asset.hideFlags = HideFlags.None;
-            AssetDatabase.CreateAsset(asset, path);
-            AssetDatabase.SaveAssets();
+            string folder = skill ? SkillAssetUtils.GetFolder(skill) : null;
+            if (asset && skill && !AssetDatabase.GetAssetPath(asset).StartsWith(folder + "/", StringComparison.Ordinal))
+                asset = null;
+
+            string path = null;
+            if (!asset)
+            {
+                string name = string.Join("_", clip.name.Split(Path.GetInvalidFileNameChars())) + "_Motion";
+                path = skill
+                    ? $"{folder}/{name}.asset"
+                    : EditorUtility.SaveFilePanelInProject("保存运动数据", name, "asset", "选择新的数据资产路径");
+                if (string.IsNullOrEmpty(path)) return;
+            }
+
+            // 先确定新增轨道，再保存采样资产。重新烘焙只替换已有轨道的数据。
+            bool addEffect = skill && effect == null;
+            if (addEffect)
+                effect = CreateRootMotionEffect();
+
+            const string undoName = "保存根运动数据";
+            Undo.IncrementCurrentGroup();
+            int undoGroup = Undo.GetCurrentGroup();
+            Undo.SetCurrentGroupName(undoName);
+            AnimationClip localClip = skill ? (AnimationClip)SkillAssetUtils.LocalizeAsset(clip, skill) : clip;
+            if (asset)
+            {
+                Undo.RegisterCompleteObjectUndo(asset, undoName);
+                string name = asset.name;
+                HideFlags hideFlags = asset.hideFlags;
+                EditorUtility.CopySerialized(_preview, asset);
+                asset.name = name;
+                asset.hideFlags = hideFlags;
+            }
+            else
+            {
+                asset = Instantiate(_preview);
+                asset.hideFlags = HideFlags.None;
+                AssetDatabase.CreateAsset(asset, AssetDatabase.GenerateUniqueAssetPath(path));
+            }
+            asset.sourceClip = localClip;
+            EditorUtility.SetDirty(asset);
+            AssetDatabase.SaveAssetIfDirty(asset);
+
+            if (skill && (addEffect || effect.motionData != asset))
+            {
+                Undo.RegisterCompleteObjectUndo(skill, undoName);
+                if (addEffect)
+                {
+                    Array.Resize(ref skill.effects, skill.effects.Length + 1);
+                    skill.effects[^1] = effect;
+                }
+                effect.motionData = asset;
+                EditorUtility.SetDirty(skill);
+                AssetDatabase.SaveAssetIfDirty(skill);
+            }
+
+            Undo.CollapseUndoOperations(undoGroup);
+            clip = localClip;
             EditorGUIUtility.PingObject(asset);
-            ShowNotification(new GUIContent("运动数据已保存"));
+            ShowNotification(new GUIContent(skill ? "运动数据已保存并关联技能" : "运动数据已保存"));
+        }
+
+        private RootMotionSkillEffect FindRootMotionEffect()
+        {
+            RootMotionSkillEffect[] effects = skill.effects.OfType<RootMotionSkillEffect>().ToArray();
+            return effects.FirstOrDefault(effect => sourceData && effect.motionData == sourceData)
+                ?? effects.FirstOrDefault(effect => effect.motionData && effect.motionData.sourceClip == clip)
+                ?? effects.FirstOrDefault();
+        }
+
+        private RootMotionSkillEffect CreateRootMotionEffect()
+        {
+            AnimationSkillEffect animation = skill.effects.OfType<AnimationSkillEffect>()
+                .FirstOrDefault(effect => effect.clip == clip);
+            uint maxId = skill.effects.Where(effect => effect != null).Select(effect => effect.effectId).DefaultIfEmpty().Max();
+            return new RootMotionSkillEffect
+            {
+                effectId = checked(maxId + 1),
+                startTick = animation?.startTick ?? 0,
+                durationTicks = animation?.durationTicks ?? skill.durationTicks
+            };
         }
 
         private void ClearPreview()

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0266e45501892cf408baf73f294b9aa5, type: 3}
   m_Name: S_Quickshift_F_Motion
   m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.BakedAnimMotionData
-  sourceClip: {fileID: -917312218917175174, guid: 7ddba21772e78b44285fc7f154d3fa8f, type: 3}
-  sourceAvatar: {fileID: 9000000, guid: 495b83a394c5cec429dd0df10492ed56, type: 3}
+  sourceClip: {fileID: 7400000, guid: 6db392cff58b06f45bc26957729756af, type: 2}
+  sourceAvatar: {fileID: 919132149155446097, guid: 495b83a394c5cec429dd0df10492ed56, type: 3}
   duration: 1
   planarDistance: 2.4565046
   sampleRate: 60

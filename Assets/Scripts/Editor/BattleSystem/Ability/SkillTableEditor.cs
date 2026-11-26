@@ -1,4 +1,4 @@
-using GamePlay.BattleSystem;
+﻿using GamePlay.BattleSystem;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ namespace Editor
          
             EditorGUILayout.Space();
             
-            if (GUILayout.Button("打开技能编辑器")) SkillEditorWindow.Open();
+            if (GUILayout.Button("打开技能编辑器")) SkillEditorWindow.Open((SkillTable)target);
         }
     }
 }

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5484dea7bbee44cf9ab77ca28e180fec, type: 3}
+  m_Name: Dodge
+  m_EditorClassIdentifier: Assembly-CSharp::GamePlay.BattleSystem.SkillConfig
+  skillId: 6
+  skillName: Dodge
+  cooldown: 0
+  durationTicks: 60
+  controlPolicy: 1
+  interruptRules:
+  - startTick: 9
+    endTick: 60
+    reason: 0
+  - startTick: 16
+    endTick: 60
+    reason: 1
+  castConditions:
+  - rid: 4293589056357400760
+  effects:
+  - rid: 4293589056357400665
+  - rid: 4293589056357400666
+  references:
+    version: 2
+    RefIds:
+    - rid: 4293589056357400665
+      type: {class: AnimationSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 1
+        startTick: 0
+        durationTicks: 60
+        endPolicy: 0
+        sampleOffset: 0
+        blendIn: 0.15
+        blendOut: 0.15
+        clip: {fileID: 7400000, guid: 6db392cff58b06f45bc26957729756af, type: 2}
+    - rid: 4293589056357400666
+      type: {class: RootMotionSkillEffect, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        effectId: 2
+        startTick: 0
+        durationTicks: 60
+        endPolicy: 0
+        motionData: {fileID: 11400000, guid: 3dc4f48ea02acec45ab4552297389a84, type: 2}
+        collisionPolicy: 0
+    - rid: 4293589056357400760
+      type: {class: EntityStateCastCondition, ns: GamePlay.BattleSystem, asm: Assembly-CSharp}
+      data:
+        exclusiveStates: 03000000u
